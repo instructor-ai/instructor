@@ -35,6 +35,7 @@ For single-label classification, we define a Pydantic model with a [Literal](../
 from pydantic import BaseModel, Field
 from typing import Literal
 import instructor
+
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_provider("openai/gpt-5-nano")
@@ -71,6 +72,7 @@ The function **`classify`** will perform the single-label classification.
 from pydantic import BaseModel, Field
 from typing import Literal
 import instructor
+
 
 class ClassificationResponse(BaseModel):
     """
@@ -123,6 +125,7 @@ Let's run examples to see if it correctly identifies spam and non-spam messages.
 from pydantic import BaseModel, Field
 from typing import Literal
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 
@@ -244,6 +247,7 @@ class MultiClassPrediction(BaseModel):
 
 # <%hide%>
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 
@@ -271,6 +275,7 @@ from typing import List
 from pydantic import BaseModel, Field
 from typing import Literal
 import instructor
+
 
 class MultiClassPrediction(BaseModel):
     """

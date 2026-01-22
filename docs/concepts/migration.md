@@ -26,11 +26,19 @@ Migrating to `from_provider` offers several benefits:
 ```python
 import openai
 import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = openai.OpenAI()
 patched_client = instructor.patch(client)
 
 user = patched_client.chat.completions.create(
+    model="gpt-4o-mini",
     response_model=User,
     messages=[{"role": "user", "content": "Extract: John is 30"}],
 )
@@ -40,6 +48,13 @@ user = patched_client.chat.completions.create(
 
 ```python
 import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = instructor.from_provider("openai/gpt-4o-mini")
 
@@ -61,11 +76,19 @@ user = client.create(
 ```python
 import openai
 from instructor import from_openai
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = openai.OpenAI()
 instructor_client = from_openai(client)
 
 user = instructor_client.chat.completions.create(
+    model="gpt-4o-mini",
     response_model=User,
     messages=[{"role": "user", "content": "Extract: John is 30"}],
 )
@@ -75,6 +98,13 @@ user = instructor_client.chat.completions.create(
 
 ```python
 import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = instructor.from_provider("openai/gpt-4o-mini")
 
@@ -96,11 +126,20 @@ user = client.create(
 ```python
 import anthropic
 from instructor import from_anthropic
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = anthropic.Anthropic()
 instructor_client = from_anthropic(client)
 
 user = instructor_client.messages.create(
+    model="claude-3-5-sonnet",
+    max_tokens=1024,
     response_model=User,
     messages=[{"role": "user", "content": "Extract: John is 30"}],
 )
@@ -110,6 +149,13 @@ user = instructor_client.messages.create(
 
 ```python
 import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = instructor.from_provider("anthropic/claude-3-5-sonnet")
 
@@ -131,6 +177,13 @@ user = client.create(
 ```python
 import google.genai as genai
 from instructor import from_genai
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = genai.Client(api_key="your-key")
 instructor_client = from_genai(client, model="gemini-pro")
@@ -145,6 +198,13 @@ user = instructor_client.generate_content(
 
 ```python
 import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = instructor.from_provider("google/gemini-pro")
 
@@ -164,29 +224,54 @@ user = client.create(
 **Before:**
 
 ```python
+import asyncio
 import openai
 import instructor
+from pydantic import BaseModel
 
-client = openai.AsyncOpenAI()
-patched_client = instructor.apatch(client)
 
-user = await patched_client.chat.completions.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "Extract: John is 30"}],
-)
+class User(BaseModel):
+    name: str
+    age: int
+
+
+async def main():
+    client = openai.AsyncOpenAI()
+    patched_client = instructor.apatch(client)
+
+    user = await patched_client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: John is 30"}],
+    )
+
+
+asyncio.run(main())
 ```
 
 **After:**
 
 ```python
+import asyncio
 import instructor
+from pydantic import BaseModel
 
-client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 
-user = await client.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "Extract: John is 30"}],
-)
+class User(BaseModel):
+    name: str
+    age: int
+
+
+async def main():
+    client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
+
+    user = await client.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: John is 30"}],
+    )
+
+
+asyncio.run(main())
 ```
 
 **Changes:**
@@ -200,11 +285,19 @@ user = await client.create(
 ```python
 import openai
 import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 client = openai.OpenAI()
 patched_client = instructor.patch(client, mode=instructor.Mode.JSON)
 
 user = patched_client.chat.completions.create(
+    model="gpt-4o-mini",
     response_model=User,
     messages=[{"role": "user", "content": "Extract: John is 30"}],
 )
@@ -214,11 +307,15 @@ user = patched_client.chat.completions.create(
 
 ```python
 import instructor
+from pydantic import BaseModel
 
-client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    mode=instructor.Mode.JSON
-)
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.JSON)
 
 user = client.create(
     response_model=User,
@@ -256,6 +353,9 @@ Identify the model you're using:
 Replace the old pattern with `from_provider`:
 
 ```python
+import openai
+import instructor
+
 # Old
 client = instructor.patch(openai.OpenAI())
 
@@ -268,6 +368,19 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 Change from provider-specific methods to `client.create()`:
 
 ```python
+from types import SimpleNamespace
+
+
+def _noop(*_args, **_kwargs):
+    return None
+
+
+client = SimpleNamespace(
+    chat=SimpleNamespace(completions=SimpleNamespace(create=_noop)),
+    messages=SimpleNamespace(create=_noop),
+    create=_noop,
+)
+
 # Old (OpenAI)
 response = client.chat.completions.create(...)
 
@@ -283,9 +396,7 @@ response = client.create(...)
 Ensure messages use the standard format:
 
 ```python
-messages = [
-    {"role": "user", "content": "Your prompt here"}
-]
+messages = [{"role": "user", "content": "Your prompt here"}]
 ```
 
 ### Step 6: Test Your Code
@@ -305,9 +416,10 @@ Run your code and verify it works:
 import openai
 import anthropic
 import instructor
+from instructor import from_anthropic
 
 openai_client = instructor.patch(openai.OpenAI())
-anthropic_client = instructor.patch(anthropic.Anthropic())
+anthropic_client = from_anthropic(anthropic.Anthropic())
 
 # Use different clients for different tasks
 ```
@@ -364,11 +476,7 @@ client = instructor.from_provider(model_map[provider])
 import openai
 import instructor
 
-client = openai.OpenAI(
-    api_key="custom-key",
-    organization="org-id",
-    timeout=30.0
-)
+client = openai.OpenAI(api_key="custom-key", organization="org-id", timeout=30.0)
 patched_client = instructor.patch(client)
 ```
 
@@ -378,10 +486,7 @@ patched_client = instructor.patch(client)
 import instructor
 
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    api_key="custom-key",
-    organization="org-id",
-    timeout=30.0
+    "openai/gpt-4o-mini", api_key="custom-key", organization="org-id", timeout=30.0
 )
 ```
 
@@ -414,9 +519,7 @@ If you see errors about message format:
 **Solution:** Use the standard `messages` list format for all providers:
 
 ```python
-messages = [
-    {"role": "user", "content": "Your prompt"}
-]
+messages = [{"role": "user", "content": "Your prompt"}]
 ```
 
 ### Issue: Model Not Found
@@ -446,9 +549,11 @@ import openai
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create client
 client = openai.OpenAI()
@@ -462,6 +567,7 @@ response = patched_client.chat.completions.create(
 )
 
 print(response.name, response.age)
+#> John 30
 ```
 
 **After:**
@@ -470,9 +576,11 @@ print(response.name, response.age)
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create client
 client = instructor.from_provider("openai/gpt-4o-mini")
@@ -484,6 +592,7 @@ response = client.create(
 )
 
 print(response.name, response.age)
+#> John 30
 ```
 
 ## Benefits After Migration
@@ -501,4 +610,3 @@ After migrating, you'll notice:
 - [from_provider Guide](./from_provider.md) - Complete guide to using from_provider
 - [from_provider Guide](./from_provider.md) - Complete client configuration guide
 - [Patching](./patching.md) - How Instructor enhances clients
-

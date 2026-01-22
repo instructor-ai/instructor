@@ -44,6 +44,7 @@ The **`generate_graph`** function leverages OpenAI's API to generate a knowledge
 
 ```python hl_lines="8"
 import instructor
+
 # <%hide%>
 from pydantic import BaseModel, Field
 from typing import List
@@ -98,6 +99,7 @@ from graphviz import Digraph
 from pydantic import BaseModel, Field
 from typing import List
 import instructor
+
 
 class Node(BaseModel, frozen=True):
     id: int
@@ -324,6 +326,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import instructor
 from graphviz import Digraph
+
 
 class Node(BaseModel, frozen=True):
     id: int

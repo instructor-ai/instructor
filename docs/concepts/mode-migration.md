@@ -95,7 +95,7 @@ from instructor import Mode
 
 client = instructor.from_provider(
     "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
-    mode=Mode.TOOLS,
+    mode=Mode.BEDROCK_TOOLS,
 )
 ```
 

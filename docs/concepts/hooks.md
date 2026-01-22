@@ -97,7 +97,15 @@ These Protocol types help ensure that your handler functions have the correct si
 Hook names can be specified either as enum values (`HookName.COMPLETION_KWARGS`) or as strings (`"completion:kwargs"`):
 
 ```python
+import instructor
 from instructor.hooks import HookName
+
+
+def handler(*_args, **_kwargs) -> None:
+    pass
+
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Using enum
 client.on(HookName.COMPLETION_KWARGS, handler)
@@ -111,8 +119,11 @@ client.on("completion:kwargs", handler)
 You can register hooks using the `on` method of the Instructor client or a `Hooks` instance. Here's an example:
 
 ```python
-import instructor
 import pprint
+
+
+import instructor
+
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
@@ -128,7 +139,7 @@ resp = client.create(
     response_model=str,
 )
 print(resp)
-#> Hello, user! How can I assist you today?
+#> Hello! How can I assist you today?
 ```
 
 ### Emitting Events
@@ -140,8 +151,10 @@ Events are automatically emitted by the Instructor library at appropriate times.
 You can remove a specific hook using the `off` method:
 
 ```python
-import instructor
 import pprint
+
+import instructor
+
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
@@ -164,11 +177,14 @@ To remove all hooks for a specific event or all events:
 ```python
 import instructor
 
+
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 # Define a simple handler
-def log_completion_kwargs(*args, **kwargs):
+def log_completion_kwargs(*_args, **_kwargs):
     print("Logging completion kwargs...")
+
 
 # Register the hook
 client.on("completion:kwargs", log_completion_kwargs)
@@ -182,9 +198,11 @@ resp = client.create(
 # Clear hooks for a specific event
 client.clear("completion:kwargs")
 
+
 # Register another handler for a different event
-def log_response(response):
+def log_response(_response):
     print("Logging response...")
+
 
 client.on("completion:response", log_response)
 
@@ -201,7 +219,7 @@ import instructor
 import pydantic
 
 
-def log_completion_kwargs(*args, **kwargs) -> None:
+def log_completion_kwargs(*_args, **kwargs) -> None:
     print("## Completion kwargs:")
     print(kwargs)
     # Example output:
@@ -293,7 +311,7 @@ def handle_completion_error(error: Exception) -> None:
     from instructor.core.exceptions import (
         IncompleteOutputException,
         ValidationError,
-        ProviderError
+        ProviderError,
     )
 
     if isinstance(error, IncompleteOutputException):
@@ -311,6 +329,7 @@ def log_parse_error(error: Exception) -> None:
 
     # You can also check for Pydantic validation errors
     from pydantic import ValidationError as PydanticValidationError
+
     if isinstance(error, PydanticValidationError):
         print("Pydantic validation errors:")
         for err in error.errors():
@@ -322,7 +341,7 @@ class ErrorCounter:
     def __init__(self) -> None:
         self.error_count = 0
 
-    def count_error(self, error: Exception) -> None:
+    def count_error(self, _error: Exception) -> None:
         self.error_count += 1
         print(f"Error count: {self.error_count}")
 
@@ -340,10 +359,12 @@ error_counter = ErrorCounter()
 client.on("completion:error", error_counter.count_error)
 client.on("parse:error", error_counter.count_error)
 
+
 # Define a model for extraction
 class User(pydantic.BaseModel):
     name: str
     age: int
+
 
 # Try extraction with a potentially problematic input
 try:
@@ -357,11 +378,13 @@ try:
         response_model=User,
     )
     print(f"Extracted: {resp}")
+    #> Extracted: name='John' age=20
 except Exception as e:
     print(f"Main exception caught: {e}")
 
 # Check the error count
 print(f"Total errors recorded: {error_counter.error_count}")
+#> Total errors recorded: 0
 ```
 
 ## Advanced: Creating Custom Hooks
@@ -369,9 +392,8 @@ print(f"Total errors recorded: {error_counter.error_count}")
 While the Instructor library provides several built-in hooks, you might need to create custom hooks for specific use cases. You can do this by extending the `HookName` enum and adding handlers for your custom events:
 
 ```python
-from typing import Protocol, Any
 from enum import Enum
-from instructor.hooks import Hooks, HookName
+from instructor.hooks import HookName
 
 
 # Extend the HookName enum
@@ -386,13 +408,28 @@ class CustomHookName(str, Enum):
     COMPLETION_LAST_ATTEMPT = HookName.COMPLETION_LAST_ATTEMPT.value
 
 
+class CustomHooks:
+    def __init__(self) -> None:
+        self._handlers: dict[str, list] = {}
+
+    def on(self, hook_name: CustomHookName, handler) -> None:
+        key = hook_name.value
+        self._handlers.setdefault(key, []).append(handler)
+
+    def emit(self, hook_name: CustomHookName, payload) -> None:
+        key = hook_name.value
+        for handler in self._handlers.get(key, []):
+            handler(payload)
+
+
 # Create a hooks instance
-hooks = Hooks()
+hooks = CustomHooks()
 
 
 # Define a handler
 def custom_handler(data):
     print(f"Custom event: {data}")
+    #> Custom event: {'data': 'value'}
 
 
 # Register the handler
@@ -400,6 +437,7 @@ hooks.on(CustomHookName.CUSTOM_EVENT, custom_handler)
 
 # Emit the event
 hooks.emit(CustomHookName.CUSTOM_EVENT, {"data": "value"})
+#> Custom event: {'data': 'value'}
 ```
 
 ## Type Safety with Protocol Types
@@ -409,6 +447,7 @@ The Hooks system uses Python's `Protocol` types to provide better type safety fo
 If you're writing your own handlers, you can specify the appropriate type:
 
 ```python
+import instructor
 from instructor.hooks import CompletionErrorHandler
 
 
@@ -419,6 +458,9 @@ def my_error_handler(error: Exception) -> None:
 # Type checking will verify this is a valid error handler
 handler: CompletionErrorHandler = my_error_handler
 
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
 client.on("completion:error", handler)
 ```
 
@@ -427,17 +469,18 @@ client.on("completion:error", handler)
 Hooks provide an excellent way to monitor and handle errors consistently across your application. You can use them with Instructor's exception hierarchy for sophisticated error handling:
 
 ```python
+import logging
+
+import instructor
 from instructor.core.exceptions import (
-    InstructorError,
     IncompleteOutputException,
     InstructorRetryException,
     ValidationError,
     ProviderError,
-    ConfigurationError
 )
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class ErrorMonitor:
     def __init__(self):
@@ -446,7 +489,7 @@ class ErrorMonitor:
             "validation": 0,
             "provider": 0,
             "retry_exhausted": 0,
-            "other": 0
+            "other": 0,
         }
 
     def handle_error(self, error: Exception):
@@ -470,8 +513,11 @@ class ErrorMonitor:
     def get_stats(self):
         return self.error_counts
 
+
 # Usage
 monitor = ErrorMonitor()
+
+
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 client.on("completion:error", monitor.handle_error)
@@ -480,6 +526,9 @@ client.on("completion:last_attempt", monitor.handle_error)
 
 # After running your application
 print(f"Error statistics: {monitor.get_stats()}")
+"""
+Error statistics: {'incomplete': 0, 'validation': 0, 'provider': 0, 'retry_exhausted': 0, 'other': 0}
+"""
 ```
 
 ## Hook Combination
@@ -494,14 +543,14 @@ from instructor.core.hooks import Hooks
 
 # Create different hook sets
 logging_hooks = Hooks()
-logging_hooks.on("completion:kwargs", lambda **kw: print("Logging kwargs"))
-logging_hooks.on("completion:response", lambda resp: print("Logging response"))
+logging_hooks.on("completion:kwargs", lambda **_kw: print("Logging kwargs"))
+logging_hooks.on("completion:response", lambda _resp: print("Logging response"))
 
 metrics_hooks = Hooks()
-metrics_hooks.on("completion:kwargs", lambda **kw: print("Recording metrics"))
+metrics_hooks.on("completion:kwargs", lambda **_kw: print("Recording metrics"))
 
 debug_hooks = Hooks()
-debug_hooks.on("parse:error", lambda err: print(f"Debug: Parse error - {err}"))
+debug_hooks.on("parse:error", lambda _err: print("Debug: Parse error"))
 
 # Combine hooks using the + operator
 combined_hooks = logging_hooks + metrics_hooks
@@ -524,6 +573,13 @@ The `Hooks` class provides several methods for combining hook instances:
 - **`copy()`**: Create a deep copy of a Hooks instance
 
 ```python
+from instructor.core.hooks import Hooks
+
+hooks1 = Hooks()
+hooks2 = Hooks()
+hooks3 = Hooks()
+original_hooks = Hooks()
+
 # Method 1: + operator (creates new instance)
 combined = hooks1 + hooks2
 
@@ -544,24 +600,32 @@ You can now specify hooks for individual API calls, which are automatically comb
 ```python
 import instructor
 from instructor.core.hooks import Hooks
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 # Set up client with global hooks
 client_hooks = Hooks()
-client_hooks.on("completion:kwargs", lambda **kw: print("Client hook: kwargs"))
+client_hooks.on("completion:kwargs", lambda **_kw: print("Client hook: kwargs"))
+
 
 client = instructor.from_provider("openai/gpt-4.1-mini", hooks=client_hooks)
 
 # Create per-call hooks for debugging specific requests
 debug_hooks = Hooks()
-debug_hooks.on("completion:response", lambda resp: print("Debug hook: response"))
-debug_hooks.on("parse:error", lambda err: print(f"Debug hook: error - {err}"))
+debug_hooks.on("completion:response", lambda _resp: print("Debug hook: response"))
+debug_hooks.on("parse:error", lambda _err: print("Debug hook: error"))
 
 # Use per-call hooks - they combine with client hooks
 user = client.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Alice is 25"}],
     response_model=User,
-    hooks=debug_hooks  # Per-call hooks combined with client hooks
+    hooks=debug_hooks,  # Per-call hooks combined with client hooks
 )
 ```
 
@@ -579,37 +643,40 @@ import instructor
 from instructor.core.hooks import Hooks
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
 
+
 # Client with standard logging
 client_hooks = Hooks()
-client_hooks.on("completion:kwargs", lambda **kw: print("Standard logging"))
+client_hooks.on("completion:kwargs", lambda **_kw: print("Standard logging"))
+
 
 client = instructor.from_provider("openai/gpt-4.1-mini", hooks=client_hooks)
 
 # Performance monitoring hooks for specific calls
 perf_hooks = Hooks()
-perf_hooks.on("completion:response", lambda resp: print(f"Tokens used: {resp.usage}"))
+perf_hooks.on("completion:response", lambda _resp: print("Tokens used"))
 
 # Debug hooks for troublesome requests
 debug_hooks = Hooks()
-debug_hooks.on("parse:error", lambda err: print(f"Detailed error: {err}"))
+debug_hooks.on("parse:error", lambda _err: print("Detailed error"))
 
 # Regular call - only client hooks
 user1 = client.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Bob is 30"}],
-    response_model=User
+    response_model=User,
 )
 
 # Performance monitoring call - client + perf hooks
 user2 = client.create(
-    model="gpt-3.5-turbo", 
+    model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Carol is 25"}],
     response_model=User,
-    hooks=perf_hooks
+    hooks=perf_hooks,
 )
 
 # Debug problematic call - client + debug hooks
@@ -617,7 +684,7 @@ user3 = client.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Invalid data"}],
     response_model=User,
-    hooks=debug_hooks
+    hooks=debug_hooks,
 )
 ```
 
@@ -661,6 +728,7 @@ class TestMyApp(unittest.TestCase):
 
         # Create per-call hooks
         from instructor.core.hooks import Hooks
+
         per_call_hooks = Hooks()
         per_call_hooks.on("completion:response", per_call_mock)
 
@@ -668,7 +736,7 @@ class TestMyApp(unittest.TestCase):
         result = client.create(
             messages=[{"role": "user", "content": "Hello"}],
             response_model=str,
-            hooks=per_call_hooks
+            hooks=per_call_hooks,
         )
 
         # Both client and per-call hooks should have been called

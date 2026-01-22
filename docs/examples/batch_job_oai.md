@@ -32,7 +32,6 @@ Let's first see how we can generate a Question and Answer Pair using Instructor 
 
 ```python
 from pydantic import BaseModel, Field
-import instructor
 
 client = from_openai(OpenAI())
 

@@ -25,9 +25,11 @@ The basic syntax is simple: `instructor.from_provider("provider/model-name")`
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create a client for any provider
 client = instructor.from_provider("openai/gpt-4o-mini")
@@ -95,21 +97,28 @@ The provider string follows the format: `"provider/model-name"`
 Create async clients by setting `async_client=True`:
 
 ```python
+import asyncio
 import instructor
 from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
 
-# Create async client
-async_client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 
-# Use with await
-user = await async_client.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "Extract: Alice is 25"}],
-)
+async def main() -> None:
+    # Create async client
+    async_client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
+
+    # Use with await
+    await async_client.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: Alice is 25"}],
+    )
+
+
+asyncio.run(main())
 ```
 
 ## Advanced Configuration
@@ -119,11 +128,10 @@ user = await async_client.create(
 Pass API keys directly or use environment variables:
 
 ```python
+import instructor
+
 # Pass API key directly
-client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    api_key="sk-your-key-here"
-)
+client = instructor.from_provider("openai/gpt-4o-mini", api_key="sk-your-key-here")
 
 # Or use environment variables (recommended)
 # export OPENAI_API_KEY=sk-your-key-here
@@ -139,8 +147,7 @@ import instructor
 
 # OpenAI defaults to TOOLS mode, but you can override
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    mode=instructor.Mode.JSON  # Use JSON mode instead
+    "openai/gpt-4o-mini", mode=instructor.Mode.JSON  # Use JSON mode instead
 )
 ```
 
@@ -154,10 +161,7 @@ import instructor
 
 cache = AutoCache(maxsize=1000)
 
-client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    cache=cache
-)
+client = instructor.from_provider("openai/gpt-4o-mini", cache=cache)
 ```
 
 ### Provider-Specific Options
@@ -165,26 +169,29 @@ client = instructor.from_provider(
 Pass provider-specific options through `**kwargs`:
 
 ```python
+import os
+import instructor
+
 # For OpenAI
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    organization="org-your-org-id",
-    timeout=30.0
+    "openai/gpt-4o-mini", organization="org-your-org-id", timeout=30.0
 )
 
 # For Anthropic
-client = instructor.from_provider(
-    "anthropic/claude-3-5-sonnet",
-    max_tokens=4096
-)
+client = instructor.from_provider("anthropic/claude-3-5-sonnet", max_tokens=4096)
 
 # For Google with Vertex AI
+google_api_key = os.environ.pop("GOOGLE_API_KEY", None)
+
 client = instructor.from_provider(
     "google/gemini-pro",
     vertexai=True,
     project="your-project-id",
-    location="us-central1"
+    location="us-central1",
 )
+
+if google_api_key is not None:
+    os.environ["GOOGLE_API_KEY"] = google_api_key
 ```
 
 ## Default Modes
@@ -208,18 +215,25 @@ You can override these defaults with the `mode` parameter.
 
 ```python
 import instructor
+from instructor.core.exceptions import ConfigurationError
 
 try:
     # Invalid provider format
     client = instructor.from_provider("invalid-format")
-except instructor.ConfigurationError as e:
+except ConfigurationError as e:
     print(f"Configuration error: {e}")
+    """
+    Configuration error: Model string must be in format "provider/model-name" (e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")
+    """
 
 try:
     # Unsupported provider
     client = instructor.from_provider("unsupported/provider")
-except instructor.ConfigurationError as e:
+except ConfigurationError as e:
     print(f"Unsupported provider: {e}")
+    """
+    Unsupported provider: Unsupported provider: unsupported. Supported providers are: ['openai', 'azure_openai', 'databricks', 'anthropic', 'google', 'generative-ai', 'vertexai', 'mistral', 'cohere', 'perplexity', 'groq', 'writer', 'bedrock', 'cerebras', 'deepseek', 'fireworks', 'ollama', 'openrouter', 'xai', 'litellm']
+    """
 
 try:
     # Missing required package
@@ -268,9 +282,11 @@ One of the biggest advantages of `from_provider` is easy provider switching:
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Easy to switch providers
 PROVIDER = "openai/gpt-4o-mini"  # Change this to switch
@@ -315,6 +331,7 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 ```python
 # Old way (provider-specific)
 from instructor import from_openai, from_anthropic
+import instructor
 import openai
 import anthropic
 
@@ -340,7 +357,7 @@ If you get an error about an unsupported provider:
 
 If you get import errors:
 
-```python
+```bash
 # Install the required package
 # For Anthropic
 pip install anthropic
@@ -370,4 +387,3 @@ The model string must be in format `"provider/model-name"`:
 - [Patching](./patching.md) - How Instructor enhances clients
 - [Integrations](../integrations/index.md) - Provider-specific documentation
 - [Migration Guide](./migration.md) - Migrating from old patterns
-

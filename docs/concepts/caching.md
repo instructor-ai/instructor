@@ -24,16 +24,24 @@ from instructor.cache import AutoCache, DiskCache
 
 # Works with any provider - cache flows through **kwargs automatically
 client = from_provider("openai/gpt-4.1-mini", cache=AutoCache(maxsize=1000))
-client = from_provider("anthropic/claude-3-haiku", cache=AutoCache(maxsize=1000))  
+client = from_provider("anthropic/claude-3-haiku", cache=AutoCache(maxsize=1000))
 client = from_provider("google/gemini-2.5-flash", cache=DiskCache(directory=".cache"))
 
 # Your normal calls are now cached automatically
+from pydantic import BaseModel
+
+
 class User(BaseModel):
     name: str
 
-first = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
-second = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
-assert first.name == second.name    # second call was served from cache
+
+first = client.create(
+    messages=[{"role": "user", "content": "Hi."}], response_model=User
+)
+second = client.create(
+    messages=[{"role": "user", "content": "Hi."}], response_model=User
+)
+assert first.name == second.name  # second call was served from cache
 ```
 
 ### `cache_ttl` per-call override
@@ -42,11 +50,23 @@ Pass `cache_ttl=<seconds>` alongside `cache=` if you want a result to
 expire automatically:
 
 ```python
+from instructor import from_provider
+from instructor.cache import DiskCache
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+
+
+cache = DiskCache(directory=".cache")
+client = from_provider("openai/gpt-4.1-mini")
+
 client.create(
     messages=[{"role": "user", "content": "Hi"}],
     response_model=User,
     cache=cache,
-    cache_ttl=3600,   # 1 hour
+    cache_ttl=3600,  # 1 hour
 )
 ```
 
@@ -73,6 +93,12 @@ of prompt size, so it is safe to use as a Redis key, file path, etc.
 
 ```python
 from instructor.cache import make_cache_key
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+
 
 key = make_cache_key(
     messages=[{"role": "user", "content": "hello"}],
@@ -81,6 +107,7 @@ key = make_cache_key(
     mode="TOOLS",
 )
 print(key)  # → 9b8f5e2c8c9e…
+#> 2e2a9521bd269d62ee9a8559d7deacba0025c1f6da0ec1fc63d472788be096fe
 ```
 
 If you need custom behaviour (e.g. ignoring certain prompt fields) you can
@@ -91,12 +118,24 @@ write your own helper and pass a derived key into a bespoke cache adapter.
 For raw completion objects (used with `create_with_completion`), we use a `SimpleNamespace` trick to reconstruct the original object structure:
 
 ```python
+from pydantic import BaseModel
+
+
+class Completion(BaseModel):
+    content: str
+    usage: dict
+
+
+# Example completion object
+completion = Completion(content="Hello", usage={"tokens": 10})
+
 # When caching:
 raw_json = completion.model_dump_json()  # Serialize to JSON
 
 # When restoring from cache:
 import json
 from types import SimpleNamespace
+
 restored = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))
 ```
 
@@ -104,10 +143,7 @@ This approach allows us to restore the original dot-notation access patterns (e.
 
 ## 1. `functools.cache` for Simple In-Memory Caching
 
-**When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
-
-```python
-import time
+**When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application whimport time
 import functools
 import instructor
 from pydantic import BaseModel
@@ -133,12 +169,14 @@ def extract(data) -> UserDetail:
 start = time.perf_counter()  # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 0.5008833750034682
+#> Time taken: 0.43337099999189377
 
 start = time.perf_counter()
 model = extract("Extract jason is 25 years old")  # (2)
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 1.2920063454657793e-06
+#> Time taken: 1.166015863418579e-06
+me.perf_counter() - start}")
+#> Time taken: 1.1669471859931946e-06
 ```
 
 1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.

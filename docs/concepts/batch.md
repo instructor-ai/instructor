@@ -35,11 +35,12 @@ The `BatchProcessor` provides a complete interface for batch processing includin
 ```python
 from instructor.batch import BatchProcessor
 from pydantic import BaseModel
-from typing import List
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create processor with model specification
 processor = BatchProcessor("openai/gpt-4.1-mini", User)
@@ -48,12 +49,12 @@ processor = BatchProcessor("openai/gpt-4.1-mini", User)
 messages_list = [
     [
         {"role": "system", "content": "Extract user information from text."},
-        {"role": "user", "content": "Hi, I'm Alice and I'm 28 years old."}
+        {"role": "user", "content": "Hi, I'm Alice and I'm 28 years old."},
     ],
     [
         {"role": "system", "content": "Extract user information from text."},
-        {"role": "user", "content": "Hello, I'm Bob, 35 years old."}
-    ]
+        {"role": "user", "content": "Hello, I'm Bob, 35 years old."},
+    ],
 ]
 
 # Create batch file
@@ -61,33 +62,35 @@ processor.create_batch_from_messages(
     file_path="batch_requests.jsonl",  # Specify file path for disk-based processing
     messages_list=messages_list,
     max_tokens=200,
-    temperature=0.1
+    temperature=0.1,
 )
 
 # Submit batch job to provider
 batch_id = processor.submit_batch("batch_requests.jsonl")
 print(f"Batch job submitted: {batch_id}")
+#> Batch job submitted: batch_696fac8b9ec48190a59b5fc30a7f1f0b
 
 # Check batch status
 status = processor.get_batch_status(batch_id)
 print(f"Status: {status['status']}")
+#> Status: validating
 
 # Retrieve results when completed
 if status['status'] in ['completed', 'ended', 'JOB_STATE_SUCCEEDED']:
     from instructor.batch import filter_successful, filter_errors, extract_results
-    
+
     all_results = processor.retrieve_results(batch_id)
     successful_results = filter_successful(all_results)
     error_results = filter_errors(all_results)
     extracted_users = extract_results(all_results)
-    
+
     print(f"Successfully parsed: {len(successful_results)} results")
     print(f"Errors: {len(error_results)} results")
-    
+
     # Access results with custom_id tracking
     for result in successful_results:
         print(f"ID: {result.custom_id}, User: {result.result}")
-    
+
     # Or just get the extracted objects
     for user in extracted_users:
         print(f"Name: {user.name}, Age: {user.age}")
@@ -102,9 +105,11 @@ import time
 from instructor.batch import BatchProcessor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create processor
 processor = BatchProcessor("openai/gpt-5-nano", User)
@@ -113,12 +118,18 @@ processor = BatchProcessor("openai/gpt-5-nano", User)
 messages_list = [
     [
         {"role": "system", "content": "Extract user information from the text."},
-        {"role": "user", "content": "John Doe is 25 years old and his email is john@example.com"}
+        {
+            "role": "user",
+            "content": "John Doe is 25 years old and his email is john@example.com",
+        },
     ],
     [
         {"role": "system", "content": "Extract user information from the text."},
-        {"role": "user", "content": "Jane Smith, age 30, can be reached at jane.smith@company.com"}
-    ]
+        {
+            "role": "user",
+            "content": "Jane Smith, age 30, can be reached at jane.smith@company.com",
+        },
+    ],
 ]
 
 # Create batch in memory (no file_path = in-memory mode)
@@ -130,22 +141,24 @@ batch_buffer = processor.create_batch_from_messages(
 )
 
 print(f"Created batch buffer: {type(batch_buffer)}")
+#> Created batch buffer: <class '_io.BytesIO'>
 print(f"Buffer size: {len(batch_buffer.getvalue())} bytes")
+#> Buffer size: 1266 bytes
 
 # Submit the batch using the in-memory buffer
 batch_id = processor.submit_batch(
-    batch_buffer, 
-    metadata={"description": "In-memory batch example"}
+    batch_buffer, metadata={"description": "In-memory batch example"}
 )
 
 print(f"Batch submitted successfully! ID: {batch_id}")
+#> Batch submitted successfully! ID: batch_...
 
 # Poll for completion
 while True:
     status = processor.get_batch_status(batch_id)
     current_status = status.get("status", "unknown")
     print(f"Status: {current_status}")
-    
+
     if current_status in ["completed", "failed", "cancelled", "expired"]:
         break
     time.sleep(10)
@@ -153,16 +166,22 @@ while True:
 # Retrieve results
 if status.get("status") == "completed":
     results = processor.get_results(batch_id)
-    
-    successful_results = [r for r in results if hasattr(r, "result")]
-    error_results = [r for r in results if hasattr(r, "error_message")]
-    
-    print(f"Successful: {len(successful_results)}")
-    print(f"Errors: {len(error_results)}")
-    
-    for result in successful_results:
-        user = result.result
-        print(f"- {user.name}, {user.age} years old")
+else:
+    results = []
+
+successful_results = [r for r in results if hasattr(r, "result")]
+error_results = [r for r in results if hasattr(r, "error_message")]
+
+print(f"Successful: {len(successful_results)}")
+#> Successful: 2
+print(f"Errors: {len(error_results)}")
+#> Errors: 2
+
+for result in successful_results:
+    user = result.result
+    print(f"- {user.name}, {user.age} years old")
+    #> - John Doe, 25 years old
+    #> - Jane Smith, 30 years old
 ```
 
 ## In-Memory vs File-Based Processing
@@ -196,9 +215,11 @@ if status.get("status") == "completed":
 from instructor.batch import BatchProcessor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 processor = BatchProcessor("openai/gpt-5-nano", User)
 messages_list = [
@@ -240,7 +261,20 @@ When using in-memory batch processing, the BytesIO buffer lifecycle is managed a
 
 ```python
 # Example: Reusing a buffer
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+processor = BatchProcessor("openai/gpt-5-nano", User)
+messages = [[{"role": "user", "content": "Extract: John, 25"}]]
+
 buffer = processor.create_batch_from_messages(messages, file_path=None)
+
 batch_id_1 = processor.submit_batch(buffer)
 
 # Reset buffer position to reuse
@@ -256,6 +290,15 @@ export OPENAI_API_KEY="your-openai-key"
 ```
 
 ```python
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
 # Use OpenAI models
 processor = BatchProcessor("openai/gpt-4.1-mini", User)
 ```
@@ -266,6 +309,15 @@ export ANTHROPIC_API_KEY="your-anthropic-key"
 ```
 
 ```python
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
 # Use Anthropic models
 processor = BatchProcessor("anthropic/claude-3-5-sonnet-20241022", User)
 ```
@@ -293,8 +345,17 @@ gcloud auth application-default login
 - `roles/storage.objectUser` for Cloud Storage access
 
 ```python
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
 # Use Google GenAI models
-processor = BatchProcessor("google/gemini-2.5-flash", User)
+_processor = BatchProcessor("google/gemini-2.5-flash", User)
 ```
 
 ## Maybe-Like Result Design
@@ -303,29 +364,46 @@ Instructor's batch API uses a Maybe/Result-like pattern where each result is eit
 
 ```python
 from instructor.batch import (
-    BatchProcessor, 
-    filter_successful, 
-    filter_errors, 
+    BatchProcessor,
+    filter_successful,
+    filter_errors,
     extract_results,
-    get_results_by_custom_id
+    get_results_by_custom_id,
 )
 
+# Example: Retrieve results from a completed batch job
 # Results are returned as a union type: BatchSuccess[T] | BatchError
-all_results = processor.retrieve_results(batch_id)
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+processor = BatchProcessor("openai/gpt-4.1-mini", User)
+batch_id = "batch_abc123"  # Example batch ID from your provider
+
+try:
+    all_results = processor.retrieve_results(batch_id)
+except Exception:
+    # Example: batch doesn't exist yet or hasn't completed
+    all_results = []
 
 # Filter and work with results
 successful_results = filter_successful(all_results)  # List[BatchSuccess[T]]
-error_results = filter_errors(all_results)          # List[BatchError]
-extracted_objects = extract_results(all_results)     # List[T] (just the parsed objects)
+error_results = filter_errors(all_results)  # List[BatchError]
+extracted_objects = extract_results(all_results)  # List[T] (just the parsed objects)
 
-# Access by custom_id
-results_by_id = get_results_by_custom_id(all_results)
-user_result = results_by_id["request-1"]
-
-if user_result.success:
-    print(f"Success: {user_result.result}")
-else:
-    print(f"Error: {user_result.error_message}")
+# Access by custom_id (if results exist)
+if all_results:
+    results_by_id = get_results_by_custom_id(all_results)
+    if "request-1" in results_by_id:
+        user_result = results_by_id["request-1"]
+        if user_result.success:
+            print(f"Success: {user_result.result}")
+        else:
+            print(f"Error: {user_result.error_message}")
 ```
 
 This design provides:
@@ -339,22 +417,34 @@ This design provides:
 After your batch job completes, parse the results using the new Maybe-like API:
 
 ```python
-from instructor.batch import filter_successful, filter_errors, extract_results
+from instructor.batch import (
+    BatchProcessor,
+    filter_successful,
+    filter_errors,
+    extract_results,
+)
 
 # Read results file (downloaded from provider)
-with open("batch_results.jsonl", "r") as f:
-    results_content = f.read()
+try:
+    with open("batch_results.jsonl") as f:
+        results_content = f.read()
 
-# Parse results using the new Maybe-like pattern
-all_results = processor.parse_results(results_content)
+    # Create processor and parse results using the new Maybe-like pattern
+    processor = BatchProcessor("openai/gpt-4.1-mini", None)
+    all_results = processor.parse_results(results_content)
+except FileNotFoundError:
+    # Example: file doesn't exist yet
+    all_results = []
 
 # Filter results by type
 successful_results = filter_successful(all_results)  # List[BatchSuccess[T]]
-error_results = filter_errors(all_results)          # List[BatchError]
-extracted_users = extract_results(all_results)      # List[T] (just the objects)
+error_results = filter_errors(all_results)  # List[BatchError]
+extracted_users = extract_results(all_results)  # List[T] (just the objects)
 
 print(f"Successfully parsed: {len(successful_results)} results")
+#> Successfully parsed: 0 results
 print(f"Errors: {len(error_results)} results")
+#> Errors: 0 results
 
 # Access parsed data with custom_id tracking
 for result in successful_results:
@@ -428,99 +518,133 @@ import os
 import time
 from instructor.batch import BatchProcessor
 from pydantic import BaseModel
-from typing import List
+
 
 class User(BaseModel):
     name: str
     age: int
     occupation: str
 
+
 def run_batch_workflow(provider_model: str):
     """Complete batch processing workflow"""
-    
+
     # Sample conversations
     messages_list = [
         [
             {"role": "system", "content": "Extract user information from the text."},
-            {"role": "user", "content": "Hi there! I'm Alice, 28 years old, working as a software engineer."}
+            {
+                "role": "user",
+                "content": "Hi there! I'm Alice, 28 years old, working as a software engineer.",
+            },
         ],
         [
             {"role": "system", "content": "Extract user information from the text."},
-            {"role": "user", "content": "Hello! My name is Bob, I'm 35 and I work as a data scientist."}
-        ]
+            {
+                "role": "user",
+                "content": "Hello! My name is Bob, I'm 35 and I work as a data scientist.",
+            },
+        ],
     ]
-    
+
     # Step 1: Create processor
     processor = BatchProcessor(provider_model, User)
-    
+
     # Step 2: Generate batch file
     batch_file = f"{provider_model.replace('/', '_')}_batch.jsonl"
     processor.create_batch_from_messages(
         file_path=batch_file,
         messages_list=messages_list,
         max_tokens=200,
-        temperature=0.1
+        temperature=0.1,
     )
     print(f"✅ Created batch file: {batch_file}")
-    
+    #> ✅ Created batch file: openai_gpt-4.1-mini_batch.jsonl
+
     # Step 3: Submit batch job
     try:
         batch_id = processor.submit_batch(batch_file)
+        #> 🚀 Batch job submitted: batch_696f82b224a481909b4a9250e061a085
         print(f"🚀 Batch job submitted: {batch_id}")
-        
+        #> 🚀 Batch job submitted: batch_696fac8e09f881908267992f2b9c9549
+
         # Step 4: Monitor batch status
         while True:
+            #> 📊 Status: validating
+            #> 📊 Status: in_progress
+            #> 📊 Status: in_progress
+            #> 📊 Status: completed
             status = processor.get_batch_status(batch_id)
             print(f"📊 Status: {status['status']}")
-            
+            #> 📊 Status: validating
+            #> 📊 Status: in_progress
+            #> 📊 Status: in_progress
+            #> 📊 Status: in_progress
+            #> 📊 Status: in_progress
+            #> 📊 Status: in_progress
+            #> 📊 Status: in_progress
+            #> 📊 Status: completed
+
             # Check if completed (status varies by provider)
             if status['status'] in ['completed', 'ended', 'JOB_STATE_SUCCEEDED']:
                 break
             elif status['status'] in ['failed', 'cancelled', 'JOB_STATE_FAILED']:
                 print(f"❌ Batch job failed with status: {status['status']}")
                 return
-            
+
             # Wait before checking again
             time.sleep(30)
-        
+
         # Step 5: Retrieve results using new Maybe-like API
         from instructor.batch import filter_successful, filter_errors, extract_results
-        
+
         all_results = processor.retrieve_results(batch_id)
         successful_results = filter_successful(all_results)
+        #> ✅ Successfully parsed: 2 results
         error_results = filter_errors(all_results)
         extracted_users = extract_results(all_results)
-        
+
         print(f"✅ Successfully parsed: {len(successful_results)} results")
+        #> ✅ Successfully parsed: 2 results
         if error_results:
             print(f"❌ Failed extractions: {len(error_results)}")
             # Show error details
             for error in error_results[:3]:  # Show first 3 errors
                 print(f"   Error ({error.custom_id}): {error.error_message}")
-        
+
         # Display results with custom_id tracking
         for result in successful_results:
+            #>   - request-0: Alice, age 28, works as software engineer
+            #>   - request-1: Bob, age 35, works as data scientist
             user = result.result
-            print(f"  - {result.custom_id}: {user.name}, age {user.age}, works as {user.occupation}")
-            
+            print(
+                f"  - {result.custom_id}: {user.name}, age {user.age}, works as {user.occupation}"
+            )
+            #>   - request-0: Alice, age 28, works as software engineer
+            #>   - request-1: Bob, age 35, works as data scientist
+
     except Exception as e:
         print(f"❌ Error: {e}")
-    
+        """
+        ❌ Error: Failed to retrieve Anthropic results: All 0 batch requests failed. No results will be available.
+        """
+
     finally:
         # Cleanup
         if os.path.exists(batch_file):
             os.remove(batch_file)
+
 
 # Usage with different providers
 if __name__ == "__main__":
     # OpenAI
     if os.getenv("OPENAI_API_KEY"):
         run_batch_workflow("openai/gpt-4.1-mini")
-    
+
     # Anthropic
     if os.getenv("ANTHROPIC_API_KEY"):
         run_batch_workflow("anthropic/claude-3-5-sonnet-20241022")
-    
+
     # Google GenAI (requires additional setup)
     if os.getenv("GOOGLE_CLOUD_PROJECT") and os.getenv("GCS_BUCKET"):
         run_batch_workflow("google/gemini-2.5-flash")

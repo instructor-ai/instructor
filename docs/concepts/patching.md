@@ -70,6 +70,12 @@ If you need to patch a client manually (not recommended for most users):
 ```python
 import openai
 import instructor
+from pydantic import BaseModel
+
+
+class YourModel(BaseModel):
+    message: str
+
 
 # Create the base client
 client = openai.OpenAI()
@@ -80,7 +86,7 @@ patched_client = instructor.patch(client, mode=instructor.Mode.TOOLS)
 # Now use it
 response = patched_client.chat.completions.create(
     response_model=YourModel,
-    messages=[...]
+    messages=[{"role": "user", "content": "Say hello"}],
 )
 ```
 
@@ -88,13 +94,18 @@ However, using `from_provider` is simpler and recommended:
 
 ```python
 import instructor
+from pydantic import BaseModel
+
 
 # Simpler approach
-client = instructor.from_provider("openai/gpt-4o-mini")
+class YourModel(BaseModel):
+    message: str
 
-response = client.create(
+
+client = instructor.from_provider("openai/gpt-4o-mini")
+_response = client.create(
     response_model=YourModel,
-    messages=[...]
+    messages=[{"role": "user", "content": "Say hello"}],
 )
 ```
 

@@ -29,6 +29,7 @@ from pydantic import BaseModel, Field
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from typing import Iterable
 
+
 class Lead(BaseModel):
     name: str
     phone_number: PhoneNumber = Field(

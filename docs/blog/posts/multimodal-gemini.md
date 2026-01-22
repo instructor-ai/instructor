@@ -25,7 +25,6 @@ In this post, we'll explore how to use Google's Gemini model with Instructor to 
 First, let's set up our environment with the necessary libraries:
 
 ```python
-
 ```
 
 <!-- more -->

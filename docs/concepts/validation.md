@@ -128,6 +128,7 @@ from instructor import llm_validator
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class ContentReview(BaseModel):
     """Model for reviewing user-generated content."""
 
@@ -135,13 +136,19 @@ class ContentReview(BaseModel):
     content: Annotated[
         str,
         BeforeValidator(
-            llm_validator("Content must be family-friendly and not contain profanity", client=client)
+            llm_validator(
+                "Content must be family-friendly and not contain profanity",
+                client=client,
+            )
         ),
     ]
     summary: Annotated[
         str,
         BeforeValidator(
-            llm_validator("Summary must be concise (under 30 words) and accurately reflect the content", client=client)
+            llm_validator(
+                "Summary must be concise (under 30 words) and accurately reflect the content",
+                client=client,
+            )
         ),
     ]
 ```
@@ -213,9 +220,6 @@ class UserProfile(BaseModel):
 Instructor provides robust error handling for validation failures:
 
 ```python
-# Standard library imports
-import os
-
 # Third-party imports
 import instructor
 from pydantic import BaseModel, Field, field_validator
@@ -252,12 +256,12 @@ try:
                 "role": "system",
                 "content": "Extract structured user information from the text.",
             },
-            {"role": "user", "content": "Extract: {{ person_name }}, age: {{ person_age }}"},
+            {
+                "role": "user",
+                "content": "Extract: {{ person_name }}, age: {{ person_age }}",
+            },
         ],
-        context={
-            "person_name": "John Doe",
-            "person_age": "-5"
-        }
+        context={"person_name": "John Doe", "person_age": "-5"},
     )
     print(user.model_dump_json(indent=2))
     """
@@ -304,6 +308,7 @@ from instructor import llm_validator
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class ResponseValidation(BaseModel):
     question: str
     answer: Annotated[
@@ -312,9 +317,9 @@ class ResponseValidation(BaseModel):
             llm_validator(
                 "The answer must be directly relevant to the question and stay on topic. "
                 "Don't introduce unrelated information.",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -330,6 +335,7 @@ from instructor import llm_validator
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class SafeContent(BaseModel):
     content: Annotated[
         str,
@@ -337,13 +343,13 @@ class SafeContent(BaseModel):
             llm_validator(
                 "The content must not contain any offensive, harmful, toxic language, "
                 "or profanity. It should be appropriate for all audiences.",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
     toxicity_score: float = Field(
         default=0.0,
-        description="A score from 0.0 to 1.0 indicating detected toxicity level"
+        description="A score from 0.0 to 1.0 indicating detected toxicity level",
     )
 ```
 
@@ -352,23 +358,23 @@ class SafeContent(BaseModel):
 This complex validator checks factual accuracy of claims:
 
 ```python
-from typing import Annotated, List
-from pydantic import BaseModel, BeforeValidator, Field
+from typing import List
+from pydantic import BaseModel, Field
 import instructor
-from instructor import llm_validator
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
+
 
 class FactCheckedClaim(BaseModel):
     claim: str
     is_accurate: bool = Field(description="Whether the claim is factually accurate")
     confidence: float = Field(
         default=0.0,
-        description="Confidence level in the accuracy assessment (0.0-1.0)"
+        description="Confidence level in the accuracy assessment (0.0-1.0)",
     )
     supporting_evidence: List[str] = Field(
         default_factory=list,
-        description="Evidence supporting or refuting the claim"
+        description="Evidence supporting or refuting the claim",
     )
 
     @classmethod
@@ -378,14 +384,11 @@ class FactCheckedClaim(BaseModel):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a fact-checking system. Assess the factual accuracy of the claim."
+                    "content": "You are a fact-checking system. Assess the factual accuracy of the claim.",
                 },
-                {
-                    "role": "user",
-                    "content": "Fact check this claim: {{ claim }}"
-                }
+                {"role": "user", "content": "Fact check this claim: {{ claim }}"},
             ],
-            context={"claim": text}
+            context={"claim": text},
         )
 ```
 
@@ -406,6 +409,7 @@ import instructor
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class Comment(BaseModel):
     """Model representing a user comment with content moderation."""
 
@@ -415,24 +419,25 @@ class Comment(BaseModel):
         BeforeValidator(
             llm_validator(
                 "Content must comply with community guidelines: no hate speech, harassment, or explicit content",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
 #### Ensuring Consistency Between Fields
 ```python
 # Standard library imports
-from typing import Annotated, List
-from pydantic import BaseModel, field_validator, BeforeValidator, model_validator
+from typing import List
+from pydantic import BaseModel, model_validator
 
 # Third-party imports
-from instructor import llm_validator
+from instructor.validation import Validator
 import instructor
 
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
+
 
 class Report(BaseModel):
     """Model representing a financial report with semantic validation."""
@@ -441,7 +446,7 @@ class Report(BaseModel):
     summary: str
     key_findings: List[str]
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
         validation_result = client.create(
@@ -465,10 +470,7 @@ class Report(BaseModel):
                     """,
                 },
             ],
-            context={
-                "summary": self.summary,
-                "findings": self.key_findings
-            }
+            context={"summary": self.summary, "findings": self.key_findings},
         )
 
         if not validation_result.is_valid:
@@ -490,6 +492,7 @@ import instructor
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class CompanyAnnouncement(BaseModel):
     """Model representing a company announcement with tone validation."""
 
@@ -499,9 +502,9 @@ class CompanyAnnouncement(BaseModel):
         BeforeValidator(
             llm_validator(
                 "The announcement must maintain a professional, positive tone without being overly informal or using slang",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -518,6 +521,7 @@ import instructor
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class MedicalClaim(BaseModel):
     """Model representing a medical claim with factual validation."""
 
@@ -526,9 +530,9 @@ class MedicalClaim(BaseModel):
         BeforeValidator(
             llm_validator(
                 "The medical claim must be factually accurate and supported by scientific consensus",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
     source: str
 ```

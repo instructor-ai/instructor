@@ -80,7 +80,6 @@ class StructuredDocument(BaseModel):
 # <%hide%>
 
 import instructor
-import cohere
 
 # Apply the patch to the cohere client
 # enables response_model keyword
@@ -140,7 +139,6 @@ from trafilatura import fetch_url, extract
 
 # <%hide%>
 import instructor
-import cohere
 from pydantic import BaseModel, Field
 from typing import List
 

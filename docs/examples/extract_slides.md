@@ -56,6 +56,7 @@ To extract competitors from slides we will define a function which will read ima
 
 ```python
 import instructor
+
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_provider("openai/gpt-5-nano")
@@ -132,6 +133,7 @@ As we can see, our model extracted the relevant information for each competitor 
 ```python
 # <%hide%>
 import instructor
+
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_provider("openai/gpt-5-nano")

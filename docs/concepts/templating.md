@@ -113,13 +113,7 @@ response = client.create(
 
 print(response.text)
 """
-Jason is a vibrant and dynamic individual known for his charismatic personality and entrepreneurial spirit. He has always been passionate about technology and innovation, which led him to start his own tech company. Throughout his career, Jason has been dedicated to making a significant impact in the tech industry, always seeking out new opportunities to learn and grow.
-
-In addition to his professional endeavors, Jason is an adventurous person who loves to travel and explore new places. He finds joy in experiencing different cultures and meeting new people, which has contributed to his broad worldview and understanding of global markets.
-
-Jason’s journey is one of hard work, resilience, and determination, as he continuously pushes the boundaries to achieve his goals and inspire those around him.
-
-(Note: Personal phone numbers should remain confidential and not be shared publicly to protect privacy.)
+Jason is a young man who loves technology and enjoys staying connected with his friends and family. He is known for his friendly demeanor and his passion for learning new things. Recently, he got a new phone, and his contact number is ****. Jason uses his phone not only to communicate but also to explore various apps, stay organized, and capture moments through photography.
 """
 ```
 
@@ -235,7 +229,9 @@ address = client.create(
 print(context)
 #> name='scolvin' address=SecretStr('**********')
 print(address)
-#> street=SecretStr('**********') city='scolvin' state='NA' zipcode='00000'
+"""
+street=SecretStr('**********') city='secret address' state='secret address' zipcode='secret address'
+"""
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.

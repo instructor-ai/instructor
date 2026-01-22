@@ -29,12 +29,12 @@ user, completion = client.create_with_completion(
 )
 
 print(user)
-#> name='Jason' age=25
+#> name='jason' age=25
 
 print(completion)
 """
 ChatCompletion(
-    id='chatcmpl-B7YgfMbbn3vOol0urrCAUUgCd7eej',
+    id='chatcmpl-D08q1QB7gGeOoGm49zWmAPTyK17mw',
     choices=[
         Choice(
             finish_reason='stop',
@@ -44,13 +44,14 @@ ChatCompletion(
                 content=None,
                 refusal=None,
                 role='assistant',
+                annotations=[],
                 audio=None,
                 function_call=None,
                 tool_calls=[
-                    ChatCompletionMessageToolCall(
-                        id='call_cHlDYOU8IV70YVHTqFCHpgGr',
+                    ChatCompletionMessageFunctionToolCall(
+                        id='call_zdJNju7xYNBmtWUcAMaYtlWm',
                         function=Function(
-                            arguments='{"name":"Jason","age":25}', name='UserExtract'
+                            arguments='{"name":"jason","age":25}', name='UserExtract'
                         ),
                         type='function',
                     )
@@ -58,17 +59,20 @@ ChatCompletion(
             ),
         )
     ],
-    created=1741141333,
-    model='gpt-4.1-mini-0125',
+    created=1768926345,
+    model='gpt-4.1-mini-2025-04-14',
     object='chat.completion',
     service_tier='default',
-    system_fingerprint=None,
+    system_fingerprint='fp_376a7ccef1',
     usage=CompletionUsage(
         completion_tokens=10,
-        prompt_tokens=82,
-        total_tokens=92,
+        prompt_tokens=79,
+        total_tokens=89,
         completion_tokens_details=CompletionTokensDetails(
-            audio_tokens=0, reasoning_tokens=0
+            accepted_prediction_tokens=None,
+            audio_tokens=0,
+            reasoning_tokens=0,
+            rejected_prediction_tokens=None,
         ),
         prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     ),

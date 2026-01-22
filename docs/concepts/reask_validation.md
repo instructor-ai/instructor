@@ -46,6 +46,7 @@ except ValidationError as e:
     1 validation error for UserDetail
     name
       Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.11/v/value_error
     """
 ```
 
@@ -93,7 +94,7 @@ except ValidationError as e:
     1 validation error for QuestionAnswer
     answer
       Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/assertion_error
+        For further information visit https://errors.pydantic.dev/2.11/v/assertion_error
     """
 ```
 
@@ -170,7 +171,7 @@ model = client.create(
 print(model.model_dump_json(indent=2))
 """
 {
-  "name": "Jason",
+  "name": "jason",
   "age": 25
 }
 """
@@ -216,7 +217,7 @@ class QuoteExtraction(BaseModel):
 
     claim: str
     supporting_quote: str
-    
+
     @field_validator('supporting_quote')
     @classmethod
     def verify_quote_in_source(cls, v: str, info: ValidationInfo):
@@ -260,7 +261,11 @@ extraction = client.create(
 )
 
 print(f"Claim: {extraction.claim}")
+#> Claim: Python emphasizes code readability and simplicity.
 print(f"Quote: {extraction.supporting_quote}")
+"""
+Quote: It emphasizes code readability and simplicity, making it popular for beginners and experts alike.
+"""
 ```
 
 In this example:

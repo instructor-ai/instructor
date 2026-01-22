@@ -13,6 +13,7 @@ Instructor supports this pattern by making use of `Partial[T]`. This lets us dyn
 import instructor
 from pydantic import BaseModel
 from typing import List
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 text_block = """
