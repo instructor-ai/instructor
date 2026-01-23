@@ -1003,7 +1003,7 @@ def debug_extraction(text: str) -> UserInfo:
 try:
     user = debug_extraction("Extract: Debug user info")
     print(f"Debug extraction successful: {user.name}")
-    #> Debug extraction successful: Debug
+    #> Debug extraction successful: Debug user info
 except Exception as e:
     print(f"Debug extraction failed: {e}")
 ```

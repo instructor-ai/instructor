@@ -268,6 +268,7 @@ try:
 
 except Exception as e:
     print(f"Error during batch processing: {e}")
+    #> Error during batch processing: name 'processor' is not defined
     # No file cleanup needed with in-memory approach
 ```
 
