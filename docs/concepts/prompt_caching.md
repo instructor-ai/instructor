@@ -236,7 +236,7 @@ resp, completion = client.create_with_completion(
         max_tokens=1000,
     )
 
-    print(completion)
+print(completion)
 # Message(
 #     id='msg_01QcqjktYc1PXL8nk7y5hkMV',
 #     content=[

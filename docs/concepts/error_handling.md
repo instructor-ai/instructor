@@ -17,10 +17,7 @@ Instructor provides a comprehensive exception hierarchy to help you handle error
 
 ## Exception Hierarchy
 
-All Instructor-specific exceptions inherit from `InstructorError`, making it easy to catch all Instructor-related errors:
-
-```python
-```
+All Instructor-specific exceptions inherit from `InstructorError`, making it easy to catch all Instructor-related errors.
 
 ### Base Exception
 
