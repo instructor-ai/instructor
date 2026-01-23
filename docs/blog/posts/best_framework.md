@@ -51,7 +51,7 @@ user = client.create(
 )
 
 print(user)  # (2)!
-#> User(name='John', age=25)
+#> name='John' age=25
 ```
 
 1. Notice that now we have a new response_model parameter that we pass in to the completions.create method. This parameter lets us specify the structure we want the LLM output to be mapped to. In this case, we're using a Pydantic model called User that describes a user's name and age.

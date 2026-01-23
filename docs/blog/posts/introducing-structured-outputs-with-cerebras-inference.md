@@ -63,7 +63,6 @@ Once you've done so, you can use the following code to get started.
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 
 client = instructor.from_provider("cerebras/llama3.1-70b")

@@ -119,13 +119,16 @@ Anthropic provides several options to configure the web search tool:
 For example, to limit searches to 3 and only allow results from `espn.com` and `ufc.com`:
 
 ```python
-    tools=[{
-            "type": "web_search_20250305",
-            "name": "web_search",
-            "max_uses": 3,
-            "allowed_domains": ["espn.com", "ufc.com"]
-        }
-    ],
+    tools = (
+        [
+            {
+                "type": "web_search_20250305",
+                "name": "web_search",
+                "max_uses": 3,
+                "allowed_domains": ["espn.com", "ufc.com"],
+            }
+        ],
+    )
 ```
 
 You cannot use `allowed_domains` and `blocked_domains` in the same request.

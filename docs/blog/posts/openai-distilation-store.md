@@ -36,7 +36,6 @@ pip install -U openai
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
 # Enable response_model and API Model Distillation

@@ -17,6 +17,7 @@ dependencies = [
     "diskcache>=5.6.3",
     "pre-commit>=4.3.0",
     "ty>=0.0.1a23",
+    "redis>=6.4.0",
 ]
 name = "instructor"
 version = "1.14.4"
@@ -104,6 +105,13 @@ sqlmodel = ["sqlmodel<1.0.0,>=0.0.22"]
 trafilatura = ["trafilatura<3.0.0,>=1.12.2"]
 pydub = ["pydub<1.0.0,>=0.25.1"]
 datasets = ["datasets>=3.0.1,<5.0.0"]
+redis = [
+    "datasets>=3.6.0",
+    "langsmith>=0.4.37",
+    "pandas>=2.3.2",
+    "psutil>=7.0.0",
+    "youtube-transcript-api>=1.2.3",
+]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"

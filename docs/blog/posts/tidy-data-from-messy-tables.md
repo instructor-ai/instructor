@@ -76,6 +76,7 @@ Then with this new custom data type, it becomes easy to just pass the image to t
 import instructor
 from pydantic import BaseModel
 
+
 class Table(BaseModel):
     caption: str
     dataframe: MarkdownDataFrame  # Custom type for handling tables

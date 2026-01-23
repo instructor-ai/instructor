@@ -41,6 +41,7 @@ def validation_function(value):
 ```python
 import instructor  # pip install instructor
 from pydantic import BaseModel
+
 # This enables response_model keyword
 # from client.chat.completions.create
 client = instructor.from_provider("openai/gpt-5-nano")  # (1)!
@@ -112,7 +113,7 @@ except ValidationError as e:
     1 validation error for UserMessage
     message
       Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+        For further information visit https://errors.pydantic.dev/2.11/v/value_error
     """
 ```
 
@@ -158,7 +159,7 @@ except ValidationError as e:
     1 validation error for UserMessage
     message
       Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+        For further information visit https://errors.pydantic.dev/2.11/v/value_error
     """
 ```
 
@@ -249,6 +250,7 @@ Using this structure, we can implement the same logic as before and utilize `Ins
 
 ```python
 import instructor
+
 # Enables `response_model` and `max_retries` parameters
 client = instructor.from_provider("openai/gpt-5-nano")
 
@@ -410,6 +412,7 @@ To pass this context from the `client.chat.completions.create` call, `client = i
 
 ```python
 import instructor
+
 # Enables `response_model` and `max_retries` parameters
 client = instructor.from_provider("openai/gpt-5-nano")
 

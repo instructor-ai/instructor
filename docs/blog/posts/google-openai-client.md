@@ -228,7 +228,6 @@ Production applications need reliable outputs. Instructor handles this by valida
 With [our tenacity integration](../../concepts/retrying.md), you get full control over the retries if needed, allowing you to mechanisms like exponential backoff and other retry strategies easily.
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 from tenacity import Retrying, stop_after_attempt, wait_fixed

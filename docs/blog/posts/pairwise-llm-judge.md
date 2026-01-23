@@ -32,7 +32,6 @@ First, let's set up our environment with the necessary imports:
 
 ```python
 import instructor
-import openai
 
 client = instructor.from_provider("openai/gpt-5-nano")
 ```

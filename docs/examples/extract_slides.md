@@ -246,7 +246,7 @@ print(model.model_dump_json(indent=2))
           "features": [
             "Budget-friendly hostels",
             "Global reach",
-            "Social atmosphere"
+            "User ratings"
           ]
         },
         {
@@ -262,7 +262,7 @@ print(model.model_dump_json(indent=2))
           "features": [
             "Vacation rentals",
             "Family-friendly options",
-            "Direct owner communication"
+            "Direct owner contact"
           ]
         },
         {

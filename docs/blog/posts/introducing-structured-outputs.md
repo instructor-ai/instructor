@@ -79,7 +79,7 @@ except Exception as e:
     1 validation error for User
     name
       Value error, All letters must be uppercase. Got: Jason [type=value_error, input_value='Jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+        For further information visit https://errors.pydantic.dev/2.11/v/value_error
     """
 ```
 
@@ -117,7 +117,27 @@ with client.beta.chat.completions.stream(
     for event in stream:
         if event.type == "content.delta":
             print(event.snapshot, flush=True, end="\n")
-            #>
+            #> 
+            #> {"
+            #> {"name
+            #> {"name":"
+            #> {"name":"Jason
+            #> {"name":"Jason","
+            #> {"name":"Jason","age
+            #> {"name":"Jason","age":
+            #> {"name":"Jason","age":25
+            #> {"name":"Jason","age":25}
+            # >
+            #> {"
+            #> {"name
+            #> {"name":"
+            #> {"name":"Jason
+            #> {"name":"Jason","
+            #> {"name":"Jason","age
+            #> {"name":"Jason","age":
+            #> {"name":"Jason","age":25
+            #> {"name":"Jason","age":25}
+            # >
             #> {"
             #> {"name
             #> {"name":"
@@ -166,7 +186,6 @@ With `instructor`, all it takes is a simple Pydantic Schema and a validator for 
 
 ```python
 import instructor
-import openai
 from pydantic import BaseModel, field_validator
 
 
@@ -181,7 +200,9 @@ class User(BaseModel):
         return v
 
 
-client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
+client = instructor.from_provider(
+    "openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT
+)
 
 resp = client.create(
     response_model=User,
@@ -205,7 +226,9 @@ This built-in retry logic allows for targeted correction to the generated respon
 A common use-case is to define a single schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using [our `create_iterable` method](../../concepts/lists.md).
 
 ```python
-client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
+client = instructor.from_provider(
+    "openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT
+)
 
 
 class User(BaseModel):
@@ -240,7 +263,10 @@ Other times, we might also want to stream out information as it's dynamically ge
 import instructor
 from pydantic import BaseModel
 from rich.console import Console
-client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
+
+client = instructor.from_provider(
+    "openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT
+)
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -290,7 +316,6 @@ for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
-
 ```
 
 This will output the following
@@ -312,6 +337,7 @@ This makes it incredibly flexible for users looking to migrate and test differen
 ```python
 import instructor
 from pydantic import BaseModel
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 
@@ -341,6 +367,7 @@ Now let's see how we can achieve the same with Anthropic.
 ```python hl_lines="2 5 14"
 import instructor
 from pydantic import BaseModel
+
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")  # (2)!
 
 

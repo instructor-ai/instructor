@@ -111,7 +111,6 @@ Now, to produce question-answer pairs:
 
 ```python hl_lines="4 10 12"
 import instructor
-import openai
 
 instructor_client = instructor.from_provider("openai/gpt-5-nano")
 

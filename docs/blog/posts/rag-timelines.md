@@ -56,6 +56,7 @@ Using Instructor, we can prompt the LLM to generate a `SearchQuery` object based
 
 ```python
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 response = client.create(

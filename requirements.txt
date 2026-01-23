@@ -93,6 +93,8 @@ pygments==2.19.2
     # via rich
 pyyaml==6.0.3
     # via pre-commit
+redis==7.1.0
+    # via instructor (pyproject.toml)
 requests==2.32.5
     # via instructor (pyproject.toml)
 rich==14.2.0

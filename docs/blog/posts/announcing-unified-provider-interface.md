@@ -76,10 +76,12 @@ import instructor
 from pydantic import BaseModel
 from typing import Iterable
 
+
 # Define your data structure
 class Person(BaseModel):
     name: str
     age: int
+
 
 # Connect to any provider with a single line
 client = instructor.from_provider("google/gemini-2.0-flash")
@@ -97,6 +99,8 @@ response = client.create(
 
 for person in response:
     print(f"Name: {person.name}, Age: {person.age}")
+    #> Name: Alice, Age: 30
+    #> Name: Bob, Age: 25
 # Output:
 # Name: Alice, Age: 30
 # Name: Bob, Age: 25
@@ -140,23 +144,24 @@ import instructor
 from pydantic import BaseModel
 import asyncio
 
+
 class UserProfile(BaseModel):
     name: str
     country: str
 
+
 async def get_user_profile():
     # Initialise an asynchronous client
-    async_client = instructor.from_provider(
-        "openai/gpt-4.1-mini",
-        async_client=True
-    )
+    async_client = instructor.from_provider("openai/gpt-4.1-mini", async_client=True)
 
     # Extract data asynchronously
     profile = await async_client.create(
         messages=[{"role": "user", "content": "Extract: Maria lives in Spain."}],
-        response_model=UserProfile
+        response_model=UserProfile,
     )
     print(f"Name: {profile.name}, Country: {profile.country}")
+    #> Name: Maria, Country: Spain
+
 
 if __name__ == "__main__":
     asyncio.run(get_user_profile())
@@ -170,10 +175,7 @@ Rather than hiding these options, Instructor allows you to pass them directly th
 
 ```python
 # Anthropic requires max tokens
-client = instructor.from_provider(
-    "anthropic/claude-3-sonnet-20240229",
-    max_tokens=1024
-)
+client = instructor.from_provider("anthropic/claude-3-sonnet-20240229", max_tokens=1024)
 ```
 
 If you'd like to change this parameter down the line, you can just do so by setting it on the `client.chat.completions.create` function again.
