@@ -44,6 +44,7 @@ markers = [
 [dependency-groups]
 dev = [
     "pytest-cov>=6.3.0",
+    "pytest-examples>=0.0.18",
     "python-dotenv>=1.1.1",
 ]
 
