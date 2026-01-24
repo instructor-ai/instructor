@@ -50,6 +50,8 @@ dev = [
     "python-dotenv>=1.0.1",
     "pytest-xdist>=3.8.0",
     "pre-commit>=4.2.0",
+    "anthropic==0.71.0",
+    "xmltodict>=0.13,<1.1",
 ]
 docs = [
     "mkdocs<2.0.0,>=1.6.1",

@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.9, <4.0"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -1803,6 +1803,7 @@ datasets = [
     { name = "datasets" },
 ]
 dev = [
+    { name = "anthropic" },
     { name = "coverage" },
     { name = "jsonref" },
     { name = "pre-commit" },
@@ -1811,6 +1812,7 @@ dev = [
     { name = "pytest-examples" },
     { name = "pytest-xdist" },
     { name = "python-dotenv" },
+    { name = "xmltodict" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -1884,6 +1886,7 @@ xai = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.71.0" },
+    { name = "anthropic", marker = "extra == 'dev'", specifier = "==0.71.0" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
@@ -1946,6 +1949,7 @@ requires-dist = [
     { name = "writer-sdk", marker = "extra == 'writer'", specifier = ">=2.2.0,<3.0.0" },
     { name = "xai-sdk", marker = "python_full_version >= '3.10' and extra == 'xai'", specifier = ">=0.2.0" },
     { name = "xmltodict", marker = "extra == 'anthropic'", specifier = ">=0.13,<1.1" },
+    { name = "xmltodict", marker = "extra == 'dev'", specifier = ">=0.13,<1.1" },
 ]
 provides-extras = ["dev", "docs", "test-docs", "anthropic", "groq", "cohere", "vertexai", "cerebras-cloud-sdk", "fireworks-ai", "writer", "bedrock", "mistral", "perplexity", "google-genai", "litellm", "xai", "phonenumbers", "graphviz", "sqlmodel", "trafilatura", "pydub", "datasets"]
 
