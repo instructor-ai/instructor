@@ -29,7 +29,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_sample(input_review, sentiment):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=GeneratedReview,
         messages=[
@@ -45,7 +45,7 @@ def generate_sample(input_review, sentiment):
 
 
 def predict_sentiment(input_review, in_context_samples):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=SentimentPrediction,
         messages=[

@@ -37,3 +37,10 @@ class UserDetail(BaseModel):
     name: str
     role: Literal["PRINCIPAL", "TEACHER", "STUDENT", "OTHER"]
 ```
+
+## See Also
+
+- [Types](./types.md) - Working with different data types including Literal
+- [Union Types](./unions.md) - Using unions with enums for multiple choices
+- [Response Models](./models.md) - Using enums in Pydantic models
+- [Fields](./fields.md) - Customizing enum fields with Field metadata

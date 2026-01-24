@@ -48,7 +48,7 @@ def contrastive_chain_of_thought(
         ]
     )
     ""
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=ChainOfThought,
         messages=[

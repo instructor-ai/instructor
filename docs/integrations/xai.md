@@ -45,7 +45,7 @@ class User(BaseModel):
     age: int
 
 # Create structured output
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -71,7 +71,7 @@ class User(BaseModel):
     age: int
 
 async def extract_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         response_model=User,
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -106,7 +106,7 @@ class User(BaseModel):
 client = instructor.from_provider("xai/grok-3-mini")
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[
         {"role": "user", "content": """
@@ -199,7 +199,7 @@ Always handle potential API errors gracefully:
 
 ```python
 try:
-    user = client.chat.completions.create(
+    user = client.create(
         response_model=User,
         messages=[{"role": "user", "content": "Extract user data"}],
     )

@@ -69,7 +69,7 @@ client = instructor.from_openai(
 )
 
 
-user = client.chat.completions.create(
+user = client.create(
     model="llama2",
     messages=[
         {
@@ -168,7 +168,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = client.chat.completions.create(
+user: UserExtract = client.create(
     model="mixtral-8x7b-32768",
     response_model=UserExtract,
     messages=[
@@ -211,7 +211,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = client.chat.completions.create(
+user: UserExtract = client.create(
     model="mistralai/Mixtral-8x7B-Instruct-v0.1",
     response_model=UserExtract,
     messages=[

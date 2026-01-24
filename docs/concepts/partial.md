@@ -104,7 +104,7 @@ class MeetingInfo(BaseModel):
     deadline: str
 
 
-extraction_stream = client.chat.completions.create_partial(
+extraction_stream = client.create_partial(
     response_model=MeetingInfo,
     messages=[
         {
@@ -175,7 +175,7 @@ class User(BaseModel):
 
 
 async def print_partial_results():
-    user = client.chat.completions.create_partial(
+    user = client.create_partial(
         response_model=User,
         max_retries=2,
         stream=True,
@@ -200,3 +200,10 @@ import asyncio
 
 asyncio.run(print_partial_results())
 ```
+
+## See Also
+
+- [Streaming Lists](./lists.md) - Stream collections of completed objects
+- [Streaming Basics](../learning/streaming/basics.md) - Introduction to streaming concepts
+- [Iterable Streaming](./iterable.md) - Stream multiple objects
+- [Raw Response](./raw_response.md) - Access original LLM responses

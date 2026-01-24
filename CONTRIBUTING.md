@@ -251,7 +251,7 @@ We encourage contributions to our evaluation tests:
 We use automated tools to maintain consistent code style:
 
 - **Ruff**: For linting and formatting
-- **PyRight**: For type checking
+- **ty**: For type checking
 - **Black**: For code formatting (enforced by Ruff)
 
 General guidelines:

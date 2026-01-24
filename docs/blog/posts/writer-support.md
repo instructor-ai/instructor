@@ -35,7 +35,7 @@ from writerai import Writer
 from pydantic import BaseModel
 
 # Initialize Writer client
-client = instructor.from_writer(Writer(api_key="your API key"))
+client = instructor.from_provider("writer/claude-3-5-sonnet-20241022")
 
 
 class User(BaseModel):
@@ -44,7 +44,7 @@ class User(BaseModel):
 
 
 # Extract structured data
-user = client.chat.completions.create(
+user = client.create(
     model="palmyra-x-004",
     messages=[{"role": "user", "content": "Extract: John is 30 years old"}],
     response_model=User,
@@ -56,7 +56,7 @@ print(user)
 
 !!! note
 
-    If you'd like to use the Async version of the Writer client, you can do so by using `instructor.from_writer(AsyncWriter())`.
+    If you'd like to use the Async version of the Writer client, you can do so by using `instructor.from_provider("writer/claude-3-5-sonnet-20241022")`.
 
 We also support streaming with the Writer client using our `create_partial` method. This allows you to process responses incrementally as they arrive.
 
@@ -68,7 +68,7 @@ from writerai import Writer
 from pydantic import BaseModel
 
 # Initialize Writer client
-client = instructor.from_writer(Writer())
+client = instructor.from_provider("writer/claude-3-5-sonnet-20241022")
 
 
 text_block = """
@@ -102,7 +102,7 @@ class MeetingInfo(BaseModel):
 PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
 
-extraction_stream = client.chat.completions.create(
+extraction_stream = client.create(
     model="palmyra-x-004",
     messages=[
         {
@@ -131,7 +131,7 @@ from writerai import Writer
 from pydantic import BaseModel, AfterValidator, Field
 
 # Initialize Writer client
-client = instructor.from_writer(Writer())
+client = instructor.from_provider("writer/claude-3-5-sonnet-20241022")
 
 
 # Example of model, that may require usage of retries
@@ -148,7 +148,7 @@ class User(BaseModel):
     age: int
 
 
-user = client.chat.completions.create(
+user = client.create(
     model="palmyra-x-004",
     messages=[{"role": "user", "content": "Extract: jason is 12"}],
     response_model=User,

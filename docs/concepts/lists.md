@@ -1,6 +1,6 @@
 ---
-title: Extracting Structured Data with Iterable and Streaming in Python
-description: Learn to use Iterable and streaming for structured data extraction with Pydantic and OpenAI in Python.
+title: Streaming Lists with Instructor - Extract Multiple Objects
+description: Learn how to extract multiple structured objects from a single LLM call using streaming lists. Stream collections of Pydantic models as they're generated.
 ---
 
 # Multi-task and Streaming
@@ -70,7 +70,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create(
+users = client.create(
     temperature=0.1,
     response_model=Iterable[User],
     stream=False,
@@ -111,7 +111,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create(
+users = client.create(
     temperature=0.1,
     stream=True,
     response_model=Iterable[User],
@@ -156,7 +156,7 @@ class UserExtract(BaseModel):
 
 
 async def print_iterable_results():
-    model = await client.chat.completions.create(
+    model = await client.create(
         response_model=Iterable[UserExtract],
         max_retries=2,
         stream=True,
@@ -174,3 +174,10 @@ import asyncio
 
 asyncio.run(print_iterable_results())
 ```
+
+## See Also
+
+- [Streaming Partial](./partial.md) - Stream partially completed objects
+- [Streaming Lists Tutorial](../learning/streaming/lists.md) - Step-by-step list streaming guide
+- [Iterable Patterns](../learning/patterns/list_extraction.md) - List extraction patterns
+- [Raw Response](./raw_response.md) - Access original LLM responses

@@ -67,7 +67,7 @@ file = genai.upload_file("./takayama.mp4")
 Then, we can process the video and extract recommendations:
 
 ```python
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",

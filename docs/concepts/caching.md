@@ -1,3 +1,15 @@
+## See Also
+
+- [Prompt Caching](./prompt_caching.md) - Cache prompts for cost optimization
+- [Performance Optimization](../examples/sqlmodel.md#performance-optimization) - Performance best practices
+- [Cost Optimization](../examples/batch_job_oai.md) - Reduce API costs
+- [Hooks](./hooks.md) - Monitor cache hits and misses
+
+---
+title: Caching Strategies with Instructor
+description: Learn how to implement caching strategies with Instructor to reduce API costs, improve performance, and optimize LLM application efficiency.
+---
+
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
 ## Built-in caching in Instructor (v1.9.1 and later)
@@ -110,7 +122,7 @@ class UserDetail(BaseModel):
 
 @functools.cache
 def extract(data) -> UserDetail:
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -262,7 +274,7 @@ class UserDetail(BaseModel):
 
 @instructor_cache
 def extract(data) -> UserDetail:
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -363,7 +375,7 @@ class UserDetail(BaseModel):
 @instructor_cache
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},

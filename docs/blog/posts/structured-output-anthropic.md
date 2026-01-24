@@ -107,7 +107,7 @@ with open("./book.txt") as f:
 
 # Make multiple calls using the cached context
 for _ in range(2):
-    resp, completion = client.chat.completions.create_with_completion(
+    resp, completion = client.create_with_completion(
         model="claude-3-7-sonnet-latest",
         messages=[
             {

@@ -3,6 +3,13 @@ title: User-Provided Tag Classification Tutorial
 description: Learn to classify user-provided tags effectively using async functions and FastAPI for parallel processing.
 ---
 
+## See Also
+
+- [Batch Processing](./batch_job_oai.md) - Process large datasets efficiently
+- [Classification Examples](./classification.md) - More classification patterns
+- [FastAPI Integration](../integrations/index.md) - Building APIs with Instructor
+- [from_provider Guide](../concepts/from_provider.md#async-clients) - Async client setup
+
 # Bulk Classification from User-Provided Tags.
 
 This tutorial shows how to do classification from user provided tags. This is valuable when you want to provide services that allow users to do some kind of classification.
@@ -31,7 +38,7 @@ One of the easy things to do is to allow users to define a set of tags in some k
 
 In order to do this we'll do a couple of things:
 
-0. We'll use the `instructor` library to patch the `openai` library to use the `AsyncOpenAI` client.
+0. We'll use the `instructor` library with async client support.
 1. Implement a `Tag` model that will be used to validate the tags from the context. (This will allow us to avoid hallucinating tags that are not in the context.)
 2. Helper models for the request and response.
 3. An async function to do the classification.
@@ -40,12 +47,9 @@ In order to do this we'll do a couple of things:
 If you want to learn more about how to do bad computations, check out our post on AsyncIO [here](../blog/posts/learn-async.md).
 
 ```python
-import openai
 import instructor
 
-client = instructor.from_openai(
-    openai.AsyncOpenAI(),
-)
+client = instructor.from_provider("openai/gpt-4o", async_client=True)
 ```
 
 First, we'll need to import all of our Pydantic and instructor code and use the AsyncOpenAI client. Then, we'll define the tag model along with the tag instructions to provide input and output.
@@ -159,7 +163,7 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -198,7 +202,7 @@ import asyncio
 from typing import List
 from pydantic import BaseModel, ValidationInfo, model_validator
 import instructor
-import openai
+import instructor
 
 client = instructor.from_openai(
     openai.AsyncOpenAI(),
@@ -241,7 +245,7 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -458,7 +462,7 @@ Notice in the example we use Iterable[Tag] vs Tag. This is because we might want
 
 ```python
 import instructor
-import openai
+import instructor
 import asyncio
 from typing import Iterable
 
@@ -507,7 +511,7 @@ async def get_tags(text: List[str], tags: List[Tag]) -> List[Tag]:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         messages=[
             {

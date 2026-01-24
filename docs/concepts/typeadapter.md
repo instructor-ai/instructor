@@ -1,6 +1,6 @@
 ---
-title: Pydantic Type Adapter Overview
-description: Explore the ongoing updates of Pydantic's Type Adapter concepts and access the official documentation.
+title: TypeAdapter in Instructor - Custom Type Handling
+description: Use Pydantic TypeAdapter for custom type validation and serialization with Instructor. Handle complex types and custom validation logic in structured outputs.
 ---
 
 !!! warning "This page is a work in progress"

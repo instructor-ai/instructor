@@ -1,3 +1,8 @@
+---
+title: LLM Validation Basics with Instructor
+description: Master the fundamentals of validating LLM outputs to ensure reliable, business-compliant structured data from GPT-4, Claude, and other models.
+---
+
 # LLM Validation Tutorial: Ensure Data Quality with Instructor
 
 Master the fundamentals of validating LLM outputs in this comprehensive tutorial. Learn how to use Instructor's validation system to ensure GPT-4, Claude, and other language models produce reliable, business-compliant structured data.
@@ -39,7 +44,7 @@ class UserProfile(BaseModel):
 
 # Extract and validate LLM output
 client = instructor.from_provider("openai/gpt-5-nano")
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini
     messages=[
         {"role": "user", "content": "My name is Jane Smith and I'm 25 years old."}

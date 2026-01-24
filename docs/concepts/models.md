@@ -159,7 +159,7 @@ class SearchQuery(BaseModel):
         return "Results for cat"
 
 
-query = client.chat.completions.create(
+query = client.create(
     model="gpt-4.1-mini",
     messages=[{"role": "user", "content": "Search for a picture of a cat"}],
     response_model=SearchQuery,
@@ -171,3 +171,12 @@ print(results)
 ```
 
 Now we can call `execute` on our model instance after extracting it from a language model. If you want to see more examples of this checkout our post on [RAG is more than embeddings](../blog/posts/rag-and-beyond.md)
+
+## See Also
+
+- [Response Models Tutorial](../learning/getting_started/response_models.md) - Step-by-step guide to creating response models
+- [Simple Object Extraction](../learning/patterns/simple_object.md) - Basic extraction patterns
+- [Nested Structures](../learning/patterns/nested_structure.md) - Complex hierarchical models
+- [Optional Fields](../learning/patterns/optional_fields.md) - Working with optional data
+- [Types](./types.md) - Working with different data types
+- [Fields](./fields.md) - Advanced field configuration

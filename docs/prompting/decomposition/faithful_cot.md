@@ -42,7 +42,7 @@ class ReasoningStep(BaseModel):
 
 
 def generate_reasoning_steps(query: str) -> list[ReasoningStep]:
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "system",

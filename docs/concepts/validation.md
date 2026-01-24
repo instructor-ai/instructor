@@ -200,6 +200,14 @@ class UserProfile(BaseModel):
         return v.lower()
 ```
 
+## See Also
+
+- [Reask Validation](./reask_validation.md) - Learn how Instructor automatically retries with validation feedback
+- [Retrying](./retrying.md) - Configure automatic retry behavior
+- [Custom Validators](./reask_validation.md#custom-validators) - Build custom validation logic
+- [Field Validation](../learning/patterns/field_validation.md) - Field-level validation patterns
+- [Validation Basics](../learning/validation/basics.md) - Step-by-step validation tutorial
+
 ## Error Handling
 
 Instructor provides robust error handling for validation failures:
@@ -237,7 +245,7 @@ client = instructor.from_provider("openai/gpt-4.1-mini", mode=instructor.Mode.JS
 
 try:
     # Attempt to extract with validation using Jinja templating
-    user = client.chat.completions.create(
+    user = client.create(
         response_model=User,
         messages=[
             {
@@ -365,7 +373,7 @@ class FactCheckedClaim(BaseModel):
 
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
-        return client.chat.completions.create(
+        return client.create(
             response_model=FactCheckedClaim,
             messages=[
                 {
@@ -436,7 +444,7 @@ class Report(BaseModel):
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
-        validation_result = client.chat.completions.create(
+        validation_result = client.create(
             response_model=Validator,
             messages=[
                 {

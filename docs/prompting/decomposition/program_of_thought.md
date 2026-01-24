@@ -86,7 +86,7 @@ class ProgramExecution(BaseModel):
 
 
 def generate_intermediate_reasoning(query: str):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         messages=[
             {
@@ -120,7 +120,7 @@ def generate_prediction(
     predicted_answer: str, options: list[str], query: str
 ) -> Prediction:
     formatted_options = ",".join(options)
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Prediction,
         messages=[

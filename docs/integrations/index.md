@@ -105,7 +105,7 @@ client = instructor.from_provider("openai/gpt-4")
 async_client = instructor.from_provider("anthropic/claude-3-sonnet", async_client=True)
 
 # Use the same interface for all providers
-response = client.chat.completions.create(
+response = client.create(
     response_model=UserInfo,
     messages=[{"role": "user", "content": "Your prompt"}]
 )
@@ -165,7 +165,7 @@ Alternatively, you can manually set up the client:
 
 3. Use the patched client with your Pydantic model:
    ```python
-   response = client.chat.completions.create(
+   response = client.create(
        response_model=YourModel,
        messages=[{"role": "user", "content": "Your prompt"}]
    )

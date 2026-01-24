@@ -13,14 +13,14 @@ First, install the necessary packages:
 pip install youtube_transcript_api instructor rich
 ```
 
-![youtube clip streaming](../img/youtube.gif)
+![YouTube clip streaming demonstration showing real-time video segment extraction](../img/youtube.gif)
 
 ```python
 from youtube_transcript_api import YouTubeTranscriptApi
 from pydantic import BaseModel, Field
 from typing import List, Generator, Iterable
 import instructor
-import openai
+import instructor
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
@@ -67,7 +67,7 @@ class YoutubeClips(BaseModel):
 
 
 def yield_clips(segments: Iterable[TranscriptSegment]) -> Iterable[YoutubeClips]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4-turbo-preview",
         stream=True,
         messages=[

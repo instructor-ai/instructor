@@ -42,15 +42,14 @@ client = instructor.from_provider(
     "vertexai/gemini-1.5-flash",
 )
 
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
+resp = client.create(
+    response_model=User,
     messages=[
         {
             "role": "user",
             "content": "Extract Jason is 25 years old.",
         }
     ],
-    response_model=User,
 )
 
 print(resp)
@@ -123,7 +122,7 @@ client = instructor.from_provider(
 )
 
 # Stream partial responses
-response_stream = client.chat.completions.create(
+response_stream = client.create(
     response_model=Partial[UserExtract],
     stream=True,
     messages=[
@@ -158,7 +157,7 @@ client = instructor.from_provider(
 )
 
 # Stream iterable responses
-response_stream = client.chat.completions.create_iterable(
+response_stream = client.create_iterable(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Make up two people"},
@@ -197,7 +196,7 @@ client = instructor.from_provider(
 )
 
 async def stream_partial():
-    response_stream = await client.chat.completions.create(
+    response_stream = await client.create(
         response_model=Partial[UserExtract],
         stream=True,
         messages=[
@@ -209,7 +208,7 @@ async def stream_partial():
         print(f"Received update: {partial_user}")
 
 async def stream_iterable():
-    response_stream = client.chat.completions.create_iterable(
+    response_stream = client.create_iterable(
         response_model=UserExtract,
         messages=[
             {"role": "user", "content": "Make up two people"},

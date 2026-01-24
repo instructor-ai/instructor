@@ -123,6 +123,85 @@ python scripts/check_blog_excerpts.py
 python scripts/make_sitemap.py
 ```
 
+### 4. `fix_api_calls.py` - API Call Standardization
+
+**Purpose**: Replaces old API call patterns with simplified versions for consistency.
+
+**What it does**:
+- Finds and replaces `client.chat.completions.create` → `client.create`
+- Finds and replaces `client.chat.completions.create_partial` → `client.create_partial`
+- Finds and replaces `client.chat.completions.create_iterable` → `client.create_iterable`
+- Finds and replaces `client.chat.completions.create_with_completion` → `client.create_with_completion`
+- Processes all markdown and notebook files in the docs directory
+
+**Usage**:
+```bash
+# Dry run to see what would be changed
+python scripts/fix_api_calls.py --dry-run
+
+# Apply changes to all files
+python scripts/fix_api_calls.py
+
+# Process a single file
+python scripts/fix_api_calls.py --file docs/index.md
+
+# Custom docs directory
+python scripts/fix_api_calls.py --docs-dir path/to/docs
+```
+
+### 5. `fix_old_patterns.py` - Client Initialization Pattern Fixer
+
+**Purpose**: Replaces old client initialization patterns with the modern `from_provider` API.
+
+**What it does**:
+- Replaces `instructor.from_openai(OpenAI())` → `instructor.from_provider("openai/model-name")`
+- Replaces `instructor.from_anthropic(Anthropic())` → `instructor.from_provider("anthropic/model-name")`
+- Replaces `instructor.patch(OpenAI())` → `instructor.from_provider("openai/model-name")`
+- Handles all supported providers (OpenAI, Anthropic, Google, Cohere, Mistral, Groq, etc.)
+- Attempts to extract model names from existing code
+
+**Usage**:
+```bash
+# Dry run to see what would be changed
+python scripts/fix_old_patterns.py --dry-run
+
+# Apply changes to all files
+python scripts/fix_old_patterns.py
+
+# Process a single file
+python scripts/fix_old_patterns.py --file docs/integrations/openai.md
+```
+
+**Note**: Model names are extracted from existing code when possible, but may need manual review for accuracy.
+
+### 6. `audit_patterns.py` - Pattern Auditor
+
+**Purpose**: Audits documentation files to find old patterns that need updating.
+
+**What it does**:
+- Finds old API call patterns (`client.chat.completions.*`)
+- Finds old initialization patterns (`instructor.from_*`, `instructor.patch`)
+- Identifies potentially unused imports
+- Reports line numbers for each issue
+- Provides summary statistics
+
+**Usage**:
+```bash
+# Detailed report with line numbers
+python scripts/audit_patterns.py
+
+# Summary statistics only
+python scripts/audit_patterns.py --summary
+
+# Audit a single file
+python scripts/audit_patterns.py --file docs/index.md
+
+# Custom docs directory
+python scripts/audit_patterns.py --docs-dir path/to/docs
+```
+
+**Output**: Reports issues by file with line numbers, or summary statistics showing total counts per pattern type.
+
 ## Adding New Scripts
 
 When adding new scripts to this directory:

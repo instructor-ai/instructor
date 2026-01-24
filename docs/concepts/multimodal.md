@@ -3,6 +3,11 @@ title: Seamless Multimodal Interactions with Instructor
 description: Learn how the Image, PDF and Audio class in Instructor enables seamless handling of multimodal content across different AI models.
 ---
 
+---
+title: Multimodal Processing with Instructor - Vision and Audio
+description: Process images, audio, and video with Instructor for multimodal structured outputs. Extract data from visual content using GPT-4 Vision and Gemini models.
+---
+
 # Multimodal
 
 > We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
@@ -55,7 +60,7 @@ url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/ass
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=ImageDescription,
     messages=[
         {
@@ -92,7 +97,7 @@ gs_url = "gs://my-bucket/path/to/image.jpg"
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=ImageDescription,
     messages=[
         {
@@ -131,7 +136,7 @@ url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/ass
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=ImageDescription,
     autodetect_images=True,  # Set this to True
     messages=[
@@ -165,7 +170,7 @@ url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/ass
 
 client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
 
-response, completion = client.chat.completions.create_with_completion(
+response, completion = client.create_with_completion(
     response_model=ImageDescription,
     autodetect_images=True,  # Set this to True
     messages=[
@@ -234,7 +239,7 @@ class AudioDescription(BaseModel):
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 
 # Make the API call with the audio file
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=AudioDescription,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -274,7 +279,7 @@ class AudioDescription(BaseModel):
 gs_url = "gs://my-bucket/path/to/audio.wav"
 
 # Make the API call with the GCS audio file
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=AudioDescription,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -296,21 +301,23 @@ print(resp)
 
 The `PDF` class represents a PDF file that can be loaded from a URL or file path.
 
-It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI and Anthropic client integrations.
+It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI, Anthropic, and Bedrock client integrations.
 
-| Method            | OpenAI | Anthropic | Google GenAI | Mistral |
-| ----------------- | ------ | --------- | ------------ | ------- |
-| `from_url()`      | ✅     | ✅        | ✅           | ✅      |
-| `from_gs_url()`   | ✅     | ✅        | ✅           | ✅      |
-| `from_path()`     | ✅     | ✅        | ✅           | ❎      |
-| `from_base64()`   | ✅     | ✅        | ✅           | ❎      |
-| `autodetect()`    | ✅     | ✅        | ✅           | ✅      |
+| Method            | OpenAI | Anthropic | Google GenAI | Mistral | Bedrock |
+| ----------------- | ------ | --------- | ------------ | ------- | ------- |
+| `from_url()`      | ✅     | ✅        | ✅           | ✅      | ✅      |
+| `from_gs_url()`   | ✅     | ✅        | ✅           | ✅      | ✅      |
+| `from_path()`     | ✅     | ✅        | ✅           | ❎      | ✅      |
+| `from_base64()`   | ✅     | ✅        | ✅           | ❎      | ✅      |
+| `autodetect()`    | ✅     | ✅        | ✅           | ✅      | ✅      |
 
 For Gemini, we also provide two additional methods that make working with the google-genai files package easy which you can access in the `PDFWithGenaiFile` object.
 
 For Anthropic, you can enable caching with the `PDFWithCacheControl` object. Note that this has caching configured by default for easy usage.
 
 We provide examples of how to use all three object classes below.
+
+For Bedrock, you can convert a `PDF` into the Bedrock-native document format with `PDF.to_bedrock()` and include the result in the message content list.
 
 ### Usage
 
@@ -332,7 +339,7 @@ We provide examples of how to use all three object classes below.
 
 
  # Load and analyze a PDF
- response = client.chat.completions.create(
+ response = client.create(
      response_model=Invoice,
      messages=[
          {
@@ -369,7 +376,7 @@ class Invoice(BaseModel):
     items: list[str]
 
 # Load and analyze a PDF from GCS (must be publicly accessible)
-response = client.chat.completions.create(
+response = client.create(
     response_model=Invoice,
     messages=[
         {
@@ -408,7 +415,7 @@ class Invoice(BaseModel):
 
 
 # Load and analyze a PDF
-response, completion = client.chat.completions.create_with_completion(
+response, completion = client.create_with_completion(
     response_model=Invoice,
     messages=[
         {
@@ -459,7 +466,7 @@ class Invoice(BaseModel):
 
 
 # Load and analyze a PDF
-response = client.chat.completions.create(
+response = client.create(
     response_model=Invoice,
     messages=[
         {
@@ -510,7 +517,7 @@ class Invoice(BaseModel):
 
 
 # Load and analyze a PDF
-response = client.chat.completions.create(
+response = client.create(
     response_model=Invoice,
     messages=[
         {

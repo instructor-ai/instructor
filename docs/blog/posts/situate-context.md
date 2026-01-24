@@ -97,7 +97,7 @@ client = AsyncInstructor(
 
 
 async def situate_context(doc: str, chunk: str) -> str:
-    response = await client.chat.completions.create(
+    response = await client.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         temperature=0.0,

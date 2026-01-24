@@ -54,4 +54,4 @@ As Charles Kellaway from LSEG noted, the solution transforms market surveillance
 
 Read the full case study: [How London Stock Exchange Group is detecting market abuse with their AI-powered Surveillance Guide on Amazon Bedrock](https://aws.amazon.com/blogs/machine-learning/how-london-stock-exchange-group-is-detecting-market-abuse-with-their-ai-powered-surveillance-guide-on-amazon-bedrock/)
 
-Ready to build your own production-ready structured output applications? [Get started with Instructor](../getting-started.md).
+Ready to build your own production-ready structured output applications? [Get started with Instructor](../../getting-started.md).

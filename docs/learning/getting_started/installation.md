@@ -1,3 +1,8 @@
+---
+title: Installing Instructor for LLM Structured Outputs
+description: Complete installation guide for Instructor with support for OpenAI, Anthropic, Google, and 15+ LLM providers. Get started in minutes.
+---
+
 # Instructor Installation Guide: Setup for LLM Structured Outputs
 
 Learn how to install Instructor, the leading Python library for extracting structured data from LLMs like GPT-4, Claude, and Gemini. This comprehensive installation tutorial covers all major LLM providers and gets you ready for production use.
@@ -114,7 +119,7 @@ class Person(BaseModel):
     age: int
 
 client = instructor.from_provider("openai/gpt-5-nano")
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",
     response_model=Person,
     messages=[
@@ -131,7 +136,7 @@ With Instructor installed, you're ready to build powerful LLM applications:
 
 1. **[Create Your First LLM Extraction](first_extraction.md)** - Build structured outputs with any LLM
 2. **[Master Response Models](response_models.md)** - Learn Pydantic models for LLM data validation
-3. **[Configure LLM Clients](client_setup.md)** - Set up OpenAI, Anthropic, Google, and more
+3. **[Configure LLM Clients](../../concepts/from_provider.md)** - Set up OpenAI, Anthropic, Google, and more
 
 ## Common Installation Issues
 

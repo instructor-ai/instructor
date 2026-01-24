@@ -1,3 +1,15 @@
+## See Also
+
+- [Types](./types.md) - Working with different data types
+- [Response Models](./models.md) - Working with Pydantic models
+- [Fields](./fields.md) - Customizing field metadata
+- [Union Types](./unions.md) - Handle multiple possible types
+
+---
+title: Dictionary Operations Optimization in Instructor
+description: Learn about performance optimizations for dictionary operations in Instructor, including message extraction and configuration parameter handling.
+---
+
 # Dictionary Operations Optimization
 
 This document explains the dictionary operations optimizations implemented in Instructor.

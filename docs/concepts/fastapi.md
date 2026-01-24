@@ -1,6 +1,6 @@
 ---
-title: Integrating Pydantic with FastAPI for Efficient APIs
-description: Learn how to leverage Pydantic models with FastAPI for seamless API development and automatic documentation.
+title: FastAPI Integration with Instructor - API Development Guide
+description: Build production-ready APIs with FastAPI and Instructor. Create type-safe endpoints for structured LLM outputs with automatic validation and documentation.
 ---
 
 # Integrating Pydantic Models with FastAPI
@@ -43,7 +43,7 @@ class UserDetail(BaseModel):
 
 @app.post("/endpoint", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
-    user_detail = await client.chat.completions.create(
+    user_detail = await client.create(
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -77,7 +77,7 @@ class UserDetail(BaseModel):
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
 async def extract(data: UserData):
-    users = await client.chat.completions.create(
+    users = await client.create(
         response_model=Iterable[UserDetail],
         stream=True,
         messages=[

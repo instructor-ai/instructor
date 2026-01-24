@@ -73,7 +73,7 @@ client = instructor.from_provider("openai/gpt-4")
 async_client = instructor.from_provider("anthropic/claude-3-sonnet", async_client=True)
 
 # Use like any other async client
-response = await async_client.chat.completions.create(
+response = await async_client.create(
     response_model=UserInfo,
     messages=[{"role": "user", "content": "Extract information about John who is 30 years old"}]
 )
@@ -215,7 +215,7 @@ class UserInfo(BaseModel):
 async def main():
     # Test OpenAI
     openai_client = instructor.from_provider("openai/gpt-5-nano")
-    openai_result = openai_client.chat.completions.create(
+    openai_result = openai_client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": "Jane Doe is a 28-year-old data scientist."}]
     )
@@ -228,7 +228,7 @@ async def main():
             async_client=True,
             max_tokens=400  # Required for Anthropic
         )
-        anthropic_result = await anthropic_client.chat.completions.create(
+        anthropic_result = await anthropic_client.create(
             response_model=UserInfo,
             messages=[{"role": "user", "content": "John Smith is a 35-year-old software engineer."}]
         )

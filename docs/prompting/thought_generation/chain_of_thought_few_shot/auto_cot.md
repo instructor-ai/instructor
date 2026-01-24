@@ -26,7 +26,7 @@ from pydantic import BaseModel
 from sklearn.cluster import KMeans
 from sentence_transformers import SentenceTransformer
 
-client = instructor.patch(OpenAI())
+client = instructor.from_provider("openai/gpt-4o")
 NUM_CLUSTERS = 2
 
 
@@ -59,7 +59,7 @@ def cluster_and_sort(questions, n_clusters=NUM_CLUSTERS):
 
 def sample(cluster):
     for question in cluster:
-        response = client.chat.completions.create(
+        response = client.create(
             model="gpt-4o",
             response_model=Example,
             messages=[
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     """
 
     # Use selected questions as examples for the LLM
-    response = client.chat.completions.create(
+    response = client.create(
         model="gpt-4o",
         response_model=FinalAnswer,
         messages=[

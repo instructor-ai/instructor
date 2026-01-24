@@ -31,7 +31,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_email(subject, to, sender, tone):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         messages=[
             {

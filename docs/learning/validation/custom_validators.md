@@ -1,3 +1,8 @@
+---
+title: Custom Validators for LLM Outputs
+description: Learn to build custom validators for LLM outputs using rule-based and semantic validation techniques with Instructor.
+---
+
 # Custom LLM Validators Tutorial: Advanced Data Quality Control
 
 Learn how to build custom validators for LLM outputs in this advanced tutorial. Master both rule-based and semantic validation techniques to ensure GPT-4, Claude, and other language models produce data that meets your exact requirements.
@@ -25,7 +30,7 @@ class Person(BaseModel):
         return value
 
 # Extract data with validation
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "The person's name is John and they are 150 years old."}

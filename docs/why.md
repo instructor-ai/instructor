@@ -42,7 +42,7 @@ class User(BaseModel):
     age: int
 
 client = instructor.from_provider("openai/gpt-4")
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "John is 25 years old"}],
 )
@@ -69,7 +69,7 @@ except:
     pass
 
 # With Instructor: Automatic retries with validation errors
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "..."}],
     max_retries=3,  # Retries with validation errors
@@ -104,7 +104,7 @@ client = instructor.from_provider("anthropic/claude-3")
 client = instructor.from_provider("google/gemini-pro")
 
 # Same code for all providers
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "..."}],
 )
@@ -156,7 +156,7 @@ class UserList(BaseModel):
     users: List[User]
 
 # Works perfectly
-result = client.chat.completions.create(
+result = client.create(
     response_model=UserList,
     messages=[{"role": "user", "content": "..."}],
 )
@@ -216,7 +216,7 @@ class User(BaseModel):
     name: str
     age: int
 
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "John is 25 years old"}],
 )

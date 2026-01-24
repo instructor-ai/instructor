@@ -69,7 +69,7 @@ while file.state != File.State.ACTIVE:
 print(f"File is now active, state: {file.state}")
 print(file)
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {"role": "user", "content": ["Summarize the following file", file]},
     ],

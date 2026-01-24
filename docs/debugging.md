@@ -1,3 +1,8 @@
+---
+title: Debugging Instructor Applications
+description: Learn how to debug Instructor applications with hooks, logging, and exception handling. Practical techniques for inspecting inputs, outputs, and retries.
+---
+
 # Debugging
 
 This guide shows how to quickly inspect inputs/outputs, capture retries, and reproduce failures when working with Instructor. It focuses on practical techniques using hooks, logging, and exception data.
@@ -72,7 +77,7 @@ client.on(HookName.COMPLETION_KWARGS, lambda **kw: print(kw.get("_instructor_met
 Most parsed models returned by Instructor carry the original provider response for debugging:
 
 ```python
-model = client.chat.completions.create(...)
+model = client.create(...)
 raw = getattr(model, "_raw_response", None)
 print(raw)
 ```
@@ -87,7 +92,7 @@ When all retries are exhausted, an `InstructorRetryException` is raised. It incl
 from instructor.core.exceptions import InstructorRetryException
 
 try:
-    client.chat.completions.create(...)
+    client.create(...)
 except InstructorRetryException as e:
     print("Attempts:", e.n_attempts)
     print("Last completion:", e.last_completion)
@@ -118,7 +123,7 @@ create_kwargs = {
 }
 
 try:
-    client.chat.completions.create(response_model=MyModel, **create_kwargs)
+    client.create(response_model=MyModel, **create_kwargs)
 except Exception as err:
     # Inspect and iterate
     raise
@@ -132,7 +137,7 @@ This pattern captures the exact inputs that triggered a failure.
 - If providers sometimes return extra fields or slightly different types (e.g., floats for ints), try `strict=False` to validate non‑strictly.
 
 ```python
-client.chat.completions.create(..., response_model=MyModel, strict=True)
+client.create(..., response_model=MyModel, strict=True)
 ```
 
 ## Customizing Retries
@@ -143,7 +148,7 @@ You can pass an integer (attempt count) or a `tenacity` retrying object to contr
 from tenacity import Retrying, stop_after_attempt, stop_after_delay
 
 max_retries = Retrying(stop=stop_after_attempt(3) | stop_after_delay(10))
-client.chat.completions.create(..., max_retries=max_retries)
+client.create(..., max_retries=max_retries)
 ```
 
 This is helpful when balancing latency and robustness.
@@ -162,7 +167,7 @@ If you’re using a cache (`cache=...`), remember:
 - If debugging live provider behavior, temporarily disable cache or change the cache key (e.g., tweak a message).
 
 ```python
-model = client.chat.completions.create(..., cache=None)
+model = client.create(..., cache=None)
 ```
 
 ## Common Troubleshooting Tips

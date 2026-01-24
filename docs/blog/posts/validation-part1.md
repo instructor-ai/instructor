@@ -51,7 +51,7 @@ class UserDetail(BaseModel):
     age: int
 
 
-user: UserDetail = client.chat.completions.create(
+user: UserDetail = client.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -255,7 +255,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def validator(v):
     statement = "don't say objectionable things"
-    resp = client.chat.completions.create(
+    resp = client.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -297,7 +297,7 @@ We can utilise `Pydantic` and `Instructor` to perform a validation to check if t
 def validate_chain_of_thought(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
-    resp = client.chat.completions.create(
+    resp = client.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -415,7 +415,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -460,7 +460,7 @@ class UserModel(BaseModel):
 This is where the `max_retries` parameter comes in. It allows the model to self correct and retry the prompt using the error message rather than the prompt.
 
 ```python
-model = client.chat.completions.create(
+model = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},

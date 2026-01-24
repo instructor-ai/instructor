@@ -3,6 +3,11 @@ title: Philosophy
 description: The principles behind Instructor - why simple beats complex every time.
 ---
 
+---
+title: Instructor Philosophy - Design Principles and Approach
+description: Understand the core philosophy behind Instructor's design. Learn about type safety, validation, and the principles that guide structured LLM output development.
+---
+
 # Philosophy
 
 Great tools make hard things easy without making easy things hard. That's Instructor.
@@ -19,7 +24,7 @@ class User(BaseModel):
 
 # What Instructor adds
 client = instructor.from_provider("openai/gpt-4.1-mini")
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,  # That's it
     messages=[...]
 )
@@ -34,14 +39,14 @@ The worst frameworks are roach motels - easy to get in, impossible to get out. I
 ```python
 # With Instructor
 client = instructor.from_provider("openai/gpt-4.1-mini")
-result = client.chat.completions.create(
+result = client.create(
     response_model=User,
     messages=[...]
 )
 
 # Want to go back to raw API? Just remove response_model:
 client = instructor.from_provider("openai/gpt-4.1-mini")
-result = client.chat.completions.create(
+result = client.create(
     messages=[...]  # Now you get the raw response
 )
 
@@ -62,7 +67,7 @@ import instructor
 instructor.logfire.configure()  # Full observability
 
 # Access raw responses
-result = client.chat.completions.create(
+result = client.create(
     response_model=User,
     messages=[...],
 )
@@ -78,13 +83,13 @@ No YAML files. No decorators. No magic. Just functions.
 ```python
 # Build complex systems with simple functions
 def extract_user(text: str) -> User:
-    return client.chat.completions.create(
+    return client.create(
         response_model=User,
         messages=[{"role": "user", "content": text}]
     )
 
 def extract_company(text: str) -> Company:
-    return client.chat.completions.create(
+    return client.create(
         response_model=Company,
         messages=[{"role": "user", "content": text}]
     )
@@ -103,7 +108,7 @@ The best code is code that grows with your needs:
 
 ```python
 # Day 1: Just get it working
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "..."}]
 )
@@ -120,14 +125,14 @@ class User(BaseModel):
         return v
 
 # Day 14: Add retries for production
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "..."}],
     max_retries=3
 )
 
 # Day 30: Add streaming for better UX
-for partial in client.chat.completions.create(
+for partial in client.create(
     response_model=Partial[User],
     messages=[{"role": "user", "content": "..."}],
     stream=True
@@ -172,7 +177,7 @@ class UserExtractionAgent(instructor.Agent):
 def extract_user_with_search(query: str) -> User:
     # Your logic, your way
     search_results = search_web(query)
-    return client.chat.completions.create(
+    return client.create(
         response_model=User,
         messages=[{"role": "user", "content": search_results}]
     )
@@ -193,7 +198,7 @@ def process_user(user: User) -> dict:
     return {"name": user.name.upper(), "adult": user.age >= 18}
 
 # Instructor just connects them to LLMs
-user = client.chat.completions.create(
+user = client.create(
     response_model=User,
     messages=[...]
 )
@@ -240,7 +245,7 @@ def prioritize_tickets(tickets: List[Ticket]) -> List[Ticket]:
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Extract structured data (simple function call)
-tickets = client.chat.completions.create(
+tickets = client.create(
     response_model=List[Ticket],
     messages=[{
         "role": "user",

@@ -1,6 +1,6 @@
 ---
-title: Instructor Concepts
-description: Core concepts and features of the Instructor library
+title: Instructor Concepts - Core Features and Patterns
+description: Explore core concepts and features of the Instructor library. Learn about structured outputs, validation, streaming, and advanced patterns.
 ---
 
 # Instructor Concepts
@@ -13,6 +13,8 @@ These are the fundamental concepts you need to understand to use Instructor effe
 
 - [Models](./models.md) - Using Pydantic models to define output structures
 - [Patching](./patching.md) - How Instructor patches LLM clients
+- [from_provider](./from_provider.md) - Unified interface for creating clients across all providers
+- [Migration Guide](./migration.md) - Migrating from older patterns to from_provider
 - [Types](./types.md) - Working with different data types in your models
 - [Validation](./validation.md) - Validating LLM outputs against your models
 - [Prompting](./prompting.md) - Creating effective prompts for structured output extraction
@@ -73,7 +75,7 @@ These features help you integrate with other technologies:
 Instructor is built around a few key ideas that work together:
 
 1. **Define Structure with Pydantic**: Use Pydantic models to define exactly what data you want.
-2. **Enhance LLM Clients**: Patch provider clients to add structured output capabilities.
+2. **Create Clients with from_provider**: Use the unified interface to create clients for any provider.
 3. **Validate and Retry**: Automatically validate responses and retry if necessary.
 4. **Process Streams**: Handle streaming responses for real-time updates.
 
@@ -86,8 +88,8 @@ sequenceDiagram
     participant LLM as LLM Provider
 
     User->>Instructor: Define Pydantic model
-    User->>Instructor: Patch LLM client
-    User->>Instructor: Create completion with response_model
+    User->>Instructor: Create client with from_provider
+    User->>Instructor: Call create() with response_model
     Instructor->>LLM: Send structured request
     LLM->>Instructor: Return LLM response
     Instructor->>Instructor: Validate against model
@@ -104,7 +106,8 @@ sequenceDiagram
 
 ## What to Read Next
 
-- If you're new to Instructor, start with [Models](./models.md) and [Patching](./patching.md)
+- If you're new to Instructor, start with [Models](./models.md) and [from_provider](./from_provider.md)
+- If you're migrating from older patterns, see the [Migration Guide](./migration.md)
 - If you're having validation issues, check out [Validators](./reask_validation.md) and [Retrying](./retrying.md)
 - For streaming applications, read [Stream Partial](./partial.md) and [Stream Iterable](./iterable.md)
 - To optimize your application, look at [Caching](./caching.md) and [Usage Tokens](./usage.md)

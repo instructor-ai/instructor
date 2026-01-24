@@ -26,7 +26,7 @@ class QuestionAnswer(BaseModel):
 question = "What is the meaning of life?"
 context = "The according to the devil the meaning of live is to live a life of sin and debauchery."
 
-qa: QuestionAnswer = client.chat.completions.create(
+qa: QuestionAnswer = client.create(
     response_model=QuestionAnswer,
     messages=[
         {
@@ -79,7 +79,7 @@ class QuestionAnswerNoEvil(BaseModel):
 
 
 try:
-    qa: QuestionAnswerNoEvil = client.chat.completions.create(
+    qa: QuestionAnswerNoEvil = client.create(
         response_model=QuestionAnswerNoEvil,
         messages=[
             {
@@ -138,7 +138,7 @@ class QuestionAnswerNoEvil(BaseModel):
 
 # <%hide%>
 
-qa: QuestionAnswerNoEvil = client.chat.completions.create(
+qa: QuestionAnswerNoEvil = client.create(
     response_model=QuestionAnswerNoEvil,
     messages=[
         {

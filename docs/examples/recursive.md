@@ -3,6 +3,13 @@ title: Working with Recursive Schemas in Instructor
 description: Learn how to effectively implement and use recursive Pydantic models for handling nested and hierarchical data structures.
 ---
 
+## See Also
+
+- [Nested Structures](../learning/patterns/nested_structure.md) - Complex hierarchical models
+- [Knowledge Graph](./knowledge_graph.md) - Build knowledge graphs
+- [Response Models](../concepts/models.md) - Working with complex data structures
+- [Types](../concepts/types.md) - Working with different data types
+
 # Recursive Schema Implementation Guide
 
 This guide demonstrates how to work with recursive schemas in Instructor using Pydantic models. While flat schemas are often simpler to work with, some use cases require recursive structures to represent hierarchical data effectively.
@@ -51,7 +58,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def parse_hierarchy(text: str) -> RecursiveNode:
     """Parse text into a hierarchical structure."""
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         messages=[
             {

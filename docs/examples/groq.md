@@ -1,6 +1,6 @@
 ---
-title: 'Using Groq for Inference: Setup and Example'
-description: Learn how to use Groq for inference with the mixtral-8x7b model, including API setup and a practical Python example.
+title: Groq AI Integration - Fast Structured Outputs
+description: Use Groq AI with Instructor for fast structured outputs. Leverage Groq's high-speed inference for real-time structured data extraction.
 ---
 
 # Structured Outputs using Groq
@@ -36,13 +36,10 @@ class Character(BaseModel):
     fact: List[str] = Field(..., description="A list of facts about the subject")
 
 
-client = Groq(
-    api_key=os.environ.get('GROQ_API_KEY'),
-)
+# Use from_provider for simplified setup
+client = instructor.from_provider("groq/mixtral-8x7b-32768", mode=instructor.Mode.TOOLS)
 
-client = instructor.from_groq(client, mode=instructor.Mode.TOOLS)
-
-resp = client.chat.completions.create(
+resp = client.create(
     model="mixtral-8x7b-32768",
     messages=[
         {

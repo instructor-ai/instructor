@@ -293,7 +293,7 @@ client = instructor.from_provider("openai/gpt-5-nano") #(1)!
 def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
     # We first generate an initial summary
-    summary: InitialSummary = client.chat.completions.create(  # (2)!
+    summary: InitialSummary = client.create(  # (2)!
         model="gpt-4-0613",
         response_model=InitialSummary,
         messages=[
@@ -322,7 +322,7 @@ def summarize_article(article: str, summary_steps: int = 3):
                 },
             ]
         )
-        new_summary: RewrittenSummary = client.chat.completions.create( # (3)!
+        new_summary: RewrittenSummary = client.create( # (3)!
             model="gpt-4-0613",
             messages=[
                 {

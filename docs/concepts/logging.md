@@ -1,6 +1,6 @@
 ---
-title: Debugging OpenAI Requests with Python Logging
-description: Learn how to log OpenAI requests and responses in Python using DEBUG level logging for efficient debugging.
+title: Logging and Monitoring with Instructor - Debug Guide
+description: Implement comprehensive logging for Instructor LLM calls. Track API usage, debug issues, and monitor performance with DEBUG level logging.
 ---
 
 In order to see the requests made to OpenAI and the responses, you can set logging to DEBUG. This will show the requests and responses made to OpenAI. This can be useful for debugging and understanding the requests and responses made to OpenAI. I would love some contributions that make this a lot cleaner, but for now this is the fastest way to see the prompts.
@@ -23,8 +23,7 @@ class UserDetail(BaseModel):
     age: int
 
 
-user = client.chat.completions.create(
-    model="gpt-4.1-mini",
+user = client.create(
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},

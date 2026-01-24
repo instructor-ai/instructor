@@ -3,6 +3,13 @@ title: "Document Segmentation with LLMs: A Comprehensive Guide"
 description: Learn effective document segmentation techniques using Cohere's LLM, enhancing comprehension of complex texts.
 ---
 
+## See Also
+
+- [Knowledge Graph](./knowledge_graph.md) - Build knowledge graphs from documents
+- [Entity Resolution](./entity_resolution.md) - Identify and disambiguate entities
+- [List Extraction](../learning/patterns/list_extraction.md) - Extract multiple objects
+- [Nested Structures](../learning/patterns/nested_structure.md) - Complex hierarchical models
+
 # Document Segmentation
 
 In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-a](https://docs.cohere.com/docs/command-a) - one of Cohere's latest LLMs with 256k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.
@@ -88,7 +95,7 @@ Each line of the document is marked with its line number in square brackets (e.g
 
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
-    return client.chat.completions.create(
+    return client.create(
         model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[
@@ -171,7 +178,7 @@ class StructuredDocument(BaseModel):
 
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
-    return client.chat.completions.create(
+    return client.create(
         model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[

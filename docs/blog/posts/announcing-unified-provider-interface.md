@@ -85,7 +85,7 @@ class Person(BaseModel):
 client = instructor.from_provider("google/gemini-2.0-flash")
 
 # Extract structured data
-response = client.chat.completions.create(
+response = client.create(
     messages=[
         {
             "role": "user",
@@ -152,7 +152,7 @@ async def get_user_profile():
     )
 
     # Extract data asynchronously
-    profile = await async_client.chat.completions.create(
+    profile = await async_client.create(
         messages=[{"role": "user", "content": "Extract: Maria lives in Spain."}],
         response_model=UserProfile
     )

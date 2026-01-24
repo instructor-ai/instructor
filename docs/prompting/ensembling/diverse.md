@@ -41,7 +41,7 @@ class Grading(BaseModel):
 
 async def generate_response(query: str, examples: list[str]):
     formatted_examples = "\n".join(examples)
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         messages=[
             {
@@ -69,7 +69,7 @@ async def generate_response(query: str, examples: list[str]):
 async def score_response(query: str, response: Response) -> tuple[Response, Grading]:
     return (
         response,
-        await client.chat.completions.create(
+        await client.create(
             model="gpt-4o",
             messages=[
                 {

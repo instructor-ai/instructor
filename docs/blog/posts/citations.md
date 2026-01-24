@@ -113,7 +113,7 @@ class Statements(BaseModel):
     def substring_quote_exists(self, info: ValidationInfo):
         context = info.context.get("text_chunks", None)
 
-        resp: Validation = client.chat.completions.create(
+        resp: Validation = client.create(
             response_model=Validation,
             messages=[
                 {
@@ -219,7 +219,7 @@ class AnswerWithCitaton(BaseModel):
     def validate_answer(self, info: ValidationInfo):
         context = info.context.get("text_chunks", None)
 
-        resp: Validation = client.chat.completions.create(
+        resp: Validation = client.create(
             response_model=Validation,
             messages=[
                 {

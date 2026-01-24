@@ -161,6 +161,13 @@ print(User.model_json_schema())
 """
 ```
 
+## See Also
+
+- [Response Models](./models.md) - Using Pydantic models with Instructor
+- [Fields Tutorial](../learning/patterns/field_validation.md) - Field-level validation patterns
+- [Types](./types.md) - Working with different field types
+- [Pydantic Fields Documentation](https://docs.pydantic.dev/latest/concepts/fields/) - Complete Field reference
+
 # General notes on JSON schema generation
 
 - The JSON schema for Optional fields indicates that the value null is allowed.
