@@ -5,6 +5,7 @@
 - Run tests: `uv run pytest tests/`
 - Run single test: `uv run pytest tests/path_to_test.py::test_name`
 - Skip LLM tests: `uv run pytest tests/ -k 'not llm and not openai'`
+- Temp deps for a run: `uv run --with <pkg>[==version] <command>` (example: `uv run --with pytest-asyncio --with anthropic pytest tests/...`)
 - Type check: `uv run ty check`
 - Lint: `uv run ruff check instructor examples tests`
 - Format: `uv run ruff format instructor examples tests`
