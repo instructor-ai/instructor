@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 import instructor
 from instructor.core.exceptions import InstructorRetryException
 from instructor.mode import Mode
+from typing import cast
 
 
 class User(BaseModel):
@@ -53,8 +54,9 @@ def test_json_decode_error_caught_by_retry():
             max_retries=2,
         )
 
-    exception = exc_info.value
+    exception = cast(InstructorRetryException, exc_info.value)
     assert exception.n_attempts == 2
+    assert exception.failed_attempts is not None
     assert len(exception.failed_attempts) == 2
 
     for attempt in exception.failed_attempts:
@@ -87,8 +89,9 @@ def test_validation_error_caught_by_retry():
             max_retries=2,
         )
 
-    exception = exc_info.value
+    exception = cast(InstructorRetryException, exc_info.value)
     assert exception.n_attempts == 2
+    assert exception.failed_attempts is not None
     assert len(exception.failed_attempts) == 2
 
     for attempt in exception.failed_attempts:

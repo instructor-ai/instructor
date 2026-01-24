@@ -4,6 +4,7 @@ Tests for JSON extraction functionality.
 
 import json
 import pytest
+from typing import cast
 
 from instructor.utils import extract_json_from_codeblock, extract_json_from_stream
 from instructor.processing.function_calls import (
@@ -307,7 +308,7 @@ class TestBedrockJSONParsing:
             }
         }
 
-        result = PersonSchema.parse_bedrock_json(completion)
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_json(completion))
         assert result.name == "John"
         assert result.age == 30
         assert result.skills == []
@@ -329,7 +330,7 @@ class TestBedrockJSONParsing:
             }
         }
 
-        result = PersonSchema.parse_bedrock_json(completion)
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_json(completion))
         assert result.name == "Alice"
         assert result.age == 25
         assert result.skills == ["python"]
@@ -348,7 +349,7 @@ class TestBedrockJSONParsing:
             }
         }
 
-        result = PersonSchema.parse_bedrock_json(completion)
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_json(completion))
         assert result.name == "Bob"
         assert result.age == 40
         assert result.skills == ["go", "rust"]
@@ -385,7 +386,7 @@ class TestBedrockJSONParsing:
             }
         }
 
-        result = PersonSchema.parse_bedrock_json(completion)
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_json(completion))
         # Should pick the first text content
         assert result.name == "First"
         assert result.age == 30

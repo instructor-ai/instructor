@@ -189,7 +189,7 @@ def test_convert_messages_mixed_content():
 
 def test_convert_contents_invalid_type():
     with pytest.raises(ValueError, match="Unsupported content type"):
-        list(convert_contents([1, 2, 3], Mode.TOOLS))
+        list(convert_contents([1, 2, 3], Mode.TOOLS))  # type: ignore[arg-type]
 
 
 def test_convert_contents_anthropic_mode():

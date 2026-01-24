@@ -14,6 +14,7 @@ from typing import (
     Any,
     Callable,
     Generic,
+    Union,
     TypeVar,
     cast,
     get_args,
@@ -595,22 +596,76 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     if response_model is None:
         return None
 
+    origin = get_origin(response_model)
+
+    # For `list[int | str]` and other scalar lists, keep the simple-type adapter path.
+    # However, for `list[User]` (or `list[Union[User, Other]]`) we want IterableModel.
+    if origin is list and is_simple_type(response_model):
+        args = get_args(response_model)
+        inner = args[0] if args else None
+
+        def _is_model_type(t: Any) -> bool:
+            if inspect.isclass(t) and issubclass(t, BaseModel):
+                return True
+            return get_origin(t) is Union and all(
+                inspect.isclass(m) and issubclass(m, BaseModel) for m in get_args(t)
+            )
+
+        if inner is not None and _is_model_type(inner):
+            # Treat as structured iterable extraction.
+            origin = list
+        else:
+            from instructor.dsl.simple_type import ModelAdapter
+
+            # Avoid `ModelAdapter[response_model]` so type checkers don't treat this
+            # as a type expression. This is a runtime wrapper.
+            response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
+            origin = get_origin(response_model)
+
+    # Convert TypedDict -> BaseModel
+    if is_typed_dict(response_model):
+        model_name = getattr(response_model, "__name__", "TypedDictModel")
+        annotations = getattr(response_model, "__annotations__", {})
+        response_model = cast(
+            type[BaseModel],
+            create_model(
+                model_name,
+                **{k: (v, ...) for k, v in annotations.items()},
+            ),
+        )
+
+    # Convert Iterable[T] or list[T] (where T is a model) -> IterableModel(T)
+    origin = get_origin(response_model)
+    if origin in {Iterable, list}:
+        from instructor.dsl.iterable import IterableModel
+
+        args = get_args(response_model)
+        if not args or args[0] is None:
+            raise ValueError(
+                "response_model must be parameterized, e.g. list[User] or Iterable[User]"
+            )
+        iterable_element_class = args[0]
+        if is_typed_dict(iterable_element_class):
+            iterable_element_class = cast(
+                type[BaseModel],
+                create_model(
+                    getattr(iterable_element_class, "__name__", "TypedDictModel"),
+                    **{
+                        k: (v, ...)
+                        for k, v in getattr(
+                            iterable_element_class, "__annotations__", {}
+                        ).items()
+                    },
+                ),
+            )
+        response_model = IterableModel(cast(type[BaseModel], iterable_element_class))
+
     if is_simple_type(response_model):
         from instructor.dsl.simple_type import ModelAdapter
 
-        response_model = ModelAdapter[response_model]
-
-    if is_typed_dict(response_model):
-        response_model: BaseModel = create_model(
-            response_model.__name__,
-            **{k: (v, ...) for k, v in response_model.__annotations__.items()},
-        )
-
-    if get_origin(response_model) is Iterable:
-        from instructor.dsl.iterable import IterableModel
-
-        iterable_element_class = get_args(response_model)[0]
-        response_model = cast(BaseModel, IterableModel(iterable_element_class))  # type: ignore
+        # Avoid `ModelAdapter[response_model]` so type checkers don't treat this as
+        # a type expression. This is a runtime wrapper.
+        response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
 
     # Import here to avoid circular dependency
     from ..processing.function_calls import OpenAISchema, openai_schema

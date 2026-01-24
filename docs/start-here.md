@@ -103,7 +103,7 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 
 # For Google Gemini
-client = instructor.from_provider("google/gemini-1.5-pro")
+client = instructor.from_provider("google/gemini-3-flash")
 ```
 
 ### 3. Modes

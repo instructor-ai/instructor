@@ -39,7 +39,7 @@ class User(BaseModel):
 
 # Using from_provider (recommended)
 client = instructor.from_provider(
-    "vertexai/gemini-1.5-flash",
+    "vertexai/gemini-3-flash",
 )
 
 resp = client.create(
@@ -253,7 +253,7 @@ import instructor
 
 # Option 1: Using from_provider (simplest)
 client = instructor.from_provider(
-    "vertexai/gemini-1.5-flash",
+    "vertexai/gemini-3-flash",
     project="your-project",  # Optional if set in environment
     location="us-central1"   # Optional, defaults to us-central1
 )
@@ -267,7 +267,7 @@ client = from_genai(
         vertexai=True,
         project="your-project",
         location="us-central1",
-        model="gemini-1.5-flash"
+        model="gemini-3-flash"
     )
 )
 ```

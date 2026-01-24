@@ -38,7 +38,7 @@ client = OpenAI(
 )
 
 response = client.create(
-    model="gemini-1.5-flash",
+    model="gemini-3-flash",
     messages=[{"role": "user", "content": "Extract name and age from: John is 30"}],
 )
 ```
@@ -118,7 +118,7 @@ class User(BaseModel):
 
 
 resp = client.create_iterable(
-    model="gemini-1.5-flash",
+    model="gemini-3-flash",
     messages=[
         {
             "role": "user",
@@ -166,7 +166,7 @@ class Story(BaseModel):
 
 
 resp = client.create_partial(
-    model="gemini-1.5-flash",
+    model="gemini-3-flash",
     messages=[
         {
             "role": "user",

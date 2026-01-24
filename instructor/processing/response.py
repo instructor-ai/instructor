@@ -49,6 +49,7 @@ from instructor.core.exceptions import InstructorError, ConfigurationError
 from ..dsl.iterable import IterableBase
 from ..dsl.parallel import ParallelBase
 from ..dsl.partial import PartialBase
+from ..dsl.response_list import ListResponse
 from ..dsl.simple_type import AdapterBase
 
 if TYPE_CHECKING:
@@ -177,7 +178,7 @@ async def process_response_async(
     validation_context: dict[str, Any] | None = None,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | ChatCompletion:
+) -> Any:
     """Asynchronously process and transform LLM responses into structured models.
 
     This function is the async entry point for converting raw LLM responses into validated
@@ -226,14 +227,23 @@ async def process_response_async(
 
     if (
         inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
+        and issubclass(response_model, IterableBase)
         and stream
     ):
-        # from_streaming_response_async returns an AsyncGenerator
-        # Yield each item as it comes in
-        # Note: response type varies by mode (ChatCompletion, AsyncGenerator, etc.)
-        return response_model.from_streaming_response_async(  # type: ignore[return-value]
-            cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
+        # Preserve streaming behavior for `create_iterable()` (async for).
+        return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
+            cast(AsyncGenerator[Any, None], response),
+            mode=mode,
+        )
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Return the AsyncGenerator directly for streaming Partial responses.
+        return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
+            cast(AsyncGenerator[Any, None], response),
             mode=mode,
         )
 
@@ -248,10 +258,14 @@ async def process_response_async(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+        return ListResponse.from_list(  # type: ignore[return-value]
+            [task for task in model.tasks],
+            raw_response=response,
+        )
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
+        model._raw_response = response
         return model
 
     if isinstance(model, AdapterBase):
@@ -270,7 +284,7 @@ def process_response(
     validation_context: dict[str, Any] | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | list[T_Model] | None:
+) -> Any:
     """Process and transform LLM responses into structured models (synchronous).
 
     This is the main entry point for converting raw LLM responses into validated Pydantic
@@ -329,18 +343,27 @@ def process_response(
 
     if (
         inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
+        and issubclass(response_model, IterableBase)
         and stream
     ):
-        # from_streaming_response returns a Generator
-        # Collect all yielded values into a list
-        tasks = list(
+        # Preserve streaming behavior for `create_iterable()` (for/async for).
+        return response_model.from_streaming_response(  # type: ignore[return-value]
+            response,
+            mode=mode,
+        )
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Collect partial stream to surface validation errors inside retry logic.
+        return list(
             response_model.from_streaming_response(  # type: ignore
                 response,
                 mode=mode,
             )
         )
-        return tasks
 
     model = response_model.from_response(  # type: ignore
         response,
@@ -353,10 +376,14 @@ def process_response(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+        return ListResponse.from_list(  # type: ignore[return-value]
+            [task for task in model.tasks],
+            raw_response=response,
+        )
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
+        model._raw_response = response
         return model
 
     if isinstance(model, AdapterBase):
