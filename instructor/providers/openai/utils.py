@@ -489,7 +489,10 @@ def handle_json_o1(
 
 
 def handle_json_modes(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any], mode: Mode
+    response_model: type[Any] | None,
+    new_kwargs: dict[str, Any],
+    mode: Mode,
+    json_system_prompt: str | None = None,
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle OpenAI JSON modes (JSON, MD_JSON, JSON_SCHEMA).
@@ -500,20 +503,43 @@ def handle_json_modes(
       - Mode.JSON_SCHEMA: Adds "response_format" with json_schema
       - Mode.JSON: Adds "response_format" with type="json_object", modifies system message
       - Mode.MD_JSON: Appends user message for markdown JSON response
+
+    Args:
+        response_model: The Pydantic model to use for parsing responses.
+        new_kwargs: The kwargs to modify for the API call.
+        mode: The JSON mode to use (JSON, MD_JSON, or JSON_SCHEMA).
+        json_system_prompt: Custom system prompt for JSON mode. Use {schema} placeholder
+            for the JSON schema. If None, uses the default prompt. If empty string "",
+            no system prompt modification is made. Example:
+            "You are a helpful assistant. Respond with JSON matching: {schema}"
     """
     if response_model is None:
         return None, new_kwargs
 
-    message = dedent(
-        f"""
-        As a genius expert, your task is to understand the content and provide
-        the parsed objects in json that match the following json_schema:\n
-
-        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
-
-        Make sure to return an instance of the JSON, not the schema itself
-        """
+    # Generate the JSON schema string
+    json_schema = json.dumps(
+        response_model.model_json_schema(), indent=2, ensure_ascii=False
     )
+
+    # Determine the system prompt to use
+    if json_system_prompt == "":
+        # Empty string means skip system prompt modification entirely
+        message = None
+    elif json_system_prompt is not None:
+        # Custom prompt provided - substitute {schema} placeholder
+        message = json_system_prompt.format(schema=json_schema)
+    else:
+        # Default prompt (backward compatible)
+        message = dedent(
+            f"""
+            As a genius expert, your task is to understand the content and provide
+            the parsed objects in json that match the following json_schema:\n
+
+            {json_schema}
+
+            Make sure to return an instance of the JSON, not the schema itself
+            """
+        )
 
     if mode == Mode.JSON:
         new_kwargs["response_format"] = {"type": "json_object"}
@@ -534,7 +560,8 @@ def handle_json_modes(
         )
         new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
 
-    if mode != Mode.JSON_SCHEMA:
+    # Only modify system message if we have a message to add
+    if message is not None and mode != Mode.JSON_SCHEMA:
         if new_kwargs["messages"][0]["role"] != "system":
             new_kwargs["messages"].insert(
                 0,

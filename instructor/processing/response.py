@@ -461,9 +461,9 @@ def handle_response_model(
         Mode.MISTRAL_TOOLS: handle_mistral_tools,
         Mode.MISTRAL_STRUCTURED_OUTPUTS: handle_mistral_structured_outputs,
         Mode.JSON_O1: handle_json_o1,
-        Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
-        Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
-        Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
+        Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON, nk.pop("json_system_prompt", None)),  # type: ignore
+        Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON, nk.pop("json_system_prompt", None)),  # type: ignore
+        Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA, nk.pop("json_system_prompt", None)),  # type: ignore
         Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
         Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
         Mode.ANTHROPIC_JSON: handle_anthropic_json,
