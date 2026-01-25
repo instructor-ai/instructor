@@ -15,8 +15,6 @@ dependencies = [
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
     "diskcache>=5.6.3",
-    "pre-commit>=4.3.0",
-    "ty>=0.0.1a23",
 ]
 name = "instructor"
 version = "1.14.4"
@@ -50,6 +48,7 @@ dev = [
     "python-dotenv>=1.0.1",
     "pytest-xdist>=3.8.0",
     "pre-commit>=4.2.0",
+    "ty>=0.0.1a23",
     "anthropic==0.71.0",
     "xmltodict>=0.13,<1.1",
 ]
