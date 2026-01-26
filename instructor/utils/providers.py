@@ -12,6 +12,7 @@ class Provider(Enum):
     """Supported provider identifiers."""
 
     OPENAI = "openai"
+    AZURE_OPENAI = "azure_openai"
     VERTEXAI = "vertexai"
     ANTHROPIC = "anthropic"
     ANYSCALE = "anyscale"
@@ -27,6 +28,10 @@ class Provider(Enum):
     FIREWORKS = "fireworks"
     WRITER = "writer"
     XAI = "xai"
+    OLLAMA = "ollama"
+    LITELLM = "litellm"
+    GOOGLE = "google"
+    GENERATIVE_AI = "generative-ai"
     UNKNOWN = "unknown"
     BEDROCK = "bedrock"
     PERPLEXITY = "perplexity"
@@ -86,38 +91,34 @@ def get_provider(base_url: str) -> Provider:
     Returns:
         Provider: The detected provider enum value
     """
-    if "anyscale" in str(base_url):
-        return Provider.ANYSCALE
-    elif "together" in str(base_url):
-        return Provider.TOGETHER
-    elif "anthropic" in str(base_url):
-        return Provider.ANTHROPIC
-    elif "cerebras" in str(base_url):
-        return Provider.CEREBRAS
-    elif "fireworks" in str(base_url):
-        return Provider.FIREWORKS
-    elif "groq" in str(base_url):
-        return Provider.GROQ
-    elif "openai" in str(base_url):
-        return Provider.OPENAI
-    elif "mistral" in str(base_url):
-        return Provider.MISTRAL
-    elif "cohere" in str(base_url):
-        return Provider.COHERE
-    elif "gemini" in str(base_url):
-        return Provider.GEMINI
-    elif "databricks" in str(base_url):
-        return Provider.DATABRICKS
-    elif "deepseek" in str(base_url):
-        return Provider.DEEPSEEK
-    elif "vertexai" in str(base_url):
-        return Provider.VERTEXAI
-    elif "writer" in str(base_url):
-        return Provider.WRITER
-    elif "perplexity" in str(base_url):
-        return Provider.PERPLEXITY
-    elif "x.ai" in str(base_url) or "xai" in str(base_url):
-        return Provider.XAI
-    elif "openrouter" in str(base_url):
-        return Provider.OPENROUTER
+    normalized = str(base_url).lower()
+    providers = (
+        ("azure", Provider.AZURE_OPENAI),
+        ("anyscale", Provider.ANYSCALE),
+        ("together", Provider.TOGETHER),
+        ("anthropic", Provider.ANTHROPIC),
+        ("cerebras", Provider.CEREBRAS),
+        ("fireworks", Provider.FIREWORKS),
+        ("groq", Provider.GROQ),
+        ("openai", Provider.OPENAI),
+        ("mistral", Provider.MISTRAL),
+        ("cohere", Provider.COHERE),
+        ("gemini", Provider.GEMINI),
+        ("google", Provider.GOOGLE),
+        ("generative-ai", Provider.GENERATIVE_AI),
+        ("databricks", Provider.DATABRICKS),
+        ("deepseek", Provider.DEEPSEEK),
+        ("vertexai", Provider.VERTEXAI),
+        ("bedrock", Provider.BEDROCK),
+        ("writer", Provider.WRITER),
+        ("perplexity", Provider.PERPLEXITY),
+        ("ollama", Provider.OLLAMA),
+        ("litellm", Provider.LITELLM),
+        ("openrouter", Provider.OPENROUTER),
+        ("x.ai", Provider.XAI),
+        ("xai", Provider.XAI),
+    )
+    for token, provider in providers:
+        if token in normalized:
+            return provider
     return Provider.UNKNOWN

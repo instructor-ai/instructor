@@ -1,5 +1,6 @@
 import json
 import pytest
+from instructor.auto_client import supported_providers
 from instructor.utils import (
     classproperty,
     extract_json_from_codeblock,
@@ -8,6 +9,8 @@ from instructor.utils import (
     merge_consecutive_messages,
     extract_system_messages,
     combine_system_messages,
+    Provider,
+    get_provider,
 )
 
 
@@ -386,3 +389,61 @@ def test_combine_system_messages_preserve_cache_control():
         },
     ]
     assert result == expected
+
+
+def test_provider_enum_covers_supported_providers():
+    provider_values = {provider.value for provider in Provider}
+    missing = [provider for provider in supported_providers if provider not in provider_values]
+    assert not missing, f"Missing providers in Provider enum: {missing}"
+
+
+def test_get_provider_matches_supported_providers():
+    provider_mapping = {
+        "openai": Provider.OPENAI,
+        "azure_openai": Provider.AZURE_OPENAI,
+        "databricks": Provider.DATABRICKS,
+        "anthropic": Provider.ANTHROPIC,
+        "google": Provider.GOOGLE,
+        "generative-ai": Provider.GENERATIVE_AI,
+        "vertexai": Provider.VERTEXAI,
+        "mistral": Provider.MISTRAL,
+        "cohere": Provider.COHERE,
+        "perplexity": Provider.PERPLEXITY,
+        "groq": Provider.GROQ,
+        "writer": Provider.WRITER,
+        "bedrock": Provider.BEDROCK,
+        "cerebras": Provider.CEREBRAS,
+        "deepseek": Provider.DEEPSEEK,
+        "fireworks": Provider.FIREWORKS,
+        "ollama": Provider.OLLAMA,
+        "openrouter": Provider.OPENROUTER,
+        "xai": Provider.XAI,
+        "litellm": Provider.LITELLM,
+    }
+    provider_urls = {
+        "openai": "https://api.openai.com/v1",
+        "azure_openai": "https://example.openai.azure.com",
+        "databricks": "https://dbc-databricks.com",
+        "anthropic": "https://api.anthropic.com",
+        "google": "https://generativelanguage.googleapis.com",
+        "generative-ai": "https://generative-ai.googleapis.com",
+        "vertexai": "https://vertexai.googleapis.com",
+        "mistral": "https://api.mistral.ai",
+        "cohere": "https://api.cohere.ai",
+        "perplexity": "https://api.perplexity.ai",
+        "groq": "https://api.groq.com",
+        "writer": "https://api.writer.com",
+        "bedrock": "https://bedrock.aws.amazon.com",
+        "cerebras": "https://api.cerebras.ai",
+        "deepseek": "https://api.deepseek.com",
+        "fireworks": "https://api.fireworks.ai",
+        "ollama": "http://localhost:11434",
+        "openrouter": "https://openrouter.ai",
+        "xai": "https://api.x.ai",
+        "litellm": "https://litellm.ai",
+    }
+    assert set(supported_providers) == set(provider_mapping)
+    assert set(provider_mapping) == set(provider_urls)
+
+    for provider_name, base_url in provider_urls.items():
+        assert get_provider(base_url) == provider_mapping[provider_name]
