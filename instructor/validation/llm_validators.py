@@ -42,9 +42,10 @@ def llm_validator(
 
     Parameters:
         statement (str): The statement to validate
-        model (str): The LLM to use for validation (default: "gpt-4o-mini")
+        client (Instructor): The Instructor client to use for validation
+        allow_override (bool): If True, return LLM's fixed_value when validation fails (default: False)
+        model (str): The LLM to use for validation (default: "gpt-3.5-turbo")
         temperature (float): The temperature to use for the LLM (default: 0)
-        client (OpenAI): The OpenAI client to use (default: None)
     """
 
     def llm(v: str) -> str:
@@ -64,13 +65,14 @@ def llm_validator(
             temperature=temperature,
         )
 
-        # If the response is  not valid, return the reason, this could be used in
-        # the future to generate a better response, via reasking mechanism.
-        assert resp.is_valid, resp.reason
+        # Handle validation result
+        if not resp.is_valid:
+            # Check if we should return the fixed value instead of failing
+            if allow_override and resp.fixed_value is not None:
+                return resp.fixed_value
+            # Raise a proper ValueError with the LLM's explanation
+            raise ValueError(resp.reason)
 
-        if allow_override and not resp.is_valid and resp.fixed_value is not None:
-            # If the value is not valid, but we allow override, return the fixed value
-            return resp.fixed_value
         return v
 
     return llm
