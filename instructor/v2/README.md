@@ -1077,64 +1077,78 @@ This checklist tracks which providers have been migrated to v2:
 
 - [x] **Anthropic** (`Provider.ANTHROPIC`)
   - Location: `instructor/v2/providers/anthropic/`
-  - Modes: `TOOLS`, `JSON`, `JSON_SCHEMA`, `PARALLEL_TOOLS`, `ANTHROPIC_REASONING_TOOLS` (deprecated)
+  - Modes: `TOOLS`, `JSON_SCHEMA`, `PARALLEL_TOOLS`, `ANTHROPIC_REASONING_TOOLS` (deprecated)
   - Tests: `tests/v2/test_provider_modes.py`
   - Status: ✅ Complete
 
 - [x] **Google GenAI** (`Provider.GENAI`)
   - Location: `instructor/v2/providers/genai/`
   - Modes: `TOOLS`, `JSON`
-  - Tests: `tests/v2/test_provider_modes.py`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_genai_integration.py`
+  - Status: ✅ Complete
+
+- [x] **OpenAI** (`Provider.OPENAI`)
+  - Location: `instructor/v2/providers/openai/`
+  - Modes: `TOOLS`, `JSON_SCHEMA`, `MD_JSON`, `PARALLEL_TOOLS`, `RESPONSES_TOOLS`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_openai_streaming.py`
+  - Status: ✅ Complete
+
+- [x] **Cohere** (`Provider.COHERE`)
+  - Location: `instructor/v2/providers/cohere/`
+  - Modes: `TOOLS`, `JSON_SCHEMA`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_cohere_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **Mistral** (`Provider.MISTRAL`)
+  - Location: `instructor/v2/providers/mistral/`
+  - Modes: `TOOLS`, `JSON_SCHEMA`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_mistral_client.py`, `tests/v2/test_mistral_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **Groq** (`Provider.GROQ`)
+  - Location: `instructor/v2/providers/groq/`
+  - Modes: `TOOLS`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_groq_client.py`, `tests/v2/test_groq_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **Fireworks** (`Provider.FIREWORKS`)
+  - Location: `instructor/v2/providers/fireworks/`
+  - Modes: `TOOLS`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_fireworks_client.py`, `tests/v2/test_fireworks_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **Cerebras** (`Provider.CEREBRAS`)
+  - Location: `instructor/v2/providers/cerebras/`
+  - Modes: `TOOLS`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_cerebras_client.py`, `tests/v2/test_cerebras_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **Writer** (`Provider.WRITER`)
+  - Location: `instructor/v2/providers/writer/`
+  - Modes: `TOOLS`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_writer_client.py`, `tests/v2/test_writer_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **xAI** (`Provider.XAI`)
+  - Location: `instructor/v2/providers/xai/`
+  - Modes: `TOOLS`, `JSON_SCHEMA`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_xai_client.py`, `tests/v2/test_xai_handlers.py`
+  - Status: ✅ Complete
+
+- [x] **Bedrock** (`Provider.BEDROCK`)
+  - Location: `instructor/v2/providers/bedrock/`
+  - Modes: `TOOLS`, `MD_JSON`
+  - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_bedrock_client.py`, `tests/v2/test_bedrock_handlers.py`
   - Status: ✅ Complete
 
 ### Pending Migrations
 
 The following providers exist in v1 (`instructor/providers/`) but have not yet been migrated to v2:
 
-- [ ] **OpenAI** (`Provider.OPENAI`)
-  - Location: `instructor/providers/openai/`
-  - Modes: TBD
-  - Priority: High
-
 - [ ] **Google Gemini** (`Provider.GEMINI`)
   - Location: `instructor/providers/gemini/`
   - Modes: TBD
   - Priority: Medium
-
-- [ ] **Cohere** (`Provider.COHERE`)
-  - Location: `instructor/providers/cohere/`
-  - Modes: TBD
-  - Priority: Medium
-
-- [ ] **Mistral** (`Provider.MISTRAL`)
-  - Location: `instructor/providers/mistral/`
-  - Modes: TBD
-  - Priority: Medium
-
-- [ ] **Groq** (`Provider.GROQ`)
-  - Location: `instructor/providers/groq/`
-  - Modes: TBD
-  - Priority: Medium
-
-- [ ] **Fireworks** (`Provider.FIREWORKS`)
-  - Location: `instructor/providers/fireworks/`
-  - Modes: TBD
-  - Priority: Low
-
-- [ ] **Cerebras** (`Provider.CEREBRAS`)
-  - Location: `instructor/providers/cerebras/`
-  - Modes: TBD
-  - Priority: Low
-
-- [ ] **Writer** (`Provider.WRITER`)
-  - Location: `instructor/providers/writer/`
-  - Modes: TBD
-  - Priority: Low
-
-- [ ] **xAI** (`Provider.XAI`)
-  - Location: `instructor/providers/xai/`
-  - Modes: TBD
-  - Priority: Low
 
 - [ ] **Perplexity** (`Provider.PERPLEXITY`)
   - Location: `instructor/providers/perplexity/`
@@ -1143,11 +1157,6 @@ The following providers exist in v1 (`instructor/providers/`) but have not yet b
 
 - [ ] **Vertex AI** (`Provider.VERTEXAI`)
   - Location: `instructor/providers/vertexai/`
-  - Modes: TBD
-  - Priority: Medium
-
-- [ ] **Bedrock** (`Provider.BEDROCK`)
-  - Location: `instructor/providers/bedrock/`
   - Modes: TBD
   - Priority: Medium
 
