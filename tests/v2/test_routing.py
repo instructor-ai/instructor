@@ -32,7 +32,6 @@ def test_from_provider_routes_to_v2(async_client: bool):
         assert isinstance(client, AsyncInstructor)
 
 
-@pytest.mark.skip(reason="Deprecation warning not yet implemented in v1 from_anthropic")
 @pytest.mark.parametrize(
     "client_class_name",
     ["Anthropic", "AsyncAnthropic"],
@@ -40,8 +39,6 @@ def test_from_provider_routes_to_v2(async_client: bool):
 )
 def test_old_from_anthropic_deprecation_warning(client_class_name: str):
     """Test that old from_anthropic() emits deprecation warning with correct v2 example.
-
-    Note: This test is skipped until deprecation warnings are added to v1 providers.
     """
     if importlib.util.find_spec("anthropic") is None:
         pytest.skip("anthropic package is not installed")
@@ -58,12 +55,16 @@ def test_old_from_anthropic_deprecation_warning(client_class_name: str):
         # Should emit deprecation warning
         assert len(w) == 1
         assert issubclass(w[0].category, DeprecationWarning)
-        assert "deprecated" in str(w[0].message).lower()
-        assert "v2" in str(w[0].message)
-        # Verify the warning shows correct v2 Mode enum (TOOLS not ANTHROPIC_TOOLS)
-        assert "Mode.TOOLS" in str(w[0].message)
-        # Verify it mentions the correct v2 import path
-        assert "instructor.v2.providers.anthropic" in str(w[0].message)
+        expected_warning = (
+            "from_anthropic() is deprecated and will be removed in v2.0. "
+            "Use instructor.v2.from_anthropic() with Mode instead:\n"
+            "  from instructor.v2.providers.anthropic import from_anthropic\n"
+            "  from instructor import Mode\n"
+            "  client = from_anthropic(anthropic_client, mode=Mode.TOOLS)\n"
+            "Or use from_provider() which automatically routes to v2:\n"
+            "  client = instructor.from_provider('anthropic/claude-3-sonnet')"
+        )
+        assert str(w[0].message) == expected_warning
 
 
 @pytest.mark.skip(reason="Requires Anthropic API key")
