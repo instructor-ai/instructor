@@ -9,7 +9,7 @@ Tests cover:
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from instructor.validation.llm_validators import llm_validator
 from instructor.processing.validators import Validator
