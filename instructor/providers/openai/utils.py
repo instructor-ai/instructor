@@ -527,7 +527,9 @@ def handle_json_modes(
         message = None
     elif json_system_prompt is not None:
         # Custom prompt provided - substitute {schema} placeholder
-        message = json_system_prompt.format(schema=json_schema)
+        # Using str.replace() instead of str.format() to safely handle prompts
+        # that contain curly braces (e.g., JSON examples like {"id": 1})
+        message = json_system_prompt.replace("{schema}", json_schema)
     else:
         # Default prompt (backward compatible)
         message = dedent(
