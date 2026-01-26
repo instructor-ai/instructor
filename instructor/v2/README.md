@@ -321,8 +321,17 @@ This guide walks through migrating a provider from v1 to v2 architecture.
 Before migrating, understand your current v1 provider:
 
 1. **Locate provider files**:
-   - `instructor/providers/your_provider/client.py` - Factory function
-   - `instructor/providers/your_provider/utils.py` - Helper functions (if exists)
+   - `instructor/core/client.py` - V1 factory functions like `from_openai()` / `from_litellm()`
+   - `instructor/auto_client.py` - `from_provider()` routing (v2-first, v1 fallback)
+   - `instructor/core/patch.py` - V1 patching helpers used by the factories
+   - `instructor/core/retry.py` - V1 retry + reask orchestration
+   - `instructor/client.py` / `instructor/patch.py` - Backwards-compatible re-exports (thin wrappers)
+
+   **Current V1 footprint (migration tracking)**: V1 logic still lives in
+   `instructor/core/*` (client, patch, retry), with routing in
+   `instructor/auto_client.py` and deprecated shims in `instructor/client.py`
+   and `instructor/patch.py`. These modules are the remaining V1 surface area
+   to migrate or deprecate as providers move to v2.
 
 2. **Identify key components**:
    - What modes does your provider support?
@@ -331,22 +340,23 @@ Before migrating, understand your current v1 provider:
    - How does response parsing work? (extracting structured data from raw response)
    - How does reask/retry work? (handling validation failures)
 
-3. **Example V1 structure** (from `instructor/providers/cohere/client.py`):
+3. **Example V1 structure** (from `instructor/core/client.py`):
 
 ```python
-# V1: Direct mode handling in factory function
-def from_cohere(client, mode=Mode.COHERE_TOOLS, **kwargs):
-    valid_modes = {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}
-
-    if mode not in valid_modes:
-        raise ModeError(...)
+# V1: Factory normalizes mode + applies patching
+def from_openai(client, mode=Mode.TOOLS, **kwargs):
+    _ensure_registry_loaded()
+    normalized_mode = normalize_mode_for_provider(mode, Provider.OPENAI)
 
     # Uses instructor.patch() which delegates to the registry handlers
     return Instructor(
         client=client,
-        create=instructor.patch(create=client.chat, mode=mode),
-        provider=Provider.COHERE,
-        mode=mode,
+        create=instructor.patch(
+            create=client.chat.completions.create,
+            mode=normalized_mode,
+        ),
+        provider=Provider.OPENAI,
+        mode=normalized_mode,
         **kwargs,
     )
 ```
@@ -390,19 +400,19 @@ Identify the three handler methods needed:
    - Look for functions like `reask_cohere_tools()`, `reask_anthropic_json()`
    - Modify kwargs to include error context for retry
 
-**Example V1 handler functions** (from `instructor/providers/cohere/utils.py`):
+**Example V1 handler functions** (from `instructor/processing/function_calls.py`
+and `instructor/processing/response.py`):
 
 ```python
-# V1: Scattered handler functions
-def handle_cohere_json_schema(response_model, new_kwargs):
-    # Convert response_model to JSON schema format
-    new_kwargs["response_format"] = {"type": "json_schema", ...}
-    return response_model, new_kwargs
+# V1: Response parsing helpers on ResponseSchema
+@classmethod
+def parse_cohere_json_schema(cls, completion, validation_context=None, strict=None):
+    text = completion.text
+    return cls.model_validate_json(text, context=validation_context, strict=strict)
 
-def reask_cohere_tools(kwargs, response, exception):
-    # Add error message to messages for retry
-    kwargs["messages"].append({"role": "user", "content": f"Error: {exception}"})
-    return kwargs
+def handle_reask_kwargs(kwargs, mode, response, exception, provider=Provider.OPENAI):
+    # Dispatch to provider-specific reask handler for retries
+    return handlers.reask_handler(kwargs, response, exception)
 ```
 
 #### Step 5: Implement V2 Handlers
@@ -645,13 +655,13 @@ def test_basic_extraction():
 1. **Update `from_provider()` routing** (if applicable):
    - Ensure `instructor.from_provider("cohere/model")` routes to v2
 
-2. **Add deprecation warnings** to v1 factory:
+2. **Add deprecation warnings** to v1 entry points:
 
    ```python
-   # instructor/providers/cohere/client.py
-   def from_cohere(...):
+   # instructor/core/client.py
+   def from_openai(...):
        warnings.warn(
-           "from_cohere() is deprecated. Use instructor.v2.providers.cohere.from_cohere()",
+           "from_openai() is deprecated. Use instructor.v2.providers.openai.from_openai()",
            DeprecationWarning,
            stacklevel=2,
        )
@@ -1181,7 +1191,9 @@ This checklist tracks which providers have been migrated to v2:
 
 ### Pending Migrations
 
-All current providers in `instructor/providers/` now have v2 implementations.
+All current providers have v2 implementations in `instructor/v2/providers/`.
+The remaining V1 surface area is concentrated in `instructor/core/*` and
+`instructor/auto_client.py` (see the Step 1 note above).
 
 ### Migration Steps
 
