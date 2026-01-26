@@ -21,6 +21,7 @@ from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
 from .processing.function_calls import openai_schema
+from .core.patch import patch
 
 
 P = ParamSpec("P")
@@ -123,7 +124,7 @@ class Instructions:
         self.finetune_format = finetune_format
         self.indent = indent
         self.include_code_body = include_code_body
-        self.client = openai_client or OpenAI()
+        self.client = patch(openai_client or OpenAI())
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:
@@ -184,7 +185,7 @@ class Instructions:
                 return self.client.chat.completions.create(
                     **openai_kwargs,
                     model=model,
-                    response_model=return_base_model,  # type: ignore - TODO figure out why `response_model` is not recognized
+                    response_model=return_base_model,
                 )
 
             @functools.wraps(fn)
