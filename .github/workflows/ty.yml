@@ -1,4 +1,4 @@
-name: Type Check
+name: ty
 
 on:
   pull_request:
@@ -25,3 +25,5 @@ jobs:
         run: uv sync --all-extras
       - name: Run type check with ty
         run: uv run ty check instructor/
+      - name: Run type check with ty (tests)
+        run: uv run ty check --config-file ty-tests.toml tests

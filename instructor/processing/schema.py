@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import functools
 import warnings
-from typing import Any
+from typing import Any, cast
 
 from docstring_parser import parse
 from pydantic import BaseModel
@@ -112,7 +112,9 @@ def generate_gemini_schema(model: type[BaseModel]) -> Any:
     )
 
     try:
-        import google.generativeai.types as genai_types
+        import importlib
+
+        genai_types = cast(Any, importlib.import_module("google.generativeai.types"))
 
         # Use OpenAI schema
         openai_schema = generate_openai_schema(model)

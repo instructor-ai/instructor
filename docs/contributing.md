@@ -295,7 +295,7 @@ For detailed documentation on each script, see the `scripts/README.md` file in t
 We use the following tools to maintain code quality:
 
 - **Ruff**: For linting and formatting
-- **PyRight**: For type checking
+- **ty**: For type checking
 - **Pre-commit**: For automatic checks before committing
 
 ```bash

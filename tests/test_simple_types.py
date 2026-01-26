@@ -22,9 +22,7 @@ def test_partial_not_simple():
     class SampleModel(BaseModel):
         data: int
 
-    assert not is_simple_type(Partial[SampleModel]), "Failed for type: " + str(
-        Partial[int]
-    )
+    assert not is_simple_type(Partial[SampleModel]), "Failed for type: Partial[int]"
 
 
 def test_annotated_simple():

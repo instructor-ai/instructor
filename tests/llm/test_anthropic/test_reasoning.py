@@ -19,7 +19,7 @@ def test_reasoning():
                 "content": "Which is larger, 9.11 or 9.8? Think carefully about decimal places.",
             },
         ],
-        temperature=0,  # Use temperature=0 for deterministic results
+        temperature=1,  # Required when thinking is enabled
         max_tokens=2000,
         thinking={"type": "enabled", "budget_tokens": 1024},
         max_retries=3,  # Retry if the model gets it wrong

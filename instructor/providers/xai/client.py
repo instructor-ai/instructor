@@ -5,6 +5,7 @@ import json
 
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.partial import PartialBase
+from instructor.dsl.simple_type import AdapterBase
 
 from instructor.utils.core import prepare_response_model
 from pydantic import BaseModel
@@ -45,6 +46,16 @@ def _get_model_name(response_model: Any) -> str:
         The model name or 'Model' as fallback
     """
     return getattr(response_model, "__name__", "Model")
+
+
+def _finalize_parsed_response(parsed: Any, raw_response: Any) -> Any:
+    if isinstance(parsed, BaseModel):
+        parsed._raw_response = raw_response
+    if isinstance(parsed, IterableBase):
+        return [task for task in parsed.tasks]
+    if isinstance(parsed, AdapterBase):
+        return parsed.content
+    return parsed
 
 
 if TYPE_CHECKING:
@@ -123,8 +134,10 @@ def from_xai(
 
         assert response_model is not None
 
-        if is_stream:
-            response_model = prepare_response_model(response_model)
+        prepared_model = response_model
+        if mode == instructor.Mode.XAI_TOOLS or is_stream:
+            prepared_model = prepare_response_model(response_model)
+        assert prepared_model is not None
 
         if mode == instructor.Mode.XAI_JSON:
             if is_stream:
@@ -132,12 +145,12 @@ def from_xai(
                 chat.proto.response_format.CopyFrom(
                     xchat.chat_pb2.ResponseFormat(
                         format_type=xchat.chat_pb2.FormatType.FORMAT_TYPE_JSON_SCHEMA,
-                        schema=json.dumps(_get_model_schema(response_model)),
+                        schema=json.dumps(_get_model_schema(prepared_model)),
                     )
                 )
                 json_chunks = (chunk.content async for _, chunk in chat.stream())  # type: ignore[misc]
                 # response_model is guaranteed to be a type[BaseModel] at this point due to earlier assertion
-                rm = cast(type[BaseModel], response_model)
+                rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks_async(json_chunks)  # type: ignore
                 elif issubclass(rm, PartialBase):
@@ -152,9 +165,9 @@ def from_xai(
                 return parsed
         else:
             tool_obj = xchat.tool(
-                name=_get_model_name(response_model),
-                description=response_model.__doc__ or "",
-                parameters=_get_model_schema(response_model),
+                name=_get_model_name(prepared_model),
+                description=prepared_model.__doc__ or "",
+                parameters=_get_model_schema(prepared_model),
             )
             chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
             tool_name = tool_obj.function.name  # type: ignore[attr-defined]
@@ -166,7 +179,7 @@ def from_xai(
                     async for resp, _ in stream_iter  # type: ignore[assignment]
                     if resp.tool_calls and resp.finish_reason == "REASON_INVALID"  # type: ignore[attr-defined]
                 )
-                rm = cast(type[BaseModel], response_model)
+                rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks_async(args)  # type: ignore
                 elif issubclass(rm, PartialBase):
@@ -195,11 +208,11 @@ def from_xai(
 
                     if text_content:
                         json_str = extract_json_from_codeblock(text_content)
+                        model_for_validation = cast(type[Any], prepared_model)
                         parsed = _validate_model_from_json(
-                            response_model, json_str, None, strict
+                            model_for_validation, json_str, None, strict
                         )
-                        parsed._raw_response = resp
-                        return parsed
+                        return _finalize_parsed_response(parsed, resp)
 
                     raise ValueError(
                         f"No tool calls returned from xAI and no text content available. "
@@ -209,9 +222,11 @@ def from_xai(
                 args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
                 from ...processing.function_calls import _validate_model_from_json
 
-                parsed = _validate_model_from_json(response_model, args, None, strict)
-                parsed._raw_response = resp
-                return parsed
+                model_for_validation = cast(type[Any], prepared_model)
+                parsed = _validate_model_from_json(
+                    model_for_validation, args, None, strict
+                )
+                return _finalize_parsed_response(parsed, resp)
 
     def create(
         response_model: type[BaseModel] | None,
@@ -237,8 +252,10 @@ def from_xai(
 
         assert response_model is not None
 
-        if is_stream:
-            response_model = prepare_response_model(response_model)
+        prepared_model = response_model
+        if mode == instructor.Mode.XAI_TOOLS or is_stream:
+            prepared_model = prepare_response_model(response_model)
+        assert prepared_model is not None
 
         if mode == instructor.Mode.XAI_JSON:
             if is_stream:
@@ -246,11 +263,11 @@ def from_xai(
                 chat.proto.response_format.CopyFrom(
                     xchat.chat_pb2.ResponseFormat(
                         format_type=xchat.chat_pb2.FormatType.FORMAT_TYPE_JSON_SCHEMA,
-                        schema=json.dumps(_get_model_schema(response_model)),
+                        schema=json.dumps(_get_model_schema(prepared_model)),
                     )
                 )
                 json_chunks = (chunk.content for _, chunk in chat.stream())  # type: ignore[misc]
-                rm = cast(type[BaseModel], response_model)
+                rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(json_chunks)
                 elif issubclass(rm, PartialBase):
@@ -265,9 +282,9 @@ def from_xai(
                 return parsed
         else:
             tool_obj = xchat.tool(
-                name=_get_model_name(response_model),
-                description=response_model.__doc__ or "",
-                parameters=_get_model_schema(response_model),
+                name=_get_model_name(prepared_model),
+                description=prepared_model.__doc__ or "",
+                parameters=_get_model_schema(prepared_model),
             )
             chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
             tool_name = tool_obj.function.name  # type: ignore[attr-defined]
@@ -280,7 +297,7 @@ def from_xai(
                     # See: https://docs.x.ai/docs/guides/function-calling
                     if resp.tool_calls:  # type: ignore[attr-defined]
                         args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
-                        rm = cast(type[BaseModel], response_model)
+                        rm = cast(type[BaseModel], prepared_model)
                         if issubclass(rm, IterableBase):
                             return rm.tasks_from_chunks(args)
                         elif issubclass(rm, PartialBase):
@@ -309,11 +326,11 @@ def from_xai(
 
                     if text_content:
                         json_str = extract_json_from_codeblock(text_content)
+                        model_for_validation = cast(type[Any], prepared_model)
                         parsed = _validate_model_from_json(
-                            response_model, json_str, None, strict
+                            model_for_validation, json_str, None, strict
                         )
-                        parsed._raw_response = resp
-                        return parsed
+                        return _finalize_parsed_response(parsed, resp)
 
                     raise ValueError(
                         f"No tool calls returned from xAI and no text content available. "
@@ -323,9 +340,11 @@ def from_xai(
                 args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
                 from ...processing.function_calls import _validate_model_from_json
 
-                parsed = _validate_model_from_json(response_model, args, None, strict)
-                parsed._raw_response = resp
-                return parsed
+                model_for_validation = cast(type[Any], prepared_model)
+                parsed = _validate_model_from_json(
+                    model_for_validation, args, None, strict
+                )
+                return _finalize_parsed_response(parsed, resp)
 
     if isinstance(client, AsyncClient):
         return instructor.AsyncInstructor(

@@ -1,4 +1,5 @@
+import os
 import instructor
 
-models: list[str] = ["google/gemini-2.5-flash"]
-modes = [instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS]
+models: list[str] = [os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro")]
+modes = [instructor.Mode.GENAI_STRUCTURED_OUTPUTS]

@@ -19,6 +19,46 @@ from ...utils.core import dump_message, merge_consecutive_messages
 from ...processing.schema import generate_openai_schema
 
 
+def _is_stream_response(response: Any) -> bool:
+    """Check if response is a Stream object rather than a ChatCompletion.
+
+    Stream objects don't have 'choices' attribute and can't be used
+    for detailed reask messages that reference the response content.
+    """
+    return response is None or not hasattr(response, "choices")
+
+
+def _filter_responses_tool_calls(output_items: list[Any]) -> list[Any]:
+    """Return response output items that represent tool calls."""
+    tool_calls: list[Any] = []
+    for item in output_items:
+        item_type = getattr(item, "type", None)
+        if item_type in {"function_call", "tool_call"}:
+            tool_calls.append(item)
+            continue
+        if item_type is None and hasattr(item, "arguments"):
+            tool_calls.append(item)
+    return tool_calls
+
+
+def _format_responses_tool_call_details(tool_call: Any) -> str:
+    """Format tool call name/id details for reask messages."""
+    tool_name = getattr(tool_call, "name", None)
+    tool_id = (
+        getattr(tool_call, "id", None)
+        or getattr(tool_call, "call_id", None)
+        or getattr(tool_call, "tool_call_id", None)
+    )
+    details: list[str] = []
+    if tool_name:
+        details.append(f"name={tool_name}")
+    if tool_id:
+        details.append(f"id={tool_id}")
+    if not details:
+        return ""
+    return f" (tool call {', '.join(details)})"
+
+
 def reask_tools(
     kwargs: dict[str, Any],
     response: Any,
@@ -32,6 +72,21 @@ def reask_tools(
     - Adds: "messages" (tool response messages indicating validation errors)
     """
     kwargs = kwargs.copy()
+
+    # Handle Stream objects which don't have choices attribute
+    # This happens when streaming mode is used with retries
+    if _is_stream_response(response):
+        kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+        return kwargs
+
     reask_msgs = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
         reask_msgs.append(
@@ -62,13 +117,29 @@ def reask_responses_tools(
     """
     kwargs = kwargs.copy()
 
+    # Handle Stream objects which don't have output attribute
+    if response is None or not hasattr(response, "output"):
+        kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+        return kwargs
+
     reask_messages = []
-    for tool_call in response.output:
+    for tool_call in _filter_responses_tool_calls(response.output):
+        details = _format_responses_tool_call_details(tool_call)
         reask_messages.append(
             {
                 "role": "user",  # type: ignore
                 "content": (
-                    f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors with {tool_call.arguments}"
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors with "
+                    f"{tool_call.arguments}{details}"
                 ),
             }
         )
@@ -90,6 +161,17 @@ def reask_md_json(
     - Adds: "messages" (user message requesting JSON correction)
     """
     kwargs = kwargs.copy()
+
+    # Handle Stream objects which don't have choices attribute
+    if _is_stream_response(response):
+        kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
+            }
+        )
+        return kwargs
+
     reask_msgs = [dump_message(response.choices[0].message)]
 
     reask_msgs.append(
@@ -115,6 +197,19 @@ def reask_default(
     - Adds: "messages" (user message requesting function correction)
     """
     kwargs = kwargs.copy()
+
+    # Handle Stream objects which don't have choices attribute
+    if _is_stream_response(response):
+        kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": (
+                    f"Recall the function correctly, fix the errors, exceptions found\n{exception}"
+                ),
+            }
+        )
+        return kwargs
+
     reask_msgs = [dump_message(response.choices[0].message)]
 
     reask_msgs.append(

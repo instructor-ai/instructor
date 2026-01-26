@@ -56,7 +56,7 @@ def from_mistral(
     if use_async:
 
         async def async_wrapper(
-            *args: Any, **kwargs: dict[str, Any]
+            *args: Any, **kwargs: Any
         ):  # Handler for async streaming
             if kwargs.pop("stream", False):
                 return await client.chat.stream_async(*args, **kwargs)
@@ -70,9 +70,7 @@ def from_mistral(
             **kwargs,
         )
 
-    def sync_wrapper(
-        *args: Any, **kwargs: dict[str, Any]
-    ):  # Handler for sync streaming
+    def sync_wrapper(*args: Any, **kwargs: Any):  # Handler for sync streaming
         if kwargs.pop("stream", False):
             return client.chat.stream(*args, **kwargs)
         return client.chat.complete(*args, **kwargs)
