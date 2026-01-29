@@ -2,19 +2,19 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.13.1
+aiohttp==3.13.3
     # via instructor (pyproject.toml)
 aiosignal==1.4.0
     # via aiohttp
 annotated-types==0.7.0
     # via pydantic
-anyio==4.11.0
+anyio==4.12.1
     # via
     #   httpx
     #   openai
 attrs==25.4.0
     # via aiohttp
-certifi==2025.10.5
+certifi==2026.1.4
     # via
     #   httpcore
     #   httpx
@@ -47,7 +47,7 @@ idna==3.11
     #   yarl
 jinja2==3.1.6
     # via instructor (pyproject.toml)
-jiter==0.11.1
+jiter==0.12.0
     # via
     #   instructor (pyproject.toml)
     #   openai
@@ -57,21 +57,21 @@ markupsafe==3.0.3
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-multidict==6.7.0
+multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
-openai==2.6.1
+openai==2.16.0
     # via instructor (pyproject.toml)
 propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-pydantic==2.12.3
+pydantic==2.12.5
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.41.4
+pydantic-core==2.41.5
     # via
     #   instructor (pyproject.toml)
     #   pydantic
@@ -79,7 +79,7 @@ pygments==2.19.2
     # via rich
 requests==2.32.5
     # via instructor (pyproject.toml)
-rich==14.2.0
+rich==14.3.1
     # via
     #   instructor (pyproject.toml)
     #   typer
@@ -93,7 +93,7 @@ tenacity==9.1.2
     # via instructor (pyproject.toml)
 tqdm==4.67.1
     # via openai
-typer==0.20.0
+typer==0.21.1
     # via instructor (pyproject.toml)
 typing-extensions==4.15.0
     # via
@@ -106,7 +106,7 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
-urllib3==2.5.0
+urllib3==2.6.3
     # via requests
 yarl==1.22.0
     # via aiohttp
