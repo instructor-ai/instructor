@@ -9,6 +9,7 @@ on:
 jobs:
   ai-labeler:
     runs-on: ubuntu-latest
+    if: ${{ secrets.OPENAI_API_KEY != '' }}
     permissions:
       contents: read
       issues: write
