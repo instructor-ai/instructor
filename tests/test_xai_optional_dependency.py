@@ -1,4 +1,6 @@
 import builtins
+import types
+from collections.abc import Mapping, Sequence
 
 import pytest
 
@@ -6,10 +8,16 @@ import pytest
 def _block_xai_sdk_imports(monkeypatch: pytest.MonkeyPatch) -> None:
     real_import = builtins.__import__
 
-    def fake_import(name: str, *args: object, **kwargs: object):  # type: ignore[no-untyped-def]
+    def fake_import(
+        name: str,
+        globals: Mapping[str, object] | None = None,
+        locals: Mapping[str, object] | None = None,
+        fromlist: Sequence[str] | None = (),
+        level: int = 0,
+    ) -> types.ModuleType:
         if name == "xai_sdk" or name.startswith("xai_sdk."):
             raise ModuleNotFoundError("No module named 'xai_sdk'")
-        return real_import(name, *args, **kwargs)
+        return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
 
@@ -42,7 +50,7 @@ def test_direct_from_xai_has_clear_error_when_sdk_missing(
     monkeypatch.setattr(xai_client, "xchat", None)
 
     with pytest.raises(ConfigurationError) as excinfo:
-        xai_client.from_xai(object())  # type: ignore[arg-type]
+        xai_client.from_xai(object())
 
     msg = str(excinfo.value)
     assert "instructor[xai]" in msg
