@@ -27,6 +27,7 @@ from .core.client import (
     from_litellm,
 )
 from .core import hooks
+from .core.exceptions import TokenBudgetExceeded
 from .utils.providers import Provider
 from .auto_client import from_provider
 from .batch import BatchProcessor, BatchRequest, BatchJob
@@ -65,6 +66,7 @@ __all__ = [
     "llm_validator",
     "openai_moderation",
     "hooks",
+    "TokenBudgetExceeded",
     "client",  # Backward compatibility
     # Backward compatibility exports
     "handle_response_model",

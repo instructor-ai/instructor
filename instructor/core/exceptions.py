@@ -534,6 +534,69 @@ class ResponseParsingError(ValueError, InstructorError):
         super().__init__(f"{message}{context}", *args, **kwargs)
 
 
+class TokenBudgetExceeded(InstructorError):
+    """Exception raised when retry token budget is exhausted.
+
+    This exception is raised when the cumulative token usage across retry
+    attempts exceeds the configured token budget. This helps prevent
+    runaway costs from adversarial or malformed LLM responses that
+    repeatedly fail validation.
+
+    Attributes:
+        token_budget: The maximum token budget that was exceeded
+        total_tokens_used: The actual tokens used before exceeding the budget
+        n_attempts: Number of retry attempts made
+        last_completion: The last completion received before budget exhaustion
+        failed_attempts: List of FailedAttempt objects with details about
+            each retry attempt
+
+    Security Context:
+        This exception helps mitigate retry amplification attacks where
+        an adversarial LLM (or prompt-injected response) crafts outputs
+        that always fail validation, causing:
+        - Context growth with each retry (2 messages per retry)
+        - Token budget exhaustion and cost amplification
+
+    Examples:
+        ```python
+        try:
+            response = client.chat.completions.create(
+                response_model=StrictModel,
+                max_retries=10,
+                token_budget=10000,  # Stop if we use more than 10k tokens
+                ...
+            )
+        except TokenBudgetExceeded as e:
+            print(f"Token budget exceeded after {e.n_attempts} attempts")
+            print(f"Used {e.total_tokens_used} of {e.token_budget} tokens")
+            # Implement fallback or alert
+        ```
+
+    See Also:
+        - InstructorRetryException: Raised when retry count is exhausted
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        token_budget: int,
+        total_tokens_used: int,
+        n_attempts: int,
+        last_completion: Any | None = None,
+        failed_attempts: list[FailedAttempt] | None = None,
+        **kwargs: dict[str, Any],
+    ):
+        self.token_budget = token_budget
+        self.total_tokens_used = total_tokens_used
+        self.n_attempts = n_attempts
+        self.last_completion = last_completion
+        message = (
+            f"Token budget exceeded: used {total_tokens_used} tokens "
+            f"(budget: {token_budget}) after {n_attempts} attempts"
+        )
+        super().__init__(message, *args, failed_attempts=failed_attempts, **kwargs)
+
+
 class MultimodalError(ValueError, InstructorError):
     """Exception raised for multimodal content processing errors.
 

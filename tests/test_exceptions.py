@@ -12,6 +12,7 @@ from instructor.core.exceptions import (
     ModeError,
     ClientError,
     FailedAttempt,
+    TokenBudgetExceeded,
 )
 
 
@@ -26,6 +27,7 @@ def test_all_exceptions_can_be_imported():
     assert ConfigurationError is not None
     assert ModeError is not None
     assert ClientError is not None
+    assert TokenBudgetExceeded is not None
 
 
 def test_exception_hierarchy():
@@ -37,6 +39,7 @@ def test_exception_hierarchy():
     assert issubclass(ConfigurationError, InstructorError)
     assert issubclass(ModeError, InstructorError)
     assert issubclass(ClientError, InstructorError)
+    assert issubclass(TokenBudgetExceeded, InstructorError)
 
 
 def test_base_instructor_error_can_be_caught():
@@ -594,3 +597,44 @@ def test_failed_attempts_exception_chaining():
         assert chained_error.failed_attempts is not None
         assert len(chained_error.failed_attempts) == 1
         assert chained_error.failed_attempts[0].exception.args[0] == "Original failure"
+
+
+def test_token_budget_exceeded():
+    """Test TokenBudgetExceeded attributes and catching."""
+    token_budget = 10000
+    total_tokens_used = 12500
+    n_attempts = 5
+    last_completion = {"content": "partial response"}
+    failed_attempts = [
+        FailedAttempt(1, Exception("Validation failed"), "attempt 1"),
+        FailedAttempt(2, Exception("Validation failed"), "attempt 2"),
+    ]
+
+    with pytest.raises(TokenBudgetExceeded) as exc_info:
+        raise TokenBudgetExceeded(
+            token_budget=token_budget,
+            total_tokens_used=total_tokens_used,
+            n_attempts=n_attempts,
+            last_completion=last_completion,
+            failed_attempts=failed_attempts,
+        )
+
+    exception = exc_info.value
+    assert exception.token_budget == token_budget
+    assert exception.total_tokens_used == total_tokens_used
+    assert exception.n_attempts == n_attempts
+    assert exception.last_completion == last_completion
+    assert exception.failed_attempts == failed_attempts
+    assert "12500" in str(exception)
+    assert "10000" in str(exception)
+    assert "5 attempts" in str(exception)
+
+
+def test_token_budget_exceeded_inherits_from_instructor_error():
+    """Test that TokenBudgetExceeded can be caught as InstructorError."""
+    with pytest.raises(InstructorError):
+        raise TokenBudgetExceeded(
+            token_budget=1000,
+            total_tokens_used=1500,
+            n_attempts=3,
+        )

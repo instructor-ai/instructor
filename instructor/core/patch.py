@@ -150,6 +150,7 @@ def patch(  # type: ignore
         max_retries: int | AsyncRetrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -195,6 +196,7 @@ def patch(  # type: ignore
             strict=strict,
             mode=mode,
             hooks=hooks,
+            token_budget=token_budget,
         )
 
         # Store in cache *after* successful call
@@ -219,6 +221,7 @@ def patch(  # type: ignore
         max_retries: int | Retrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -265,6 +268,7 @@ def patch(  # type: ignore
             strict=strict,
             kwargs=new_kwargs,
             mode=mode,
+            token_budget=token_budget,
         )
 
         # Save to cache

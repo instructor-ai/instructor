@@ -48,6 +48,10 @@ def llm_validator(
     """
 
     def llm(v: str) -> str:
+        # Sanitize value to prevent prompt injection by escaping delimiters
+        # and using explicit structured format
+        sanitized_value = v.replace("```", "\\`\\`\\`").replace("---", "\\-\\-\\-")
+
         resp = client.chat.completions.create(
             response_model=Validator,
             messages=[
@@ -57,7 +61,15 @@ def llm_validator(
                 },
                 {
                     "role": "user",
-                    "content": f"Does `{v}` follow the rules: {statement}",
+                    "content": f"""Validate the following value against the rules.
+
+---BEGIN VALUE---
+{sanitized_value}
+---END VALUE---
+
+Rules to validate against: {statement}
+
+Is this value valid according to the rules above?""",
                 },
             ],
             model=model,
