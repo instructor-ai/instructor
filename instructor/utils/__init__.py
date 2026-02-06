@@ -9,7 +9,6 @@ from .core import (
     extract_json_from_stream,
     extract_json_from_stream_async,
     update_total_usage,
-    extract_messages,
     dump_message,
     is_async,
     merge_consecutive_messages,
@@ -30,7 +29,6 @@ __all__ = [
     "extract_json_from_stream",
     "extract_json_from_stream_async",
     "update_total_usage",
-    "extract_messages",
     "dump_message",
     "is_async",
     "merge_consecutive_messages",
@@ -70,7 +68,7 @@ def __getattr__(name):
         "extract_genai_system_message",
         "convert_to_genai_messages",
     ]:
-        from ..v2.providers.gemini import utils as gemini_utils
+        from ..providers.gemini import utils as gemini_utils
 
         return getattr(gemini_utils, name)
 
@@ -80,7 +78,7 @@ def __getattr__(name):
         "combine_system_messages",
         "extract_system_messages",
     ]:
-        from ..v2.providers.anthropic import utils as anthropic_utils
+        from ..providers.anthropic import utils as anthropic_utils
 
         return getattr(anthropic_utils, name)
 

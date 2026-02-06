@@ -15,7 +15,7 @@ Key Components:
 
 Example:
     ```python
-    from instructor.processing.response import process_response
+    from instructor.process_response import process_response
     from ..mode import Mode
     from pydantic import BaseModel
 
@@ -37,13 +37,14 @@ from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, TypeVar, TYPE_CHECKING
+from typing import Any, TypeVar, TYPE_CHECKING, cast
+from collections.abc import AsyncGenerator
 
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 from typing_extensions import ParamSpec
 
-from instructor.core.exceptions import InstructorError
+from instructor.core.exceptions import InstructorError, ConfigurationError
 
 from ..dsl.iterable import IterableBase
 from ..dsl.parallel import ParallelBase
@@ -52,11 +53,114 @@ from ..dsl.response_list import ListResponse
 from ..dsl.simple_type import AdapterBase
 
 if TYPE_CHECKING:
-    from .function_calls import ResponseSchema
+    from .function_calls import OpenAISchema
 from ..mode import Mode
-from ..utils.providers import Provider, normalize_mode_for_provider, provider_from_mode
+from .multimodal import convert_messages
 from ..utils.core import prepare_response_model
-from instructor.v2.core.registry import mode_registry
+
+# Anthropic utils
+from ..providers.anthropic.utils import (
+    handle_anthropic_json,
+    handle_anthropic_parallel_tools,
+    handle_anthropic_reasoning_tools,
+    handle_anthropic_tools,
+    reask_anthropic_json,
+    reask_anthropic_tools,
+)
+
+# Bedrock utils
+from ..providers.bedrock.utils import (
+    handle_bedrock_json,
+    handle_bedrock_tools,
+    reask_bedrock_json,
+    reask_bedrock_tools,
+)
+
+# Cerebras utils
+from ..providers.cerebras.utils import (
+    handle_cerebras_json,
+    handle_cerebras_tools,
+    reask_cerebras_tools,
+)
+
+# Cohere utils
+from ..providers.cohere.utils import (
+    handle_cohere_json_schema,
+    handle_cohere_tools,
+    reask_cohere_tools,
+)
+
+# Fireworks utils
+from ..providers.fireworks.utils import (
+    handle_fireworks_json,
+    handle_fireworks_tools,
+    reask_fireworks_json,
+    reask_fireworks_tools,
+)
+
+# Google/Gemini/VertexAI utils
+from ..providers.gemini.utils import (
+    handle_gemini_json,
+    handle_gemini_tools,
+    handle_genai_structured_outputs,
+    handle_genai_tools,
+    handle_vertexai_json,
+    handle_vertexai_parallel_tools,
+    handle_vertexai_tools,
+    reask_gemini_json,
+    reask_gemini_tools,
+    reask_genai_structured_outputs,
+    reask_genai_tools,
+    reask_vertexai_json,
+    reask_vertexai_tools,
+)
+
+# Mistral utils
+from ..providers.mistral.utils import (
+    handle_mistral_structured_outputs,
+    handle_mistral_tools,
+    reask_mistral_structured_outputs,
+    reask_mistral_tools,
+)
+
+# OpenAI utils
+from ..providers.openai.utils import (
+    handle_functions,
+    handle_json_modes,
+    handle_json_o1,
+    handle_openrouter_structured_outputs,
+    handle_parallel_tools,
+    handle_responses_tools,
+    handle_responses_tools_with_inbuilt_tools,
+    handle_tools,
+    handle_tools_strict,
+    reask_default,
+    reask_md_json,
+    reask_responses_tools,
+    reask_tools,
+)
+
+# Perplexity utils
+from ..providers.perplexity.utils import (
+    handle_perplexity_json,
+    reask_perplexity_json,
+)
+
+# Writer utils
+from ..providers.writer.utils import (
+    handle_writer_json,
+    handle_writer_tools,
+    reask_writer_json,
+    reask_writer_tools,
+)
+
+# XAI utils
+from ..providers.xai.utils import (
+    handle_xai_json,
+    handle_xai_tools,
+    reask_xai_json,
+    reask_xai_tools,
+)
 
 logger = logging.getLogger("instructor")
 
@@ -66,26 +170,14 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 
-def _ensure_registry_loaded() -> None:
-    """Ensure v2 handlers are imported so the registry is populated."""
-    try:
-        import importlib
-
-        importlib.import_module("instructor.v2")
-    except Exception:
-        # Best-effort: allow downstream KeyError to surface if registry is empty.
-        return
-
-
 async def process_response_async(
     response: ChatCompletion,
     *,
-    response_model: type[T_Model | ResponseSchema | BaseModel] | None,
+    response_model: type[T_Model | OpenAISchema | BaseModel] | None,
     stream: bool = False,
     validation_context: dict[str, Any] | None = None,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-    provider: Provider = Provider.OPENAI,
 ) -> Any:
     """Asynchronously process and transform LLM responses into structured models.
 
@@ -109,7 +201,6 @@ async def process_response_async(
         mode (Mode): The provider/format mode that determines how to parse the response.
             Examples: Mode.TOOLS (OpenAI), Mode.ANTHROPIC_JSON, Mode.GEMINI_TOOLS.
             Defaults to Mode.TOOLS.
-        provider (Provider): The LLM provider used for handler lookup.
 
     Returns:
         T_Model | ChatCompletion: The processed response. Return type depends on inputs:
@@ -134,31 +225,34 @@ async def process_response_async(
     if response_model is None:
         return response
 
-    provider = provider_from_mode(mode, provider)
-    mode = normalize_mode_for_provider(mode, provider)
-    _ensure_registry_loaded()
-    handlers = mode_registry.get_handlers(provider, mode)
-    handler_obj = getattr(handlers.response_parser, "__self__", None)
-    if handler_obj and hasattr(handler_obj, "mark_streaming_model"):
-        handler_obj.mark_streaming_model(response_model, stream)
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, IterableBase)
+        and stream
+    ):
+        # Preserve streaming behavior for `create_iterable()` (async for).
+        return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
+            cast(AsyncGenerator[Any, None], response),
+            mode=mode,
+        )
 
-    model = handlers.response_parser(
-        response=response,
-        response_model=response_model,
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Return the AsyncGenerator directly for streaming Partial responses.
+        return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
+            cast(AsyncGenerator[Any, None], response),
+            mode=mode,
+        )
+
+    model = response_model.from_response(  # type: ignore
+        response,
         validation_context=validation_context,
         strict=strict,
-        stream=stream,
-        is_async=True,
+        mode=mode,
     )
-
-    if inspect.isasyncgen(model):
-        return model
-    if (
-        stream
-        and inspect.isclass(response_model)
-        and issubclass(response_model, PartialBase)
-    ):
-        return model
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -168,9 +262,6 @@ async def process_response_async(
             [task for task in model.tasks],
             raw_response=response,
         )
-    if isinstance(model, list) and not isinstance(model, ListResponse):
-        logger.debug("Wrapping list response with ListResponse")
-        return ListResponse.from_list(model, raw_response=response)
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
@@ -181,20 +272,18 @@ async def process_response_async(
         logger.debug(f"Returning model from AdapterBase")
         return model.content
 
-    if isinstance(model, BaseModel):
-        model._raw_response = response
+    model._raw_response = response
     return model
 
 
 def process_response(
     response: T_Model,
     *,
-    response_model: type[ResponseSchema | BaseModel] | None = None,
+    response_model: type[OpenAISchema | BaseModel] | None = None,
     stream: bool,
     validation_context: dict[str, Any] | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-    provider: Provider = Provider.OPENAI,
 ) -> Any:
     """Process and transform LLM responses into structured models (synchronous).
 
@@ -205,7 +294,7 @@ def process_response(
     Args:
         response (T_Model): The raw response from the LLM API. The actual type varies by
             provider (ChatCompletion for OpenAI, Message for Anthropic, etc.)
-        response_model (type[ResponseSchema | BaseModel] | None): The target Pydantic model
+        response_model (type[OpenAISchema | BaseModel] | None): The target Pydantic model
             class to parse the response into. Special DSL types supported:
             - IterableBase: For streaming multiple objects from a single response
             - PartialBase: For incomplete/streaming partial objects
@@ -224,7 +313,6 @@ def process_response(
             - Tool modes: TOOLS, ANTHROPIC_TOOLS, GEMINI_TOOLS, etc.
             - JSON modes: JSON, ANTHROPIC_JSON, VERTEXAI_JSON, etc.
             - Special modes: PARALLEL_TOOLS, MD_JSON, JSON_SCHEMA, etc.
-        provider (Provider): The LLM provider used for handler lookup.
 
     Returns:
         T_Model | list[T_Model] | None: The processed response:
@@ -253,31 +341,36 @@ def process_response(
         logger.debug("No response model, returning response as is")
         return response
 
-    provider = provider_from_mode(mode, provider)
-    mode = normalize_mode_for_provider(mode, provider)
-    _ensure_registry_loaded()
-    handlers = mode_registry.get_handlers(provider, mode)
-    handler_obj = getattr(handlers.response_parser, "__self__", None)
-    if handler_obj and hasattr(handler_obj, "mark_streaming_model"):
-        handler_obj.mark_streaming_model(response_model, stream)
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, IterableBase)
+        and stream
+    ):
+        # Preserve streaming behavior for `create_iterable()` (for/async for).
+        return response_model.from_streaming_response(  # type: ignore[return-value]
+            response,
+            mode=mode,
+        )
 
-    model = handlers.response_parser(
-        response=response,
-        response_model=response_model,
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Collect partial stream to surface validation errors inside retry logic.
+        return list(
+            response_model.from_streaming_response(  # type: ignore
+                response,
+                mode=mode,
+            )
+        )
+
+    model = response_model.from_response(  # type: ignore
+        response,
         validation_context=validation_context,
         strict=strict,
-        stream=stream,
-        is_async=False,
+        mode=mode,
     )
-
-    if inspect.isgenerator(model):
-        return model
-    if (
-        stream
-        and inspect.isclass(response_model)
-        and issubclass(response_model, PartialBase)
-    ):
-        return model
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -287,9 +380,6 @@ def process_response(
             [task for task in model.tasks],
             raw_response=response,
         )
-    if isinstance(model, list) and not isinstance(model, ListResponse):
-        logger.debug("Wrapping list response with ListResponse")
-        return ListResponse.from_list(model, raw_response=response)
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
@@ -300,8 +390,7 @@ def process_response(
         logger.debug(f"Returning model from AdapterBase")
         return model.content
 
-    if isinstance(model, BaseModel):
-        model._raw_response = response
+    model._raw_response = response
     return model
 
 
@@ -314,10 +403,7 @@ def is_typed_dict(cls) -> bool:
 
 
 def handle_response_model(
-    response_model: type[T] | None,
-    mode: Mode = Mode.TOOLS,
-    provider: Provider = Provider.OPENAI,
-    **kwargs: Any,
+    response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
 ) -> tuple[type[T] | None, dict[str, Any]]:
     """
     Handles the response model based on the specified mode and prepares the kwargs for the API call.
@@ -327,7 +413,6 @@ def handle_response_model(
     Args:
         response_model (type[T] | None): The response model to be used for parsing the API response.
         mode (Mode): The mode to use for handling the response model. Defaults to Mode.TOOLS.
-        provider (Provider): The LLM provider used for handler lookup.
         **kwargs: Additional keyword arguments to be passed to the API call.
 
     Returns:
@@ -338,23 +423,90 @@ def handle_response_model(
     transformations to the response model and kwargs.
     """
 
-    provider = provider_from_mode(mode, provider)
-    mode = normalize_mode_for_provider(mode, provider)
     new_kwargs = kwargs.copy()
-    autodetect_images = bool(new_kwargs.pop("autodetect_images", False))
+    # Extract autodetect_images for message conversion
+    autodetect_images = new_kwargs.pop("autodetect_images", False)
+
+    PARALLEL_MODES = {
+        Mode.PARALLEL_TOOLS: handle_parallel_tools,
+        Mode.VERTEXAI_PARALLEL_TOOLS: handle_vertexai_parallel_tools,
+        Mode.ANTHROPIC_PARALLEL_TOOLS: handle_anthropic_parallel_tools,
+    }
+
+    if mode in PARALLEL_MODES:
+        response_model, new_kwargs = PARALLEL_MODES[mode](response_model, new_kwargs)  # type: ignore
+        logger.debug(
+            f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+            extra={
+                "mode": mode.value,
+                "response_model": (
+                    response_model.__name__
+                    if response_model is not None
+                    and hasattr(response_model, "__name__")
+                    else str(response_model)
+                ),
+                "new_kwargs": new_kwargs,
+            },
+        )
+        return response_model, new_kwargs
 
     # Only prepare response_model if it's not None
     if response_model is not None:
         response_model = prepare_response_model(response_model)
 
-    _ensure_registry_loaded()
-    handlers = mode_registry.get_handlers(provider, mode)
-    response_model, new_kwargs = handlers.request_handler(response_model, new_kwargs)
+    mode_handlers = {  # type: ignore
+        Mode.FUNCTIONS: handle_functions,
+        Mode.TOOLS_STRICT: handle_tools_strict,
+        Mode.TOOLS: handle_tools,
+        Mode.MISTRAL_TOOLS: handle_mistral_tools,
+        Mode.MISTRAL_STRUCTURED_OUTPUTS: handle_mistral_structured_outputs,
+        Mode.JSON_O1: handle_json_o1,
+        Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
+        Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
+        Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
+        Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
+        Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
+        Mode.ANTHROPIC_JSON: handle_anthropic_json,
+        Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
+        Mode.COHERE_TOOLS: handle_cohere_tools,
+        Mode.GEMINI_JSON: handle_gemini_json,
+        Mode.GEMINI_TOOLS: handle_gemini_tools,
+        Mode.GENAI_TOOLS: lambda rm, nk: handle_genai_tools(rm, nk, autodetect_images),
+        Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: handle_genai_structured_outputs(
+            rm, nk, autodetect_images
+        ),
+        Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
+        Mode.VERTEXAI_JSON: handle_vertexai_json,
+        Mode.CEREBRAS_JSON: handle_cerebras_json,
+        Mode.CEREBRAS_TOOLS: handle_cerebras_tools,
+        Mode.FIREWORKS_JSON: handle_fireworks_json,
+        Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
+        Mode.WRITER_TOOLS: handle_writer_tools,
+        Mode.WRITER_JSON: handle_writer_json,
+        Mode.BEDROCK_JSON: handle_bedrock_json,
+        Mode.BEDROCK_TOOLS: handle_bedrock_tools,
+        Mode.PERPLEXITY_JSON: handle_perplexity_json,
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
+        Mode.RESPONSES_TOOLS: handle_responses_tools,
+        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
+        Mode.XAI_JSON: handle_xai_json,
+        Mode.XAI_TOOLS: handle_xai_tools,
+    }
+
+    if mode in mode_handlers:
+        response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)  # type: ignore
+    else:
+        raise ConfigurationError(
+            f"Invalid or unsupported mode: {mode}. "
+            f"This mode may not be implemented. "
+            f"Available modes: {', '.join(str(m) for m in mode_handlers.keys())}"
+        )
 
     # Handle message conversion for modes that don't already handle it
-    if handlers.message_converter and "messages" in new_kwargs:
-        new_kwargs["messages"] = handlers.message_converter(
+    if "messages" in new_kwargs:
+        new_kwargs["messages"] = convert_messages(
             new_kwargs["messages"],
+            mode,
             autodetect_images=autodetect_images,
         )
 
@@ -378,7 +530,6 @@ def handle_reask_kwargs(
     mode: Mode,
     response: Any,
     exception: Exception,
-    provider: Provider = Provider.OPENAI,
     failed_attempts: list[Any] | None = None,
 ) -> dict[str, Any]:
     """Handle validation errors by reformatting the request for retry (reask).
@@ -408,7 +559,6 @@ def handle_reask_kwargs(
             - Mode.TOOLS: OpenAI function calling
             - Mode.ANTHROPIC_TOOLS: Anthropic tool use
             - Mode.JSON: JSON-only responses
-        provider (Provider): The LLM provider used for handler lookup.
         response (Any): The raw response from the LLM that failed validation.
             Type and structure varies by provider:
             - OpenAI: ChatCompletion with tool_calls or content
@@ -467,7 +617,6 @@ def handle_reask_kwargs(
         new_kwargs = handle_reask_kwargs(
             kwargs=original_request,
             mode=Mode.TOOLS,
-            provider=Provider.OPENAI,
             response=failed_completion,
             exception=validation_error,  # Will be enriched with failed_attempts
             failed_attempts=[attempt1, attempt2]  # Previous failures
@@ -488,8 +637,61 @@ def handle_reask_kwargs(
         exception, failed_attempts=failed_attempts
     )
 
-    provider = provider_from_mode(mode, provider)
-    mode = normalize_mode_for_provider(mode, provider)
-    _ensure_registry_loaded()
-    handlers = mode_registry.get_handlers(provider, mode)
-    return handlers.reask_handler(kwargs_copy, response, exception)
+    # Organized by provider (matching process_response.py structure)
+    REASK_HANDLERS = {
+        # OpenAI modes
+        Mode.FUNCTIONS: reask_default,
+        Mode.TOOLS_STRICT: reask_tools,
+        Mode.TOOLS: reask_tools,
+        Mode.JSON_O1: reask_default,
+        Mode.JSON: reask_md_json,
+        Mode.MD_JSON: reask_md_json,
+        Mode.JSON_SCHEMA: reask_md_json,
+        Mode.PARALLEL_TOOLS: reask_tools,
+        Mode.RESPONSES_TOOLS: reask_responses_tools,
+        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: reask_responses_tools,
+        # Mistral modes
+        Mode.MISTRAL_TOOLS: reask_mistral_tools,
+        Mode.MISTRAL_STRUCTURED_OUTPUTS: reask_mistral_structured_outputs,
+        # Anthropic modes
+        Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
+        Mode.ANTHROPIC_REASONING_TOOLS: reask_anthropic_tools,
+        Mode.ANTHROPIC_JSON: reask_anthropic_json,
+        Mode.ANTHROPIC_PARALLEL_TOOLS: reask_anthropic_tools,
+        # Cohere modes
+        Mode.COHERE_TOOLS: reask_cohere_tools,
+        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,
+        # Gemini/Google modes
+        Mode.GEMINI_TOOLS: reask_gemini_tools,
+        Mode.GEMINI_JSON: reask_gemini_json,
+        Mode.GENAI_TOOLS: reask_genai_tools,
+        Mode.GENAI_STRUCTURED_OUTPUTS: reask_genai_structured_outputs,
+        # VertexAI modes
+        Mode.VERTEXAI_TOOLS: reask_vertexai_tools,
+        Mode.VERTEXAI_JSON: reask_vertexai_json,
+        Mode.VERTEXAI_PARALLEL_TOOLS: reask_vertexai_tools,
+        # Cerebras modes
+        Mode.CEREBRAS_TOOLS: reask_cerebras_tools,
+        Mode.CEREBRAS_JSON: reask_default,
+        # Fireworks modes
+        Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
+        Mode.FIREWORKS_JSON: reask_fireworks_json,
+        # Writer modes
+        Mode.WRITER_TOOLS: reask_writer_tools,
+        Mode.WRITER_JSON: reask_writer_json,
+        # Bedrock modes
+        Mode.BEDROCK_TOOLS: reask_bedrock_tools,
+        Mode.BEDROCK_JSON: reask_bedrock_json,
+        # Perplexity modes
+        Mode.PERPLEXITY_JSON: reask_perplexity_json,
+        # OpenRouter modes
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: reask_default,
+        # XAI modes
+        Mode.XAI_JSON: reask_xai_json,
+        Mode.XAI_TOOLS: reask_xai_tools,
+    }
+
+    if mode in REASK_HANDLERS:
+        return REASK_HANDLERS[mode](kwargs_copy, response, exception)
+    else:
+        return reask_default(kwargs_copy, response, exception)

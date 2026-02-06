@@ -57,8 +57,6 @@ class ImageParams(ImageParamsBase, total=False):
 
 
 class Image(BaseModel):
-    """Image content loaded from a URL, path, or base64 data."""
-
     source: Union[str, Path] = Field(  # noqa: UP007
         description="URL, file path, or base64 data of the image"
     )

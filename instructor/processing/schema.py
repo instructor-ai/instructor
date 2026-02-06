@@ -2,7 +2,7 @@
 Standalone schema generation utilities for different LLM providers.
 
 This module provides provider-agnostic functions to generate schemas from Pydantic models
-without requiring inheritance from ResponseSchema or use of decorators.
+without requiring inheritance from OpenAISchema or use of decorators.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Any, cast
 from docstring_parser import parse
 from pydantic import BaseModel
 
-from instructor.v2.providers.gemini.utils import map_to_gemini_function_schema
+from ..providers.gemini.utils import map_to_gemini_function_schema
 
 __all__ = [
     "generate_openai_schema",

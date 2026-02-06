@@ -4,7 +4,7 @@ import openai
 import inspect
 from functools import partial
 import instructor
-from ..utils.providers import Provider, get_provider, normalize_mode_for_provider
+from ..utils.providers import Provider, get_provider
 from openai.types.chat import ChatCompletionMessageParam
 from typing import (
     TypeVar,
@@ -25,25 +25,12 @@ from typing_extensions import Self
 from pydantic import BaseModel
 from ..dsl.partial import Partial
 from .hooks import Hooks, HookName
-from .exceptions import ConfigurationError
 
 
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
 
 
-def _ensure_registry_loaded() -> None:
-    """Ensure v2 handlers are imported so the registry is populated."""
-    try:
-        import importlib
-
-        importlib.import_module("instructor.v2")
-    except Exception:
-        return
-
-
 class Response:
-    """Helper for responses API using a patched client."""
-
     def __init__(
         self,
         client: Instructor,
@@ -52,47 +39,49 @@ class Response:
 
     def create(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T] | None = None,
         max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return self.client.create(
             response_model=response_model,
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
             strict=strict,
-            messages=messages,
+            messages=input,
             **kwargs,
         )
 
     def create_with_completion(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> tuple[T, Any]:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return self.client.create_with_completion(
-            messages=messages,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -100,21 +89,21 @@ class Response:
 
     def create_iterable(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> Generator[T, None, None]:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return self.client.create_iterable(
-            messages=messages,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -122,21 +111,21 @@ class Response:
 
     def create_partial(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> Generator[T, None, None]:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return self.client.create_partial(
-            messages=messages,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -149,47 +138,49 @@ class AsyncResponse(Response):
 
     async def create(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T] | None = None,
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return await self.client.create(
             response_model=response_model,
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
             strict=strict,
-            messages=messages,
+            messages=input,
             **kwargs,
         )
 
     async def create_with_completion(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | AsyncRetrying = 3,
         **kwargs,
     ) -> tuple[T, Any]:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return await self.client.create_with_completion(
-            messages=messages,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -197,21 +188,21 @@ class AsyncResponse(Response):
 
     async def create_iterable(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | AsyncRetrying = 3,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
-        if isinstance(messages, str):
-            messages = [
+        if isinstance(input, str):
+            input = [
                 {
                     "role": "user",
-                    "content": messages,
+                    "content": input,
                 }
             ]
 
         return self.client.create_iterable(
-            messages=messages,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -219,8 +210,6 @@ class AsyncResponse(Response):
 
 
 class Instructor:
-    """Sync client wrapper that adds structured output support."""
-
     client: Any | None
     create_fn: Callable[..., Any]
     mode: instructor.Mode
@@ -320,6 +309,7 @@ class Instructor:
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -332,6 +322,7 @@ class Instructor:
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -344,6 +335,7 @@ class Instructor:
         response_model: None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -356,6 +348,7 @@ class Instructor:
         response_model: None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -367,6 +360,7 @@ class Instructor:
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int | Retrying | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -383,6 +377,7 @@ class Instructor:
             response_model=response_model,
             messages=messages,
             max_retries=max_retries,
+            validation_context=validation_context,
             context=context,
             strict=strict,
             hooks=combined_hooks,
@@ -395,6 +390,7 @@ class Instructor:
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -407,6 +403,7 @@ class Instructor:
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -418,6 +415,7 @@ class Instructor:
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int | Retrying | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -437,6 +435,7 @@ class Instructor:
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
+            validation_context=validation_context,
             context=context,
             strict=strict,
             hooks=combined_hooks,
@@ -449,6 +448,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -461,6 +461,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -472,6 +473,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -490,6 +492,7 @@ class Instructor:
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
+            validation_context=validation_context,
             context=context,
             strict=strict,
             hooks=combined_hooks,
@@ -502,6 +505,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -514,6 +518,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -525,6 +530,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | Retrying | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -541,6 +547,7 @@ class Instructor:
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
+            validation_context=validation_context,
             context=context,
             strict=strict,
             hooks=combined_hooks,
@@ -568,8 +575,6 @@ class Instructor:
 
 
 class AsyncInstructor(Instructor):
-    """Async client wrapper that adds structured output support."""
-
     client: Any | None
     create_fn: Callable[..., Any]
     mode: instructor.Mode
@@ -605,6 +610,7 @@ class AsyncInstructor(Instructor):
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -633,6 +639,7 @@ class AsyncInstructor(Instructor):
                 messages=messages,
                 response_model=get_args(response_model)[0],
                 max_retries=max_retries,
+                validation_context=validation_context,
                 context=context,
                 strict=strict,
                 hooks=hooks,  # Pass the per-call hooks to create_iterable
@@ -641,6 +648,7 @@ class AsyncInstructor(Instructor):
 
         return await self.create_fn(
             response_model=response_model,
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -654,6 +662,7 @@ class AsyncInstructor(Instructor):
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -669,6 +678,7 @@ class AsyncInstructor(Instructor):
 
         async for item in await self.create_fn(
             response_model=instructor.Partial[response_model],  # type: ignore
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -683,6 +693,7 @@ class AsyncInstructor(Instructor):
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -698,6 +709,7 @@ class AsyncInstructor(Instructor):
 
         async for item in await self.create_fn(
             response_model=Iterable[response_model],
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -712,6 +724,7 @@ class AsyncInstructor(Instructor):
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
@@ -726,6 +739,7 @@ class AsyncInstructor(Instructor):
 
         response = await self.create_fn(
             response_model=response_model,
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -777,12 +791,9 @@ def from_openai(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    """Create a patched Instructor client from an OpenAI client."""
     if hasattr(client, "base_url"):
         provider = get_provider(str(client.base_url))
     else:
-        provider = Provider.OPENAI
-    if provider is Provider.UNKNOWN:
         provider = Provider.OPENAI
 
     if not isinstance(client, (openai.OpenAI, openai.AsyncOpenAI)):
@@ -793,17 +804,33 @@ def from_openai(
             stacklevel=2,
         )
 
-    _ensure_registry_loaded()
-    normalized_mode = normalize_mode_for_provider(mode, provider)
-    try:
-        from instructor.v2.core.registry import mode_registry
+    if provider in {Provider.OPENROUTER}:
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.OPENROUTER_STRUCTURED_OUTPUTS,
+            instructor.Mode.JSON,
+        }
 
-        if not mode_registry.is_registered(provider, normalized_mode):
-            raise ConfigurationError(
-                f"Mode {mode} is not registered for provider {provider}."
-            )
-    except ImportError as exc:
-        raise ConfigurationError("Mode registry is not available.") from exc
+    if provider in {Provider.ANYSCALE, Provider.TOGETHER}:
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.JSON,
+            instructor.Mode.JSON_SCHEMA,
+            instructor.Mode.MD_JSON,
+        }
+
+    if provider in {Provider.OPENAI, Provider.DATABRICKS}:
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.JSON,
+            instructor.Mode.FUNCTIONS,
+            instructor.Mode.PARALLEL_TOOLS,
+            instructor.Mode.MD_JSON,
+            instructor.Mode.TOOLS_STRICT,
+            instructor.Mode.JSON_O1,
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }
 
     if isinstance(client, openai.OpenAI):
         return Instructor(
@@ -819,7 +846,6 @@ def from_openai(
                     else partial(map_chat_completion_to_response, client=client)
                 ),
                 mode=mode,
-                provider=provider,
             ),
             mode=mode,
             provider=provider,
@@ -840,7 +866,6 @@ def from_openai(
                     else partial(async_map_chat_completion_to_response, client=client)
                 ),
                 mode=mode,
-                provider=provider,
             ),
             mode=mode,
             provider=provider,
@@ -869,24 +894,19 @@ def from_litellm(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    """Create an Instructor client from a LiteLLM completion function."""
     is_async = inspect.iscoroutinefunction(completion)
 
     if not is_async:
         return Instructor(
             client=None,
-            create=instructor.patch(
-                create=completion, mode=mode, provider=Provider.OPENAI
-            ),
+            create=instructor.patch(create=completion, mode=mode),
             mode=mode,
             **kwargs,
         )
     else:
         return AsyncInstructor(
             client=None,
-            create=instructor.patch(
-                create=completion, mode=mode, provider=Provider.OPENAI
-            ),
+            create=instructor.patch(create=completion, mode=mode),
             mode=mode,
             **kwargs,
         )

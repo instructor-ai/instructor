@@ -25,14 +25,14 @@ class ModelAdapter(typing.Generic[T]):
 
     def __class_getitem__(cls, response_model: type[BaseModel]) -> type[BaseModel]:
         # Import at runtime to avoid circular import
-        from ..processing.function_calls import ResponseSchema
+        from ..processing.function_calls import OpenAISchema
 
         assert is_simple_type(response_model), "Only simple types are supported"
         return create_model(
             "Response",
             content=(response_model, ...),
             __doc__="Correctly Formatted and Extracted Response.",
-            __base__=(AdapterBase, ResponseSchema),
+            __base__=(AdapterBase, OpenAISchema),
         )
 
 

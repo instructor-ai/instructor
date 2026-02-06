@@ -1,5 +1,5 @@
 from __future__ import annotations
-from instructor.v2.providers.bedrock.handlers import _to_bedrock_content_items
+from instructor.providers.bedrock.utils import _to_bedrock_content_items
 
 
 def test_bedrock_native_text_passthrough():

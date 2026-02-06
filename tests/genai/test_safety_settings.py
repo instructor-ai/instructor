@@ -1,4 +1,4 @@
-from instructor.v2.providers.gemini.utils import update_genai_kwargs
+from instructor.providers.gemini.utils import update_genai_kwargs
 
 
 def test_update_genai_kwargs_safety_settings_with_image_content_uses_image_categories():
@@ -82,7 +82,7 @@ def test_handle_genai_tools_autodetect_images_uses_image_categories():
     """Autodetected image content should switch safety_settings to IMAGE_* categories."""
     from pydantic import BaseModel
 
-    from instructor.v2.providers.gemini.utils import handle_genai_tools
+    from instructor.providers.gemini.utils import handle_genai_tools
 
     class SimpleModel(BaseModel):
         text: str

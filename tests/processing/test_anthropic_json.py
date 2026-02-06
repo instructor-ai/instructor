@@ -2,12 +2,10 @@
 
 from anthropic.types import Message, Usage
 import pytest
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 from typing import cast
 
-from instructor.mode import Mode
-from instructor.processing.response import process_response
-from instructor.utils.providers import Provider
+import instructor
 
 
 CONTROL_CHAR_JSON = """{
@@ -17,7 +15,7 @@ characters"
 }"""
 
 
-class _AnthropicTestModel(BaseModel):
+class _AnthropicTestModel(instructor.OpenAISchema):  # type: ignore[misc]
     data: str
 
 
@@ -38,14 +36,7 @@ def test_parse_anthropic_json_strict_control_characters() -> None:
     message = _build_message(CONTROL_CHAR_JSON)
 
     with pytest.raises(ValidationError):
-        process_response(
-            response=message,
-            response_model=_AnthropicTestModel,
-            stream=False,
-            strict=True,
-            mode=Mode.JSON,
-            provider=Provider.ANTHROPIC,
-        )
+        _AnthropicTestModel.parse_anthropic_json(message, strict=True)  # type: ignore[arg-type]
 
 
 def test_parse_anthropic_json_non_strict_preserves_control_characters() -> None:
@@ -53,14 +44,7 @@ def test_parse_anthropic_json_non_strict_preserves_control_characters() -> None:
 
     model = cast(
         _AnthropicTestModel,
-        process_response(
-            response=message,
-            response_model=_AnthropicTestModel,
-            stream=False,
-            strict=False,
-            mode=Mode.JSON,
-            provider=Provider.ANTHROPIC,
-        ),
+        _AnthropicTestModel.parse_anthropic_json(message, strict=False),  # type: ignore[arg-type]
     )
 
     assert model.data == "Claude likes\ncontrol\ncharacters"

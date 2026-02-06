@@ -159,7 +159,7 @@ def from_provider(
         try:
             import openai
             import httpx
-            from instructor.v2 import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
             from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
             from collections.abc import Mapping
             from typing import cast
@@ -253,7 +253,7 @@ def from_provider(
         try:
             import os
             from openai import AzureOpenAI, AsyncAzureOpenAI
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
 
             # Get required Azure OpenAI configuration from environment
             api_key = api_key or os.environ.get("AZURE_OPENAI_API_KEY")
@@ -323,7 +323,7 @@ def from_provider(
         try:
             import os
             import openai
-            from instructor.v2 import from_databricks
+            from instructor import from_openai  # type: ignore[attr-defined]
 
             api_key = (
                 api_key
@@ -381,7 +381,7 @@ def from_provider(
                     api_key=api_key, base_url=base_url, **openai_client_kwargs
                 )
             )
-            result = from_databricks(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.TOOLS,
@@ -411,29 +411,19 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
-            from instructor.v2 import from_anthropic
-
-            if from_anthropic is None:
-                from .core.exceptions import ConfigurationError
-
-                raise ConfigurationError(
-                    "Failed to import Anthropic provider. "
-                    "This may be due to a configuration error or missing dependencies."
-                )
+            from instructor import from_anthropic  # type: ignore[attr-defined]  # type: ignore[attr-defined]
 
             client = (
                 anthropic.AsyncAnthropic(api_key=api_key)
                 if async_client
                 else anthropic.Anthropic(api_key=api_key)
             )
-            # Set default max_tokens if not provided (like v1)
-            if "max_tokens" not in kwargs:
-                kwargs["max_tokens"] = 4096
-            # Use Mode.TOOLS instead of Mode.ANTHROPIC_TOOLS
+            max_tokens = kwargs.pop("max_tokens", 4096)
             result = from_anthropic(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else instructor.Mode.ANTHROPIC_TOOLS,
+                max_tokens=max_tokens,
                 **kwargs,
             )
             logger.info(
@@ -462,7 +452,7 @@ def from_provider(
         # Import google-genai package - catch ImportError only for actual imports
         try:
             import google.genai as genai
-            from instructor.v2 import from_genai
+            from instructor import from_genai  # type: ignore[attr-defined]
         except ImportError as e:
             from .core.exceptions import ConfigurationError
 
@@ -496,17 +486,22 @@ def from_provider(
                 vertexai=vertexai_flag,
                 api_key=api_key,
                 **client_kwargs,
-            )
-            # Default to TOOLS for v2
-            # Extract model from kwargs if present, otherwise use model_name
-            model_param = kwargs.pop("model", model_name)
-            result = from_genai(
-                client,
-                mode=mode if mode else instructor.Mode.TOOLS,
-                use_async=async_client,
-                model=model_param,
-                **kwargs,
-            )
+            )  # type: ignore
+            if async_client:
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
+            else:
+                result = from_genai(
+                    client,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -525,7 +520,7 @@ def from_provider(
     elif provider == "mistral":
         try:
             from mistralai import Mistral
-            from instructor.v2 import from_mistral
+            from instructor import from_mistral  # type: ignore[attr-defined]
             import os
 
             api_key = api_key or os.environ.get("MISTRAL_API_KEY")
@@ -569,20 +564,14 @@ def from_provider(
     elif provider == "cohere":
         try:
             import cohere
-            from instructor.v2 import from_cohere
+            from instructor import from_cohere  # type: ignore[attr-defined]
 
             client = (
                 cohere.AsyncClientV2(api_key=api_key)
                 if async_client
                 else cohere.ClientV2(api_key=api_key)
             )
-            # Use Mode.TOOLS as default for Cohere
-            result = from_cohere(
-                client,
-                mode=mode if mode else instructor.Mode.TOOLS,
-                model=model_name,
-                **kwargs,
-            )
+            result = from_cohere(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -608,7 +597,7 @@ def from_provider(
     elif provider == "perplexity":
         try:
             import openai
-            from instructor.v2 import from_perplexity
+            from instructor import from_perplexity  # type: ignore[attr-defined]
             import os
 
             api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
@@ -653,7 +642,7 @@ def from_provider(
     elif provider == "groq":
         try:
             import groq
-            from instructor.v2 import from_groq
+            from instructor import from_groq  # type: ignore[attr-defined]
 
             client = (
                 groq.AsyncGroq(api_key=api_key)
@@ -686,7 +675,7 @@ def from_provider(
     elif provider == "writer":
         try:
             from writerai import AsyncWriter, Writer
-            from instructor.v2 import from_writer
+            from instructor import from_writer  # type: ignore[attr-defined]
 
             client = (
                 AsyncWriter(api_key=api_key)
@@ -720,7 +709,7 @@ def from_provider(
         try:
             import os
             import boto3
-            from instructor.v2 import from_bedrock
+            from instructor import from_bedrock  # type: ignore[attr-defined]
 
             # Get AWS configuration from environment or kwargs
             if "region" in kwargs:
@@ -757,9 +746,9 @@ def from_provider(
                 if model_name and (
                     "anthropic" in model_name.lower() or "claude" in model_name.lower()
                 ):
-                    default_mode = instructor.Mode.TOOLS
+                    default_mode = instructor.Mode.BEDROCK_TOOLS
                 else:
-                    default_mode = instructor.Mode.MD_JSON
+                    default_mode = instructor.Mode.BEDROCK_JSON
             else:
                 default_mode = mode
 
@@ -767,6 +756,7 @@ def from_provider(
                 client,
                 mode=default_mode,
                 async_client=async_client,
+                _async=async_client,  # for backward compatibility
                 **kwargs,
             )
             logger.info(
@@ -794,7 +784,7 @@ def from_provider(
     elif provider == "cerebras":
         try:
             from cerebras.cloud.sdk import AsyncCerebras, Cerebras
-            from instructor.v2 import from_cerebras
+            from instructor import from_cerebras  # type: ignore[attr-defined]
 
             client = (
                 AsyncCerebras(api_key=api_key)
@@ -827,7 +817,7 @@ def from_provider(
     elif provider == "fireworks":
         try:
             from fireworks.client import AsyncFireworks, Fireworks
-            from instructor.v2 import from_fireworks
+            from instructor import from_fireworks  # type: ignore[attr-defined]
 
             client = (
                 AsyncFireworks(api_key=api_key)
@@ -864,17 +854,16 @@ def from_provider(
             DeprecationWarning,
             stacklevel=2,
         )
-        # Import Vertex AI SDK
+        # Import google-genai package - catch ImportError only for actual imports
         try:
-            import vertexai
-            import vertexai.generative_models as gm
-            from instructor.v2 import from_vertexai
+            import google.genai as genai  # type: ignore
+            from instructor import from_genai  # type: ignore[attr-defined]
         except ImportError as e:
             from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
-                "The vertexai package is required to use the VertexAI provider. "
-                "Install it with `pip install google-cloud-aiplatform`."
+                "The google-genai package is required to use the VertexAI provider. "
+                "Install it with `pip install google-genai`."
             ) from e
 
         try:
@@ -893,16 +882,24 @@ def from_provider(
                     "or pass it as kwarg project=<your-project-id>"
                 )
 
-            credentials = kwargs.pop("credentials", None)
-            vertexai.init(project=project, location=location, credentials=credentials)
-
-            client = gm.GenerativeModel(model_name)
-            result = from_vertexai(
-                client,
-                use_async=async_client,
-                mode=mode if mode else instructor.Mode.TOOLS,
+            client = genai.Client(
+                vertexai=True,
+                project=project,
+                location=location,
                 **kwargs,
-            )
+            )  # type: ignore
+            kwargs["model"] = model_name  # Pass model as part of kwargs
+            if async_client:
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
+            else:
+                result = from_genai(
+                    client, mode=mode if mode else instructor.Mode.GENAI_TOOLS, **kwargs
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -928,7 +925,7 @@ def from_provider(
         # Import google-genai package - catch ImportError only for actual imports
         try:
             from google import genai
-            from instructor.v2 import from_genai
+            from instructor import from_genai  # type: ignore[attr-defined]
         except ImportError as e:
             from .core.exceptions import ConfigurationError
 
@@ -949,16 +946,16 @@ def from_provider(
                     client,
                     use_async=True,
                     model=model_name,
-                    mode=mode if mode else instructor.Mode.TOOLS,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
                     **kwargs,
-                )
+                )  # type: ignore
             else:
                 result = from_genai(
                     client,
                     model=model_name,
-                    mode=mode if mode else instructor.Mode.TOOLS,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
                     **kwargs,
-                )
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -977,7 +974,7 @@ def from_provider(
     elif provider == "ollama":
         try:
             import openai
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
 
             # Get base_url from kwargs or use default
             base_url = kwargs.pop("base_url", "http://localhost:11434/v1")
@@ -1047,7 +1044,7 @@ def from_provider(
     elif provider == "deepseek":
         try:
             import openai
-            from instructor.v2 import from_deepseek
+            from instructor import from_openai  # type: ignore[attr-defined]
             import os
 
             # Get API key from kwargs or environment
@@ -1070,7 +1067,7 @@ def from_provider(
                 else openai.OpenAI(api_key=api_key, base_url=base_url)
             )
 
-            result = from_deepseek(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.TOOLS,
@@ -1102,25 +1099,16 @@ def from_provider(
         try:
             from xai_sdk.sync.client import Client as SyncClient
             from xai_sdk.aio.client import Client as AsyncClient
-            from instructor.v2 import from_xai
-
-            if from_xai is None:
-                from .core.exceptions import ConfigurationError
-
-                raise ConfigurationError(
-                    "Failed to import xAI provider. "
-                    "This may be due to a configuration error or missing dependencies."
-                )
+            from instructor import from_xai  # type: ignore[attr-defined]
 
             client = (
                 AsyncClient(api_key=api_key)
                 if async_client
                 else SyncClient(api_key=api_key)
             )
-            # Use Mode.TOOLS instead of Mode.XAI_TOOLS (v2 uses generic modes)
             result = from_xai(
                 client,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else instructor.Mode.XAI_JSON,
                 model=model_name,
                 **kwargs,
             )
@@ -1133,8 +1121,9 @@ def from_provider(
             from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
-                "The xai-sdk package is required to use the xAI provider. "
-                "Install it with `pip install xai-sdk`."
+                "The xAI provider needs the optional dependency `xai-sdk`. "
+                'Install it with `uv pip install "instructor[xai]"` (or `pip install "instructor[xai]"`). '
+                "Note: xai-sdk requires Python 3.10+."
             ) from None
         except Exception as e:
             logger.error(
@@ -1149,7 +1138,7 @@ def from_provider(
     elif provider == "openrouter":
         try:
             import openai
-            from instructor.v2 import from_openrouter
+            from instructor import from_openai  # type: ignore[attr-defined]
             import os
 
             # Get API key from kwargs or environment
@@ -1172,7 +1161,7 @@ def from_provider(
                 else openai.OpenAI(api_key=api_key, base_url=base_url)
             )
 
-            result = from_openrouter(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.TOOLS,

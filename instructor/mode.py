@@ -2,9 +2,8 @@ import enum
 import warnings
 
 
-# Track if deprecation warnings have been shown
+# Track if deprecation warning has been shown
 _functions_deprecation_shown = False
-_reasoning_tools_deprecation_shown = False
 
 
 class Mode(enum.Enum):
@@ -50,10 +49,7 @@ class Mode(enum.Enum):
     GEMINI_JSON = "gemini_json"
     GEMINI_TOOLS = "gemini_tools"
     GENAI_TOOLS = "genai_tools"
-    GENAI_JSON = "genai_json"
-    GENAI_STRUCTURED_OUTPUTS = (
-        "genai_structured_outputs"  # Backwards compatibility alias
-    )
+    GENAI_STRUCTURED_OUTPUTS = "genai_structured_outputs"
 
     # Cohere modes
     COHERE_TOOLS = "cohere_tools"
@@ -139,105 +135,3 @@ class Mode(enum.Enum):
                 stacklevel=2,
             )
             _functions_deprecation_shown = True
-
-    @classmethod
-    def warn_anthropic_reasoning_tools_deprecation(cls):
-        """
-        Warn about ANTHROPIC_REASONING_TOOLS mode deprecation.
-
-        ANTHROPIC_TOOLS now supports extended thinking/reasoning via the
-        'thinking' parameter. Use Mode.ANTHROPIC_TOOLS with thinking={'type': 'enabled'}
-        instead of Mode.ANTHROPIC_REASONING_TOOLS.
-
-        Shows the warning only once per session to avoid spamming logs
-        with the same message.
-        """
-        global _reasoning_tools_deprecation_shown
-        if not _reasoning_tools_deprecation_shown:
-            warnings.warn(
-                "Mode.ANTHROPIC_REASONING_TOOLS is deprecated. "
-                "Use Mode.ANTHROPIC_TOOLS with thinking={'type': 'enabled', 'budget_tokens': ...} instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            _reasoning_tools_deprecation_shown = True
-
-    @classmethod
-    def warn_deprecated_mode(cls, mode: "Mode") -> None:
-        """Warn about provider-specific mode deprecation.
-
-        Uses a single warning per mode per process to reduce noise.
-        """
-        if mode not in DEPRECATED_TO_CORE:
-            return
-        if mode in _deprecated_modes_warned:
-            return
-        _deprecated_modes_warned.add(mode)
-        replacement = DEPRECATED_TO_CORE[mode]
-        warnings.warn(
-            f"Mode.{mode.name} is deprecated and will be removed in v3.0. "
-            f"Use Mode.{replacement.name} instead. "
-            "The provider is determined by the client (from_openai, from_anthropic, etc.), "
-            "not by the mode.",
-            DeprecationWarning,
-            stacklevel=3,
-        )
-
-
-_deprecated_modes_warned: set[Mode] = set()
-
-# Maps deprecated modes to their core replacements.
-# NOTE: Mode.JSON is not deprecated because GenAI uses it.
-DEPRECATED_TO_CORE: dict[Mode, Mode] = {
-    # OpenAI legacy modes
-    Mode.FUNCTIONS: Mode.TOOLS,
-    Mode.TOOLS_STRICT: Mode.TOOLS,
-    Mode.JSON_O1: Mode.JSON_SCHEMA,
-    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: Mode.RESPONSES_TOOLS,
-    # Anthropic legacy modes
-    Mode.ANTHROPIC_TOOLS: Mode.TOOLS,
-    Mode.ANTHROPIC_JSON: Mode.JSON,
-    Mode.ANTHROPIC_PARALLEL_TOOLS: Mode.PARALLEL_TOOLS,
-    # GenAI legacy modes
-    Mode.GENAI_TOOLS: Mode.TOOLS,
-    Mode.GENAI_JSON: Mode.JSON,
-    Mode.GENAI_STRUCTURED_OUTPUTS: Mode.JSON,
-    # Mistral legacy modes
-    Mode.MISTRAL_TOOLS: Mode.TOOLS,
-    Mode.MISTRAL_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
-    # Cohere legacy modes
-    Mode.COHERE_TOOLS: Mode.TOOLS,
-    Mode.COHERE_JSON_SCHEMA: Mode.JSON_SCHEMA,
-    # xAI legacy modes
-    Mode.XAI_TOOLS: Mode.TOOLS,
-    Mode.XAI_JSON: Mode.MD_JSON,
-    # Fireworks legacy modes
-    Mode.FIREWORKS_TOOLS: Mode.TOOLS,
-    Mode.FIREWORKS_JSON: Mode.MD_JSON,
-    # Cerebras legacy modes
-    Mode.CEREBRAS_TOOLS: Mode.TOOLS,
-    Mode.CEREBRAS_JSON: Mode.MD_JSON,
-    # Writer legacy modes
-    Mode.WRITER_TOOLS: Mode.TOOLS,
-    Mode.WRITER_JSON: Mode.MD_JSON,
-    # Bedrock legacy modes
-    Mode.BEDROCK_TOOLS: Mode.TOOLS,
-    Mode.BEDROCK_JSON: Mode.MD_JSON,
-    # Perplexity legacy modes
-    Mode.PERPLEXITY_JSON: Mode.MD_JSON,
-    # VertexAI legacy modes
-    Mode.VERTEXAI_TOOLS: Mode.TOOLS,
-    Mode.VERTEXAI_JSON: Mode.MD_JSON,
-    Mode.VERTEXAI_PARALLEL_TOOLS: Mode.PARALLEL_TOOLS,
-    # Gemini legacy modes
-    Mode.GEMINI_TOOLS: Mode.TOOLS,
-    Mode.GEMINI_JSON: Mode.MD_JSON,
-    # OpenRouter legacy modes
-    Mode.OPENROUTER_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
-}
-
-
-def reset_deprecated_mode_warnings() -> None:
-    """Reset deprecation warning tracking."""
-    global _deprecated_modes_warned
-    _deprecated_modes_warned = set()

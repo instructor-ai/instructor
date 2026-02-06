@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 from textwrap import dedent
 from instructor.mode import Mode
-from instructor.utils.providers import Provider, provider_from_mode
 from jinja2.sandbox import SandboxedEnvironment
 
 
@@ -13,10 +12,10 @@ def apply_template(text: str, context: dict[str, Any]) -> str:
 
 
 def process_message(
-    message: dict[str, Any], context: dict[str, Any], provider: Provider
+    message: dict[str, Any], context: dict[str, Any], mode: Mode
 ) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
-    if provider == Provider.GENAI:
+    if mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
         from google.genai import types
 
         return types.Content(
@@ -83,10 +82,7 @@ def process_message(
 
 
 def handle_templating(
-    kwargs: dict[str, Any],
-    mode: Mode,  # noqa: ARG001
-    provider: Provider | dict[str, Any] | None = None,
-    context: dict[str, Any] | None = None,
+    kwargs: dict[str, Any], mode: Mode, context: dict[str, Any] | None = None
 ) -> dict[str, Any]:
     """
     Handle templating for messages using the provided context.
@@ -105,15 +101,8 @@ def handle_templating(
     Raises:
         ValueError: If no recognized message format is found in kwargs.
     """
-    if context is None and isinstance(provider, dict):
-        context = provider
-        provider = None
-
     if not context:
         return kwargs
-
-    if provider is None:
-        provider = provider_from_mode(mode, Provider.OPENAI)
 
     new_kwargs = kwargs.copy()
 
@@ -121,7 +110,7 @@ def handle_templating(
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
         new_kwargs["chat_history"] = [
-            process_message(message, context, provider)
+            process_message(message, context, mode)
             for message in new_kwargs["chat_history"]
         ]
 
@@ -139,12 +128,12 @@ def handle_templating(
 
     if "messages" in new_kwargs:
         new_kwargs["messages"] = [
-            process_message(message, context, provider) for message in messages
+            process_message(message, context, mode) for message in messages
         ]
 
     elif "contents" in new_kwargs:
         new_kwargs["contents"] = [
-            process_message(content, context, provider)
+            process_message(content, context, mode)
             for content in new_kwargs["contents"]
         ]
 

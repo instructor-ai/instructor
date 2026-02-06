@@ -8,11 +8,12 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 import types
 import warnings
-from collections.abc import AsyncGenerator, Callable, Generator, Iterable
+from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
 from functools import cache
 from typing import (  # noqa: UP035
@@ -31,6 +32,8 @@ from jiter import from_json
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 
+from instructor.mode import Mode
+from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 from instructor.dsl.json_tracker import JsonCompleteness, is_json_complete
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -333,34 +336,33 @@ class PartialBase(Generic[T_Model]):
 
     @classmethod
     def from_streaming_response(
-        cls,
-        completion: Iterable[Any],
-        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]],
-        chunk_parser: Callable[..., Generator[T_Model, None, None]] | None = None,
-        **kwargs: Any,
+        cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
     ) -> Generator[T_Model, None, None]:
-        if stream_extractor is None:
-            raise ValueError("stream_extractor is required for streaming responses")
-        json_chunks = stream_extractor(completion)
-        parser = chunk_parser or cls.model_from_chunks
-        yield from parser(json_chunks, **kwargs)
+        json_chunks = cls.extract_json(completion, mode)
+
+        if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
+            json_chunks = extract_json_from_stream(json_chunks)
+
+        if mode == Mode.WRITER_TOOLS:
+            yield from cls.writer_model_from_chunks(json_chunks, **kwargs)
+        else:
+            yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
     async def from_streaming_response_async(
-        cls,
-        completion: AsyncGenerator[Any, None],
-        stream_extractor: Callable[
-            [AsyncGenerator[Any, None]], AsyncGenerator[str, None]
-        ],
-        chunk_parser: Callable[..., AsyncGenerator[T_Model, None]] | None = None,
-        **kwargs: Any,
+        cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
     ) -> AsyncGenerator[T_Model, None]:
-        if stream_extractor is None:
-            raise ValueError("stream_extractor is required for streaming responses")
-        json_chunks = stream_extractor(completion)
-        parser = chunk_parser or cls.model_from_chunks_async
-        async for item in parser(json_chunks, **kwargs):
-            yield item
+        json_chunks = cls.extract_json_async(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream_async(json_chunks)
+
+        if mode == Mode.WRITER_TOOLS:
+            async for item in cls.writer_model_from_chunks_async(json_chunks, **kwargs):
+                yield item
+        else:
+            async for item in cls.model_from_chunks_async(json_chunks, **kwargs):
+                yield item
 
     @classmethod
     def writer_model_from_chunks(
@@ -506,24 +508,456 @@ class PartialBase(Generic[T_Model]):
 
     @staticmethod
     def extract_json(
-        completion: Iterable[Any],
-        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]],
+        completion: Iterable[Any], mode: Mode
     ) -> Generator[str, None, None]:
-        if stream_extractor is None:
-            raise ValueError("stream_extractor is required for streaming responses")
-        yield from stream_extractor(completion)
+        """Extract JSON chunks from various LLM provider streaming responses.
+
+        Each provider has a different structure for streaming responses that needs
+        specific handling to extract the relevant JSON data."""
+        json_started = False
+        for chunk in completion:
+            try:
+                if mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+                    event_type = getattr(chunk, "event_type", None)
+                    if event_type == "text-generation":
+                        if text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
+                            yield text
+                    elif event_type == "tool-calls-chunk":
+                        delta = getattr(chunk, "tool_call_delta", None)
+                        args = getattr(delta, "parameters", None) or getattr(
+                            delta, "text", None
+                        )
+                        if args:
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
+                            yield args
+                        elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
+                            yield text
+                    elif event_type == "tool-calls-generation":
+                        tool_calls = getattr(chunk, "tool_calls", None)
+                        if tool_calls:
+                            args = json.dumps(tool_calls[0].parameters)
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
+                            yield args
+                        elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
+                            yield text
+                    else:
+                        chunk_type = getattr(chunk, "type", None)
+                        if chunk_type == "content-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            content = getattr(message, "content", None)
+                            if text := getattr(content, "text", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                text.find("{"),
+                                                text.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    text = text[json_start:]
+                                yield text
+                        elif chunk_type == "tool-call-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            tool_calls = getattr(message, "tool_calls", None)
+                            function = getattr(tool_calls, "function", None)
+                            if args := getattr(function, "arguments", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                args.find("{"),
+                                                args.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    args = args[json_start:]
+                                yield args
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
+                if mode == Mode.ANTHROPIC_JSON:
+                    if json_chunk := chunk.delta.text:
+                        yield json_chunk
+                if mode == Mode.ANTHROPIC_TOOLS:
+                    yield chunk.delta.partial_json
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    try:
+                        yield chunk.text
+                    except ValueError as e:
+                        if "valid `Part`" in str(e):
+                            # Skip chunk with invalid Part (e.g., due to finish_reason=1 token limit)
+                            continue
+                        raise
+                if mode == Mode.GENAI_TOOLS:
+                    fc = chunk.candidates[0].content.parts[0].function_call.args
+                    yield json.dumps(fc)
+                if mode == Mode.GEMINI_JSON:
+                    try:
+                        yield chunk.text
+                    except ValueError as e:
+                        if "valid `Part`" in str(e):
+                            # Skip chunk with invalid Part (e.g., due to finish_reason=1 token limit)
+                            continue
+                        raise
+                if mode == Mode.GEMINI_TOOLS:
+                    resp = chunk.candidates[0].content.parts[0].function_call
+                    resp_dict = type(resp).to_dict(resp)  # type:ignore
+                    if "args" in resp_dict:
+                        yield json.dumps(resp_dict["args"])
+                elif mode in {
+                    Mode.RESPONSES_TOOLS,
+                    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                }:
+                    from openai.types.responses import (
+                        ResponseFunctionCallArgumentsDeltaEvent,
+                    )
+
+                    if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
+                        yield chunk.delta
+
+                elif chunk.choices:
+                    if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
+                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                            yield json_chunk
+                    elif mode in {
+                        Mode.JSON,
+                        Mode.MD_JSON,
+                        Mode.JSON_SCHEMA,
+                        Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
+                        Mode.PERPLEXITY_JSON,
+                        Mode.WRITER_JSON,
+                    }:
+                        if json_chunk := chunk.choices[0].delta.content:
+                            yield json_chunk
+                    elif mode in {
+                        Mode.TOOLS,
+                        Mode.TOOLS_STRICT,
+                        Mode.FIREWORKS_TOOLS,
+                        Mode.WRITER_TOOLS,
+                    }:
+                        if json_chunk := chunk.choices[0].delta.tool_calls:
+                            if json_chunk[0].function.arguments:
+                                yield json_chunk[0].function.arguments
+                    else:
+                        raise NotImplementedError(
+                            f"Mode {mode} is not supported for MultiTask streaming"
+                        )
+            except AttributeError:
+                pass
 
     @staticmethod
     async def extract_json_async(
-        completion: AsyncGenerator[Any, None],
-        stream_extractor: Callable[
-            [AsyncGenerator[Any, None]], AsyncGenerator[str, None]
-        ],
+        completion: AsyncGenerator[Any, None], mode: Mode
     ) -> AsyncGenerator[str, None]:
-        if stream_extractor is None:
-            raise ValueError("stream_extractor is required for streaming responses")
-        async for chunk in stream_extractor(completion):
-            yield chunk
+        json_started = False
+        async for chunk in completion:
+            try:
+                if mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+                    event_type = getattr(chunk, "event_type", None)
+                    if event_type == "text-generation":
+                        if text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
+                            yield text
+                    elif event_type == "tool-calls-chunk":
+                        delta = getattr(chunk, "tool_call_delta", None)
+                        args = getattr(delta, "parameters", None) or getattr(
+                            delta, "text", None
+                        )
+                        if args:
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
+                            yield args
+                        elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
+                            yield text
+                    elif event_type == "tool-calls-generation":
+                        tool_calls = getattr(chunk, "tool_calls", None)
+                        if tool_calls:
+                            args = json.dumps(tool_calls[0].parameters)
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
+                            yield args
+                        elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
+                            yield text
+                    else:
+                        chunk_type = getattr(chunk, "type", None)
+                        if chunk_type == "content-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            content = getattr(message, "content", None)
+                            if text := getattr(content, "text", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                text.find("{"),
+                                                text.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    text = text[json_start:]
+                                yield text
+                        elif chunk_type == "tool-call-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            tool_calls = getattr(message, "tool_calls", None)
+                            function = getattr(tool_calls, "function", None)
+                            if args := getattr(function, "arguments", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                args.find("{"),
+                                                args.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    args = args[json_start:]
+                                yield args
+                if mode == Mode.ANTHROPIC_JSON:
+                    if json_chunk := chunk.delta.text:
+                        yield json_chunk
+                if mode == Mode.ANTHROPIC_TOOLS:
+                    yield chunk.delta.partial_json
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    try:
+                        yield chunk.text
+                    except ValueError as e:
+                        if "valid `Part`" in str(e):
+                            # Skip chunk with invalid Part (e.g., due to finish_reason=1 token limit)
+                            continue
+                        raise
+                if mode == Mode.GENAI_TOOLS:
+                    fc = chunk.candidates[0].content.parts[0].function_call.args
+                    yield json.dumps(fc)
+                if mode == Mode.GEMINI_JSON:
+                    try:
+                        yield chunk.text
+                    except ValueError as e:
+                        if "valid `Part`" in str(e):
+                            # Skip chunk with invalid Part (e.g., due to finish_reason=1 token limit)
+                            continue
+                        raise
+                if mode == Mode.GEMINI_TOOLS:
+                    resp = chunk.candidates[0].content.parts[0].function_call
+                    resp_dict = type(resp).to_dict(resp)  # type:ignore
+                    if "args" in resp_dict:
+                        yield json.dumps(resp_dict["args"])
+
+                if mode in {
+                    Mode.RESPONSES_TOOLS,
+                    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                }:
+                    from openai.types.responses import (
+                        ResponseFunctionCallArgumentsDeltaEvent,
+                    )
+
+                    if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
+                        yield chunk.delta
+                elif chunk.choices:
+                    if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
+                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                            yield json_chunk
+                    elif mode in {
+                        Mode.JSON,
+                        Mode.MD_JSON,
+                        Mode.JSON_SCHEMA,
+                        Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
+                        Mode.PERPLEXITY_JSON,
+                        Mode.WRITER_JSON,
+                    }:
+                        if json_chunk := chunk.choices[0].delta.content:
+                            yield json_chunk
+                    elif mode in {
+                        Mode.TOOLS,
+                        Mode.TOOLS_STRICT,
+                        Mode.FIREWORKS_TOOLS,
+                        Mode.WRITER_TOOLS,
+                    }:
+                        if json_chunk := chunk.choices[0].delta.tool_calls:
+                            if json_chunk[0].function.arguments:
+                                yield json_chunk[0].function.arguments
+                    else:
+                        raise NotImplementedError(
+                            f"Mode {mode} is not supported for MultiTask streaming"
+                        )
+            except AttributeError:
+                pass
 
 
 class Partial(Generic[T_Model]):
