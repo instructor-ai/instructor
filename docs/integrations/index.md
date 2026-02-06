@@ -20,7 +20,8 @@ Learn how to integrate Instructor with various AI model providers. These compreh
     [:octicons-arrow-right-16: Google.GenerativeAI](./google.md)          ·
     [:octicons-arrow-right-16: Vertex AI](./vertex.md)       ·
     [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)    ·
-    [:octicons-arrow-right-16: Google.GenAI](./genai.md)
+    [:octicons-arrow-right-16: Google.GenAI](./genai.md)     ·
+    [:octicons-arrow-right-16: xAI](./xai.md)
 
 - :material-cloud-outline: **Additional Cloud Providers**
 
