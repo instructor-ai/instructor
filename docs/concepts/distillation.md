@@ -34,12 +34,11 @@ Before we dig into the nitty-gritty, let's look at how easy it is to use Instruc
 import logging
 import random
 from pydantic import BaseModel
-from instructor import Instructions  # pip install instructor
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
 
-from instructor import Instructions, FinetuneFormat
+from instructor import Instructions, FinetuneFormat  # pip install instructor
 
 instructions = Instructions(
     name="three_digit_multiply",
