@@ -31,6 +31,7 @@ from typing import (  # noqa: UP035
 from jiter import from_json
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
+from pydantic_core import PydanticUndefined
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -171,7 +172,7 @@ def _build_partial_object(
         else:
             result[field_name] = field_value
 
-    # Set missing fields to None or empty nested models
+    # Set missing fields to their default value (if one exists), None, or empty nested models
     for field_name, field_info in model.model_fields.items():
         if field_name not in result:
             field_type = field_info.annotation
@@ -179,6 +180,11 @@ def _build_partial_object(
                 result[field_name] = _build_partial_object(
                     {}, field_type, tracker, "", **kwargs
                 )
+            elif field_info.default is not PydanticUndefined:
+                # Use the field's default value (e.g. Literal["Person"] = "Person")
+                result[field_name] = field_info.default
+            elif field_info.default_factory is not None:
+                result[field_name] = field_info.default_factory()
             else:
                 result[field_name] = None
 
