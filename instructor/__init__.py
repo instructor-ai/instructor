@@ -12,7 +12,7 @@ from .dsl import (
     IterableModel,
 )
 
-from .validation import llm_validator, openai_moderation
+from .validation import llm_validator, async_llm_validator, openai_moderation
 from .processing.function_calls import OpenAISchema, openai_schema
 from .processing.schema import (
     generate_openai_schema,
@@ -63,6 +63,7 @@ __all__ = [
     "BatchRequest",
     "BatchJob",
     "llm_validator",
+    "async_llm_validator",
     "openai_moderation",
     "hooks",
     "client",  # Backward compatibility
