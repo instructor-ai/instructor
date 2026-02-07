@@ -19,7 +19,7 @@ def generate_table(batch_jobs: list[BatchJobInfo], provider: str):
     """Generate enhanced table for batch jobs using unified BatchJobInfo objects"""
     table = Table(title=f"{provider.title()} Batch Jobs")
 
-    table.add_column("Batch ID", style="dim", max_width=20, no_wrap=True)
+    table.add_column("Batch ID", style="dim", no_wrap=True)
     table.add_column("Status", min_width=10)
     table.add_column("Created", style="dim", min_width=10)
     table.add_column("Started", style="dim", min_width=10)
