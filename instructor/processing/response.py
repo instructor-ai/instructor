@@ -424,6 +424,13 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
+
+    # Check model compatibility and auto-fallback if necessary (Issue #1925)
+    from ..utils.model_compat import get_compatible_mode
+
+    model_name = new_kwargs.get("model")
+    mode = get_compatible_mode(model_name, mode)
+
     # Extract autodetect_images for message conversion
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
