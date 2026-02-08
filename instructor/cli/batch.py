@@ -15,11 +15,19 @@ app = typer.Typer()
 console = Console()
 
 
-def generate_table(batch_jobs: list[BatchJobInfo], provider: str):
-    """Generate enhanced table for batch jobs using unified BatchJobInfo objects"""
+def generate_table(batch_jobs: list[BatchJobInfo], provider: str, full_id: bool = False):
+    """Generate enhanced table for batch jobs using unified BatchJobInfo objects
+    
+    Args:
+        batch_jobs: List of batch job info objects
+        provider: Provider name (openai, anthropic)
+        full_id: If True, show full batch IDs without truncation
+    """
     table = Table(title=f"{provider.title()} Batch Jobs")
 
-    table.add_column("Batch ID", style="dim", max_width=20, no_wrap=True)
+    # Adjust column width based on full_id flag
+    id_max_width = None if full_id else 20
+    table.add_column("Batch ID", style="dim", max_width=id_max_width, no_wrap=True)
     table.add_column("Status", min_width=10)
     table.add_column("Created", style="dim", min_width=10)
     table.add_column("Started", style="dim", min_width=10)
@@ -83,9 +91,9 @@ def generate_table(batch_jobs: list[BatchJobInfo], provider: str):
                 hours = total_minutes / 60
                 duration_str = f"{hours:.1f}h"
 
-        # Truncate batch ID for display
+        # Truncate batch ID for display only if full_id is False
         batch_id_display = str(batch_job.id)
-        if len(batch_id_display) > 18:
+        if not full_id and len(batch_id_display) > 18:
             batch_id_display = batch_id_display[:15] + "..."
 
         if provider == "openai":
@@ -162,6 +170,11 @@ def watch(
         None,
         help="[DEPRECATED] Use --model instead. Use Anthropic API instead of OpenAI",
     ),
+    full_id: bool = typer.Option(
+        False,
+        "--full-id",
+        help="Show full batch IDs without truncation",
+    ),
 ):
     """
     Monitor the status of the most recent batch jobs
@@ -189,7 +202,7 @@ def watch(
         return
 
     batch_jobs = get_jobs(limit, provider)
-    table = generate_table(batch_jobs, provider)
+    table = generate_table(batch_jobs, provider, full_id=full_id)
 
     if not live:
         # Show table once and exit
@@ -200,7 +213,7 @@ def watch(
     with Live(table, refresh_per_second=2, screen=screen) as live_table:
         while True:
             batch_jobs = get_jobs(limit, provider)
-            table = generate_table(batch_jobs, provider)
+            table = generate_table(batch_jobs, provider, full_id=full_id)
             live_table.update(table)
             time.sleep(poll)
 
