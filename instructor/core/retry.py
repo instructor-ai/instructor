@@ -140,6 +140,77 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
     return []
 
 
+def truncate_context_messages(
+    kwargs: dict[str, Any],
+    max_context_messages: int | None = None,
+) -> dict[str, Any]:
+    """
+    Truncate context messages to prevent retry amplification attacks.
+
+    During retries, each failed attempt appends 2 messages (assistant response + error).
+    With 10 retries, this can cause 506x context growth, leading to token budget
+    exhaustion and cost amplification. This function limits the message count
+    by keeping the system message and most recent messages.
+
+    See: https://github.com/instructor-ai/instructor/issues/2056
+
+    Args:
+        kwargs: The request kwargs containing messages.
+        max_context_messages: Maximum number of messages to keep in context.
+            If None, no truncation is performed. The system message (if present)
+            is always preserved and doesn't count towards this limit.
+
+    Returns:
+        Modified kwargs with truncated messages.
+    """
+    if max_context_messages is None:
+        return kwargs
+
+    # Handle different message formats
+    messages_key = None
+    if "messages" in kwargs:
+        messages_key = "messages"
+    elif "contents" in kwargs:
+        messages_key = "contents"
+    elif "chat_history" in kwargs:
+        messages_key = "chat_history"
+
+    if messages_key is None:
+        return kwargs
+
+    messages = kwargs.get(messages_key, [])
+    if not messages or len(messages) <= max_context_messages:
+        return kwargs
+
+    new_kwargs = kwargs.copy()
+
+    # Preserve system message if present (OpenAI format)
+    system_message = None
+    other_messages = messages
+
+    if messages and isinstance(messages[0], dict):
+        if messages[0].get("role") == "system":
+            system_message = messages[0]
+            other_messages = messages[1:]
+
+    # Keep only the most recent messages up to the limit
+    if len(other_messages) > max_context_messages:
+        truncated = other_messages[-max_context_messages:]
+        logger.debug(
+            f"Truncated context from {len(other_messages)} to {len(truncated)} messages "
+            f"(max_context_messages={max_context_messages})"
+        )
+        other_messages = truncated
+
+    # Reconstruct messages with system message first
+    if system_message is not None:
+        new_kwargs[messages_key] = [system_message] + list(other_messages)
+    else:
+        new_kwargs[messages_key] = list(other_messages)
+
+    return new_kwargs
+
+
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: type[T_Model] | None,
@@ -150,6 +221,7 @@ def retry_sync(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    max_context_messages: int | None = None,
 ) -> T_Model | None:
     """
     Retry a synchronous function upon specified exceptions.
@@ -164,6 +236,10 @@ def retry_sync(
         strict (Optional[bool], optional): Strict mode flag. Defaults to None.
         mode (Mode, optional): The mode of operation. Defaults to Mode.TOOLS.
         hooks (Optional[Hooks], optional): Hooks for emitting events. Defaults to None.
+        max_context_messages (Optional[int], optional): Maximum number of messages to keep
+            in context during retries. Helps prevent context amplification attacks where
+            each retry adds messages, causing exponential growth. The system message is
+            always preserved. See: https://github.com/instructor-ai/instructor/issues/2056
 
     Returns:
         T_Model | None: The processed response model or None.
@@ -247,6 +323,8 @@ def retry_sync(
                         exception=e,
                         failed_attempts=failed_attempts,
                     )
+                    # Apply context truncation to prevent retry amplification
+                    kwargs = truncate_context_messages(kwargs, max_context_messages)
                     raise e
                 except Exception as e:
                     # Emit completion:error for non-validation errors (API errors, network errors, etc.)
@@ -306,6 +384,7 @@ async def retry_async(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    max_context_messages: int | None = None,
 ) -> T_Model | None:
     """
     Retry an asynchronous function upon specified exceptions.
@@ -320,6 +399,10 @@ async def retry_async(
         strict (Optional[bool], optional): Strict mode flag. Defaults to None.
         mode (Mode, optional): The mode of operation. Defaults to Mode.TOOLS.
         hooks (Optional[Hooks], optional): Hooks for emitting events. Defaults to None.
+        max_context_messages (Optional[int], optional): Maximum number of messages to keep
+            in context during retries. Helps prevent context amplification attacks where
+            each retry adds messages, causing exponential growth. The system message is
+            always preserved. See: https://github.com/instructor-ai/instructor/issues/2056
 
     Returns:
         T_Model | None: The processed response model or None.
@@ -404,6 +487,8 @@ async def retry_async(
                         exception=e,
                         failed_attempts=failed_attempts,
                     )
+                    # Apply context truncation to prevent retry amplification
+                    kwargs = truncate_context_messages(kwargs, max_context_messages)
                     raise e
                 except Exception as e:
                     # Emit completion:error for non-validation errors (API errors, network errors, etc.)
