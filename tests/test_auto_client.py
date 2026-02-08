@@ -657,3 +657,51 @@ def test_generative_ai_provider_runtime_import_error_propagates():
 
             # Should be the socksio error, NOT a ConfigurationError
             assert "socksio" in str(excinfo.value)
+
+
+def test_anthropic_provider_sets_user_agent_header():
+    """Test that Anthropic provider passes User-Agent header with instructor version."""
+    from unittest.mock import patch, MagicMock
+    from instructor import __version__
+
+    with patch("anthropic.Anthropic") as mock_anthropic_class:
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+
+        with patch("instructor.from_anthropic") as mock_from_anthropic:
+            mock_instructor = MagicMock()
+            mock_from_anthropic.return_value = mock_instructor
+
+            from_provider("anthropic/claude-3-5-sonnet-latest")
+
+            mock_anthropic_class.assert_called_once()
+            _, kwargs = mock_anthropic_class.call_args
+            assert "default_headers" in kwargs
+            assert "User-Agent" in kwargs["default_headers"]
+            assert (
+                kwargs["default_headers"]["User-Agent"] == f"instructor/{__version__}"
+            )
+
+
+def test_anthropic_async_provider_sets_user_agent_header():
+    """Test that async Anthropic provider passes User-Agent header with instructor version."""
+    from unittest.mock import patch, MagicMock
+    from instructor import __version__
+
+    with patch("anthropic.AsyncAnthropic") as mock_async_anthropic_class:
+        mock_client = MagicMock()
+        mock_async_anthropic_class.return_value = mock_client
+
+        with patch("instructor.from_anthropic") as mock_from_anthropic:
+            mock_instructor = MagicMock()
+            mock_from_anthropic.return_value = mock_instructor
+
+            from_provider("anthropic/claude-3-5-sonnet-latest", async_client=True)
+
+            mock_async_anthropic_class.assert_called_once()
+            _, kwargs = mock_async_anthropic_class.call_args
+            assert "default_headers" in kwargs
+            assert "User-Agent" in kwargs["default_headers"]
+            assert (
+                kwargs["default_headers"]["User-Agent"] == f"instructor/{__version__}"
+            )
