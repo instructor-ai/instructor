@@ -23,4 +23,3 @@ def test_direct_from_xai_has_clear_error_when_sdk_missing():
     msg = str(excinfo.value)
     assert "instructor[xai]" in msg
     assert "xai-sdk" in msg
-
