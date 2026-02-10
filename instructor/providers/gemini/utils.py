@@ -917,36 +917,10 @@ def handle_genai_message_conversion(
     return new_kwargs
 
 
-def handle_gemini_json(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any]
-) -> tuple[type[Any] | None, dict[str, Any]]:
-    """
-    Handle Gemini JSON mode.
-
-    When response_model is None:
-        - Updates kwargs for Gemini compatibility (converts messages format)
-        - No JSON schema or response format is configured
-
-    When response_model is provided:
-        - Adds/modifies system message with JSON schema instructions
-        - Sets response_mime_type to "application/json"
-        - Updates kwargs for Gemini compatibility
-
-    Kwargs modifications:
-    - Modifies: "messages" (adds/modifies system message with JSON schema) - only when response_model provided
-    - Adds/Modifies: "generation_config" (sets response_mime_type to "application/json") - only when response_model provided
-    - All modifications from update_gemini_kwargs (converts messages to Gemini format)
-    """
-    if "model" in new_kwargs:
-        raise ConfigurationError(
-            "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
-        )
-
-    if response_model is None:
-        # Just handle message conversion
-        new_kwargs = update_gemini_kwargs(new_kwargs)
-        return None, new_kwargs
-
+def _inject_json_schema_message(
+    new_kwargs: dict[str, Any], response_model: type[Any]
+) -> None:
+    """Inject JSON schema instructions into the system message."""
     message = dedent(
         f"""
         As a genius expert, your task is to understand the content and provide
@@ -963,6 +937,44 @@ def handle_gemini_json(
     else:
         new_kwargs["messages"][0]["content"] += f"\n\n{message}"
 
+
+def handle_gemini_json(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Gemini JSON mode.
+
+    Supports two paths:
+    1. Native Gemini SDK (no "model" in kwargs): Converts messages to Gemini
+       format, sets generation_config with response_mime_type.
+    2. LiteLLM / generic completion (model in kwargs): Keeps messages in
+       OpenAI format (LiteLLM handles conversion), sets response_format
+       for JSON output.
+
+    Kwargs modifications:
+    - Modifies: "messages" (adds/modifies system message with JSON schema) - only when response_model provided
+    - Native path: Adds/Modifies "generation_config", applies update_gemini_kwargs
+    - LiteLLM path: Adds "response_format" with type="json_object"
+    """
+    # When model is in kwargs, the caller is using a generic completion function
+    # (e.g. LiteLLM Router) where the model is passed at request time rather
+    # than being bound at client creation. Skip Gemini-native message conversion
+    # since LiteLLM handles that internally.
+    if "model" in new_kwargs:
+        if response_model is None:
+            return None, new_kwargs
+
+        _inject_json_schema_message(new_kwargs, response_model)
+        new_kwargs["response_format"] = {"type": "json_object"}
+        return response_model, new_kwargs
+
+    # Native Gemini SDK path: model is bound at client creation time
+    if response_model is None:
+        new_kwargs = update_gemini_kwargs(new_kwargs)
+        return None, new_kwargs
+
+    _inject_json_schema_message(new_kwargs, response_model)
+
     new_kwargs["generation_config"] = new_kwargs.get("generation_config", {}) | {
         "response_mime_type": "application/json"
     }
@@ -977,20 +989,39 @@ def handle_gemini_tools(
     """
     Handle Gemini tools mode.
 
+    Supports two paths:
+    1. Native Gemini SDK (no "model" in kwargs): Uses Gemini-specific tool
+       schema and function_calling_config, converts messages to Gemini format.
+    2. LiteLLM / generic completion (model in kwargs): Uses OpenAI-style tool
+       schema and tool_choice, keeps messages in OpenAI format.
+
     Kwargs modifications:
-    - When response_model is None: Only applies update_gemini_kwargs transformations
+    - When response_model is None: Only applies update_gemini_kwargs (native) or no-op (LiteLLM)
     - When response_model is provided:
-      - Adds: "tools" (list with gemini schema)
-      - Adds: "tool_config" (function calling config with mode and allowed functions)
-      - All modifications from update_gemini_kwargs
+      - Native path: Adds "tools" (gemini schema), "tool_config", applies update_gemini_kwargs
+      - LiteLLM path: Adds "tools" (OpenAI schema), "tool_choice"
     """
     if "model" in new_kwargs:
-        raise ConfigurationError(
-            "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
-        )
+        # LiteLLM path: use OpenAI-style tool definitions
+        if response_model is None:
+            return None, new_kwargs
 
+        from ...processing.schema import generate_openai_schema
+
+        new_kwargs["tools"] = [
+            {
+                "type": "function",
+                "function": generate_openai_schema(response_model),
+            }
+        ]
+        new_kwargs["tool_choice"] = {
+            "type": "function",
+            "function": {"name": generate_openai_schema(response_model)["name"]},
+        }
+        return response_model, new_kwargs
+
+    # Native Gemini SDK path
     if response_model is None:
-        # Just handle message conversion
         new_kwargs = update_gemini_kwargs(new_kwargs)
         return None, new_kwargs
 
