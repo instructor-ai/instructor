@@ -225,10 +225,14 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
             {"text":"..."}
             {"image":{"format":"jpeg|png|gif|webp","source":{"bytes": <raw bytes>}}}
             {"document":{"format":"pdf|csv|doc|docx|xls|xlsx|html|txt|md","name":"...","source":{"bytes": <raw bytes>}}}
+            {"cachePoint":{"type":"default"}}
+            Any other valid Bedrock ContentBlock dict (guardContent, toolUse,
+            toolResult, audio, video, reasoningContent, etc.)
 
     Note:
-      - We do not validate or normalize Bedrock-native image/document blocks here.
-        Caller is responsible for providing valid 'format' and raw 'bytes'.
+      - We do not validate or normalize Bedrock-native blocks here.
+        Caller is responsible for providing valid structure.
+        The Bedrock API will reject malformed content blocks.
     """
     # Plain string
     if isinstance(content, str):
@@ -269,7 +273,10 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
                     items.append(p)
                     continue
 
-                raise ValueError(f"Unsupported dict content for Bedrock: {p}")
+                # Pass-through any other Bedrock-native content block (cachePoint,
+                # guardContent, toolUse, toolResult, audio, video, etc.)
+                items.append(p)
+                continue
 
             # Plain string elements inside list
             if isinstance(p, str):
