@@ -39,7 +39,7 @@ class Entity(BaseModel):
 class DocumentExtraction(BaseModel):
     entities: list[Entity] = Field(
         ...,
-        description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
+        description="Body of the answer, each fact should be its separate object with a body and a list of sources",
     )
 
 

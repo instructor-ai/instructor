@@ -95,6 +95,9 @@ class Mode(enum.Enum):
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_TOOLS,
+            cls.GENAI_TOOLS,
+            cls.RESPONSES_TOOLS,
+            cls.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }
 
     @classmethod
