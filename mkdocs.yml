@@ -210,6 +210,7 @@ nav:
     - "User-Defined Bulk Classification": 'examples/bulk_classification.md'
     - "AI Model Self-Correction": 'examples/self_critique.md'
     - "Receipt Data Extraction with GPT-4": 'examples/extracting_receipts.md'
+    - "Payment Data Extraction": 'examples/payment_data_extraction.md'
     - "Slide Data Extraction with GPT-4": 'examples/extract_slides.md'
     - "Content Moderation with OpenAI": 'examples/moderation.md'
     - "Complex Entity Resolution": 'examples/entity_resolution.md'
