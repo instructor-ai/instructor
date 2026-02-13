@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 # 1. Initialize the `instructor` client using `from_provider`
 #    This sets up the OpenAI client with `instructor`'s patching automatically.
 #    Replace "gpt-3.5-turbo" with your desired OpenAI model.
-client = instructor.from_provider("openai/gpt-3.5-turbo")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 # 2. Define a simple Pydantic `response_model`
 #    The LLM's response will be automatically parsed and validated into this model.
@@ -25,7 +25,7 @@ class UserDetail(BaseModel):
 #    Instructor ensures the LLM's response conforms to the UserDetail schema.
 try:
     user_data = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # Ensure this matches the model in from_provider if specific
+        model="gpt-4o-mini",  # Ensure this matches the model in from_provider if specific
         response_model=UserDetail,
         messages=[
             {
