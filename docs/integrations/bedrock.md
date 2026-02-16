@@ -123,13 +123,43 @@ print(user)
 
 ## Supported Modes
 
-AWS Bedrock supports the following **core** modes:
+AWS Bedrock supports the following modes:
 
-- `TOOLS`: Uses function calling for models that support it (like Claude models)
-- `MD_JSON`: Direct JSON response generation (text extraction fallback)
+| Mode | Description | Response format |
+|------|-------------|-----------------|
+| `JSON_SCHEMA` | Native JSON schema constrained decoding via `outputConfig.textFormat` | JSON text |
+| `TOOLS_STRICT` | Strict tool use with `strict: true` on `toolSpec` | Tool use |
+| `TOOLS` | Standard tool use / function calling | Tool use |
+| `MD_JSON` | Prompt-based JSON extraction | JSON text |
 
-> Legacy modes (`BEDROCK_TOOLS`, `BEDROCK_JSON`) are deprecated and map to `Mode.TOOLS` and `Mode.MD_JSON`.
-> modes above. Use `TOOLS` or `MD_JSON` in new code.
+The provider-named aliases `BEDROCK_STRUCTURED_OUTPUTS`, `BEDROCK_TOOLS_STRICT`, `BEDROCK_TOOLS`, and `BEDROCK_JSON` still work but are deprecated: they emit a warning and resolve to the canonical modes above (`JSON_SCHEMA`, `TOOLS_STRICT`, `TOOLS`, `MD_JSON` respectively). The provider is determined by the client, not the mode.
+
+### Native Structured Outputs (Recommended)
+
+`JSON_SCHEMA` and `TOOLS_STRICT` leverage Bedrock's native constrained decoding to guarantee schema-conformant output. This eliminates JSON parsing failures and reduces retries.
+
+**Supported models:** Instructor's Bedrock integration uses the **Converse API** (`client.converse()`). As of February 2026, the following models support structured outputs via the Converse API:
+
+- **Anthropic:** Claude Haiku 4.5, Claude Sonnet 4.5, Claude Opus 4.5, Claude Opus 4.6
+- **Qwen:** Qwen3 (all variants), Qwen3 Coder
+- **Mistral:** Mistral Large 3, Ministral (3B/8B/14B), Voxtral (Mini/Small)
+- **Google:** Gemma 3 (12B/27B)
+- **MiniMax:** M2
+- **Moonshot:** Kimi K2 Thinking
+- **NVIDIA:** Nemotron Nano (9B/12B v2)
+
+**Known broken models** (listed by AWS but ignore the schema constraint in practice):
+
+- OpenAI GPT-OSS (all variants) — returns markdown-wrapped JSON, ignores `outputConfig`
+- Mistral Magistral Small 2509 — returns free-form text, ignores `outputConfig`
+- DeepSeek V3.2 — `outputConfig.textFormat` returns `ValidationException`
+
+**Notes:**
+
+- First request for a new schema may have higher latency due to grammar compilation (cached for 24 hours)
+- `JSON_SCHEMA` (structured outputs) is mutually exclusive with tool use — do not combine with `toolConfig`
+- Incompatible with citations for Anthropic models
+- See [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html) for the latest supported models
 
 ```python
 import boto3
@@ -137,16 +167,34 @@ import instructor
 from instructor import Mode
 from pydantic import BaseModel
 
-# Use from_provider for simplified setup
-client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", mode=Mode.TOOLS)
-
-# Or if you need to use a custom boto3 client:
-# bedrock_client = boto3.client('bedrock-runtime')
-# client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", client=bedrock_client, mode=Mode.TOOLS)
+# Structured outputs mode (recommended for supported models)
+bedrock_client = boto3.client("bedrock-runtime")
+client = instructor.from_bedrock(bedrock_client, mode=Mode.JSON_SCHEMA)
 
 class User(BaseModel):
     name: str
     age: int
+
+user = client.create(
+    model="anthropic.claude-sonnet-4-5-v1",
+    messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
+    response_model=User,
+)
+print(user)
+# > User(name='Jason', age=25)
+```
+
+### Strict Tool Use
+
+```python
+# Strict tool use mode — same response format as TOOLS but with native schema enforcement
+client = instructor.from_bedrock(bedrock_client, mode=Mode.TOOLS_STRICT)
+
+user = client.create(
+    model="anthropic.claude-sonnet-4-5-v1",
+    messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
+    response_model=User,
+)
 ```
 
 ## OpenAI Compatibility: Flexible Input Format and Model Parameter

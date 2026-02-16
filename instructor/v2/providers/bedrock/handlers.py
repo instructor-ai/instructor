@@ -119,6 +119,33 @@ def reask_bedrock_tools(
     return kwargs
 
 
+def reask_bedrock_structured_outputs(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Handle reask for Bedrock structured outputs mode when validation fails.
+
+    Structured outputs return plain JSON text, so the correction flow is identical
+    to :func:`reask_bedrock_json`; ``outputConfig.textFormat`` lives in the original
+    request kwargs and is carried over untouched via the shallow copy.
+    """
+    return reask_bedrock_json(kwargs, response, exception)
+
+
+def reask_bedrock_tools_strict(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Handle reask for Bedrock strict tools mode when validation fails.
+
+    Same as :func:`reask_bedrock_tools` but preserves ``strict: true`` on the
+    tool spec that was set at request time.
+    """
+    return reask_bedrock_tools(kwargs, response, exception)
+
+
 def _normalize_bedrock_image_format(mime_or_ext: str) -> str:
     """Map common image types to Bedrock format enum."""
     if not mime_or_ext:
@@ -404,6 +431,107 @@ def handle_bedrock_tools(
     return response_model, new_kwargs
 
 
+def _set_additional_properties_false(schema: dict[str, Any]) -> None:
+    """Recursively set ``additionalProperties: false`` on object types in a schema.
+
+    Bedrock structured outputs (and strict tool use) requires every object type to
+    explicitly set ``additionalProperties`` to false. Pydantic doesn't include this
+    by default. Only sets the value when not already present, to respect
+    user-provided schemas.
+    """
+    if not isinstance(schema, dict):
+        return
+
+    if (
+        schema.get("type") == "object" or "properties" in schema
+    ) and "additionalProperties" not in schema:
+        schema["additionalProperties"] = False
+
+    # Recurse into properties
+    for prop in schema.get("properties", {}).values():
+        if isinstance(prop, dict):
+            _set_additional_properties_false(prop)
+
+    # Recurse into $defs and definitions (Pydantic v2 uses $defs, older uses definitions)
+    for defs_key in ("$defs", "definitions"):
+        for defn in schema.get(defs_key, {}).values():
+            if isinstance(defn, dict):
+                _set_additional_properties_false(defn)
+
+    # Recurse into items (for array types)
+    items = schema.get("items")
+    if isinstance(items, dict):
+        _set_additional_properties_false(items)
+
+    # Recurse into anyOf / oneOf / allOf
+    for key in ("anyOf", "oneOf", "allOf"):
+        for variant in schema.get(key, []):
+            if isinstance(variant, dict):
+                _set_additional_properties_false(variant)
+
+
+def handle_bedrock_structured_outputs(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """Handle Bedrock structured outputs mode via native constrained decoding.
+
+    Adds ``outputConfig.textFormat`` containing the model's JSON schema so Bedrock
+    guarantees schema-compliant JSON.
+    """
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+
+    if response_model is None:
+        return None, new_kwargs
+
+    schema = response_model.model_json_schema()
+    _set_additional_properties_false(schema)
+    schema_name = response_model.__name__
+    schema_description = response_model.__doc__ or (
+        f"Correctly extracted `{schema_name}` with all "
+        "the required parameters with correct types"
+    )
+
+    new_kwargs["outputConfig"] = {
+        "textFormat": {
+            "type": "json_schema",
+            "structure": {
+                "jsonSchema": {
+                    "schema": json.dumps(schema),
+                    "name": schema_name,
+                    "description": schema_description,
+                }
+            },
+        }
+    }
+
+    return response_model, new_kwargs
+
+
+def handle_bedrock_tools_strict(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """Handle Bedrock strict tools mode with native constrained decoding.
+
+    Same as :func:`handle_bedrock_tools` but adds ``strict: true`` to the toolSpec,
+    enabling Bedrock's native schema enforcement on tool use.
+    """
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+
+    if response_model is None:
+        return None, new_kwargs
+
+    tool_schema = generate_bedrock_schema(response_model)
+    tool_schema["toolSpec"]["strict"] = True
+    _set_additional_properties_false(tool_schema["toolSpec"]["inputSchema"]["json"])
+
+    new_kwargs["toolConfig"] = {
+        "tools": [tool_schema],
+        "toolChoice": {"tool": {"name": response_model.__name__}},
+    }
+
+    return response_model, new_kwargs
+
+
 def _extract_bedrock_text(response: Any) -> str:
     """Extract text from Bedrock response formats."""
     if isinstance(response, dict):
@@ -555,7 +683,105 @@ class BedrockMDJSONHandler(ModeHandler):
         )
 
 
+@register_mode_handler(Provider.BEDROCK, Mode.TOOLS_STRICT)
+class BedrockToolsStrictHandler(ModeHandler):
+    """Handler for Bedrock strict tool use (native constrained decoding)."""
+
+    mode = Mode.TOOLS_STRICT
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        new_kwargs = kwargs.copy()
+        if response_model is None:
+            return handle_bedrock_tools_strict(None, new_kwargs)
+
+        prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
+        return handle_bedrock_tools_strict(prepared_model, new_kwargs)
+
+    def handle_reask(
+        self,
+        kwargs: dict[str, Any],
+        response: Any,
+        exception: Exception,
+    ) -> dict[str, Any]:
+        return reask_bedrock_tools_strict(kwargs, response, exception)
+
+    def parse_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool = False,
+        is_async: bool = False,  # noqa: ARG002
+    ) -> BaseModel:
+        if stream:
+            raise ConfigurationError(
+                "Streaming is not supported for Bedrock in TOOLS_STRICT mode."
+            )
+        tool_input = _extract_bedrock_tool_input(response, response_model)
+        return response_model.model_validate(
+            tool_input,
+            context=validation_context,
+            strict=strict,
+        )
+
+
+@register_mode_handler(Provider.BEDROCK, Mode.JSON_SCHEMA)
+class BedrockStructuredOutputsHandler(ModeHandler):
+    """Handler for Bedrock native structured outputs (JSON schema decoding)."""
+
+    mode = Mode.JSON_SCHEMA
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        new_kwargs = kwargs.copy()
+        if response_model is None:
+            return handle_bedrock_structured_outputs(None, new_kwargs)
+
+        prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
+        return handle_bedrock_structured_outputs(prepared_model, new_kwargs)
+
+    def handle_reask(
+        self,
+        kwargs: dict[str, Any],
+        response: Any,
+        exception: Exception,
+    ) -> dict[str, Any]:
+        return reask_bedrock_structured_outputs(kwargs, response, exception)
+
+    def parse_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool = False,
+        is_async: bool = False,  # noqa: ARG002
+    ) -> BaseModel:
+        if stream:
+            raise ConfigurationError(
+                "Streaming is not supported for Bedrock in structured outputs mode."
+            )
+        # Bedrock's constrained decoding guarantees valid JSON, so no markdown
+        # unwrapping is needed here.
+        text = _extract_bedrock_text(response)
+        return response_model.model_validate_json(
+            text,
+            context=validation_context,
+            strict=strict,
+        )
+
+
 __all__ = [
     "BedrockToolsHandler",
     "BedrockMDJSONHandler",
+    "BedrockToolsStrictHandler",
+    "BedrockStructuredOutputsHandler",
 ]

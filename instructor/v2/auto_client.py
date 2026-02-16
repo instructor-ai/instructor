@@ -1007,12 +1007,38 @@ def _build_bedrock(
         # Create bedrock-runtime client
         client = boto3.client("bedrock-runtime", **aws_kwargs)
 
-        # Determine default mode based on model
+        # Determine default mode based on model.
+        # Models that support native structured outputs via the Converse API.
+        # See https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html
+        _structured_outputs_models = {
+            # Anthropic Claude 4.5+
+            "claude-haiku-4-5",
+            "claude-sonnet-4-5",
+            "claude-opus-4-5",
+            "claude-opus-4-6",
+            # Qwen
+            "qwen3",
+            # Google
+            "gemma-3",
+            # MiniMax
+            "minimax-m2",
+            # Mistral (not Magistral Small - ignores schema constraint)
+            "ministral",
+            "mistral-large-3",
+            "voxtral",
+            # Moonshot
+            "kimi-k2",
+            # NVIDIA
+            "nemotron-nano",
+        }
         if mode is None:
-            # Anthropic models (Claude) support tools, others use JSON
-            if model_name and (
-                "anthropic" in model_name.lower() or "claude" in model_name.lower()
-            ):
+            model_lower = (model_name or "").lower()
+            if any(m in model_lower for m in _structured_outputs_models):
+                # Canonical structured-outputs mode (BEDROCK_STRUCTURED_OUTPUTS
+                # normalizes to this); use the canonical form for defaults, like
+                # every other provider builder.
+                default_mode = Mode.JSON_SCHEMA
+            elif "anthropic" in model_lower or "claude" in model_lower:
                 default_mode = Mode.TOOLS
             else:
                 default_mode = Mode.MD_JSON

@@ -71,7 +71,9 @@ class Mode(enum.Enum):
     WRITER_TOOLS = "writer_tools"
     WRITER_JSON = "writer_json"
     BEDROCK_TOOLS = "bedrock_tools"
+    BEDROCK_TOOLS_STRICT = "bedrock_tools_strict"
     BEDROCK_JSON = "bedrock_json"
+    BEDROCK_STRUCTURED_OUTPUTS = "bedrock_structured_outputs"
     PERPLEXITY_JSON = "perplexity_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
@@ -96,6 +98,7 @@ class Mode(enum.Enum):
             cls.FIREWORKS_TOOLS,
             cls.WRITER_TOOLS,
             cls.BEDROCK_TOOLS,
+            cls.BEDROCK_TOOLS_STRICT,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_TOOLS,
@@ -120,6 +123,7 @@ class Mode(enum.Enum):
             cls.FIREWORKS_JSON,
             cls.WRITER_JSON,
             cls.BEDROCK_JSON,
+            cls.BEDROCK_STRUCTURED_OUTPUTS,
             cls.PERPLEXITY_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
@@ -235,7 +239,9 @@ DEPRECATED_TO_CORE: dict[Mode, Mode] = {
     Mode.WRITER_JSON: Mode.MD_JSON,
     # Bedrock legacy modes
     Mode.BEDROCK_TOOLS: Mode.TOOLS,
+    Mode.BEDROCK_TOOLS_STRICT: Mode.TOOLS_STRICT,
     Mode.BEDROCK_JSON: Mode.MD_JSON,
+    Mode.BEDROCK_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
     # Perplexity legacy modes
     Mode.PERPLEXITY_JSON: Mode.MD_JSON,
     # VertexAI legacy modes

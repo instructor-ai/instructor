@@ -388,15 +388,21 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             Provider.BEDROCK,
             aliases=("bedrock",),
             handler_module="instructor.v2.providers.bedrock.handlers",
-            supported_modes=(Mode.TOOLS, Mode.MD_JSON),
-            unsupported_modes=(
+            supported_modes=(
+                Mode.TOOLS,
+                Mode.TOOLS_STRICT,
+                Mode.MD_JSON,
                 Mode.JSON_SCHEMA,
+            ),
+            unsupported_modes=(
                 Mode.PARALLEL_TOOLS,
                 Mode.RESPONSES_TOOLS,
             ),
             legacy_modes={
                 Mode.BEDROCK_TOOLS: Mode.TOOLS,
+                Mode.BEDROCK_TOOLS_STRICT: Mode.TOOLS_STRICT,
                 Mode.BEDROCK_JSON: Mode.MD_JSON,
+                Mode.BEDROCK_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
             },
             from_function="from_bedrock",
             client_module="instructor.v2.providers.bedrock.client",

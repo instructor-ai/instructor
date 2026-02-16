@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Bedrock**: Add native constrained-decoding support for the `JSON_SCHEMA` mode (structured outputs via `outputConfig.textFormat`) and the `TOOLS_STRICT` mode (strict tool use with `strict: true` on the toolSpec), giving guaranteed schema compliance and fewer retries. `from_provider("bedrock/...")` now defaults to `JSON_SCHEMA` for models that support it. The provider-named aliases `BEDROCK_STRUCTURED_OUTPUTS` and `BEDROCK_TOOLS_STRICT` are also accepted but deprecated in favor of the canonical modes. ([#2086](https://github.com/567-labs/instructor/pull/2086))
+
+---
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

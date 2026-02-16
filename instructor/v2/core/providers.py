@@ -66,7 +66,9 @@ def provider_from_mode(mode: Mode, default: Provider = Provider.OPENAI) -> Provi
         Mode.WRITER_TOOLS: Provider.WRITER,
         Mode.WRITER_JSON: Provider.WRITER,
         Mode.BEDROCK_TOOLS: Provider.BEDROCK,
+        Mode.BEDROCK_TOOLS_STRICT: Provider.BEDROCK,
         Mode.BEDROCK_JSON: Provider.BEDROCK,
+        Mode.BEDROCK_STRUCTURED_OUTPUTS: Provider.BEDROCK,
         Mode.PERPLEXITY_JSON: Provider.PERPLEXITY,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: Provider.OPENROUTER,
     }

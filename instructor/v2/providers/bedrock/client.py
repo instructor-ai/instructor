@@ -51,7 +51,9 @@ def from_bedrock(
     """Create an Instructor instance from a Bedrock client using v2 registry.
 
     Bedrock uses the Converse API through a boto3 BaseClient. This factory supports
-    TOOLS and MD_JSON modes, and can wrap calls in an async interface if needed.
+    TOOLS, TOOLS_STRICT, MD_JSON, and JSON_SCHEMA modes (the latter two also reachable
+    via the BEDROCK_TOOLS_STRICT and BEDROCK_STRUCTURED_OUTPUTS aliases), and can wrap
+    calls in an async interface if needed.
 
     Args:
         client: boto3 Bedrock Runtime client
