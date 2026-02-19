@@ -44,7 +44,7 @@ MarkdownDataFrame = Annotated[
             "description": """
                 The markdown representation of the table, 
                 each one should be tidy, do not try to join tables
-                that should be seperate""",
+                that should be separate""",
         }
     ),
 ]
@@ -68,7 +68,7 @@ def extract_table(url: str):
                         "type": "text",
                         "text": """Extract the table from the image, and describe it. 
                         Each table should be tidy, do not try to join tables that 
-                        should be seperately described.""",
+                        should be separately described.""",
                     },
                     {
                         "type": "image_url",

@@ -504,15 +504,16 @@ def handle_json_modes(
     if response_model is None:
         return None, new_kwargs
 
+    # Use a neutral prompt that doesn't impose a persona
+    # This allows the JSON mode to work with character-based applications
+    # See: https://github.com/instructor-ai/instructor/issues/1514
     message = dedent(
         f"""
-        As a genius expert, your task is to understand the content and provide
-        the parsed objects in json that match the following json_schema:\n
+        Parse the content and return a JSON object matching this schema:
 
         {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
 
-        Make sure to return an instance of the JSON, not the schema itself
-        """
+        Return a valid JSON instance, not the schema definition."""
     )
 
     if mode == Mode.JSON:
