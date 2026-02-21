@@ -36,7 +36,6 @@ Over the past 10 months, we've enjoyed healthy growth with over 4000+ github sta
 Honestly, nothing much, the simplest change you'll need to make is to replace `instructor.patch` with `instructor.from_openai`.
 
 ```python
-import openai
 import instructor
 
 client = instructor.from_provider("openai/gpt-5-nano")
@@ -89,7 +88,6 @@ This was the dream of instructor but due to the patching of openai, it wasnt pos
 ### Calling `create`
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
@@ -119,7 +117,6 @@ Now if you use a ID, you can see the type is correctly inferred.
 This will also work correctly with asynchronous clients.
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
@@ -151,7 +148,6 @@ Notice that simply because we return the `create` method, the `extract()` functi
 You can also return the original completion object
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
@@ -181,7 +177,6 @@ user, completion = client.create_with_completion(
 In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simply the type inference, we've added `create_iterable` and `create_partial` methods as well!
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
@@ -206,14 +201,14 @@ for user in user_stream:
     print(user)
     #> name=None age=None
     #> name=None age=None
-    #> name=None age=None
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name='' age=25
-    #> name='John' age=25
-    #> name='John Smith' age=25
-    #> name='John Smith' age=25
+    #> name='' age=None
+    #> name='John' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=30
+    #> name='John Doe' age=30
     # name=None age=None
     # name='' age=None
     # name='John' age=None
@@ -230,7 +225,6 @@ Notice now that the type inferred is `Generator[User, None]`
 We get an iterable of objects when we want to extract multiple objects.
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
@@ -254,7 +248,7 @@ users = client.create_iterable(
 for user in users:
     print(user)
     #> name='John Doe' age=30
-    #> name='Jane Smith' age=28
+    #> name='Jane Doe' age=28
     # User(name='John Doe', age=30)
     # User(name='Jane Smith', age=25)
 ```

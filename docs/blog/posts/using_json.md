@@ -41,7 +41,6 @@ Instructor works as a lightweight patch over the OpenAI Python SDK. To use it, y
 
 ```python
 import instructor
-import openai
 
 client = instructor.from_provider("openai/gpt-5-nano")
 ```

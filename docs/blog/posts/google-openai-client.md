@@ -38,7 +38,7 @@ client = OpenAI(
 )
 
 response = client.create(
-    model="gemini-1.5-flash",
+    model="gemini-3-flash",
     messages=[{"role": "user", "content": "Extract name and age from: John is 30"}],
 )
 ```
@@ -118,7 +118,7 @@ class User(BaseModel):
 
 
 resp = client.create_iterable(
-    model="gemini-1.5-flash",
+    model="gemini-3-flash",
     messages=[
         {
             "role": "user",
@@ -166,7 +166,7 @@ class Story(BaseModel):
 
 
 resp = client.create_partial(
-    model="gemini-1.5-flash",
+    model="gemini-3-flash",
     messages=[
         {
             "role": "user",
@@ -228,7 +228,6 @@ Production applications need reliable outputs. Instructor handles this by valida
 With [our tenacity integration](../../concepts/retrying.md), you get full control over the retries if needed, allowing you to mechanisms like exponential backoff and other retry strategies easily.
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 from tenacity import Retrying, stop_after_attempt, wait_fixed

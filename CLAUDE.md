@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Format: `uv run ruff format instructor examples tests`
 - Generate coverage: `uv run coverage run -m pytest tests/ -k "not docs"` then `uv run coverage report`
 - Build documentation: `uv run mkdocs serve` (for local preview) or `./build_mkdocs.sh` (for production)
+- Waiting: use `sleep <seconds>` for explicit pauses (e.g., CI waits) or to let external processes finish
 
 ## Installation & Setup
 - Fork the repository and clone your fork

@@ -58,7 +58,7 @@ class Fact(BaseModel):
             yield from self._get_span(quote, context)
 
 
-class QuestionAnswer(instructor.OpenAISchema):
+class QuestionAnswer(instructor.ResponseSchema):
     """
     Class representing a question and its answer as a list of facts each one should have a soruce.
     each sentence contains a body and a list of sources."""
@@ -66,7 +66,7 @@ class QuestionAnswer(instructor.OpenAISchema):
     question: str = Field(..., description="Question that was asked")
     answer: list[Fact] = Field(
         ...,
-        description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
+        description="Body of the answer, each fact should be its separate object with a body and a list of sources",
     )
 
     @model_validator(mode="after")

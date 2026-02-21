@@ -148,7 +148,19 @@ def reask_anthropic_tools(
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
-    assert isinstance(response, Message), "Response must be a Anthropic Message"
+    # Handle Stream objects which are not Message instances
+    # This happens when streaming mode is used with retries
+    if not isinstance(response, Message):
+        kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+        return kwargs
 
     assistant_content = []
     tool_use_id = None
@@ -197,7 +209,19 @@ def reask_anthropic_json(
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
-    assert isinstance(response, Message), "Response must be a Anthropic Message"
+    # Handle Stream objects which are not Message instances
+    # This happens when streaming mode is used with retries
+    if not isinstance(response, Message):
+        kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Errors found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+        return kwargs
 
     # Filter for text blocks to handle ThinkingBlock and other non-text content
     text_blocks = [c for c in response.content if c.type == "text"]

@@ -140,7 +140,7 @@ Instructor has two main ways that you can use to stream responses out
 1. **Iterables**: These are useful when you'd like to stream a list of objects of the same type (Eg. use structured outputs to extract multiple users)
 2. **Partial Streaming**: This is useful when you'd like to stream a single object and you'd like to immediately start processing the response as it comes in.
 
-We currently support partial streaming for Cerebras by parsing the raw text completion. We have not implemented streaming for function calling at this point in time yet. Please make sure you have `mode=instructor.Mode.CEREBRAS_JSON` set when using partial streaming.
+We currently support partial streaming for Cerebras by parsing the raw text completion. We have not implemented streaming for function calling at this point in time yet. Please make sure you have `mode=instructor.Mode.MD_JSON` set when using partial streaming.
 
 ```python
 import instructor
@@ -150,7 +150,7 @@ from typing import Iterable
 
 client = instructor.from_provider(
     "cerebras/llama3.1-70b",
-    mode=instructor.Mode.CEREBRAS_JSON,
+    mode=instructor.Mode.MD_JSON,
 )
 
 
@@ -188,7 +188,7 @@ from typing import Iterable
 
 client = instructor.from_provider(
     "cerebras/llama3.1-70b",
-    mode=instructor.Mode.CEREBRAS_JSON,
+    mode=instructor.Mode.MD_JSON,
 )
 
 
@@ -236,7 +236,7 @@ instructor.patch(client, validation_hook=validation_hook)
 
 We provide serveral modes to make it easy to work with the different response models that Cerebras Supports
 
-1. `instructor.Mode.CEREBRAS_JSON` : This parses the raw completions as a valid JSON object.
-2. `instructor.Mode.CEREBRAS_TOOLS` : This uses Cerebras's tool calling mode to return structured outputs to the client.
+1. `instructor.Mode.MD_JSON` : This parses the raw completions as a valid JSON object.
+2. `instructor.Mode.TOOLS` : This uses Cerebras's tool calling mode to return structured outputs to the client.
 
-In general, we recommend using `Mode.CEREBRAS_TOOLS` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.
+In general, we recommend using `Mode.TOOLS` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.

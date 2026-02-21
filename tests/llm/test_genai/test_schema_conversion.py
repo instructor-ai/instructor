@@ -2,8 +2,6 @@
 
 from enum import Enum
 from typing import Optional
-
-import pytest
 from pydantic import BaseModel
 
 from instructor.providers.gemini.utils import (
@@ -158,13 +156,13 @@ def test_verify_no_unions_valid():
 
 
 def test_verify_no_unions_invalid():
-    """Test verify_no_unions with invalid union schemas."""
+    """Test verify_no_unions with union schemas (now allowed)."""
     # Create a schema with a true union (not just Optional)
     invalid_schema = {
         "type": "object",
         "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
     }
-    assert verify_no_unions(invalid_schema) is False
+    assert verify_no_unions(invalid_schema) is True
 
 
 def test_schema_without_refs():
@@ -206,15 +204,18 @@ def test_schema_with_description():
 
 
 def test_union_type_raises_error():
-    """Test that unsupported union types raise ValueError."""
+    """Test that union types are allowed in schema conversion."""
     # Create a model with a true union type (not Optional or Decimal)
     union_schema = {
         "type": "object",
         "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
     }
 
-    with pytest.raises(ValueError, match="Gemini does not support Union types"):
-        map_to_gemini_function_schema(union_schema)
+    result = map_to_gemini_function_schema(union_schema)
+    assert result["properties"]["value"]["anyOf"] == [
+        {"type": "string"},
+        {"type": "integer"},
+    ]
 
 
 def test_verify_no_unions_allows_optional():
@@ -248,18 +249,18 @@ def test_verify_no_unions_allows_decimal():
 
 
 def test_verify_no_unions_rejects_other_unions():
-    """Test that verify_no_unions rejects non-Optional, non-Decimal union types."""
+    """Test that verify_no_unions allows non-Optional unions."""
     # Schema with unsupported union type (string | integer)
     union_schema = {
         "type": "object",
         "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
     }
 
-    assert verify_no_unions(union_schema) is False
+    assert verify_no_unions(union_schema) is True
 
 
 def test_verify_no_unions_rejects_complex_unions():
-    """Test that verify_no_unions rejects complex union types."""
+    """Test that verify_no_unions allows complex union types."""
     # Schema with more than 2 types in union
     complex_union_schema = {
         "type": "object",
@@ -270,11 +271,11 @@ def test_verify_no_unions_rejects_complex_unions():
         },
     }
 
-    assert verify_no_unions(complex_union_schema) is False
+    assert verify_no_unions(complex_union_schema) is True
 
 
 def test_verify_no_unions_nested_schemas():
-    """Test that verify_no_unions works with nested schemas."""
+    """Test that verify_no_unions allows unions in nested schemas."""
     # Schema with nested object containing Decimal and Optional fields
     nested_schema = {
         "type": "object",
@@ -313,7 +314,7 @@ def test_verify_no_unions_nested_schemas():
         },
     }
 
-    assert verify_no_unions(bad_nested_schema) is False
+    assert verify_no_unions(bad_nested_schema) is True
 
 
 def test_decimal_schema_conversion_succeeds():

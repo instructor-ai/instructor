@@ -36,7 +36,7 @@ class User(BaseModel):
 
 # Using from_provider (recommended)
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 resp = client.create(
@@ -71,7 +71,7 @@ class User(BaseModel):
 
 async def extract_user():
     client = instructor.from_provider(
-        "google/gemini-1.5-flash-latest",
+        "google/gemini-3-flash",
         async_client=True,
     )
 
@@ -116,8 +116,8 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
-    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+    "google/gemini-3-flash",
+    mode=instructor.Mode.JSON,
 )
 
 resp = client.create(
@@ -137,6 +137,50 @@ resp = client.create(
 )
 
 print(resp)
+```
+
+## Safety settings with images
+
+Google GenAI uses a different set of harm categories for image inputs (for example, `HARM_CATEGORY_IMAGE_HATE`).
+
+When your request includes image content, Instructor will:
+
+- Use the image-specific categories in the request config
+- Map thresholds you pass for text categories (like `HARM_CATEGORY_HATE_SPEECH`) to the matching image category (like `HARM_CATEGORY_IMAGE_HATE`)
+
+This avoids `400 INVALID_ARGUMENT` errors when you combine `safety_settings` with images.
+
+```python
+import instructor
+from google.genai.types import HarmBlockThreshold, HarmCategory
+from instructor.processing.multimodal import Image
+from pydantic import BaseModel
+
+
+class Result(BaseModel):
+    summary: str
+
+
+client = instructor.from_provider("google/gemini-3-flash")
+
+result = client.create(
+    response_model=Result,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe the image in one sentence.",
+                Image.autodetect("path/to/image.png"),
+            ],
+        }
+    ],
+    # You can still pass text categories. Instructor will map them for image inputs.
+    safety_settings={
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    },
+)
+
+print(result)
 ```
 
 ## Nested Example
@@ -159,7 +203,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 user = client.create(
@@ -210,7 +254,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 
@@ -245,7 +289,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 
@@ -291,8 +335,12 @@ These limitations are specific to Google Gemini and do not affect other provider
 
 We provide several modes to make it easy to work with the different response models that Gemini supports:
 
-1. `instructor.Mode.GENAI_TOOLS` : This uses Gemini's tool calling API to return structured outputs (default)
-2. `instructor.Mode.GENAI_STRUCTURED_OUTPUTS` : This uses Gemini's JSON schema mode for structured outputs
+1. `instructor.Mode.TOOLS` : This uses Gemini's tool calling API to return structured outputs (default)
+2. `instructor.Mode.JSON` : This uses Gemini's JSON schema mode for structured outputs
+
+!!! note "Backwards Compatibility"
+
+    Legacy provider-specific modes (for example `Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`, `Mode.TOOLS`) are deprecated. They emit warnings and map to the generic modes.
 
 !!! info "Mode Selection"
     When using `from_provider`, the appropriate mode is automatically selected based on the provider and model capabilities.
@@ -333,7 +381,7 @@ import google.generativeai as genai
 
 client = instructor.from_provider(
     "google/gemini-2.5-flash",
-    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+    mode=instructor.Mode.JSON,
 )
 ```
 
@@ -341,10 +389,10 @@ client = instructor.from_provider(
 ```python
 import instructor
 
-# Option 1: Using from_provider (simplest)
+# Option 1: Using from_provider (recommended)
 client = instructor.from_provider("google/gemini-2.5-flash")
 
-# Option 2: Using from_genai directly
+# Option 2: Using from_genai directly (legacy/advanced)
 from google import genai
 from instructor import from_genai
 
@@ -363,7 +411,7 @@ from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
 client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
-    mode=instructor.Mode.VERTEXAI_TOOLS,
+    mode=instructor.Mode.TOOLS,
 )
 ```
 
@@ -371,14 +419,14 @@ client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
 ```python
 import instructor
 
-# Option 1: Using from_provider
+# Option 1: Using from_provider (recommended)
 client = instructor.from_provider(
-    "vertexai/gemini-1.5-flash",
+    "vertexai/gemini-3-flash",
     project="your-project",
     location="us-central1"
 )
 
-# Option 2: Using from_genai with vertexai=True
+# Option 2: Using from_genai with vertexai=True (legacy/advanced)
 from google import genai
 from instructor import from_genai
 

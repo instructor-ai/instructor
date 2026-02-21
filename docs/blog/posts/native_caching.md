@@ -36,26 +36,23 @@ from instructor import from_provider
 from instructor.cache import AutoCache
 
 # Works with any provider - caching flows through automatically
-client = from_provider(
-    "openai/gpt-4o",
-    cache=AutoCache(maxsize=1000)
-)
+client = from_provider("openai/gpt-4o", cache=AutoCache(maxsize=1000))
 
 # Your normal calls are now cached automatically
 from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 first = client.create(
-    messages=[{"role": "user", "content": "Extract: John is 25"}],
-    response_model=User
+    messages=[{"role": "user", "content": "Extract: John is 25"}], response_model=User
 )
 
 second = client.create(
-    messages=[{"role": "user", "content": "Extract: John is 25"}],
-    response_model=User
+    messages=[{"role": "user", "content": "Extract: John is 25"}], response_model=User
 )
 
 # second call was served from cache - same result, zero cost!
@@ -72,7 +69,7 @@ from instructor.cache import AutoCache, DiskCache
 # Works with OpenAI
 openai_client = from_provider("openai/gpt-5-nano", cache=AutoCache())
 
-# Works with Anthropic  
+# Works with Anthropic
 anthropic_client = from_provider("anthropic/claude-3-haiku", cache=AutoCache())
 
 # Works with Google
@@ -141,9 +138,9 @@ from instructor.cache import make_cache_key
 # Generate deterministic cache key
 key = make_cache_key(
     messages=[{"role": "user", "content": "hello"}],
-    model="gpt-3.5-turbo", 
+    model="gpt-3.5-turbo",
     response_model=User,
-    mode="TOOLS"
+    mode="TOOLS",
 )
 print(key)  # SHA-256 hash: 9b8f5e2c8c9e...
 ```
@@ -156,19 +153,21 @@ Want Redis, Memcached, or a custom backend? Simply inherit from `BaseCache`:
 from instructor.cache import BaseCache
 import redis
 
+
 class RedisCache(BaseCache):
     def __init__(self, host="localhost", port=6379, **kwargs):
         self.redis = redis.Redis(host=host, port=port, **kwargs)
-    
+
     def get(self, key: str):
         value = self.redis.get(key)
         return value.decode() if value else None
-    
+
     def set(self, key: str, value, ttl: int | None = None):
         if ttl:
             self.redis.setex(key, ttl, value)
         else:
             self.redis.set(key, value)
+
 
 # Use your custom cache
 redis_cache = RedisCache(host="my-redis-server")
@@ -186,7 +185,7 @@ Control cache expiration with per-call TTL overrides:
 result = client.create(
     messages=[{"role": "user", "content": "Generate daily report"}],
     response_model=Report,
-    cache_ttl=3600  # 1 hour in seconds
+    cache_ttl=3600,  # 1 hour in seconds
 )
 ```
 
@@ -204,8 +203,7 @@ If you were using custom caching decorators, migrating is straightforward:
 @functools.cache
 def extract_user(text: str) -> User:
     return client.create(
-        messages=[{"role": "user", "content": text}],
-        response_model=User
+        messages=[{"role": "user", "content": text}], response_model=User
     )
 ```
 
@@ -214,10 +212,10 @@ def extract_user(text: str) -> User:
 # Remove decorator, add cache to client
 client = from_provider("openai/gpt-4o", cache=AutoCache())
 
+
 def extract_user(text: str) -> User:
     return client.create(
-        messages=[{"role": "user", "content": text}],
-        response_model=User
+        messages=[{"role": "user", "content": text}], response_model=User
     )
 ```
 
@@ -263,8 +261,7 @@ Ready to enable native caching? Here's your quick start:
 4. **Use normally - caching happens automatically**:
    ```python
    result = client.create(
-       messages=[{"role": "user", "content": "your prompt"}],
-       response_model=YourModel
+       messages=[{"role": "user", "content": "your prompt"}], response_model=YourModel
    )
    ```
 

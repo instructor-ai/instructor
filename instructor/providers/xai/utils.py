@@ -22,7 +22,13 @@ else:
 def _convert_messages(messages: list[dict[str, Any]]):
     """Convert OpenAI-style messages to xAI format."""
     if xchat is None:
-        raise ImportError("xai_sdk is required for xAI provider")
+        from ...core.exceptions import ConfigurationError
+
+        raise ConfigurationError(
+            "The xAI provider needs the optional dependency `xai-sdk`. "
+            'Install it with `uv pip install "instructor[xai]"` (or `pip install "instructor[xai]"`). '
+            "Note: xai-sdk requires Python 3.10+."
+        ) from None
 
     converted = []
     for m in messages:

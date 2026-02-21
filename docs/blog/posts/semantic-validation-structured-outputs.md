@@ -57,6 +57,7 @@ from instructor import llm_validator
 # Initialize client
 client = instructor.from_provider("openai/gpt-5-nano")
 
+
 class ProductDescription(BaseModel):
     name: str
     description: Annotated[
@@ -69,9 +70,9 @@ class ProductDescription(BaseModel):
                 3. Between 50-200 words in length
                 4. Written in third person (no "you" or "your")
                 5. Free of spelling and grammar errors""",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -108,9 +109,9 @@ class UserComment(BaseModel):
                 - No promotion of illegal activities
                 - No sharing of personal information
                 - No spamming or excessive self-promotion""",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -126,9 +127,9 @@ class CompanyAnnouncement(BaseModel):
         BeforeValidator(
             llm_validator(
                 "The announcement must maintain a professional, positive tone without being overly informal or using slang",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -149,14 +150,11 @@ class FactCheckedClaim(BaseModel):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a fact-checking system. Assess the factual accuracy of the claim."
+                    "content": "You are a fact-checking system. Assess the factual accuracy of the claim.",
                 },
-                {
-                    "role": "user",
-                    "content": "Fact check this claim: {{ claim }}"
-                }
+                {"role": "user", "content": "Fact check this claim: {{ claim }}"},
             ],
-            context={"claim": text}
+            context={"claim": text},
         )
 ```
 
@@ -178,7 +176,7 @@ class Report(BaseModel):
             messages=[
                 {
                     "role": "system",
-                    "content": "Validate that the summary accurately reflects the key findings."
+                    "content": "Validate that the summary accurately reflects the key findings.",
                 },
                 {
                     "role": "user",
@@ -194,14 +192,14 @@ class Report(BaseModel):
                         {% endfor %}
 
                         Evaluate for consistency, completeness, and accuracy.
-                    """
-                }
+                    """,
+                },
             ],
             context={
                 "title": self.title,
                 "summary": self.summary,
-                "findings": self.key_findings
-            }
+                "findings": self.key_findings,
+            },
         )
 
         if not validation_result.is_valid:
@@ -233,13 +231,17 @@ try:
         response_model=ProductDescription,
         messages=[
             {"role": "system", "content": "Generate a product description."},
-            {"role": "user", "content": "Create a description for UltraClean 9000 Washing Machine"}
+            {
+                "role": "user",
+                "content": "Create a description for UltraClean 9000 Washing Machine",
+            },
         ],
-        max_retries=2  # Automatically retry up to 2 times with error context
+        max_retries=2,  # Automatically retry up to 2 times with error context
     )
     print("Success:", product.model_dump_json(indent=2))
 except Exception as e:
     print(f"Failed after retries: {e}")
+    #> Failed after retries: name 'client' is not defined
 ```
 
 With `max_retries` set, if the initial response fails validation, Instructor will automatically send the error context back to the LLM, giving it a chance to correct the issue. This creates a self-healing system that can recover from validation failures without developer intervention.
@@ -282,20 +284,18 @@ def create_guarded_model(base_class, guardrails):
 
     for field_name, criteria in guardrails.items():
         validators[field_name] = Annotated[
-            str,
-            BeforeValidator(llm_validator(criteria, client=client))
+            str, BeforeValidator(llm_validator(criteria, client=client))
         ]
 
     return create_model(
-        f"Guarded{base_class.__name__}",
-        __base__=base_class,
-        **validators
+        f"Guarded{base_class.__name__}", __base__=base_class, **validators
     )
+
 
 # Usage
 guardrails = {
     "title": "Must be concise, descriptive, and free of clickbait",
-    "content": "Must follow community guidelines and be respectful"
+    "content": "Must follow community guidelines and be respectful",
 }
 
 GuardedPost = create_guarded_model(Post, guardrails)
@@ -314,18 +314,17 @@ class LegalCompliance(BaseModel):
             llm_validator(
                 """Check if this document complies with the provided guidelines.
                 Guidelines: {{ guidelines }}""",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
+
 
 # Usage
 result = client.create(
     response_model=LegalCompliance,
-    messages=[
-        {"role": "user", "content": "Check this document: " + document_text}
-    ],
-    context={"guidelines": company_legal_guidelines}
+    messages=[{"role": "user", "content": "Check this document: " + document_text}],
+    context={"guidelines": company_legal_guidelines},
 )
 ```
 

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from instructor import OpenAISchema
+from instructor import ResponseSchema
 import instructor.dsl as dsl
 from pydantic import BaseModel, Field
 
@@ -10,7 +10,7 @@ class SearchRequest(BaseModel):
     body: str
 
 
-class SearchQuery(OpenAISchema):
+class SearchQuery(ResponseSchema):
     title: str = Field(..., description="Question that the query answers")
     query: str = Field(
         ...,

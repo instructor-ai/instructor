@@ -31,6 +31,7 @@ These concepts relate to defining and working with different data structures:
 - [Enums](./enums.md) - Using enumerated types in your models
 - [Missing](./maybe.md) - Handling missing or optional values
 - [Alias](./alias.md) - Create field aliases
+- [Citation](./citation.md) - Extract and validate citations from source text
 
 ## Streaming Features
 
@@ -56,6 +57,7 @@ These features help you optimize performance:
 - [Prompt Caching](./prompt_caching.md) - Cache prompts to reduce token usage
 - [Usage Tokens](./usage.md) - Track token usage
 - [Parallel Tools](./parallel.md) - Run multiple tools in parallel
+- [Dictionary Operations](./dictionary_operations.md) - Performance optimizations for dictionary operations
 
 ## Integration Features
 

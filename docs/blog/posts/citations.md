@@ -35,6 +35,7 @@ In this example, we use the `Statements` class to verify if a given substring qu
 from typing import List
 from pydantic import BaseModel, ValidationInfo, field_validator
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 

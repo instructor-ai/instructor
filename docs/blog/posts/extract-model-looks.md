@@ -63,6 +63,7 @@ First, we generate an outline of the story using gpt-4o. This is important becau
 from pydantic import BaseModel
 from typing import List
 
+
 class GeneratedStory(BaseModel):
     setting: str
     plot_summary: str
@@ -70,14 +71,15 @@ class GeneratedStory(BaseModel):
     visual_style: str
     image_description: str
 
+
 async def generate_story(
-    client: instructor.AsyncInstructor,
-    story_input: RestateStoryInput
+    client: instructor.AsyncInstructor, story_input: RestateStoryInput
 ):
     resp = await client.create(
-        messages=[{
-            "role": "user",
-            "content": """
+        messages=[
+            {
+                "role": "user",
+                "content": """
             Generate a story with:
             - Setting: {{ story_input.setting}}
             - Title: {{ story_input.title }}
@@ -93,8 +95,9 @@ async def generate_story(
             2. Initial Choices: 2-4 distinct actions the user can take
             3. Visual Style: Description of art style, color palette
             4. Image Description: One-sentence scene description
-            """
-        }],
+            """,
+            }
+        ],
         model="gpt-4o",
         response_model=GeneratedStory,
         context={"story_input": story_input},
@@ -166,16 +169,17 @@ async def rewrite_choice(
     story: GeneratedStory,
     prev_choices: list[dict],  # Accumulator for path state
     max_depth: int,
-    sem: asyncio.Semaphore
+    sem: asyncio.Semaphore,
 ) -> FinalStoryChoice:
     # Each choice knows its entire path history
     async with sem:
         rewritten_choice = await client.create(
             model="gpt-4o",
             response_model=RewrittenChoice,
-            messages=[{
-                "role": "user",
-                "content": """
+            messages=[
+                {
+                    "role": "user",
+                    "content": """
                 Given this choice: {{ choice }}
 
                 Story context:
@@ -190,13 +194,14 @@ async def rewrite_choice(
 
                 Generate the next story beat and 2-4 new choices.
                 The story should end in {{ max_depth - len(prev_choices) }} more turns.
-                """
-            }],
+                """,
+                }
+            ],
             context={
                 "choice": choice,
                 "story": story,
                 "prev_choices": prev_choices,
-            }
+            },
         )
 
     # For terminal nodes (at max depth)
@@ -204,29 +209,34 @@ async def rewrite_choice(
         return FinalStoryChoice(
             choice_description=rewritten_choice.choice_description,
             choice_consequences=rewritten_choice.choice_consequences,
-            choices=[]  # Terminal node
+            choices=[],  # Terminal node
         )
 
     # Recursively expand child choices
-    child_choices = await asyncio.gather(*[
-        rewrite_choice(
-            client=client,
-            choice=new_choice,
-            story=story,
-            prev_choices=prev_choices + [{
-                "choice_description": rewritten_choice.choice_description,
-                "choice_consequences": rewritten_choice.choice_consequences
-            }],
-            max_depth=max_depth,
-            sem=sem
-        )
-        for new_choice in rewritten_choice.choices
-    ])
+    child_choices = await asyncio.gather(
+        *[
+            rewrite_choice(
+                client=client,
+                choice=new_choice,
+                story=story,
+                prev_choices=prev_choices
+                + [
+                    {
+                        "choice_description": rewritten_choice.choice_description,
+                        "choice_consequences": rewritten_choice.choice_consequences,
+                    }
+                ],
+                max_depth=max_depth,
+                sem=sem,
+            )
+            for new_choice in rewritten_choice.choices
+        ]
+    )
 
     return FinalStoryChoice(
         choice_description=rewritten_choice.choice_description,
         choice_consequences=rewritten_choice.choice_consequences,
-        choices=child_choices
+        choices=child_choices,
     )
 ```
 

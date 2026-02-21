@@ -59,16 +59,16 @@ import instructor
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.from_provider(
-    "openai/gpt-4.1-mini-1106",
-    mode=instructor.function_calls.Mode.JSON,
-)
-
 
 class User(BaseModel):
     name: str
     age: int
 
+
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini-1106",
+    mode=instructor.Mode.JSON,
+)
 
 users = client.create(
     temperature=0.1,
@@ -77,9 +77,11 @@ users = client.create(
     messages=[
         {
             "role": "user",
-            "content": "Consider this data: Jason is 10 and John is 30.\
-                         Correctly segment it into entitites\
-                        Make sure the JSON is correct",
+            "content": (
+                "Consider this data: Jason is 10 and John is 30. "
+                "Correctly segment it into entities. "
+                "Make sure the JSON is correct."
+            ),
         },
     ],
 )
@@ -100,30 +102,24 @@ import instructor
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.from_provider(
-    "openai/gpt-4.1-mini",
-    mode=instructor.Mode.TOOLS,
-)
-
 
 class User(BaseModel):
     name: str
     age: int
 
 
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.TOOLS,
+)
+
 users = client.create(
     temperature=0.1,
     stream=True,
     response_model=Iterable[User],
     messages=[
-        {
-            "role": "system",
-            "content": "You are a perfect entity extraction system",
-        },
-        {
-            "role": "user",
-            "content": (f"Extract `Jason is 10 and John is 10`"),
-        },
+        {"role": "system", "content": "You are a perfect entity extraction system"},
+        {"role": "user", "content": "Extract `Jason is 10 and John is 10`"},
     ],
     max_tokens=1000,
 )
@@ -143,12 +139,6 @@ import instructor
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.from_provider(
-    "openai/gpt-4.1-mini",
-    async_client=True,
-    mode=instructor.Mode.TOOLS,
-)
-
 
 class UserExtract(BaseModel):
     name: str
@@ -156,6 +146,12 @@ class UserExtract(BaseModel):
 
 
 async def print_iterable_results():
+    client = instructor.from_provider(
+        "openai/gpt-4.1-mini",
+        async_client=True,
+        mode=instructor.Mode.TOOLS,
+    )
+
     model = await client.create(
         response_model=Iterable[UserExtract],
         max_retries=2,
@@ -166,8 +162,8 @@ async def print_iterable_results():
     )
     async for m in model:
         print(m)
-        #> name='John Doe' age=35
-        #> name='Jane Smith' age=28
+        #> name='Alice' age=30
+        #> name='Bob' age=25
 
 
 import asyncio

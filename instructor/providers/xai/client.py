@@ -14,6 +14,16 @@ import instructor
 from .utils import _convert_messages
 
 
+def _raise_xai_sdk_missing() -> None:
+    from ...core.exceptions import ConfigurationError
+
+    raise ConfigurationError(
+        "The xAI provider needs the optional dependency `xai-sdk`. "
+        'Install it with `uv pip install "instructor[xai]"` (or `pip install "instructor[xai]"`). '
+        "Note: xai-sdk requires Python 3.10+."
+    ) from None
+
+
 def _get_model_schema(response_model: Any) -> dict[str, Any]:
     """
     Safely get JSON schema from a response model.
@@ -94,6 +104,9 @@ def from_xai(
     mode: instructor.Mode = instructor.Mode.XAI_JSON,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
+    if SyncClient is None or AsyncClient is None or xchat is None:
+        _raise_xai_sdk_missing()
+
     valid_modes = {instructor.Mode.XAI_JSON, instructor.Mode.XAI_TOOLS}
 
     if mode not in valid_modes:

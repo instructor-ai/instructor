@@ -39,6 +39,7 @@ To demonstrate how to use this new functionality, let's look at a simple example
 from pydantic import BaseModel
 import instructor
 from instructor.processing.multimodal import Audio
+
 client = instructor.from_provider("openai/gpt-5-nano")
 
 

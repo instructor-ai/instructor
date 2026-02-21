@@ -193,9 +193,9 @@ client = Instructor(
     client=Anthropic(),
     create=patch(
         create=Anthropic().beta.prompt_caching.messages.create,
-        mode=Mode.ANTHROPIC_TOOLS,
+        mode=Mode.TOOLS,
     ),
-    mode=Mode.ANTHROPIC_TOOLS,
+    mode=Mode.TOOLS,
 )
 ```
 
@@ -296,9 +296,9 @@ client = Instructor(
     client=Anthropic(),
     create=patch(
         create=Anthropic().beta.prompt_caching.messages.create,
-        mode=Mode.ANTHROPIC_TOOLS,
+        mode=Mode.TOOLS,
     ),
-    mode=Mode.ANTHROPIC_TOOLS,
+    mode=Mode.TOOLS,
 )
 
 

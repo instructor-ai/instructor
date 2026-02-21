@@ -46,6 +46,7 @@ except ValidationError as e:
     1 validation error for UserDetail
     name
       Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.11/v/value_error
     """
 ```
 
@@ -93,7 +94,7 @@ except ValidationError as e:
     1 validation error for QuestionAnswer
     answer
       Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/assertion_error
+        For further information visit https://errors.pydantic.dev/2.11/v/assertion_error
     """
 ```
 
@@ -170,7 +171,7 @@ model = client.create(
 print(model.model_dump_json(indent=2))
 """
 {
-  "name": "Jason",
+  "name": "jason",
   "age": 25
 }
 """
@@ -207,28 +208,35 @@ Here's a complete example showing context-based validation:
 ```python
 import instructor
 from pydantic import BaseModel, ValidationInfo, field_validator
-from typing import List
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class QuoteExtraction(BaseModel):
     """Extract a claim with a supporting quote from source text."""
+
     claim: str
     supporting_quote: str
-    
+
     @field_validator('supporting_quote')
     @classmethod
     def verify_quote_in_source(cls, v: str, info: ValidationInfo):
         """Verify the quote exists in the source text."""
+        import re
+
         context = info.context
         if context:
             source_text = context.get('source_text', '')
-            if v not in source_text:
+            # Normalize whitespace for comparison
+            normalized_source = re.sub(r'\s+', ' ', source_text.strip())
+            normalized_quote = re.sub(r'\s+', ' ', v.strip())
+            if normalized_quote not in normalized_source:
                 raise ValueError(
                     f"The quote must be an exact substring from the source text. "
                     f"Quote '{v}' was not found in the source."
                 )
         return v
+
 
 source_text = """
 The Python programming language was created by Guido van Rossum 
@@ -242,18 +250,22 @@ extraction = client.create(
     messages=[
         {
             "role": "system",
-            "content": "Extract a claim and find an exact quote from the text that supports it."
+            "content": "Extract a claim and find an exact quote from the text that supports it.",
         },
         {
             "role": "user",
-            "content": "Source text: {{ source_text }}\n\nExtract a claim about Python."
-        }
+            "content": "Source text: {{ source_text }}\n\nExtract a claim about Python.",
+        },
     ],
-    context={"source_text": source_text}
+    context={"source_text": source_text},
 )
 
 print(f"Claim: {extraction.claim}")
+#> Claim: Python emphasizes code readability and simplicity.
 print(f"Quote: {extraction.supporting_quote}")
+"""
+Quote: It emphasizes code readability and simplicity, making it popular for beginners and experts alike.
+"""
 ```
 
 In this example:

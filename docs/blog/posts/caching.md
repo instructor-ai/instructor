@@ -80,6 +80,7 @@ raw_json = completion.model_dump_json()  # Serialize to JSON
 # When restoring from cache:
 import json
 from types import SimpleNamespace
+
 restored = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))
 ```
 
@@ -110,6 +111,7 @@ Let's first consider our canonical example, using the `OpenAI` Python client to 
 ```python
 import instructor
 from pydantic import BaseModel
+
 # Enables `response_model`
 client = instructor.from_provider("openai/gpt-5-nano")
 
@@ -217,6 +219,7 @@ print(f"Time taken: {time.perf_counter() - start}")
     def say_hello():
         #> Hello!
         print("Hello!")
+        #> Hello!
 
 
     say_hello()
@@ -270,9 +273,9 @@ This provides:
 
     F = TypeVar('F', bound=Callable[..., Any])
 
+
     def instructor_cache(
-        cache_key_fn: Callable[[Any], str] | None = None,
-        ttl: int | None = None
+        cache_key_fn: Callable[[Any], str] | None = None, ttl: int | None = None
     ) -> Callable[[F], F]:
         """
         Advanced cache decorator for functions that return Pydantic models.
@@ -281,6 +284,7 @@ This provides:
             cache_key_fn: Optional function to generate custom cache keys
             ttl: Time to live in seconds (None for no expiration)
         """
+
         def decorator(func: F) -> F:
             return_type = inspect.signature(func).return_annotation
             if not issubclass(return_type, BaseModel):  # (2)
@@ -315,6 +319,7 @@ This provides:
                 return result
 
             return wrapper
+
         return decorator
     ```
 
@@ -335,6 +340,7 @@ import instructor
 import diskcache
 
 from pydantic import BaseModel
+
 client = instructor.from_provider("openai/gpt-5-nano")
 cache = diskcache.Cache('./my_cache_directory')
 
@@ -417,11 +423,7 @@ def extract(data) -> UserDetail:
 
     # Configure Redis with connection pooling
     redis_pool = redis.ConnectionPool(
-        host='localhost',
-        port=6379,
-        db=0,
-        max_connections=20,
-        decode_responses=True
+        host='localhost', port=6379, db=0, max_connections=20, decode_responses=True
     )
     cache = redis.Redis(connection_pool=redis_pool)
 
@@ -429,10 +431,11 @@ def extract(data) -> UserDetail:
 
     F = TypeVar('F', bound=Callable[..., Any])
 
+
     def instructor_cache_redis(
         ttl: int = 3600,  # 1 hour default
         prefix: str = "instructor",
-        retry_on_failure: bool = True
+        retry_on_failure: bool = True,
     ) -> Callable[[F], F]:
         """
         Redis cache decorator for Pydantic models with production features.
@@ -442,6 +445,7 @@ def extract(data) -> UserDetail:
             prefix: Cache key prefix for namespacing
             retry_on_failure: Whether to retry on Redis failures
         """
+
         def decorator(func: F) -> F:
             return_type = inspect.signature(func).return_annotation
             if not issubclass(return_type, BaseModel):
@@ -481,6 +485,7 @@ def extract(data) -> UserDetail:
                 return result
 
             return wrapper
+
         return decorator
     ```
 
@@ -499,6 +504,7 @@ import inspect
 import instructor
 
 from pydantic import BaseModel
+
 client = instructor.from_provider("openai/gpt-5-nano")
 cache = redis.Redis("localhost")
 
@@ -596,13 +602,16 @@ Real-world cost savings validated across different application scales:
 
 ```python
 # Real calculation function used in our tests
-def calculate_cost_savings(total_calls: int, cache_hit_rate: float, cost_per_call: float = 0.002):
+def calculate_cost_savings(
+    total_calls: int, cache_hit_rate: float, cost_per_call: float = 0.002
+):
     cache_misses = total_calls * (1 - cache_hit_rate)
     cost_without_cache = total_calls * cost_per_call
     cost_with_cache = cache_misses * cost_per_call
     savings = cost_without_cache - cost_with_cache
     savings_percent = (savings / cost_without_cache) * 100
     return savings, savings_percent
+
 
 # Example: Medium application
 daily_savings, percent_saved = calculate_cost_savings(10000, 0.7)
@@ -621,20 +630,21 @@ Combine multiple caching layers for optimal performance:
 
 ```python
 import functools
-import diskcache
-import redis
 
 # L1: In-memory cache (fastest)
 # L2: Local disk cache (fast, persistent)
 # L3: Redis cache (shared, network)
 
+
 @functools.lru_cache(maxsize=100)  # L1
 def extract_l1(data: str) -> UserDetail:
     return extract_l2(data)
 
+
 @diskcache_decorator  # L2
 def extract_l2(data: str) -> UserDetail:
     return extract_l3(data)
+
 
 @redis_decorator  # L3
 def extract_l3(data: str) -> UserDetail:
@@ -650,7 +660,9 @@ def extract_l3(data: str) -> UserDetail:
 Implement intelligent cache invalidation based on model schema changes. **This feature has been tested and validated** to prevent stale data when your Pydantic models evolve:
 
 ```python
-def smart_cache_key(func_name: str, args: tuple, kwargs: dict, model_class: type) -> str:
+def smart_cache_key(
+    func_name: str, args: tuple, kwargs: dict, model_class: type
+) -> str:
     """Generate cache key that includes model schema hash for automatic invalidation."""
     import hashlib
     import json
@@ -663,6 +675,7 @@ def smart_cache_key(func_name: str, args: tuple, kwargs: dict, model_class: type
     args_hash = hashlib.md5(str((args, kwargs)).encode()).hexdigest()[:8]
 
     return f"{func_name}:{schema_hash}:{args_hash}"
+
 
 # Real test results showing this works:
 # UserV1 cache key: extract:d4860f8f:9d4cb5ab
@@ -677,9 +690,8 @@ When you add a field to your model (like adding `email: Optional[str]` to a `Use
 For applications using async/await patterns:
 
 ```python
-import asyncio
 import aioredis
-from typing import AsyncGenerator
+
 
 class AsyncInstructorCache:
     def __init__(self, redis_url: str = "redis://localhost"):
@@ -702,10 +714,13 @@ class AsyncInstructorCache:
                 return result
 
             return wrapper
+
         return decorator
+
 
 # Usage
 cache = AsyncInstructorCache()
+
 
 @cache.cache(ttl=3600)
 async def extract_async(data: str) -> UserDetail:
@@ -755,17 +770,20 @@ async def process_batch_with_cache(items: list[str]) -> list[UserDetail]:
 Implement comprehensive monitoring for production caching. **This monitoring system has been validated** to provide actionable insights:
 
 ```python
-import time
 from collections import defaultdict
 from typing import Dict, Any
 
+
 class CacheMetrics:
     """Production-ready cache monitoring with real-world validation"""
+
     def __init__(self):
         self.hits = 0
         self.misses = 0
         self.total_time_saved = 0.0
-        self.hit_rate_by_function: Dict[str, Dict[str, int]] = defaultdict(lambda: {"hits": 0, "misses": 0})
+        self.hit_rate_by_function: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: {"hits": 0, "misses": 0}
+        )
 
     def record_hit(self, func_name: str, time_saved: float):
         self.hits += 1
@@ -789,8 +807,9 @@ class CacheMetrics:
             "total_hits": self.hits,
             "total_misses": self.misses,
             "time_saved_seconds": f"{self.total_time_saved:.3f}",
-            "function_stats": dict(self.hit_rate_by_function)
+            "function_stats": dict(self.hit_rate_by_function),
         }
+
 
 # Example output from real test run:
 # ✅ Cache HIT for extract, saved 0.800s
@@ -816,6 +835,7 @@ This monitoring approach provides **immediate feedback** on cache performance an
 ```python
 def robust_cache_decorator(func):
     """Cache decorator with comprehensive error handling."""
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -868,9 +888,9 @@ async def warm_cache(common_queries: list[str]):
 ```python
 # Different TTL strategies based on data volatility
 CACHE_TTL = {
-    "user_profiles": 3600,      # 1 hour - relatively stable
-    "real_time_data": 60,       # 1 minute - frequently changing
-    "static_content": 86400,    # 24 hours - rarely changes
+    "user_profiles": 3600,  # 1 hour - relatively stable
+    "real_time_data": 60,  # 1 minute - frequently changing
+    "static_content": 86400,  # 24 hours - rarely changes
     "expensive_computations": 604800,  # 1 week - computational results
 }
 ```

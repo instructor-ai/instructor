@@ -337,7 +337,8 @@ def test_failed_attempt_namedtuple():
 
     # Test immutability
     with pytest.raises(AttributeError):
-        attempt.attempt_number = 5
+        attr = "attempt_number"
+        setattr(attempt, attr, 5)
 
 
 def test_instructor_error_failed_attempts_attribute():
@@ -417,6 +418,7 @@ def test_failed_attempts_propagation_through_retry_cycles():
 
     # Verify failed attempts are properly stored
     assert final_exception.failed_attempts == failed_attempts
+    assert final_exception.failed_attempts is not None
     assert len(final_exception.failed_attempts) == 3
 
     # Verify attempt numbers are sequential
@@ -511,6 +513,7 @@ def test_failed_attempts_accumulation_simulation():
     # Verify all data is preserved
     assert final_error.n_attempts == 3
     assert final_error.total_usage == 500
+    assert final_error.failed_attempts is not None
     assert len(final_error.failed_attempts) == 3
     assert final_error.last_completion == {"final": "attempt"}
 
@@ -523,6 +526,7 @@ def test_failed_attempts_accumulation_simulation():
     assert "Maximum retries exceeded" in error_str
 
     # Verify attempt sequence integrity
+    assert final_error.failed_attempts is not None
     for i, attempt in enumerate(final_error.failed_attempts, 1):
         assert attempt.attempt_number == i
 
@@ -576,6 +580,7 @@ def test_failed_attempts_exception_chaining():
     try:
         raise original_error
     except InstructorError as e:
+        assert e.failed_attempts is not None
         # Create new exception from caught exception, preserving failed attempts
         chained_error = InstructorRetryException(
             "Chained error",
@@ -586,5 +591,6 @@ def test_failed_attempts_exception_chaining():
 
         # Verify failed attempts are preserved through chaining
         assert chained_error.failed_attempts == original_attempts
+        assert chained_error.failed_attempts is not None
         assert len(chained_error.failed_attempts) == 1
         assert chained_error.failed_attempts[0].exception.args[0] == "Original failure"

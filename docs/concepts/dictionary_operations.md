@@ -66,8 +66,8 @@ The `handle_reask_kwargs` function was optimized to use direct conditional check
 def handle_reask_kwargs(kwargs, mode, response, exception):
     kwargs = kwargs.copy()
     functions = {
-        Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
-        Mode.ANTHROPIC_JSON: reask_anthropic_json,
+        Mode.TOOLS: reask_anthropic_tools,
+        Mode.JSON: reask_anthropic_json,
         # ... many more mappings
     }
     reask_function = functions.get(mode, reask_default)
@@ -79,9 +79,9 @@ def handle_reask_kwargs(kwargs, mode, response, exception):
 def handle_reask_kwargs(kwargs, mode, response, exception):
     kwargs_copy = kwargs.copy()
 
-    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}:
+    if mode in {Mode.TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}:
         return reask_anthropic_tools(kwargs_copy, response, exception)
-    elif mode == Mode.ANTHROPIC_JSON:
+    elif mode == Mode.JSON:
         return reask_anthropic_json(kwargs_copy, response, exception)
     # ... optimized conditional checks with grouped modes
     else:

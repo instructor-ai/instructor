@@ -131,7 +131,7 @@ import cohere
 import instructor
 
 # Use from_provider for simplified setup
-client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.COHERE_TOOLS)
+client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.TOOLS)
 
 # Now use it with structured outputs
 response = client.create(
@@ -150,7 +150,7 @@ import cohere
 import instructor
 
 # Use from_provider for simplified setup (works with both V1 and V2)
-client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.COHERE_TOOLS)
+client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.TOOLS)
 
 # V1 uses different message format internally but instructor handles the conversion
 response = client.create(

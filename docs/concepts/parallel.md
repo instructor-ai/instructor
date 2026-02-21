@@ -46,7 +46,6 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         "openai/gpt-4.1-mini",
         mode=instructor.Mode.PARALLEL_TOOLS,
     )
-
     function_calls = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
@@ -67,10 +66,20 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
 
 === "Vertex AI"
 
-    ```python hl_lines="20 30"
-    import instructor
+    ```python
     from typing import Iterable, Literal
+
+    import instructor
     from pydantic import BaseModel
+
+    try:
+        import vertexai
+        import vertexai.generative_models as gm
+        from instructor import from_vertexai
+    except ImportError:
+        vertexai = None
+        gm = None
+        from_vertexai = None
 
 
     class Weather(BaseModel):
@@ -82,26 +91,27 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         query: str
 
 
-    client = instructor.from_provider(
-        "vertexai/gemini-2.5-flash",
-        mode=instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
-    )
+    if from_vertexai is not None and vertexai is not None and gm is not None:
+        vertexai.init(project="your-project-id", location="us-central1")
+        client = from_vertexai(
+            gm.GenerativeModel("gemini-2.5-flash"),
+            mode=instructor.Mode.PARALLEL_TOOLS,
+        )
+        function_calls = client.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "What is the weather in toronto and dallas and who won the super bowl?",
+                },
+            ],
+            response_model=Iterable[Weather | GoogleSearch],
+        )
 
-    function_calls = client.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "What is the weather in toronto and dallas and who won the super bowl?",
-            },
-        ],
-        response_model=Iterable[Weather | GoogleSearch],
-    )
-
-    for fc in function_calls:
-        print(fc)
-        #> location='Toronto' units='metric'
-        #> location='Dallas' units='imperial'
-        #> query='who won the super bowl'
+        for fc in function_calls:
+            print(fc)
+            #> location='Toronto' units='metric'
+            #> location='Dallas' units='imperial'
+            #> query='who won the super bowl'
     ```
 
 === "Anthropic"
@@ -123,9 +133,8 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
 
     client = instructor.from_provider(
         "anthropic/claude-3-7-sonnet-latest",
-        mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
+        mode=instructor.Mode.PARALLEL_TOOLS,
     )
-
     function_calls = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
@@ -140,8 +149,6 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
     for fc in function_calls:
         print(fc)
         #> location='Toronto' units='metric'
-        #> location='Dallas' units='metric'
-        #> query='who won the super bowl 2023'
     ```
 
 We need to set the response model to `Iterable[Weather | GoogleSearch]` to indicate that the response will be a list of `Weather` and `GoogleSearch` objects.

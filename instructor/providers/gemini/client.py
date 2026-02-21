@@ -1,9 +1,8 @@
-# type: ignore
 from __future__ import annotations
 
 from typing import Any, Literal, overload
 
-import google.generativeai as genai
+import google.generativeai as genai  # type: ignore[import-not-found]
 
 import instructor
 
@@ -42,13 +41,13 @@ def from_gemini(
         "  # Old way\n"
         "  from instructor import from_gemini\n"
         "  import google.generativeai as genai\n"
-        "  client = from_gemini(genai.GenerativeModel('gemini-1.5-flash'))\n\n"
+        "  client = from_gemini(genai.GenerativeModel('gemini-3-flash'))\n\n"
         "  # New way\n"
         "  from instructor import from_genai\n"
         "  from google import genai\n"
         "  client = from_genai(genai.Client())\n"
         "  # OR use from_provider\n"
-        "  client = instructor.from_provider('google/gemini-1.5-flash')",
+        "  client = instructor.from_provider('google/gemini-3-flash')",
         DeprecationWarning,
         stacklevel=2,
     )

@@ -96,7 +96,7 @@ First, we read in the taxonomy from a yaml file and create a set of categories, 
 ```python
 import yaml
 
-with open("taxonomy.yml", "r") as file:
+with open("taxonomy.yml") as file:
     taxonomy = yaml.safe_load(file)
 
 colors = taxonomy["colors"]
@@ -167,7 +167,6 @@ Lastly, we can combine these all into a single api call to `gpt-4o` where we pas
 With our inbuilt support for `jinja` formatting using the `context` keyword that exposes data we can also re-use in our validation, this becomes an incredibly easy step to execute.
 
 ```python
-import openai
 import instructor
 
 client = instructor.from_provider("openai/gpt-5-nano")
@@ -228,7 +227,7 @@ PersonalStyle(
     categories=['tops', 'bottoms'],
     subcategories=['sweaters', 'jackets', 'pants'],
     product_types=['cardigan', 'crewneck', 'denim_jackets', 'chinos'],
-    colors=['brown', 'beige', 'black', 'white', 'navy']
+    colors=['brown', 'beige', 'black', 'white', 'navy'],
 )
 ```
 

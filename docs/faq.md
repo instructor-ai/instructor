@@ -41,12 +41,13 @@ See the [Integrations](./integrations/index.md) section for the complete list.
 
 ### What's the difference between various modes?
 
-Instructor supports different modes for different providers:
+Instructor supports generic modes across providers:
 
-- `Mode.TOOLS` - Uses the OpenAI function calling API (recommended for OpenAI)
-- `Mode.JSON` - Instructs the model to return JSON directly
-- `Mode.ANTHROPIC_TOOLS` - Uses Anthropic's tool calling feature
-- `Mode.GENAI_TOOLS` - Uses Gemini's function calling (replaces deprecated GEMINI_TOOLS)
+- `Mode.TOOLS` - Tool/function calling when supported
+- `Mode.JSON` - JSON generation for providers that support it (GenAI)
+- `Mode.JSON_SCHEMA` - JSON schema enforcement (OpenAI, Mistral, Cohere)
+- `Mode.MD_JSON` - JSON embedded in markdown
+- `Mode.PARALLEL_TOOLS` - Parallel tool calls where supported
 
 The optimal mode depends on your provider and use case. See [Patching](./concepts/patching.md) for details.
 

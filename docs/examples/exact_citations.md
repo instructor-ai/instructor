@@ -110,6 +110,7 @@ To understand the validation context work from pydantic check out [pydantic's do
 
 ```python hl_lines="5 6 14"
 import instructor
+
 # Apply the patch to the OpenAI client
 # enables response_model, context keyword
 client = instructor.from_provider("openai/gpt-5-nano")

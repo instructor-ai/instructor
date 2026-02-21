@@ -44,26 +44,27 @@ Both methods significantly outperform sequential processing, but they serve diff
 Here's a complete, self-contained example showing how to set up async processing with Instructor:
 
 ```python
-import asyncio
-import time
-from typing import List
 import instructor
 from pydantic import BaseModel
+
 # Set up the async client with Instructor
 client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+
 
 class Person(BaseModel):
     name: str
     age: int
     occupation: str
 
+
 async def extract_person(text: str) -> Person:
     """Extract person information from text using LLM."""
     return await client.create(
         model="gpt-4o-mini",
         response_model=Person,
-        messages=[{"role": "user", "content": f"Extract person info: {text}"}]
+        messages=[{"role": "user", "content": f"Extract person info: {text}"}],
     )
+
 
 # Sample dataset
 dataset = [
@@ -73,7 +74,7 @@ dataset = [
     "Lisa Wilson is a 28-year-old UX designer",
     "Tom Brown is a 32-year-old DevOps engineer",
     "Emma Garcia is a 27-year-old frontend developer",
-    "David Lee is a 33-year-old backend developer"
+    "David Lee is a 33-year-old backend developer",
 ]
 ```
 
@@ -93,6 +94,7 @@ async def sequential_processing() -> List[Person]:
     end_time = time.time()
     print(f"Sequential processing took: {end_time - start_time:.2f} seconds")
     return persons
+
 
 # Run sequential processing
 # persons = await sequential_processing()
@@ -120,6 +122,7 @@ async def gather_processing() -> List[Person]:
 
     return persons
 
+
 # Run gather processing
 # persons = await gather_processing()
 ```
@@ -145,6 +148,7 @@ async def as_completed_processing() -> List[Person]:
     print(f"asyncio.as_completed took: {end_time - start_time:.2f} seconds")
     return persons
 
+
 # Run as_completed processing
 # persons = await as_completed_processing()
 ```
@@ -152,10 +156,13 @@ async def as_completed_processing() -> List[Person]:
 ## Method 4: Rate-Limited Processing with Semaphores
 
 ```python
-async def rate_limited_extract_person(text: str, semaphore: asyncio.Semaphore) -> Person:
+async def rate_limited_extract_person(
+    text: str, semaphore: asyncio.Semaphore
+) -> Person:
     """Extract person info with rate limiting."""
     async with semaphore:
         return await extract_person(text)
+
 
 async def rate_limited_gather(concurrency_limit: int = 3) -> List[Person]:
     """Process items with controlled concurrency using asyncio.gather."""
@@ -171,8 +178,11 @@ async def rate_limited_gather(concurrency_limit: int = 3) -> List[Person]:
     persons = await asyncio.gather(*tasks)
 
     end_time = time.time()
-    print(f"Rate-limited gather (limit={concurrency_limit}) took: {end_time - start_time:.2f} seconds")
+    print(
+        f"Rate-limited gather (limit={concurrency_limit}) took: {end_time - start_time:.2f} seconds"
+    )
     return persons
+
 
 async def rate_limited_as_completed(concurrency_limit: int = 3) -> List[Person]:
     """Process items with controlled concurrency using asyncio.as_completed."""
@@ -192,8 +202,11 @@ async def rate_limited_as_completed(concurrency_limit: int = 3) -> List[Person]:
         print(f"Rate-limited completed: {person.name}")
 
     end_time = time.time()
-    print(f"Rate-limited as_completed (limit={concurrency_limit}) took: {end_time - start_time:.2f} seconds")
+    print(
+        f"Rate-limited as_completed (limit={concurrency_limit}) took: {end_time - start_time:.2f} seconds"
+    )
     return persons
+
 
 # Run rate-limited processing
 # persons = await rate_limited_gather(concurrency_limit=2)

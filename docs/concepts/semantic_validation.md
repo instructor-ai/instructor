@@ -42,6 +42,7 @@ from instructor import llm_validator
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class UserComment(BaseModel):
     username: str
     comment: Annotated[
@@ -49,9 +50,9 @@ class UserComment(BaseModel):
         BeforeValidator(
             llm_validator(
                 "Comment must be constructive, respectful, and not contain hate speech or profanity",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -108,6 +109,7 @@ from instructor import llm_validator
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class ProductDescription(BaseModel):
     """Model for validating product descriptions."""
 
@@ -122,10 +124,11 @@ class ProductDescription(BaseModel):
                 3. Between 50-200 words in length
                 4. Written in third person (no "you" or "your")
                 5. Free of spelling and grammar errors""",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
+
 
 # Example usage with Jinja templating
 try:
@@ -134,18 +137,65 @@ try:
         messages=[
             {
                 "role": "system",
-                "content": "Generate a product description based on the product name."
+                "content": "Generate a product description based on the product name.",
             },
-            {
-                "role": "user",
-                "content": "Create a description for: {{ product_name }}"
-            }
+            {"role": "user", "content": "Create a description for: {{ product_name }}"},
         ],
-        context={"product_name": "UltraClean 9000 Washing Machine"}
+        context={"product_name": "UltraClean 9000 Washing Machine"},
     )
     print(product.model_dump_json(indent=2))
+    """
+    {
+      "name": "UltraClean 9000 Washing Machine",
+      "description": "The UltraClean 9000 Washing Machine offers reliable and efficient cleaning with multiple wash settings and a high-capacity drum. It features an easy-to-use control panel and a design that suits modern home environments. The machine aims to provide a practical solution for everyday laundry needs with standard noise levels and energy consumption."
+    }
+    """
 except Exception as e:
     print(f"Validation error: {e}")
+    """
+    Validation error: <failed_attempts>
+
+    <generation number="1">
+    <exception>
+        1 validation error for ProductDescription
+    description
+      Assertion failed, The description contains excessive hyperbole and unsubstantiated claims. It needs to be more professional and factual. [type=assertion_error, input_value='The UltraClean 9000 Wash...ior laundry experience.', input_type=str]
+    </exception>
+    <completion>
+        ChatCompletion(id='chatcmpl-D08R5P8Ne4q4TvAbiSa6Kh18wQxQd', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageFunctionToolCall(id='call_RZlWM3SJheQAv84bS1apYcFJ', function=Function(arguments='{"name":"UltraClean 9000 Washing Machine","description":"The UltraClean 9000 Washing Machine is a state-of-the-art appliance designed to deliver exceptional cleaning performance with maximum efficiency. Featuring advanced cleaning technology, multiple wash cycles, and energy-saving modes, it ensures your clothes come out spotless every time. Its sleek design and user-friendly interface make laundry effortless and convenient, while durable construction guarantees long-lasting use. Ideal for modern households, the UltraClean 9000 combines powerful washing capabilities with quiet operation for a superior laundry experience."}', name='ProductDescription'), type='function')]))], created=1768924799, model='gpt-4.1-mini-2025-04-14', object='chat.completion', service_tier='default', system_fingerprint='fp_376a7ccef1', usage=CompletionUsage(completion_tokens=300, prompt_tokens=2619, total_tokens=2919, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))
+    </completion>
+    </generation>
+
+    <generation number="2">
+    <exception>
+        1 validation error for ProductDescription
+    description
+      Assertion failed, The description contains hyperbolic and exaggerated language, which does not align with the requirement of being professional and factual. It also includes unsubstantiated claims such as 'efficient laundry' and 'reliable performance'. [type=assertion_error, input_value='The UltraClean 9000 Wash...lar home laundry needs.', input_type=str]
+    </exception>
+    <completion>
+        ChatCompletion(id='chatcmpl-D08R96HSWzEZhcj9nWHCn4th6IIxB', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageFunctionToolCall(id='call_jsbD8AbEK8MvFWkVPOK0mooT', function=Function(arguments='{"name":"UltraClean 9000 Washing Machine","description":"The UltraClean 9000 Washing Machine is designed for efficient laundry with multiple wash settings to suit different fabric types. It includes energy-saving features to reduce power consumption during operation. The machine has a capacity suitable for medium to large households and operates with reduced noise levels. The user interface is straightforward, offering ease of use. Built with durable materials, the UltraClean 9000 provides reliable performance for regular home laundry needs."}', name='ProductDescription'), type='function')]))], created=1768924803, model='gpt-4.1-mini-2025-04-14', object='chat.completion', service_tier='default', system_fingerprint='fp_376a7ccef1', usage=CompletionUsage(completion_tokens=300, prompt_tokens=2619, total_tokens=2919, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))
+    </completion>
+    </generation>
+
+    <generation number="3">
+    <exception>
+        1 validation error for ProductDescription
+    description
+      Assertion failed, The description contains some marketing language and exaggerated claims, which do not align with a professional and factual tone. It also lacks specific details and technical information about the washing machine. [type=assertion_error, input_value="The UltraClean 9000 Wash...ehold washing machines.", input_type=str]
+    </exception>
+    <completion>
+        ChatCompletion(id='chatcmpl-D08RCpkeVCnl1jfV4HXHHRxogx46h', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageFunctionToolCall(id='call_1MdJh2HvUMYzIxU8qj9BPmCG', function=Function(arguments='{"name":"UltraClean 9000 Washing Machine","description":"The UltraClean 9000 Washing Machine features multiple wash cycles and fabric care settings. It is designed to operate with an energy-saving mode to reduce electricity usage. The machine\'s capacity supports the needs of medium to large households. It includes noise reduction technology for quieter operation and has a user interface with basic controls for ease of operation. The machine is constructed from standard materials commonly used in household washing machines."}', name='ProductDescription'), type='function')]))], created=1768924806, model='gpt-4.1-mini-2025-04-14', object='chat.completion', service_tier='default', system_fingerprint='fp_376a7ccef1', usage=CompletionUsage(completion_tokens=300, prompt_tokens=2619, total_tokens=2919, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=None), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))
+    </completion>
+    </generation>
+
+    </failed_attempts>
+
+    <last_exception>
+        1 validation error for ProductDescription
+    description
+      Assertion failed, The description contains some marketing language and exaggerated claims, which do not align with a professional and factual tone. It also lacks specific details and technical information about the washing machine. [type=assertion_error, input_value="The UltraClean 9000 Wash...ehold washing machines.", input_type=str]
+    </last_exception>
+    """
 ```
 
 ## Advanced Validation Patterns
@@ -162,6 +212,7 @@ from instructor import llm_validator
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class Comment(BaseModel):
     """Model representing a user comment with content moderation."""
 
@@ -176,9 +227,9 @@ class Comment(BaseModel):
                 - No promotion of illegal activities
                 - No sharing of personal information
                 - No spamming or excessive self-promotion""",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 ```
 
@@ -194,6 +245,7 @@ from instructor import llm_validator
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
 class ForumPost(BaseModel):
     topic: str
     post: Annotated[
@@ -201,9 +253,9 @@ class ForumPost(BaseModel):
         BeforeValidator(
             llm_validator(
                 "The post must be directly relevant to the specified topic and not drift to unrelated subjects",
-                client=client
+                client=client,
             )
-        )
+        ),
     ]
 
     # Using Jinja templating for validation against dynamic values
@@ -215,7 +267,7 @@ class ForumPost(BaseModel):
                 {
                     "role": "system",
                     "content": """Validate that the forum post content stays relevant to the topic.
-                    If it's not relevant, explain why in detail."""
+                    If it's not relevant, explain why in detail.""",
                 },
                 {
                     "role": "user",
@@ -226,13 +278,13 @@ class ForumPost(BaseModel):
                     {{ post }}
 
                     Is this post relevant to the topic?
-                    """
-                }
+                    """,
+                },
             ],
             context={
                 "topic": topic_name,
-                "post": post_content
-            }
+                "post": post_content,
+            },
         )
 ```
 
@@ -242,11 +294,11 @@ This complex validator assesses factual accuracy:
 
 ```python
 import instructor
-from typing import Annotated, List
-from pydantic import BaseModel, Field, BeforeValidator
-from instructor import llm_validator
+from typing import List
+from pydantic import BaseModel, Field
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
+
 
 class FactCheckedClaim(BaseModel):
     """Model for validating factual accuracy of claims."""
@@ -255,7 +307,7 @@ class FactCheckedClaim(BaseModel):
     is_accurate: bool = Field(description="Whether the claim is factually accurate")
     supporting_evidence: List[str] = Field(
         default_factory=list,
-        description="Evidence supporting or refuting the claim"
+        description="Evidence supporting or refuting the claim",
     )
 
     @classmethod
@@ -265,14 +317,14 @@ class FactCheckedClaim(BaseModel):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a fact-checking system. Assess the factual accuracy of the claim."
+                    "content": "You are a fact-checking system. Assess the factual accuracy of the claim.",
                 },
                 {
                     "role": "user",
-                    "content": "Fact check this claim: {{ claim }}"
-                }
+                    "content": "Fact check this claim: {{ claim }}",
+                },
             ],
-            context={"claim": text}
+            context={"claim": text},
         )
 ```
 
@@ -284,9 +336,10 @@ For validation that needs to compare multiple fields, you can use model validato
 import instructor
 from typing import List
 from pydantic import BaseModel, model_validator
-from instructor import Validator  # For response type
+from instructor.validation import Validator  # For response type
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
+
 
 class Report(BaseModel):
     """Model representing a report with related fields that need semantic validation."""
@@ -295,7 +348,7 @@ class Report(BaseModel):
     summary: str
     key_findings: List[str]
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
         validation_result = client.create(
@@ -303,7 +356,7 @@ class Report(BaseModel):
             messages=[
                 {
                     "role": "system",
-                    "content": "Validate that the summary accurately reflects the key findings."
+                    "content": "Validate that the summary accurately reflects the key findings.",
                 },
                 {
                     "role": "user",
@@ -319,14 +372,14 @@ class Report(BaseModel):
                         {% endfor %}
 
                         Evaluate for consistency, completeness, and accuracy.
-                    """
-                }
+                    """,
+                },
             ],
             context={
                 "title": self.title,
                 "summary": self.summary,
-                "findings": self.key_findings
-            }
+                "findings": self.key_findings,
+            },
         )
 
         if not validation_result.is_valid:
@@ -351,9 +404,12 @@ class Report(BaseModel):
 The `llm_validator` function supports several configuration options:
 
 ```python
+import instructor
 from instructor import llm_validator
 from pydantic import BaseModel, BeforeValidator
 from typing import Annotated
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Configure the validator with options
 validator = llm_validator(
@@ -361,8 +417,9 @@ validator = llm_validator(
     client=client,  # Required Instructor client
     allow_override=True,  # Allow LLM to fix invalid values
     model="gpt-4o",  # Specify model to use for validation
-    temperature=0.2  # Add variability (default is 0)
+    temperature=0.2,  # Add variability (default is 0)
 )
+
 
 class Product(BaseModel):
     description: Annotated[str, BeforeValidator(validator)]

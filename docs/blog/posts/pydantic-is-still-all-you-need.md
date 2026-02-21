@@ -48,9 +48,7 @@ from instructor import from_openai
 
 client = from_openai(OpenAI())
 
-response = client.create(
-    model="gpt-3.5-turbo", response_model=User, messages=[...]
-)
+response = client.create(model="gpt-3.5-turbo", response_model=User, messages=[...])
 ```
 
 ## What's New in Pydantic?

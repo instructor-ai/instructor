@@ -36,10 +36,13 @@ print(completion.usage)
 """
 CompletionUsage(
     completion_tokens=10,
-    prompt_tokens=82,
-    total_tokens=92,
+    prompt_tokens=79,
+    total_tokens=89,
     completion_tokens_details=CompletionTokensDetails(
-        audio_tokens=0, reasoning_tokens=0
+        accepted_prediction_tokens=None,
+        audio_tokens=0,
+        reasoning_tokens=0,
+        rejected_prediction_tokens=None,
     ),
     prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
 )

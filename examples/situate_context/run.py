@@ -7,9 +7,9 @@ client = AsyncInstructor(
     client=AsyncAnthropic(),
     create=patch(
         create=AsyncAnthropic().beta.prompt_caching.messages.create,
-        mode=Mode.ANTHROPIC_TOOLS,
+        mode=Mode.TOOLS,
     ),
-    mode=Mode.ANTHROPIC_TOOLS,
+    mode=Mode.TOOLS,
 )
 
 

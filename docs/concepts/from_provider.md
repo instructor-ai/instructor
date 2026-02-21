@@ -1,21 +1,25 @@
 ---
 title: Using from_provider for Unified Client Creation
-description: Learn how to use from_provider to create Instructor clients for any LLM provider with a simple, consistent interface.
+description: Learn how to use from_provider to create Instructor clients for any LLM provider.
 ---
 
 # Using from_provider
 
-The `from_provider` function is the recommended way to create Instructor clients. It provides a unified interface that works across all supported LLM providers, making it easy to switch between different models and providers.
+The `from_provider` function creates Instructor clients for any LLM provider. It uses the same interface across all providers, making it easy to switch between models.
+
+!!! note "V2 Preview"
+
+    `from_provider` routes to the v2 implementation by default for supported providers. Legacy provider-specific modes are deprecated, emit warnings, and map to generic modes (`Mode.TOOLS`, `Mode.JSON`, `Mode.JSON_SCHEMA`, `Mode.MD_JSON`).
 
 ## Why Use from_provider?
 
-`from_provider` offers several advantages:
+`from_provider` provides:
 
-- **Simple syntax**: One function works for all providers
-- **Automatic setup**: Handles provider-specific configuration automatically
-- **Consistent interface**: Same code works across different providers
-- **Type safety**: Full IDE support with proper type inference
-- **Easy switching**: Change providers with a single string change
+- Simple syntax: One function works for all providers
+- Automatic setup: Handles provider-specific configuration automatically
+- Consistent interface: Same code works across different providers
+- Type safety: Full IDE support with proper type inference
+- Easy switching: Change providers with a single string change
 
 ## Basic Usage
 
@@ -25,9 +29,11 @@ The basic syntax is simple: `instructor.from_provider("provider/model-name")`
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create a client for any provider
 client = instructor.from_provider("openai/gpt-4o-mini")
@@ -47,30 +53,30 @@ user = client.create(
 
 ### Cloud Providers
 
-- **OpenAI**: `"openai/gpt-4o"`, `"openai/gpt-4o-mini"`, `"openai/gpt-4-turbo"`
-- **Anthropic**: `"anthropic/claude-3-5-sonnet"`, `"anthropic/claude-3-opus"`
-- **Google**: `"google/gemini-2.5-flash"`, `"google/gemini-pro"`
-- **Azure OpenAI**: `"azure_openai/gpt-4o"`
-- **AWS Bedrock**: `"bedrock/claude-3-5-sonnet"`
-- **Vertex AI**: `"vertexai/gemini-pro"` (or use `"google/gemini-pro"` with `vertexai=True`)
+- OpenAI: `"openai/gpt-4o"`, `"openai/gpt-4o-mini"`, `"openai/gpt-4-turbo"`
+- Anthropic: `"anthropic/claude-3-5-sonnet"`, `"anthropic/claude-3-opus"`
+- Google: `"google/gemini-2.5-flash"`, `"google/gemini-pro"`
+- Azure OpenAI: `"azure_openai/gpt-4o"`
+- AWS Bedrock: `"bedrock/claude-3-5-sonnet"`
+- Vertex AI: `"vertexai/gemini-pro"` (or use `"google/gemini-pro"` with `vertexai=True`)
 
 ### Fast Inference Providers
 
-- **Groq**: `"groq/llama-3.1-70b"`
-- **Fireworks**: `"fireworks/mixtral-8x7b"`
-- **Together**: `"together/meta-llama/Llama-3-70b"`
-- **Anyscale**: `"anyscale/meta-llama/Llama-3-70b"`
+- Groq: `"groq/llama-3.1-70b"`
+- Fireworks: `"fireworks/mixtral-8x7b"`
+- Together: `"together/meta-llama/Llama-3-70b"`
+- Anyscale: `"anyscale/meta-llama/Llama-3-70b"`
 
 ### Other Providers
 
-- **Mistral**: `"mistral/mistral-large"`
-- **Cohere**: `"cohere/command-r-plus"`
-- **Perplexity**: `"perplexity/llama-3.1-sonar"`
-- **DeepSeek**: `"deepseek/deepseek-chat"`
-- **xAI**: `"xai/grok-beta"`
-- **OpenRouter**: `"openrouter/meta-llama/llama-3.1-70b"`
-- **Ollama**: `"ollama/llama3"` (local models)
-- **LiteLLM**: `"litellm/gpt-4o"` (meta-provider)
+- Mistral: `"mistral/mistral-large"`
+- Cohere: `"cohere/command-r-plus"`
+- Perplexity: `"perplexity/llama-3.1-sonar"`
+- DeepSeek: `"deepseek/deepseek-chat"`
+- xAI: `"xai/grok-beta"`
+- OpenRouter: `"openrouter/meta-llama/llama-3.1-70b"`
+- Ollama: `"ollama/llama3"` (local models)
+- LiteLLM: `"litellm/gpt-4o"` (meta-provider)
 
 See the [Integrations](../integrations/index.md) section for complete provider documentation.
 
@@ -95,21 +101,28 @@ The provider string follows the format: `"provider/model-name"`
 Create async clients by setting `async_client=True`:
 
 ```python
+import asyncio
 import instructor
 from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
 
-# Create async client
-async_client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 
-# Use with await
-user = await async_client.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "Extract: Alice is 25"}],
-)
+async def main() -> None:
+    # Create async client
+    async_client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
+
+    # Use with await
+    await async_client.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: Alice is 25"}],
+    )
+
+
+asyncio.run(main())
 ```
 
 ## Advanced Configuration
@@ -119,11 +132,10 @@ user = await async_client.create(
 Pass API keys directly or use environment variables:
 
 ```python
+import instructor
+
 # Pass API key directly
-client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    api_key="sk-your-key-here"
-)
+client = instructor.from_provider("openai/gpt-4o-mini", api_key="sk-your-key-here")
 
 # Or use environment variables (recommended)
 # export OPENAI_API_KEY=sk-your-key-here
@@ -139,8 +151,7 @@ import instructor
 
 # OpenAI defaults to TOOLS mode, but you can override
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    mode=instructor.Mode.JSON  # Use JSON mode instead
+    "openai/gpt-4o-mini", mode=instructor.Mode.JSON  # Use JSON mode instead
 )
 ```
 
@@ -154,10 +165,7 @@ import instructor
 
 cache = AutoCache(maxsize=1000)
 
-client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    cache=cache
-)
+client = instructor.from_provider("openai/gpt-4o-mini", cache=cache)
 ```
 
 ### Provider-Specific Options
@@ -165,39 +173,44 @@ client = instructor.from_provider(
 Pass provider-specific options through `**kwargs`:
 
 ```python
+import os
+import instructor
+
 # For OpenAI
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
-    organization="org-your-org-id",
-    timeout=30.0
+    "openai/gpt-4o-mini", organization="org-your-org-id", timeout=30.0
 )
 
 # For Anthropic
-client = instructor.from_provider(
-    "anthropic/claude-3-5-sonnet",
-    max_tokens=4096
-)
+client = instructor.from_provider("anthropic/claude-3-5-sonnet", max_tokens=4096)
 
 # For Google with Vertex AI
+google_api_key = os.environ.pop("GOOGLE_API_KEY", None)
+
 client = instructor.from_provider(
     "google/gemini-pro",
     vertexai=True,
     project="your-project-id",
-    location="us-central1"
+    location="us-central1",
 )
+
+if google_api_key is not None:
+    os.environ["GOOGLE_API_KEY"] = google_api_key
 ```
 
 ## Default Modes
 
 Each provider uses a recommended default mode:
 
-- **OpenAI**: `Mode.TOOLS` (function calling)
-- **Anthropic**: `Mode.ANTHROPIC_TOOLS` (tool use)
-- **Google**: `Mode.GENAI_TOOLS` (function calling)
-- **Ollama**: `Mode.TOOLS` (if model supports it) or `Mode.JSON`
-- **Others**: Provider-specific defaults
+- OpenAI: `Mode.TOOLS`
+- Anthropic: `Mode.TOOLS`
+- Google: `Mode.TOOLS` or `Mode.JSON` based on the model
+- Ollama: `Mode.TOOLS` (if supported) or `Mode.JSON`
+- Others: `Mode.TOOLS` or `Mode.MD_JSON` depending on capability
 
-You can override these defaults with the `mode` parameter.
+Legacy provider-specific modes still work but are deprecated. See the [Mode Migration Guide](./mode-migration.md) for details.
+
+Override these defaults with the `mode` parameter.
 
 ## Error Handling
 
@@ -205,18 +218,25 @@ You can override these defaults with the `mode` parameter.
 
 ```python
 import instructor
+from instructor.core.exceptions import ConfigurationError
 
 try:
     # Invalid provider format
     client = instructor.from_provider("invalid-format")
-except instructor.ConfigurationError as e:
+except ConfigurationError as e:
     print(f"Configuration error: {e}")
+    """
+    Configuration error: Model string must be in format "provider/model-name" (e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")
+    """
 
 try:
     # Unsupported provider
     client = instructor.from_provider("unsupported/provider")
-except instructor.ConfigurationError as e:
+except ConfigurationError as e:
     print(f"Unsupported provider: {e}")
+    """
+    Unsupported provider: Unsupported provider: unsupported. Supported providers are: ['openai', 'azure_openai', 'databricks', 'anthropic', 'google', 'generative-ai', 'vertexai', 'mistral', 'cohere', 'perplexity', 'groq', 'writer', 'bedrock', 'cerebras', 'deepseek', 'fireworks', 'ollama', 'openrouter', 'xai', 'litellm']
+    """
 
 try:
     # Missing required package
@@ -265,9 +285,11 @@ One of the biggest advantages of `from_provider` is easy provider switching:
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Easy to switch providers
 PROVIDER = "openai/gpt-4o-mini"  # Change this to switch
@@ -285,11 +307,11 @@ user = client.create(
 
 ## Best Practices
 
-1. **Use environment variables**: Store API keys in environment variables, not in code
-2. **Use type hints**: Let your IDE help with autocomplete and type checking
-3. **Handle errors**: Wrap provider creation in try-except blocks
-4. **Cache when appropriate**: Use caching for repeated requests
-5. **Choose the right mode**: Let defaults work, but override when needed
+1. Use environment variables: Store API keys in environment variables, not in code
+2. Use type hints: Let your IDE help with autocomplete and type checking
+3. Handle errors: Wrap provider creation in try-except blocks
+4. Cache when appropriate: Use caching for repeated requests
+5. Choose the right mode: Let defaults work, but override when needed
 
 ## Comparison with Other Methods
 
@@ -300,8 +322,8 @@ user = client.create(
 import openai
 import instructor
 
-client = openai.OpenAI()
-patched_client = instructor.patch(client)
+openai_client = openai.OpenAI()
+client = instructor.patch(openai_client)
 
 # New way (recommended)
 client = instructor.from_provider("openai/gpt-4o-mini")
@@ -309,16 +331,11 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 ### from_provider vs. Provider-Specific Functions
 
+Provider-specific helpers were removed. Use `from_provider` for all clients:
+
 ```python
-# Old way (provider-specific)
-from instructor import from_openai, from_anthropic
-import openai
-import anthropic
+import instructor
 
-openai_client = from_openai(openai.OpenAI())
-anthropic_client = from_anthropic(anthropic.Anthropic())
-
-# New way (unified)
 openai_client = instructor.from_provider("openai/gpt-4o-mini")
 anthropic_client = instructor.from_provider("anthropic/claude-3-5-sonnet")
 ```
@@ -331,19 +348,19 @@ If you get an error about an unsupported provider:
 
 1. Check the provider name spelling
 2. Verify the provider is in the supported list
-3. Check if you need to install an extra package: `pip install "instructor[provider-name]"`
+3. Check if you need to install an extra package: `uv pip install "instructor[provider-name]"`
 
 ### Import Errors
 
 If you get import errors:
 
-```python
+```bash
 # Install the required package
 # For Anthropic
-pip install anthropic
+uv pip install anthropic
 
 # For Google
-pip install google-genai
+uv pip install google-genai
 
 # For others, see integration docs
 ```
@@ -367,4 +384,3 @@ The model string must be in format `"provider/model-name"`:
 - [Patching](./patching.md) - How Instructor enhances clients
 - [Integrations](../integrations/index.md) - Provider-specific documentation
 - [Migration Guide](./migration.md) - Migrating from old patterns
-

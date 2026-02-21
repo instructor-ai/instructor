@@ -1,7 +1,7 @@
 from typing import Literal, Union
 from collections.abc import Iterable
 from pydantic import BaseModel
-from instructor import OpenAISchema
+from instructor import ResponseSchema
 
 import time
 import openai
@@ -11,12 +11,12 @@ import instructor
 client = openai.OpenAI()
 
 
-class Weather(OpenAISchema):
+class Weather(ResponseSchema):
     location: str
     units: Literal["imperial", "metric"]
 
 
-class GoogleSearch(OpenAISchema):
+class GoogleSearch(ResponseSchema):
     query: str
 
 

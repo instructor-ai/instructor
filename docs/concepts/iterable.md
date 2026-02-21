@@ -18,9 +18,11 @@ Here's a simple example showing how to extract multiple users from a single sent
 
     client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
     class User(BaseModel):
         name: str
         age: int
+
 
     resp = client.create_iterable(
         messages=[
@@ -34,6 +36,10 @@ Here's a simple example showing how to extract multiple users from a single sent
 
     for user in resp:
         print(user)
+        #> name='Ivan' age=28
+        #> name='Alex' age=25
+        #> name='John' age=30
+        #> name='Mary' age=27
     ```
     _Recommended for most use cases. Handles streaming and iteration for you._
 
@@ -45,9 +51,11 @@ Here's a simple example showing how to extract multiple users from a single sent
 
     client = instructor.from_provider("openai/gpt-4.1-mini")
 
+
     class User(BaseModel):
         name: str
         age: int
+
 
     resp = client.create(
         messages=[
@@ -61,6 +69,10 @@ Here's a simple example showing how to extract multiple users from a single sent
 
     for user in resp:
         print(user)
+        #> name='Ivan' age=28
+        #> name='Alex' age=25
+        #> name='John' age=30
+        #> name='Mary' age=27
     ```
     _Use this if you need more manual control or compatibility with legacy code._
 
@@ -82,21 +94,25 @@ We also support more complex extraction patterns such as Unions as you'll see be
     from typing import Iterable, Union, Literal
     from pydantic import BaseModel
 
+
     class Weather(BaseModel):
         location: str
         units: Literal["imperial", "metric"]
 
+
     class GoogleSearch(BaseModel):
         query: str
 
-    client = instructor.from_provider(
-        "openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS
-    )
+
+    client = instructor.from_provider("openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS)
 
     results = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
-            {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+            {
+                "role": "user",
+                "content": "What is the weather in toronto and dallas and who won the super bowl?",
+            },
         ],
         response_model=Iterable[Union[Weather, GoogleSearch]],
         stream=True,
@@ -104,37 +120,46 @@ We also support more complex extraction patterns such as Unions as you'll see be
 
     for item in results:
         print(item)
+        #> location='Toronto' units='metric'
+        #> location='Dallas' units='imperial'
+        #> query='Super Bowl winner'
     ```
 
 === "Using `create_iterable` (recommended)"
 
     ```python
-
     import instructor
     from typing import Union, Literal
     from pydantic import BaseModel
+
 
     class Weather(BaseModel):
         location: str
         units: Literal["imperial", "metric"]
 
+
     class GoogleSearch(BaseModel):
         query: str
 
-    client = instructor.from_provider(
-        "openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS
-    )
+
+    client = instructor.from_provider("openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS)
 
     results = client.create_iterable(
         messages=[
             {"role": "system", "content": "You must always use tools"},
-            {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+            {
+                "role": "user",
+                "content": "What is the weather in toronto and dallas and who won the super bowl?",
+            },
         ],
         response_model=Union[Weather, GoogleSearch],
     )
 
     for item in results:
         print(item)
+        #> location='Toronto' units='metric'
+        #> location='Dallas' units='imperial'
+        #> query='Super Bowl winner'
     ```
 
 ---
@@ -156,28 +181,39 @@ We also support more complex extraction patterns such as Unions as you'll see be
     from pydantic import BaseModel
     import asyncio
 
+
     class Weather(BaseModel):
         location: str
         units: Literal["imperial", "metric"]
 
+
     class GoogleSearch(BaseModel):
         query: str
+
 
     aclient = instructor.from_provider(
         "openai/gpt-4.1-mini", async_client=True, mode=instructor.Mode.TOOLS
     )
 
+
     async def main():
         results = await aclient.create(
             messages=[
                 {"role": "system", "content": "You must always use tools"},
-                {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+                {
+                    "role": "user",
+                    "content": "What is the weather in toronto and dallas and who won the super bowl?",
+                },
             ],
             response_model=Iterable[Union[Weather, GoogleSearch]],
             stream=True,
         )
         async for item in results:
             print(item)
+            #> location='Toronto' units='metric'
+            #> location='Dallas' units='imperial'
+            #> query='Super Bowl winner'
+
 
     asyncio.run(main())
     ```
@@ -185,32 +221,48 @@ We also support more complex extraction patterns such as Unions as you'll see be
 === "Using `create_iterable` (recommended)"
 
     ```python
-    import instructor
-    from typing import Union, Literal
-    from pydantic import BaseModel
     import asyncio
+    from typing import Literal, Union
+
+    import instructor
+    from pydantic import BaseModel
+
 
     class Weather(BaseModel):
         location: str
         units: Literal["imperial", "metric"]
 
+
     class GoogleSearch(BaseModel):
         query: str
+
 
     aclient = instructor.from_provider(
         "openai/gpt-4.1-mini", async_client=True, mode=instructor.Mode.TOOLS
     )
 
-    async def main():
-        results = await aclient.create_iterable(
+
+    async def iter_results():
+        async for item in aclient.create_iterable(
             messages=[
                 {"role": "system", "content": "You must always use tools"},
-                {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+                {
+                    "role": "user",
+                    "content": "What is the weather in toronto and dallas and who won the super bowl?",
+                },
             ],
             response_model=Union[Weather, GoogleSearch],
-        )
-        async for item in results:
+        ):
+            yield item
+
+
+    async def main():
+        async for item in iter_results():
             print(item)
+            #> location='Toronto' units='metric'
+            #> location='Dallas' units='imperial'
+            #> query='Super Bowl winner'
+
 
     asyncio.run(main())
     ```

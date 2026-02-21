@@ -2,7 +2,7 @@ import json
 from collections.abc import Iterable
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
-from instructor import OpenAISchema
+from instructor import ResponseSchema
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
@@ -59,7 +59,7 @@ class Fact(BaseModel):
                 yield from self._get_span(quote, context)
 
 
-class QuestionAnswer(OpenAISchema, MultiTaskBase):
+class QuestionAnswer(ResponseSchema, MultiTaskBase):
     """
     Class representing a question and its answer as a list of facts each one should have a source.
     each sentence contains a body and a list of sources."""

@@ -202,11 +202,9 @@ import asyncio
 from typing import List
 from pydantic import BaseModel, ValidationInfo, model_validator
 import instructor
-import instructor
+import asyncio
 
-client = instructor.from_openai(
-    openai.AsyncOpenAI(),
-)
+client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 
 
 class Tag(BaseModel):

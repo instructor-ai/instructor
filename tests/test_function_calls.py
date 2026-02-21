@@ -1,8 +1,9 @@
-from typing import TypeVar
+from typing import Any, TypeVar, cast
 import pytest
 from anthropic.types import Message, Usage
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.chat.chat_completion_message import FunctionCall as OpenAIFunctionCall
 from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
     Function,
@@ -27,29 +28,32 @@ def test_model() -> type[OpenAISchema]:
 
 
 @pytest.fixture  # type: ignore[misc]
-def mock_completion(request: T) -> ChatCompletion:
+def mock_completion(request: Any) -> ChatCompletion:
     finish_reason = "stop"
     data_content = '{\n"data": "complete data"\n}'
 
     if hasattr(request, "param"):
-        finish_reason = request.param.get("finish_reason", finish_reason)
-        data_content = request.param.get("data_content", data_content)
-
-    mock_choices = [
-        {
-            "index": 0,
-            "message": {
-                "role": "assistant",
-                "function_call": {"name": "TestModel", "arguments": data_content},
-                "content": data_content,
-            },
-            "finish_reason": finish_reason,
-        }
-    ]
+        params = cast(dict[str, Any], request.param)
+        finish_reason = params.get("finish_reason", finish_reason)
+        data_content = params.get("data_content", data_content)
 
     completion = ChatCompletion(
         id="test_id",
-        choices=mock_choices,
+        choices=[
+            Choice(
+                index=0,
+                message=ChatCompletionMessage(
+                    role="assistant",
+                    content=data_content,
+                    function_call=OpenAIFunctionCall(
+                        name="TestModel",
+                        arguments=data_content,
+                    ),
+                ),
+                finish_reason=finish_reason,
+                logprobs=None,
+            )
+        ],
         created=1234567890,
         model="gpt-3.5-turbo",
         object="chat.completion",
@@ -59,10 +63,11 @@ def mock_completion(request: T) -> ChatCompletion:
 
 
 @pytest.fixture  # type: ignore[misc]
-def mock_anthropic_message(request: T) -> Message:
+def mock_anthropic_message(request: Any) -> Message:
     data_content = '{\n"data": "Claude says hi"\n}'
     if hasattr(request, "param"):
-        data_content = request.param.get("data_content", data_content)
+        params = cast(dict[str, Any], request.param)
+        data_content = params.get("data_content", data_content)
     return Message(
         id="test_id",
         content=[{"type": "text", "text": data_content}],
@@ -131,8 +136,9 @@ def test_incomplete_output_exception(
 def test_complete_output_no_exception(
     test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
-    test_model_instance = test_model.from_response(
-        mock_completion, mode=instructor.Mode.FUNCTIONS
+    test_model_instance = cast(
+        Any,
+        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS),
     )
     assert test_model_instance.data == "complete data"
 
@@ -153,8 +159,12 @@ def test_incomplete_output_exception_raise(
 def test_anthropic_no_exception(
     test_model: type[OpenAISchema], mock_anthropic_message: Message
 ) -> None:
-    test_model_instance = test_model.from_response(
-        mock_anthropic_message, mode=instructor.Mode.ANTHROPIC_JSON
+    test_model_instance = cast(
+        Any,
+        test_model.from_response(
+            cast(Any, mock_anthropic_message),
+            mode=instructor.Mode.ANTHROPIC_JSON,
+        ),
     )
     assert test_model_instance.data == "Claude says hi"
 
@@ -169,11 +179,13 @@ def test_control_characters_not_allowed_in_anthropic_json_strict_mode(
 ) -> None:
     with pytest.raises(ValidationError) as exc_info:
         test_model.from_response(
-            mock_anthropic_message, mode=instructor.Mode.ANTHROPIC_JSON, strict=True
+            cast(Any, mock_anthropic_message),
+            mode=instructor.Mode.ANTHROPIC_JSON,
+            strict=True,
         )
 
     # https://docs.pydantic.dev/latest/errors/validation_errors/#json_invalid
-    exc = exc_info.value
+    exc = cast(ValidationError, exc_info.value)
     assert len(exc.errors()) == 1
     assert exc.errors()[0]["type"] == "json_invalid"
     assert "control character" in exc.errors()[0]["msg"]
@@ -187,8 +199,13 @@ def test_control_characters_not_allowed_in_anthropic_json_strict_mode(
 def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
     test_model: type[OpenAISchema], mock_anthropic_message: Message
 ) -> None:
-    test_model_instance = test_model.from_response(
-        mock_anthropic_message, mode=instructor.Mode.ANTHROPIC_JSON, strict=False
+    test_model_instance = cast(
+        Any,
+        test_model.from_response(
+            cast(Any, mock_anthropic_message),
+            mode=instructor.Mode.ANTHROPIC_JSON,
+            strict=False,
+        ),
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
@@ -271,7 +288,7 @@ def test_no_refusal_attribute(test_model: type[OpenAISchema]):
         ],
     )
 
-    resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    resp = cast(Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS))
     assert resp.data == "test_data"
     assert resp.name == "TestModel"
 
@@ -311,6 +328,6 @@ def test_missing_refusal_attribute(test_model: type[OpenAISchema]):
         ],
     )
 
-    resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    resp = cast(Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS))
     assert resp.data == "test_data"
     assert resp.name == "TestModel"

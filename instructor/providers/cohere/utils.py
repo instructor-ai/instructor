@@ -121,7 +121,7 @@ def handle_cohere_modes(new_kwargs: dict[str, Any]) -> tuple[None, dict[str, Any
         messages = new_kwargs.pop("messages", [])
         chat_history = []
         for message in messages[:-1]:
-            chat_history.append(  # type: ignore
+            chat_history.append(  # type: ignore[arg-type]
                 {
                     "role": message["role"],
                     "message": message["content"],
@@ -213,6 +213,7 @@ schema = {response_model.__name__}.model_json_schema()
 ```
 
 The output must be a valid JSON object that `{response_model.__name__}.model_validate_json()` can successfully parse.
+Respond with JSON only. Do not include code fences, markdown, or extra text.
 """
     # Check client version explicitly (marker already removed by handle_cohere_modes)
     # Use presence of messages vs chat_history as indicator since marker is already consumed

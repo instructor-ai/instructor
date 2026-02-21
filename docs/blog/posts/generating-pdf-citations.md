@@ -41,7 +41,6 @@ pip install "instructor[google-generativeai]" pymupdf
 Then let's import the necessary libraries:
 
 ```python
-
 ```
 
 ## Defining Our Data Models

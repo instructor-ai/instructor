@@ -20,13 +20,16 @@ from pydantic import BaseModel
 import instructor
 from instructor.processing.multimodal import Audio
 import base64
+
 # Initialize the OpenAI client with Instructor
 client = instructor.from_provider("openai/gpt-5-nano")
+
 
 # Define the structure for extracted information
 class Person(BaseModel):
     name: str
     age: int
+
 
 # Read and encode the audio file
 with open("./output.wav", "rb") as f:

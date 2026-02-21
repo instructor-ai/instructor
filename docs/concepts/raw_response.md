@@ -29,12 +29,12 @@ user, completion = client.create_with_completion(
 )
 
 print(user)
-#> name='Jason' age=25
+#> name='jason' age=25
 
 print(completion)
 """
 ChatCompletion(
-    id='chatcmpl-B7YgfMbbn3vOol0urrCAUUgCd7eej',
+    id='chatcmpl-D1KqvmcGn5zeYfqRdquwERAH0wIVB',
     choices=[
         Choice(
             finish_reason='stop',
@@ -44,13 +44,14 @@ ChatCompletion(
                 content=None,
                 refusal=None,
                 role='assistant',
+                annotations=[],
                 audio=None,
                 function_call=None,
                 tool_calls=[
-                    ChatCompletionMessageToolCall(
-                        id='call_cHlDYOU8IV70YVHTqFCHpgGr',
+                    ChatCompletionMessageFunctionToolCall(
+                        id='call_8VastKJ2gYWNrYEQmBXGWnRv',
                         function=Function(
-                            arguments='{"name":"Jason","age":25}', name='UserExtract'
+                            arguments='{"name":"jason","age":25}', name='UserExtract'
                         ),
                         type='function',
                     )
@@ -58,22 +59,75 @@ ChatCompletion(
             ),
         )
     ],
-    created=1741141333,
-    model='gpt-4.1-mini-0125',
+    created=1769210857,
+    model='gpt-4.1-mini-2025-04-14',
     object='chat.completion',
     service_tier='default',
-    system_fingerprint=None,
+    system_fingerprint='fp_376a7ccef1',
     usage=CompletionUsage(
         completion_tokens=10,
-        prompt_tokens=82,
-        total_tokens=92,
+        prompt_tokens=79,
+        total_tokens=89,
         completion_tokens_details=CompletionTokensDetails(
-            audio_tokens=0, reasoning_tokens=0
+            accepted_prediction_tokens=None,
+            audio_tokens=0,
+            reasoning_tokens=0,
+            rejected_prediction_tokens=None,
         ),
         prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     ),
 )
 """
+```
+
+## Raw response with a list response model
+
+If your response model is a list (for example, `list[UserExtract]`), you can still use `create_with_completion()`. Instructor wraps the list in a `ResponseList` (also called `ListResponse`) that behaves like a normal list but also preserves the raw response.
+
+### What is ResponseList?
+
+`ResponseList` is a special list type that Instructor uses when your `response_model` is a list. It extends Python's built-in `list` type and adds a `_raw_response` attribute to store the provider's raw response object.
+
+This is necessary because `create_with_completion()` needs to return both the parsed result and the raw response. For single objects, this is straightforward: `(model_instance, raw_response)`. For lists, we need a way to attach the raw response to the list itself, which is what `ResponseList` does.
+
+### Using ResponseList
+
+The returned value behaves exactly like a normal Python list, but you can access the raw response using `get_raw_response()`:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+
+users, completion = client.create_with_completion(
+    response_model=list[UserExtract],
+    messages=[
+        {"role": "user", "content": "Extract users: Jason is 25, Ivan is 30"},
+    ],
+)
+
+# Use it like a normal list
+print(users[0])
+#> name='Jason' age=25
+print(len(users))
+#> 2
+
+# Access the raw response
+raw = users.get_raw_response()
+assert raw == completion
+
+# ResponseList supports all list operations
+for user in users:
+    print(user.name)
+#> Jason
+#> Ivan
 ```
 
 ## See Also

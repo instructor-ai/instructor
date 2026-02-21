@@ -10,6 +10,12 @@ if not os.getenv("GOOGLE_API_KEY"):
         allow_module_level=True,
     )
 
+if not os.getenv("GOOGLE_GENAI_MODEL"):
+    pytest.skip(
+        "GOOGLE_GENAI_MODEL environment variable not set",
+        allow_module_level=True,
+    )
+
 try:
     from google.genai import Client
 except ImportError:  # pragma: no cover - optional dependency
@@ -30,5 +36,5 @@ def aclient():
 def genai_client():
     # Use the recommended model for sync client, let the test set the mode
     return instructor.from_provider(
-        "google/gemini-2.5-flash",
+        os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro"),
     )

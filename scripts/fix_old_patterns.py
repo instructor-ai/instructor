@@ -12,7 +12,7 @@ Replaces old initialization patterns with from_provider:
 import argparse
 import re
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 
 # Mapping of provider names to their from_provider identifiers

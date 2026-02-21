@@ -19,6 +19,7 @@ from typing import List
 from pydantic import BaseModel, Field
 import instructor
 
+
 class Node(BaseModel):
     id: int
     label: str

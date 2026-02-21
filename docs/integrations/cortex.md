@@ -24,7 +24,6 @@ cortex run llama3.2:3b-gguf-q4-km
 Let's start by initializing the client below - note that we need to provide a base URL and an API key here. The API key isn't important, it's just so the OpenAI client doesn't throw an error.
 
 ```python
-import os
 import instructor
 
 client = instructor.from_provider(
@@ -64,7 +63,6 @@ print(resp)
 ## Simple User Example (Async)
 
 ```python
-import os
 import instructor
 from pydantic import BaseModel
 import asyncio

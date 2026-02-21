@@ -68,7 +68,6 @@ Instructor uses Pydantic models to define structured outputs and patches LLM cli
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
 # Define your output structure
@@ -76,12 +75,11 @@ class User(BaseModel):
     name: str
     age: int
 
-# Patch your client
-client = instructor.from_openai(OpenAI())
+# Create client using from_provider
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Extract structured data
-user = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+user = client.create(
     response_model=User,
     messages=[
         {"role": "user", "content": "Extract the user: John Doe is 30 years old."}
@@ -98,9 +96,8 @@ print(user.age)   # 30
 
 ```python
 import instructor
-from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 ```
 
 Available Modes:
@@ -113,9 +110,8 @@ Available Modes:
 
 ```python
 import instructor
-import anthropic
 
-client = instructor.from_anthropic(anthropic.Anthropic())
+client = instructor.from_provider("anthropic/claude-3-5-sonnet")
 ```
 
 Available Modes:
@@ -126,9 +122,8 @@ Available Modes:
 
 ```python
 import instructor
-import google.generativeai as genai
 
-client = instructor.from_gemini(genai)
+client = instructor.from_provider("google/gemini-2.5-flash")
 ```
 
 Available Modes:
@@ -139,9 +134,8 @@ Available Modes:
 
 ```python
 import instructor
-from mistralai.client import MistralClient
 
-client = instructor.from_mistral(MistralClient())
+client = instructor.from_provider("mistral/mistral-large-latest")
 ```
 
 Available Modes:
@@ -152,9 +146,8 @@ Available Modes:
 
 ```python
 import instructor
-import cohere
 
-client = instructor.from_cohere(cohere.ClientV2())
+client = instructor.from_provider("cohere/command-r-plus")
 ```
 
 Available Modes:
@@ -164,9 +157,8 @@ Available Modes:
 
 ```python
 import instructor
-from groq import Groq
 
-client = instructor.from_groq(Groq())
+client = instructor.from_provider("groq/mixtral-8x7b-32768")
 ```
 
 Available Modes:
@@ -205,9 +197,9 @@ class UserWithValidation(BaseModel):
     age: int = Field(gt=0, lt=150)  # Age must be between 0 and 150
     email: str = Field(pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-user = client.chat.completions.create(
+user = client.create(
     model="gpt-3.5-turbo",
     response_model=UserWithValidation,
     messages=[
@@ -224,7 +216,6 @@ Stream partial responses as they're generated:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
 class Report(BaseModel):
@@ -232,10 +223,10 @@ class Report(BaseModel):
     analysis: str
     recommendations: list[str]
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Enable streaming
-for partial in client.chat.completions.create(
+for partial in client.create(
     model="gpt-3.5-turbo",
     response_model=Report,
     stream=True,
@@ -265,9 +256,9 @@ class LongReport(BaseModel):
     detailed_analysis: str = partial()
     conclusion: str = partial()
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-for chunk in client.chat.completions.create(
+for chunk in client.create(
     model="gpt-4",
     response_model=LongReport,
     stream=True,
@@ -301,9 +292,9 @@ class Person(BaseModel):
 class PeopleList(BaseModel):
     people: list[Person] = iterable()
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-for person in client.chat.completions.create(
+for person in client.create(
     model="gpt-3.5-turbo",
     response_model=PeopleList,
     stream=True,
@@ -333,9 +324,9 @@ class ImageContent(BaseModel):
 with open("image.jpg", "rb") as image_file:
     base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-content = client.chat.completions.create(
+content = client.create(
     model="gpt-4-vision-preview",
     response_model=ImageContent,
     messages=[
@@ -371,8 +362,8 @@ import diskcache
 cache = diskcache.Cache("./my_cache_directory")
 
 # Create client with caching
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-3.5-turbo",
     cache=cache
 )
 
@@ -380,7 +371,7 @@ class Summary(BaseModel):
     points: list[str]
 
 # This will use the cache if the same request was made before
-summary = client.chat.completions.create(
+summary = client.create(
     model="gpt-3.5-turbo",
     response_model=Summary,
     messages=[
@@ -417,8 +408,8 @@ def log_parsed(parsed, **kwargs):
     return parsed
 
 # Apply hooks
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-3.5-turbo",
     mode=instructor.Mode.TOOLS,
     hooks={
         "prompt": log_prompt,
@@ -427,7 +418,7 @@ client = instructor.from_openai(
     }
 )
 
-user = client.chat.completions.create(
+user = client.create(
     model="gpt-3.5-turbo",
     response_model=User,
     messages=[
@@ -451,13 +442,13 @@ class StrictUser(BaseModel):
     email: str = Field(pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 # Configure max retries
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-3.5-turbo",
     max_retries=3  # Will retry up to 3 times if validation fails
 )
 
 try:
-    user = client.chat.completions.create(
+    user = client.create(
         model="gpt-3.5-turbo",
         response_model=StrictUser,
         messages=[
@@ -485,7 +476,7 @@ class Data(BaseModel):
     entities: list[str]
     sentiment: str
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Create parallel tasks
 tasks = [
@@ -526,10 +517,10 @@ class Analysis(BaseModel):
     key_points: list[str]
     summary: str
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Context will be used to render templates in messages
-analysis = client.chat.completions.create(
+analysis = client.create(
     model="gpt-3.5-turbo",
     response_model=Analysis,
     messages=[
@@ -576,10 +567,10 @@ class Person(BaseModel):
     age: int
     occupation: str
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Use Maybe to handle potential missing information
-result = client.chat.completions.create(
+result = client.create(
     model="gpt-3.5-turbo",
     response_model=Maybe[Person],
     messages=[
@@ -611,9 +602,9 @@ class Contact(BaseModel):
     email: str
     phone: str
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-contact = client.chat.completions.create(
+contact = client.create(
     model="gpt-3.5-turbo",
     response_model=Contact,
     messages=[
@@ -642,9 +633,9 @@ class SentimentAnalysis(BaseModel):
     confidence: float
     explanation: str
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-analysis = client.chat.completions.create(
+analysis = client.create(
     model="gpt-3.5-turbo",
     response_model=SentimentAnalysis,
     messages=[
@@ -688,9 +679,9 @@ class Person(BaseModel):
     skills: List[str] = Field(min_items=1)
     experience: List[Experience] = Field(min_items=0)
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-4",
     response_model=Person,
     messages=[
@@ -735,13 +726,13 @@ class Receipt(BaseModel):
     tax: float
     total: float
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Load the receipt image
 with open("receipt.jpg", "rb") as image_file:
     base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
-receipt = client.chat.completions.create(
+receipt = client.create(
     model="gpt-4-vision-preview",
     response_model=Receipt,
     messages=[
@@ -786,11 +777,11 @@ class CitationCheck(BaseModel):
             raise ValueError(f"Citation '{citation}' not found in source document")
         return citation
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 source_document = "The Earth is the third planet from the Sun and the only astronomical object known to harbor life."
 
-result = client.chat.completions.create(
+result = client.create(
     model="gpt-4o",
     response_model=CitationCheck,
     messages=[
@@ -827,14 +818,14 @@ class RelevantAnswer(BaseModel):
             raise ValueError("Answer doesn't address climate change as requested in the question")
         return answer
 
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-3.5-turbo",
     max_retries=2  # Will retry up to 2 times if validation fails
 )
 
 question = "What are the major impacts of climate change?"
 
-result = client.chat.completions.create(
+result = client.create(
     model="gpt-3.5-turbo",
     response_model=RelevantAnswer,
     messages=[
@@ -875,7 +866,7 @@ class AnswerWithContext(BaseModel):
             raise ValueError("Answer doesn't use key facts from the context document")
         return answer
 
-client = instructor.from_openai(OpenAI(), max_retries=2)
+client = instructor.from_provider("openai/gpt-3.5-turbo", max_retries=2)
 
 # Document to use in both template and validation
 context_document = """
@@ -888,7 +879,7 @@ named after James E. Webb, who was the administrator of NASA from 1961 to 1968.
 # Use the template with variables from context
 question = "When was the James Webb Space Telescope launched and what can it do?"
 
-result = client.chat.completions.create(
+result = client.create(
     model="gpt-4o",
     response_model=AnswerWithContext,
     messages=[

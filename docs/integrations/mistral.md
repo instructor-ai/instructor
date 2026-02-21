@@ -37,8 +37,8 @@ client = Mistral(api_key='your-api-key-here')
 
 Instructor provides two modes for working with Mistral:
 
-1. `instructor.Mode.MISTRAL_TOOLS`: Uses Mistral's function calling API to return structured outputs (default)
-2. `instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS`: Uses Mistral's structured output capabilities
+1. `instructor.Mode.TOOLS`: Uses Mistral's function calling API to return structured outputs (default)
+2. `instructor.Mode.JSON_SCHEMA`: Uses Mistral's structured output capabilities
 
 To set the mode for your mistral client, simply use the code snippet below
 
@@ -51,7 +51,7 @@ import instructor
 # Initialize with API key
 instructor_client = instructor.from_provider(
     "mistral/mistral-large-latest",
-    mode=Mode.MISTRAL_TOOLS,
+    mode=Mode.TOOLS,
 )
 ```
 
@@ -72,7 +72,7 @@ class UserDetails(BaseModel):
 # Initialize the client
 instructor_client = instructor.from_provider(
     "mistral/mistral-large-latest",
-    mode=Mode.MISTRAL_TOOLS,
+    mode=Mode.TOOLS,
 )
 
 # Extract a single user
@@ -107,7 +107,7 @@ class User(BaseModel):
 instructor_client = instructor.from_provider(
     "mistral/mistral-large-latest",
     async_client=True,
-    mode=Mode.MISTRAL_TOOLS,
+    mode=Mode.TOOLS,
 )
 
 async def extract_user():
@@ -148,7 +148,7 @@ class User(BaseModel):
 # Initialize the client
 instructor_client = instructor.from_provider(
     "mistral/mistral-large-latest",
-    mode=Mode.MISTRAL_TOOLS,
+    mode=Mode.TOOLS,
 )
 
 # Create structured output with nested objects

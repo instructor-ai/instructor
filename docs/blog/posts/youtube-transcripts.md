@@ -90,6 +90,7 @@ Once we've done so, we can then put it all together into the following functions
 import instructor
 from pydantic import BaseModel, Field
 from youtube_transcript_api import YouTubeTranscriptApi
+
 # Set up OpenAI client
 client = instructor.from_provider("openai/gpt-5-nano")
 
@@ -118,6 +119,9 @@ def get_youtube_transcript(video_id: str) -> str:
         return [f"ts={entry['start']} - {entry['text']}" for entry in transcript]
     except Exception as e:
         print(f"Error fetching transcript: {e}")
+        """
+        Error fetching transcript: type object 'YouTubeTranscriptApi' has no attribute 'get_transcript'
+        """
         return ""
 
 
@@ -150,10 +154,50 @@ if __name__ == "__main__":
         print(chapter.model_dump_json(indent=2))
         """
         {
-          "start_ts": 0.539,
-          "end_ts": 9.72,
-          "title": "Introduction",
-          "summary": "Jeremy Howard from fast.ai introduces the video, mentioning it as a hacker's guide to language models, focusing on a code-first approach."
+          "start_ts": 0.0,
+          "end_ts": 30.0,
+          "title": "Introduction and Topic Overview",
+          "summary": "Introduction to the video, outlining the main topic of discussion."
+        }
+        """
+        """
+        {
+          "start_ts": 31.0,
+          "end_ts": 60.0,
+          "title": "Background Information",
+          "summary": "Background information relevant to the topic."
+        }
+        """
+        """
+        {
+          "start_ts": 61.0,
+          "end_ts": 120.0,
+          "title": "Key Concept Explanation",
+          "summary": "Detailed explanation of the key concepts."
+        }
+        """
+        """
+        {
+          "start_ts": 121.0,
+          "end_ts": 165.0,
+          "title": "Critical Analysis",
+          "summary": "Analysis and discussion of the critical aspects of the topic."
+        }
+        """
+        """
+        {
+          "start_ts": 166.0,
+          "end_ts": 210.0,
+          "title": "Examples and Case Studies",
+          "summary": "Presentation of examples and case studies related to the topic."
+        }
+        """
+        """
+        {
+          "start_ts": 211.0,
+          "end_ts": 240.0,
+          "title": "Conclusion and Final Thoughts",
+          "summary": "Conclusion of the video with final thoughts on the topic."
         }
         """
         """

@@ -7,16 +7,14 @@
 
 ---
 title: Caching Strategies with Instructor
-description: Learn how to implement caching strategies with Instructor to reduce API costs, improve performance, and optimize LLM application efficiency.
+description: Learn how to use caching with Instructor to reduce API costs and improve performance.
 ---
 
-If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
+For more details on caching concepts, see our [blog](../blog/posts/caching.md).
 
-## Built-in caching in Instructor (v1.9.1 and later)
+## Built-in Caching (v1.9.1 and later)
 
-Instructor now supports drop-in caching for every client.  Pass a cache
-adapter when you create the client – the cache parameter automatically flows
-through to all provider implementations via **kwargs:
+Instructor supports caching for every client. Pass a cache adapter when you create the client. The cache parameter flows through to all provider implementations via **kwargs:
 
 ```python
 from instructor import from_provider
@@ -24,16 +22,24 @@ from instructor.cache import AutoCache, DiskCache
 
 # Works with any provider - cache flows through **kwargs automatically
 client = from_provider("openai/gpt-4.1-mini", cache=AutoCache(maxsize=1000))
-client = from_provider("anthropic/claude-3-haiku", cache=AutoCache(maxsize=1000))  
+client = from_provider("anthropic/claude-3-haiku", cache=AutoCache(maxsize=1000))
 client = from_provider("google/gemini-2.5-flash", cache=DiskCache(directory=".cache"))
 
 # Your normal calls are now cached automatically
+from pydantic import BaseModel
+
+
 class User(BaseModel):
     name: str
 
-first = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
-second = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
-assert first.name == second.name    # second call was served from cache
+
+first = client.create(
+    messages=[{"role": "user", "content": "Hi."}], response_model=User
+)
+second = client.create(
+    messages=[{"role": "user", "content": "Hi."}], response_model=User
+)
+assert first.name == second.name  # second call was served from cache
 ```
 
 ### `cache_ttl` per-call override
@@ -42,11 +48,23 @@ Pass `cache_ttl=<seconds>` alongside `cache=` if you want a result to
 expire automatically:
 
 ```python
+from instructor import from_provider
+from instructor.cache import DiskCache
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+
+
+cache = DiskCache(directory=".cache")
+client = from_provider("openai/gpt-4.1-mini")
+
 client.create(
     messages=[{"role": "user", "content": "Hi"}],
     response_model=User,
     cache=cache,
-    cache_ttl=3600,   # 1 hour
+    cache_ttl=3600,  # 1 hour
 )
 ```
 
@@ -73,6 +91,12 @@ of prompt size, so it is safe to use as a Redis key, file path, etc.
 
 ```python
 from instructor.cache import make_cache_key
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+
 
 key = make_cache_key(
     messages=[{"role": "user", "content": "hello"}],
@@ -81,6 +105,7 @@ key = make_cache_key(
     mode="TOOLS",
 )
 print(key)  # → 9b8f5e2c8c9e…
+#> 2e2a9521bd269d62ee9a8559d7deacba0025c1f6da0ec1fc63d472788be096fe
 ```
 
 If you need custom behaviour (e.g. ignoring certain prompt fields) you can
@@ -91,12 +116,24 @@ write your own helper and pass a derived key into a bespoke cache adapter.
 For raw completion objects (used with `create_with_completion`), we use a `SimpleNamespace` trick to reconstruct the original object structure:
 
 ```python
+from pydantic import BaseModel
+
+
+class Completion(BaseModel):
+    content: str
+    usage: dict
+
+
+# Example completion object
+completion = Completion(content="Hello", usage={"tokens": 10})
+
 # When caching:
 raw_json = completion.model_dump_json()  # Serialize to JSON
 
 # When restoring from cache:
 import json
 from types import SimpleNamespace
+
 restored = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))
 ```
 
@@ -104,7 +141,7 @@ This approach allows us to restore the original dot-notation access patterns (e.
 
 ## 1. `functools.cache` for Simple In-Memory Caching
 
-**When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
+**When to Use**: Good for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. Use this when reusing the same data within a single session.
 
 ```python
 import time
@@ -133,12 +170,12 @@ def extract(data) -> UserDetail:
 start = time.perf_counter()  # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 0.5008833750034682
+#> Time taken: 0.43337099999189377
 
 start = time.perf_counter()
 model = extract("Extract jason is 25 years old")  # (2)
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 1.2920063454657793e-06
+#> Time taken: 1.166015863418579e-06
 ```
 
 1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
@@ -148,9 +185,9 @@ print(f"Time taken: {time.perf_counter() - start}")
 
     Note that changing the model does not invalidate the cache. This is because the cache key is based on the function's name and arguments, not the model. This means that if we change the model, the cache will still return the old result.
 
-Now we can call `extract` multiple times with the same argument, and the result will be cached in memory for faster access.
+Call `extract` multiple times with the same argument, and the result will be cached in memory for faster access.
 
-**Benefits**: Easy to implement, provides fast access due to in-memory storage, and requires no additional libraries.
+**Benefits**: Easy to implement, fast access due to in-memory storage, and requires no additional libraries.
 
 ??? question "What is a decorator?"
 
@@ -189,7 +226,7 @@ Now we can call `extract` multiple times with the same argument, and the result 
 
 ??? note "Copy Caching Code"
 
-    We'll be using the same `instructor_cache` decorator for both `diskcache` and `redis` caching. You can copy the code below and use it for both examples.
+    The same `instructor_cache` decorator works for both `diskcache` and `redis` caching. Copy the code below and use it for both examples.
 
     ```python
     import functools
@@ -228,7 +265,7 @@ Now we can call `extract` multiple times with the same argument, and the result 
 
     Remember that you can change this code to support non-Pydantic models, or to use a different caching backend. More over, don't forget that this cache does not invalidate when the model changes, so you might want to encode the `Model.model_json_schema()` as part of the key.
 
-**When to Use**: Suitable for applications needing cache persistence between sessions or dealing with large datasets. This is useful when we want to reuse the same data across multiple sessions, or when we need to store large amounts of data!
+**When to Use**: Good for applications that need cache persistence between sessions or deal with large datasets. Use this when you want to reuse the same data across multiple sessions or store large amounts of data.
 
 ```python hl_lines="10"
 import functools
@@ -287,13 +324,13 @@ def extract(data) -> UserDetail:
 3. We use Pydantic's `model_validate_json` to deserialize the cached result into a Pydantic model.
 4. We use `inspect.signature` to get the function's return type annotation, which we use to validate the cached result.
 
-**Benefits**: Reduces computation time for heavy data processing, provides disk-based caching for persistence.
+**Benefits**: Reduces computation time for heavy data processing and provides disk-based caching for persistence.
 
-## 2. Redis Caching Decorator for Distributed Systems
+## 3. Redis Caching Decorator for Distributed Systems
 
 ??? note "Copy Caching Code"
 
-    We'll be using the same `instructor_cache` decorator for both `diskcache` and `redis` caching. You can copy the code below and use it for both examples.
+    The same `instructor_cache` decorator works for both `diskcache` and `redis` caching. Copy the code below and use it for both examples.
 
     ```python
     import functools
@@ -329,7 +366,7 @@ def extract(data) -> UserDetail:
 
     Remember that you can change this code to support non-Pydantic models, or to use a different caching backend. More over, don't forget that this cache does not invalidate when the model changes, so you might want to encode the `Model.model_json_schema()` as part of the key.
 
-**When to Use**: Recommended for distributed systems where multiple processes need to access the cached data, or for applications requiring fast read/write access and handling complex data structures.
+**When to Use**: Good for distributed systems where multiple processes need to access cached data, or for applications that need fast read/write access and handle complex data structures.
 
 ```python
 import redis
@@ -386,8 +423,8 @@ def extract(data) -> UserDetail:
 1. We only want to cache functions that return a Pydantic model to simplify serialization and deserialization logic
 2. We use functool's `_make_key` to generate a unique key based on the function's name and arguments. This is important because we want to cache the result of each function call separately.
 
-**Benefits**: Scalable for large-scale systems, supports fast in-memory data storage and retrieval, and is versatile for various data types.
+**Benefits**: Scalable for large-scale systems, supports fast in-memory data storage and retrieval, and works with various data types.
 
-!!! note "Looking carefully"
+!!! note "Same Decorator, Different Backend"
 
-    If you look carefully at the code above you'll notice that we're using the same `instructor_cache` decorator as before. The implementation is the same, but we're using a different caching backend!
+    The code above uses the same `instructor_cache` decorator as before. The implementation is the same, but it uses a different caching backend.

@@ -95,17 +95,19 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from enum import Enum
 
+
 class Priority(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
 
+
 class Ticket(BaseModel):
     title: str = Field(..., min_length=5, max_length=100)
     priority: Priority
     estimated_hours: Optional[float] = Field(None, gt=0, le=100)
-    
+
     @field_validator('estimated_hours')
     @classmethod
     def validate_hours(cls, v):
@@ -113,16 +115,18 @@ class Ticket(BaseModel):
             raise ValueError('Hours must be in 0.5 increments')
         return v
 
+
 class CustomerSupport(BaseModel):
     customer_name: str
     tickets: List[Ticket] = Field(..., min_items=1)
+
 
 client = instructor.from_provider("openai/gpt-4o")
 
 support_case = client.create(
     response_model=CustomerSupport,
     messages=[{"role": "user", "content": "Extract support case details..."}],
-    max_retries=3
+    max_retries=3,
 )
 ```
 
@@ -157,9 +161,11 @@ All providers use the same simple interface. Here are quick examples for the mos
     import instructor
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_provider("openai/gpt-5-nano")
     res = client.create(
@@ -175,9 +181,11 @@ All providers use the same simple interface. Here are quick examples for the mos
     import instructor
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
     resp = client.create(
@@ -193,9 +201,11 @@ All providers use the same simple interface. Here are quick examples for the mos
     import instructor
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_provider("google/gemini-2.5-flash")
     resp = client.create(
@@ -211,9 +221,11 @@ All providers use the same simple interface. Here are quick examples for the mos
     import instructor
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_provider("ollama/llama3")
     resp = client.create(
@@ -291,9 +303,11 @@ Instructor's hooks system lets you intercept and handle events during LLM intera
 import instructor
 from pydantic import BaseModel
 
+
 class UserInfo(BaseModel):
     name: str
     age: int
+
 
 client = instructor.from_provider("openai/gpt-4o-mini")
 
@@ -318,9 +332,11 @@ Instructor provides full type inference for better IDE support and type safety. 
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 client = instructor.from_provider("openai/gpt-4o-mini")
 user = client.create(response_model=User, messages=[...])  # Type: User

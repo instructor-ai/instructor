@@ -1,6 +1,6 @@
 import instructor
 
-models = ["openai/gpt-5-nano"]
+models = ["gpt-4o-mini"]
 modes = [
     instructor.Mode.TOOLS,
 ]

@@ -143,10 +143,10 @@ print(extraction.model_dump_json(indent=2))
       "twitter": "@CodeMaster2023"
     }
   ],
-  "date": "2024-03-15",
-  "location": "Grand Tech Arena located at 4521 Innovation Drive",
+  "date": "March 15th, 2024",
+  "location": "Grand Tech Arena, 4521 Innovation Drive",
   "budget": 50000,
-  "deadline": "2024-02-20"
+  "deadline": "February 20th"
 }
 """
 ```
@@ -185,6 +185,7 @@ async def print_partial_results():
     )
     async for m in user:
         print(m)
+        #> name=None age=None
         #> name=None age=None
         #> name=None age=None
         #> name='' age=None

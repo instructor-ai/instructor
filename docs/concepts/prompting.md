@@ -1,23 +1,23 @@
 ---
-title: Prompt Engineering Best Practices - Instructor Guide
-description: Master prompt engineering with Pydantic and Instructor. Learn best practices for modularity, flexibility, and data integrity in structured outputs.
+title: Prompt Engineering Best Practices
+description: Learn prompt engineering tips for using Pydantic and Instructor effectively.
 ---
 
 # General Tips for Prompt Engineering
 
-The overarching theme of using Instructor and Pydantic for function calling is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.
+When using Instructor and Pydantic, make your models self-descriptive, modular, and flexible while keeping data integrity.
 
-- **Modularity**: Design self-contained components for reuse.
-- **Self-Description**: Use Pydantic's `Field` for clear field descriptions.
-- **Optionality**: Use Python's `Optional` type for nullable fields and set sensible defaults.
-- **Standardization**: Employ enumerations for fields with a fixed set of values; include a fallback option.
-- **Dynamic Data**: Use key-value pairs for arbitrary properties and limit list lengths.
-- **Entity Relationships**: Define explicit identifiers and relationship fields.
-- **Contextual Logic**: Optionally add a "chain of thought" field in reusable components for extra context.
+- Modularity: Design self-contained components for reuse
+- Self-description: Use Pydantic's `Field` for clear field descriptions
+- Optionality: Use Python's `Optional` type for nullable fields and set defaults
+- Standardization: Use enumerations for fields with fixed values; include a fallback option
+- Dynamic data: Use key-value pairs for arbitrary properties and limit list lengths
+- Entity relationships: Define explicit identifiers and relationship fields
+- Contextual logic: Optionally add a "chain of thought" field in reusable components for extra context
 
 ## Modular Chain of Thought {#chain-of-thought}
 
-This approach to "chain of thought" improves data quality but can have modular components rather than global CoT.
+Use chain of thought to improve data quality. You can add it to specific components rather than making it global.
 
 ```python hl_lines="4 5"
 from pydantic import BaseModel, Field
@@ -53,7 +53,7 @@ class UserDetail(BaseModel):
 
 ## Handling Errors Within Function Calls
 
-You can create a wrapper class to hold either the result of an operation or an error message. This allows you to remain within a function call even if an error occurs, facilitating better error handling without breaking the code flow.
+Create a wrapper class to hold either the result of an operation or an error message. This lets you stay within a function call even if an error occurs, improving error handling without breaking the code flow.
 
 ```python
 from pydantic import BaseModel, Field
@@ -79,7 +79,7 @@ With the `MaybeUser` class, you can either receive a `UserDetail` object in resu
 
 ### Simplification with the Maybe Pattern
 
-You can further simplify this using instructor to create the `Maybe` pattern dynamically from any `BaseModel`.
+Simplify this using Instructor to create the `Maybe` pattern dynamically from any `BaseModel`.
 
 ```python
 import instructor
@@ -94,11 +94,11 @@ class UserDetail(BaseModel):
 MaybeUser = instructor.Maybe(UserDetail)
 ```
 
-This allows you to quickly create a Maybe type for any class, streamlining the process.
+This lets you quickly create a Maybe type for any class.
 
 ## Tips for Enumerations
 
-To prevent data misalignment, use Enums for standardized fields. Always include an "Other" option as a fallback so the model can signal uncertainty.
+Use Enums for standardized fields to prevent data misalignment. Always include an "Other" option as a fallback so the model can signal uncertainty.
 
 ```python hl_lines="7 12"
 from enum import Enum, auto
@@ -139,7 +139,7 @@ If you'd like to improve performance more you can reiterate the requirements in 
 
 ## Reiterate Long Instructions
 
-For complex attributes, it helps to reiterate the instructions in the field's description.
+For complex attributes, repeat the instructions in the field's description.
 
 ```python hl_lines="5 11"
 from pydantic import BaseModel, Field
@@ -187,7 +187,7 @@ class UserDetail(BaseModel):
 
 ## Limiting the Length of Lists
 
-When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
+When dealing with lists of attributes, especially arbitrary properties, manage the length. Use prompting and enumeration to limit the list length and keep a manageable set of properties.
 
 ```python hl_lines="2 9"
 from typing import List
@@ -209,7 +209,7 @@ class UserDetail(BaseModel):
     )
 ```
 
-**Using Tuples for Simple Types**
+### Using Tuples for Simple Types
 
 For simple types, tuples can be a more compact alternative to custom classes, especially when the properties don't require additional descriptions.
 
@@ -229,7 +229,7 @@ class UserDetail(BaseModel):
 
 ## Advanced Arbitrary Properties
 
-For multiple users, aim to use consistent key names when extracting properties.
+For multiple users, use consistent key names when extracting properties.
 
 ```python
 from typing import List
@@ -255,7 +255,7 @@ This refined guide should offer a cleaner and more organized approach to structu
 
 ## Defining Relationships Between Entities
 
-In cases where relationships exist between entities, it's vital to define them explicitly in the model. The following example demonstrates how to define relationships between users by incorporating an id and a friends field:
+When relationships exist between entities, define them explicitly in the model. The following example shows how to define relationships between users by adding an id and a friends field:
 
 ```python hl_lines="2 5 8"
 from typing import List
@@ -304,7 +304,7 @@ class UserDetail(BaseModel):
     )
 ```
 
-Sometimes, a component like TimeRange may require some context or additional logic to be used effectively. Employing a "chain of thought" field within the component can help in understanding or optimizing the time range allocations.
+Sometimes, a component like TimeRange may need context or additional logic to work well. Adding a "chain of thought" field within the component can help understand or optimize the time range allocations.
 
 ```python hl_lines="2"
 from pydantic import BaseModel, Field

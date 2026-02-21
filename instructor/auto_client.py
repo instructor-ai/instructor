@@ -1121,8 +1121,9 @@ def from_provider(
             from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
-                "The xai-sdk package is required to use the xAI provider. "
-                "Install it with `pip install xai-sdk`."
+                "The xAI provider needs the optional dependency `xai-sdk`. "
+                'Install it with `uv pip install "instructor[xai]"` (or `pip install "instructor[xai]"`). '
+                "Note: xai-sdk requires Python 3.10+."
             ) from None
         except Exception as e:
             logger.error(

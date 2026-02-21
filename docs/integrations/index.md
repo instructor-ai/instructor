@@ -20,7 +20,8 @@ Learn how to integrate Instructor with various AI model providers. These compreh
     [:octicons-arrow-right-16: Google.GenerativeAI](./google.md)          ·
     [:octicons-arrow-right-16: Vertex AI](./vertex.md)       ·
     [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)    ·
-    [:octicons-arrow-right-16: Google.GenAI](./genai.md)
+    [:octicons-arrow-right-16: Google.GenAI](./genai.md)     ·
+    [:octicons-arrow-right-16: xAI](./xai.md)
 
 - :material-cloud-outline: **Additional Cloud Providers**
 
@@ -75,11 +76,8 @@ Providers support different methods for generating structured outputs:
 |------|-------------|-----------|
 | `TOOLS` | Uses OpenAI-style tools/function calling | OpenAI, Anthropic, Mistral |
 | `PARALLEL_TOOLS` | Multiple simultaneous tool calls | OpenAI |
-| `JSON` | Direct JSON response generation | OpenAI, Gemini, Cohere, Perplexity |
+| `JSON` | Direct JSON response generation | OpenAI, Gemini, Cohere, GenAI |
 | `MD_JSON` | JSON embedded in markdown | Most providers |
-| `BEDROCK_TOOLS` | AWS Bedrock function calling | AWS Bedrock |
-| `BEDROCK_JSON` | AWS Bedrock JSON generation | AWS Bedrock |
-| `PERPLEXITY_JSON` | Perplexity JSON generation | Perplexity |
 
 See the [Modes Comparison](../modes-comparison.md) guide for details.
 
@@ -142,8 +140,8 @@ Use these example strings with `from_provider` to quickly get started:
 - [x] `instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")`
 - [x] `instructor.from_provider("cerebras/llama3.1-70b")`
 - [x] `instructor.from_provider("fireworks/llama-v3-70b-instruct")`
-- [x] `instructor.from_provider("vertexai/gemini-1.5-flash")`
-- [x] `instructor.from_provider("genai/gemini-1.5-flash")`
+- [x] `instructor.from_provider("vertexai/gemini-3-flash")`
+- [x] `instructor.from_provider("genai/gemini-3-flash")`
 - [x] `instructor.from_provider("ollama/llama3")`
 
 ### 2. Manual Client Setup

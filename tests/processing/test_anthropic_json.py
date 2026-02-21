@@ -3,6 +3,7 @@
 from anthropic.types import Message, Usage
 import pytest
 from pydantic import ValidationError
+from typing import cast
 
 import instructor
 
@@ -41,6 +42,9 @@ def test_parse_anthropic_json_strict_control_characters() -> None:
 def test_parse_anthropic_json_non_strict_preserves_control_characters() -> None:
     message = _build_message(CONTROL_CHAR_JSON)
 
-    model = _AnthropicTestModel.parse_anthropic_json(message, strict=False)  # type: ignore[arg-type]
+    model = cast(
+        _AnthropicTestModel,
+        _AnthropicTestModel.parse_anthropic_json(message, strict=False),  # type: ignore[arg-type]
+    )
 
     assert model.data == "Claude likes\ncontrol\ncharacters"

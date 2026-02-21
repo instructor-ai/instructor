@@ -100,6 +100,7 @@ Required API keys (set only what you have):
 - `OPENAI_API_KEY` - for OpenAI
 - `ANTHROPIC_API_KEY` - for Anthropic
 - `GOOGLE_API_KEY` - for Google (Gemini)
+- `GOOGLE_GENAI_MODEL` - model string for Google GenAI tests (e.g., `google/gemini-3-flash`)
 - `COHERE_API_KEY` - for Cohere
 - `XAI_API_KEY` - for xAI (Grok)
 - `MISTRAL_API_KEY` - for Mistral
@@ -112,9 +113,9 @@ Required API keys (set only what you have):
 
 All providers automatically skip if API keys are missing.
 
-- **OpenAI**: `gpt-5-nano` with `Mode.TOOLS`
+- **OpenAI**: `gpt-4o-mini` with `Mode.TOOLS`
 - **Anthropic**: `claude-3-5-haiku-latest` with `Mode.ANTHROPIC_TOOLS`
-- **Google**: `gemini-2.5-flash` with `Mode.GENAI_TOOLS`
+- **Google**: `gemini-pro` with `Mode.GENAI_STRUCTURED_OUTPUTS`
 - **Cohere**: `command-a-03-2025` with `Mode.COHERE_TOOLS`
 - **xAI**: `grok-3-mini` with `Mode.XAI_TOOLS`
 - **Mistral**: `ministral-8b-latest` with `Mode.MISTRAL_TOOLS`

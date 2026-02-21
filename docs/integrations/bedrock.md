@@ -19,6 +19,7 @@ pip install "instructor[bedrock]"
 
 - [Getting Started](../getting-started.md) - Quick start guide
 - [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
+- [Mode Migration Guide](../concepts/mode-migration.md) - Move to core modes
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
 - [AWS Integration Guide](../examples/index.md#aws-integration) - More AWS examples
 
@@ -39,7 +40,7 @@ client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-
 # The auto client automatically handles:
 # - AWS credential detection from environment
 # - Region configuration (defaults to us-east-1)
-# - Mode selection based on model (Claude models use BEDROCK_TOOLS)
+# - Mode selection based on model (Claude models use TOOLS)
 ```
 
 ## Deprecation Notice
@@ -122,10 +123,13 @@ print(user)
 
 ## Supported Modes
 
-AWS Bedrock supports the following modes with Instructor:
+AWS Bedrock supports the following **core** modes:
 
-- `BEDROCK_TOOLS`: Uses function calling for models that support it (like Claude models)
-- `BEDROCK_JSON`: Direct JSON response generation
+- `TOOLS`: Uses function calling for models that support it (like Claude models)
+- `MD_JSON`: Direct JSON response generation (text extraction fallback)
+
+> Legacy modes (`BEDROCK_TOOLS`, `BEDROCK_JSON`) are deprecated and map to `Mode.TOOLS` and `Mode.MD_JSON`.
+> modes above. Use `TOOLS` or `MD_JSON` in new code.
 
 ```python
 import boto3
@@ -134,11 +138,11 @@ from instructor import Mode
 from pydantic import BaseModel
 
 # Use from_provider for simplified setup
-client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", mode=Mode.BEDROCK_TOOLS)
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", mode=Mode.TOOLS)
 
 # Or if you need to use a custom boto3 client:
 # bedrock_client = boto3.client('bedrock-runtime')
-# client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", client=bedrock_client, mode=Mode.BEDROCK_TOOLS)
+# client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", client=bedrock_client, mode=Mode.TOOLS)
 
 class User(BaseModel):
     name: str
@@ -314,7 +318,7 @@ bedrock_client = boto3.client(
 client = instructor.from_provider(
     "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
     client=bedrock_client,
-    mode=instructor.Mode.BEDROCK_TOOLS
+    mode=instructor.Mode.TOOLS
 )
 
 # Advanced inference configuration

@@ -1,3 +1,4 @@
+import os
 import pytest
 from typing import Optional, Union
 
@@ -6,6 +7,8 @@ from pydantic import BaseModel
 from .util import models, modes
 from itertools import product
 from instructor.providers.gemini.utils import map_to_gemini_function_schema
+
+MODEL = os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro")
 
 
 @pytest.mark.parametrize("mode,model", product(modes, models))
@@ -106,7 +109,7 @@ def test_genai_api_call_with_different_types(mode):
         is_premium: bool
         score: float
 
-    client = instructor.from_provider("google/gemini-2.0-flash", mode=mode)
+    client = instructor.from_provider(MODEL, mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -137,7 +140,7 @@ def test_genai_api_call_with_nested_models(mode):
     class UserList(BaseModel):
         users: list[User]
 
-    client = instructor.from_provider("google/gemini-2.0-flash", mode=mode)
+    client = instructor.from_provider(MODEL, mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -174,9 +177,7 @@ async def test_genai_api_call_with_different_types_async(mode):
         is_premium: bool
         score: float
 
-    client = instructor.from_provider(
-        "google/gemini-2.0-flash", mode=mode, async_client=True
-    )
+    client = instructor.from_provider(MODEL, mode=mode, async_client=True)
 
     response = await client.chat.completions.create(
         messages=[
@@ -208,9 +209,7 @@ async def test_genai_api_call_with_nested_models_async(mode):
     class UserList(BaseModel):
         users: list[User]
 
-    client = instructor.from_provider(
-        "google/gemini-2.0-flash", mode=mode, async_client=True
-    )
+    client = instructor.from_provider(MODEL, mode=mode, async_client=True)
 
     response = await client.chat.completions.create(
         messages=[

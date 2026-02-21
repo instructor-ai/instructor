@@ -1,9 +1,9 @@
-from instructor import OpenAISchema, dsl
+from instructor import ResponseSchema, dsl
 from pydantic import Field
 import json
 
 
-class SearchQuery(OpenAISchema):
+class SearchQuery(ResponseSchema):
     query: str = Field(
         ...,
         description="Detailed, comprehensive, and specific query to be used for semantic search",

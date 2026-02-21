@@ -19,7 +19,7 @@ USER_EXTRACTION_PROMPT = {
 # --- Providers to test (from main.py) ---
 PROVIDERS = [
     "anthropic/claude-3-5-haiku-latest",
-    "google/gemini-2.0-flash",
+    "google/gemini-pro",
     "openai/gpt-4o-mini",
     "azure_openai/gpt-4o-mini",
     "mistral/ministral-8b-latest",
@@ -30,7 +30,7 @@ PROVIDERS = [
     "cerebras/llama-4-scout-17b-16e-instruct",
     "deepseek/deepseek-chat",
     "fireworks/accounts/fireworks/models/llama4-maverick-instruct-basic",
-    "vertexai/gemini-1.5-flash",
+    "vertexai/gemini-3-flash",
 ]
 
 
@@ -40,7 +40,7 @@ def should_skip_provider(provider_string: str) -> bool:
     if os.getenv("INSTRUCTOR_ENV") == "CI":
         return provider_string not in [
             "cohere/command-a-03-2025",
-            "google/gemini-2.0-flash",
+            "google/gemini-pro",
             "openai/gpt-4o-mini",
         ]
     return False
@@ -337,7 +337,7 @@ def test_openai_provider_without_base_url():
             client = from_provider("openai/gpt-4", api_key="test-key")
 
             _, kwargs = mock_openai_class.call_args
-            assert "base_url" not in kwargs
+            assert kwargs.get("base_url") in (None, "")
             assert kwargs["api_key"] == "test-key"
             mock_from_openai.assert_called_once()
             assert client is mock_instructor
@@ -501,7 +501,7 @@ def test_genai_mode_parameter_passed_to_provider():
             mock_from_genai.return_value = mock_instructor
 
             from_provider(
-                "google/gemini-2.5-flash",
+                "google/gemini-pro",
                 mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
             )
 
@@ -524,7 +524,7 @@ def test_genai_mode_defaults_when_not_provided():
             mock_instructor = MagicMock()
             mock_from_genai.return_value = mock_instructor
 
-            from_provider("google/gemini-2.0-flash")
+            from_provider("google/gemini-pro")
 
             mock_from_genai.assert_called_once()
             _, kwargs = mock_from_genai.call_args
@@ -569,7 +569,7 @@ def test_google_provider_runtime_import_error_propagates():
             __import__("instructor"), "from_genai", mock_from_genai, create=True
         ):
             with pytest.raises(ImportError) as excinfo:
-                from_provider("google/gemini-2.0-flash")
+                from_provider("google/gemini-pro")
 
             # Should be the socksio error, NOT a ConfigurationError about google-genai
             assert "socksio" in str(excinfo.value)

@@ -30,11 +30,14 @@ import time
 from pydantic import BaseModel
 from instructor.batch.processor import BatchProcessor
 
+
 class User(BaseModel):
     """User model for extraction."""
+
     name: str
     age: int
     email: str
+
 
 def main():
     # Initialize batch processor
@@ -125,6 +128,7 @@ def main():
             for error in error_results:
                 print(f"   - {error.custom_id}: {error.error_message}")
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -150,6 +154,7 @@ batch_id = processor.submit_batch(file_path)
 
 # Remember to clean up
 import os
+
 if os.path.exists(file_path):
     os.remove(file_path)
 ```
@@ -182,27 +187,27 @@ batch_id = processor.submit_batch(buffer)
 # AWS Lambda example
 import json
 
+
 def lambda_handler(event, context):
     """AWS Lambda function using in-memory batch processing."""
-    
+
     # Extract data from event
     messages_list = event.get("messages", [])
-    
+
     # Process in memory - no disk I/O
     processor = BatchProcessor("openai/gpt-5-nano", User)
     buffer = processor.create_batch_from_messages(
         messages_list,
         file_path=None,  # Essential for Lambda
     )
-    
+
     batch_id = processor.submit_batch(buffer)
-    
+
     return {
         'statusCode': 200,
-        'body': json.dumps({
-            'batch_id': batch_id,
-            'message': 'Batch submitted successfully'
-        })
+        'body': json.dumps(
+            {'batch_id': batch_id, 'message': 'Batch submitted successfully'}
+        ),
     }
 ```
 
@@ -254,15 +259,16 @@ try:
         messages_list,
         file_path=None,
     )
-    
+
     # Submit batch
     batch_id = processor.submit_batch(buffer)
-    
+
     # Process results
     results = processor.get_results(batch_id)
-    
+
 except Exception as e:
     print(f"Error during batch processing: {e}")
+    #> Error during batch processing: name 'processor' is not defined
     # No file cleanup needed with in-memory approach
 ```
 

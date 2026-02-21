@@ -29,12 +29,10 @@ Getting started is now easier than ever. With our unified provider interface, yo
 
 ```python
 import instructor
-from pydantic import BaseModel
 
 # Initialize the client with Responses mode
 client = instructor.from_provider(
-    "openai/gpt-4.1-mini",
-    mode=instructor.Mode.RESPONSES_TOOLS
+    "openai/gpt-4.1-mini", mode=instructor.Mode.RESPONSES_TOOLS
 )
 ```
 
@@ -46,6 +44,7 @@ Here's a quick example showing how it works:
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create structured output
 profile = client.responses.create(
@@ -70,9 +69,11 @@ class Citation(BaseModel):
     id: int
     url: str
 
+
 class Summary(BaseModel):
     citations: list[Citation]
     summary: str
+
 
 response = client.responses.create(
     input="What are some of the best places to visit in New York for Latin American food?",
@@ -88,14 +89,11 @@ For production applications, we've maintained full async support. This lets you 
 ```python
 async def get_user_profile():
     async_client = instructor.from_provider(
-        "openai/gpt-4.1-mini",
-        mode=instructor.Mode.RESPONSES_TOOLS,
-        async_client=True
+        "openai/gpt-4.1-mini", mode=instructor.Mode.RESPONSES_TOOLS, async_client=True
     )
 
     profile = await async_client.responses.create(
-        input="Extract: Maria lives in Spain.",
-        response_model=UserProfile
+        input="Extract: Maria lives in Spain.", response_model=UserProfile
     )
 ```
 
@@ -138,8 +136,9 @@ response = client.create(
     response_model=Summary,
 )
 print(response)
-# > citations=[Citation(id=1,url=....)]
-# > summary = New York City offers a rich variety of ...
+"""
+citations=[Citation(id=1, url='https://www.nycgo.com/restaurants/best-latin-american-restaurants-in-nyc/'), Citation(id=2, url='https://www.timeout.com/newyork/restaurants/best-latin-american-restaurants-in-nyc'), Citation(id=3, url='https://www.thrillist.com/eat/nation/best-latin-american-restaurants-nyc')] summary="Some of the best places to visit in New York for Latin American food include neighborhoods and restaurants known for authentic and diverse offerings. In Manhattan, areas like the East Village and Lower East Side have excellent Latin American restaurants. Popular spots include Casa Enrique, known for Mexican cuisine; Tia Pol, offering Spanish and Latin flavors; and La Contenta, serving dishes from various Latin American countries. Brooklyn's Williamsburg and Bushwick have emerged as vibrant spots for Latin American eats, with restaurants such as La Esquina and Fonda not to miss. These places are celebrated for delicious food, lively atmospheres, and cultural authenticity, making them top choices for anyone looking to enjoy Latin American cuisine in New York City."
+"""
 ```
 
 This makes the path forward clear - you can enhance your existing applications with the latest OpenAI features while maintaining the type safety and validation Instructor is known for. No need to learn a new API or refactor your code. It just works.

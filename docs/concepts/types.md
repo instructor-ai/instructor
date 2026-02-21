@@ -285,11 +285,11 @@ resp = client.create(
 assert isinstance(resp, pd.DataFrame)
 print(resp)
 """
-       Age
+        Age
  Name
-Jason    20
-Sarah    30
-John     40
+Jason     20
+Sarah     30
+John      40
 """
 ```
 

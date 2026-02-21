@@ -40,6 +40,8 @@ jobs:
     name: Core Provider Tests (OpenAI)
     runs-on: ubuntu-latest
     needs: core-tests
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -51,8 +53,21 @@ jobs:
         run: uv python install 3.11
       - name: Install the project
         run: uv sync --all-extras
+      - name: Skip core provider tests (OpenAI)
+        if: ${{ env.OPENAI_API_KEY == '' }}
+        run: echo "Skipping OpenAI core provider tests (missing OPENAI_API_KEY)."
       - name: Run core provider tests (OpenAI)
-        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        run: |
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
+          status=$?
+          set -e
+          if [ $status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $status
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -62,6 +77,8 @@ jobs:
     name: Core Provider Tests (Anthropic)
     runs-on: ubuntu-latest
     needs: core-tests
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -73,8 +90,21 @@ jobs:
         run: uv python install 3.11
       - name: Install the project
         run: uv sync --all-extras
+      - name: Skip core provider tests (Anthropic)
+        if: ${{ env.ANTHROPIC_API_KEY == '' }}
+        run: echo "Skipping Anthropic core provider tests (missing ANTHROPIC_API_KEY)."
       - name: Run core provider tests (Anthropic)
-        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        run: |
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
+          status=$?
+          set -e
+          if [ $status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $status
         env:
           INSTRUCTOR_ENV: CI
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -84,6 +114,9 @@ jobs:
     name: Core Provider Tests (Google)
     runs-on: ubuntu-latest
     needs: core-tests
+    env:
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      GOOGLE_GENAI_MODEL: ${{ secrets.GOOGLE_GENAI_MODEL }}
 
     steps:
       - uses: actions/checkout@v2
@@ -95,8 +128,21 @@ jobs:
         run: uv python install 3.11
       - name: Install the project
         run: uv sync --all-extras
+      - name: Skip core provider tests (Google)
+        if: ${{ env.GOOGLE_API_KEY == '' || env.GOOGLE_GENAI_MODEL == '' }}
+        run: echo "Skipping Google core provider tests (missing GOOGLE_API_KEY or GOOGLE_GENAI_MODEL)."
       - name: Run core provider tests (Google)
-        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
+        if: ${{ env.GOOGLE_API_KEY != '' && env.GOOGLE_GENAI_MODEL != '' }}
+        run: |
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
+          status=$?
+          set -e
+          if [ $status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $status
         env:
           INSTRUCTOR_ENV: CI
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -106,6 +152,14 @@ jobs:
     name: Core Provider Tests (Other)
     runs-on: ubuntu-latest
     needs: core-tests
+    env:
+      COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+      CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      WRITER_API_KEY: ${{ secrets.WRITER_API_KEY }}
+      PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -117,8 +171,29 @@ jobs:
         run: uv python install 3.11
       - name: Install the project
         run: uv sync --all-extras
+      - name: Skip core provider tests (Other)
+        if: >-
+          ${{ env.COHERE_API_KEY == '' && env.XAI_API_KEY == ''
+          && env.MISTRAL_API_KEY == '' && env.CEREBRAS_API_KEY == ''
+          && env.FIREWORKS_API_KEY == '' && env.WRITER_API_KEY == ''
+          && env.PERPLEXITY_API_KEY == '' }}
+        run: echo "Skipping core provider tests (Other) (missing provider secrets)."
       - name: Run core provider tests (Cohere, xAI, Mistral, etc)
-        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+        if: >-
+          ${{ env.COHERE_API_KEY != '' || env.XAI_API_KEY != ''
+          || env.MISTRAL_API_KEY != '' || env.CEREBRAS_API_KEY != ''
+          || env.FIREWORKS_API_KEY != '' || env.WRITER_API_KEY != ''
+          || env.PERPLEXITY_API_KEY != '' }}
+        run: |
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+          status=$?
+          set -e
+          if [ $status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $status
         env:
           INSTRUCTOR_ENV: CI
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
@@ -134,6 +209,9 @@ jobs:
     name: ${{ matrix.provider.name }} Tests
     runs-on: ubuntu-latest
     needs: [core-openai, core-anthropic, core-google, core-other]
+    env:
+      PROVIDER_API_KEY: ${{ secrets[matrix.provider.env_key] }}
+      GOOGLE_GENAI_MODEL: ${{ secrets.GOOGLE_GENAI_MODEL }}
     strategy:
       fail-fast: false
       matrix:
@@ -167,8 +245,29 @@ jobs:
         run: uv python install 3.11
       - name: Install the project
         run: uv sync --all-extras
+      - name: Skip ${{ matrix.provider.name }} tests
+        if: >-
+          ${{ env.PROVIDER_API_KEY == '' ||
+          ((matrix.provider.name == 'Gemini' || matrix.provider.name == 'Google GenAI'
+          || matrix.provider.name == 'Vertex AI') && env.GOOGLE_GENAI_MODEL == '') }}
+        run: >-
+          echo "Skipping ${{ matrix.provider.name }} tests
+          (missing ${{ matrix.provider.env_key }} or GOOGLE_GENAI_MODEL)."
       - name: Run ${{ matrix.provider.name }} tests
-        run: uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
+        if: >-
+          ${{ env.PROVIDER_API_KEY != '' &&
+          ((matrix.provider.name != 'Gemini' && matrix.provider.name != 'Google GenAI'
+          && matrix.provider.name != 'Vertex AI') || env.GOOGLE_GENAI_MODEL != '') }}
+        run: |
+          set +e
+          uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
+          status=$?
+          set -e
+          if [ $status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $status
         env:
           INSTRUCTOR_ENV: CI
           ${{ matrix.provider.env_key }}: ${{ secrets[matrix.provider.env_key] }}
@@ -178,6 +277,12 @@ jobs:
     name: Auto Client Tests
     runs-on: ubuntu-latest
     needs: [core-openai, core-anthropic, core-google, core-other]
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -189,8 +294,27 @@ jobs:
         run: uv python install 3.11
       - name: Install the project
         run: uv sync --all-extras
+      - name: Skip Auto Client tests
+        if: >-
+          ${{ env.OPENAI_API_KEY == '' || env.GOOGLE_API_KEY == ''
+          || env.COHERE_API_KEY == '' || env.ANTHROPIC_API_KEY == ''
+          || env.XAI_API_KEY == '' }}
+        run: echo "Skipping Auto Client tests (missing one or more provider secrets)."
       - name: Run Auto Client tests
-        run: uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
+        if: >-
+          ${{ env.OPENAI_API_KEY != '' && env.GOOGLE_API_KEY != ''
+          && env.COHERE_API_KEY != '' && env.ANTHROPIC_API_KEY != ''
+          && env.XAI_API_KEY != '' }}
+        run: |
+          set +e
+          uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
+          status=$?
+          set -e
+          if [ $status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $status
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

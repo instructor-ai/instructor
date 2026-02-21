@@ -1,7 +1,7 @@
 # conftest.py
 import os
 import pytest
-import importlib
+import importlib.util
 
 
 if not os.getenv("ANTHROPIC_API_KEY"):

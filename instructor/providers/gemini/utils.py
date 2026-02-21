@@ -304,8 +304,74 @@ def update_genai_kwargs(
             if val is not None:  # Only set if value is not None
                 base_config[gemini_key] = val
 
+    def _genai_kwargs_has_image_content(genai_kwargs: dict[str, Any]) -> bool:
+        """
+        Best-effort check for image content in a GenAI request.
+
+        We use this to decide whether to send text vs image harm categories in
+        `safety_settings`. The google-genai SDK has separate image categories
+        (e.g., `HARM_CATEGORY_IMAGE_HATE`) which are required for image content.
+        """
+        # Prefer typed GenAI contents if present (works with autodetect_images)
+        contents = genai_kwargs.get("contents")
+        if isinstance(contents, list):
+            for content in contents:
+                parts = getattr(content, "parts", None)
+                if not parts:
+                    continue
+                for part in parts:
+                    inline_data = getattr(part, "inline_data", None)
+                    if inline_data is not None:
+                        mime_type = getattr(inline_data, "mime_type", None)
+                        if isinstance(mime_type, str) and mime_type.startswith(
+                            "image/"
+                        ):
+                            return True
+
+                    file_data = getattr(part, "file_data", None)
+                    if file_data is not None:
+                        mime_type = getattr(file_data, "mime_type", None)
+                        if isinstance(mime_type, str) and mime_type.startswith(
+                            "image/"
+                        ):
+                            return True
+
+        # Fall back to OpenAI-style messages if present
+        messages = genai_kwargs.get("messages")
+        if isinstance(messages, list):
+            for message in messages:
+                if not isinstance(message, dict):
+                    continue
+                content = message.get("content")
+                if isinstance(content, Image):
+                    return True
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, Image):
+                            return True
+                        if isinstance(item, dict) and item.get("type") in {
+                            "image",
+                            "image_url",
+                            "input_image",
+                        }:
+                            return True
+                if isinstance(content, dict) and content.get("type") in {
+                    "image",
+                    "image_url",
+                    "input_image",
+                }:
+                    return True
+
+        return False
+
     safety_settings = new_kwargs.pop("safety_settings", {})
     base_config["safety_settings"] = []
+
+    # If users pass a list of settings, assume it's already in SDK format.
+    # This preserves compatibility with advanced usage.
+    if isinstance(safety_settings, list):
+        base_config["safety_settings"] = safety_settings
+        safety_settings = None
 
     # Filter out image related harm categories which are not
     # supported for text based models
@@ -314,27 +380,60 @@ def update_genai_kwargs(
     if hasattr(HarmCategory, "HARM_CATEGORY_JAILBREAK"):
         excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
 
-    supported_categories = [
-        c
-        for c in HarmCategory
-        if c not in excluded_categories
-        and not c.name.startswith("HARM_CATEGORY_IMAGE_")
-    ]
+    if safety_settings is not None:
+        # google-genai has separate categories for image content.
+        has_image = _genai_kwargs_has_image_content(new_kwargs)
+        image_categories = [
+            c
+            for c in HarmCategory
+            if c not in excluded_categories
+            and c.name.startswith("HARM_CATEGORY_IMAGE_")
+        ]
+        text_categories = [
+            c
+            for c in HarmCategory
+            if c not in excluded_categories
+            and not c.name.startswith("HARM_CATEGORY_IMAGE_")
+        ]
 
-    for category in supported_categories:
-        threshold = safety_settings.get(category, HarmBlockThreshold.OFF)
-        base_config["safety_settings"].append(
-            {
-                "category": category,
-                "threshold": threshold,
-            }
+        supported_categories = (
+            image_categories if (has_image and image_categories) else text_categories
         )
 
-    # Extract thinking_config from user's config object if provided
-    # This ensures thinking_config inside config parameter is not ignored
+        def _map_text_to_image_category_name(image_category_name: str) -> str | None:
+            suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
+            # google-genai uses IMAGE_HATE while text uses HATE_SPEECH
+            if suffix == "HATE":
+                return "HARM_CATEGORY_HATE_SPEECH"
+            return f"HARM_CATEGORY_{suffix}"
+
+        for category in supported_categories:
+            threshold = HarmBlockThreshold.OFF
+            if isinstance(safety_settings, dict):
+                if category in safety_settings:
+                    threshold = safety_settings[category]
+                # If we are using image categories, try to honor thresholds passed via text categories.
+                elif has_image and category.name.startswith("HARM_CATEGORY_IMAGE_"):
+                    mapped_name = _map_text_to_image_category_name(category.name)
+                    if mapped_name is not None and hasattr(HarmCategory, mapped_name):
+                        mapped_category = getattr(HarmCategory, mapped_name)
+                        if mapped_category in safety_settings:
+                            threshold = safety_settings[mapped_category]
+
+            base_config["safety_settings"].append(
+                {
+                    "category": category,
+                    "threshold": threshold,
+                }
+            )
+
+    # Extract thinking_config from user's config if provided (dict or object)
+    # This ensures thinking_config inside config parameter is not ignored.
     user_config = new_kwargs.get("config")
     user_thinking_config = None
-    if user_config is not None and hasattr(user_config, "thinking_config"):
+    if isinstance(user_config, dict):
+        user_thinking_config = user_config.get("thinking_config")
+    elif user_config is not None and hasattr(user_config, "thinking_config"):
         user_thinking_config = user_config.thinking_config
 
     # Handle thinking_config parameter - prioritize kwarg over config.thinking_config
@@ -345,18 +444,25 @@ def update_genai_kwargs(
     if thinking_config is not None:
         base_config["thinking_config"] = thinking_config
 
-    # Extract other relevant fields from user's config object
-    # This ensures fields like automatic_function_calling are not ignored
+    # Extract other relevant fields from user's config (dict or object).
+    # This ensures fields like automatic_function_calling / labels / cached_content
+    # are not ignored when config is passed as a dict.
     if user_config is not None:
         config_fields_to_merge = [
             "automatic_function_calling",
             "labels",
+            "cached_content",
         ]
         for field in config_fields_to_merge:
-            if hasattr(user_config, field):
+            if isinstance(user_config, dict):
+                field_value = user_config.get(field)
+            elif hasattr(user_config, field):
                 field_value = getattr(user_config, field)
-                if field_value is not None and field not in base_config:
-                    base_config[field] = field_value
+            else:
+                field_value = None
+
+            if field_value is not None and field not in base_config:
+                base_config[field] = field_value
 
     return base_config
 
@@ -670,24 +776,70 @@ def reask_genai_tools(
     Handle reask for Google GenAI tools mode when validation fails.
 
     Kwargs modifications:
-    - Adds: "contents" (tool response messages indicating validation errors)
+    - Adds: "contents" (model response preserved for thought_signature,
+                        tool response with validation errors)
     """
     from google.genai import types
 
     kwargs = kwargs.copy()
-    function_call = response.candidates[0].content.parts[0].function_call
+
+    existing_contents = kwargs.get("contents")
+    if isinstance(existing_contents, list):
+        kwargs["contents"] = existing_contents.copy()
+    elif existing_contents is None:
+        kwargs["contents"] = []
+    else:
+        kwargs["contents"] = list(existing_contents)
+
+    model_content = None
+    function_call_content = None
+    function_call = None
+
+    candidates = getattr(response, "candidates", None) if response is not None else None
+    if isinstance(candidates, list):
+        for candidate in candidates:
+            content = getattr(candidate, "content", None)
+            if content is None:
+                continue
+
+            if model_content is None:
+                model_content = content
+
+            parts = getattr(content, "parts", None) or []
+            for part in parts:
+                function_call = getattr(part, "function_call", None)
+                if function_call is not None:
+                    function_call_content = content
+                    break
+
+            if function_call is not None:
+                break
+
+    error_msg = (
+        f"Validation Error found:\n{exception}\n"
+        "Recall the function correctly, fix the errors"
+    )
+
+    if function_call is None:
+        if model_content is not None:
+            kwargs["contents"].append(model_content)
+
+        kwargs["contents"].append(
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=error_msg)],
+            )
+        )
+        return kwargs
+
+    function_response_part = types.Part.from_function_response(
+        name=function_call.name,
+        response={"error": error_msg},
+    )
+
+    kwargs["contents"].append(function_call_content)
     kwargs["contents"].append(
-        types.ModelContent(
-            parts=[
-                types.Part.from_function_call(
-                    name=function_call.name,
-                    args=function_call.args,
-                ),
-                types.Part.from_text(
-                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
-                ),
-            ]
-        ),
+        types.Content(role="tool", parts=[function_response_part])
     )
     return kwargs
 
@@ -881,12 +1033,20 @@ def handle_genai_structured_outputs(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
-    # Extract thinking_config from user-provided config object if present
-    # This fixes issue #1966 where thinking_config inside config was ignored
+    # Extract thinking_config and cached_content from user-provided config (dict or object).
+    # This fixes issue #1966 (thinking_config ignored) and ensures cached_content
+    # is detected even when config is provided as a dict.
     user_config = new_kwargs.get("config")
     user_thinking_config = None
-    if user_config is not None and hasattr(user_config, "thinking_config"):
-        user_thinking_config = user_config.thinking_config
+    user_cached_content = None
+    if isinstance(user_config, dict):
+        user_thinking_config = user_config.get("thinking_config")
+        user_cached_content = user_config.get("cached_content")
+    elif user_config is not None:
+        if hasattr(user_config, "thinking_config"):
+            user_thinking_config = user_config.thinking_config
+        if hasattr(user_config, "cached_content"):
+            user_cached_content = user_config.cached_content
 
     # Prioritize kwarg thinking_config over config.thinking_config
     if "thinking_config" not in new_kwargs and user_thinking_config is not None:
@@ -912,10 +1072,14 @@ def handle_genai_structured_outputs(
     map_to_gemini_function_schema(_get_model_schema(response_model))
 
     base_config = {
-        "system_instruction": system_message,
         "response_mime_type": "application/json",
         "response_schema": response_model,
     }
+
+    # Only set system_instruction if NOT using cached_content
+    # When cached_content is used, the system instruction is already part of the cache
+    if user_cached_content is None:
+        base_config["system_instruction"] = system_message
 
     generation_config = update_genai_kwargs(new_kwargs, base_config)
 
@@ -956,12 +1120,20 @@ def handle_genai_tools(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
-    # Extract thinking_config from user-provided config object if present
-    # This fixes issue #1966 where thinking_config inside config was ignored
+    # Extract thinking_config and cached_content from user-provided config (dict or object).
+    # This fixes issue #1966 (thinking_config ignored) and ensures cached_content
+    # is detected even when config is provided as a dict.
     user_config = new_kwargs.get("config")
     user_thinking_config = None
-    if user_config is not None and hasattr(user_config, "thinking_config"):
-        user_thinking_config = user_config.thinking_config
+    user_cached_content = None
+    if isinstance(user_config, dict):
+        user_thinking_config = user_config.get("thinking_config")
+        user_cached_content = user_config.get("cached_content")
+    elif user_config is not None:
+        if hasattr(user_config, "thinking_config"):
+            user_thinking_config = user_config.thinking_config
+        if hasattr(user_config, "cached_content"):
+            user_cached_content = user_config.cached_content
 
     # Prioritize kwarg thinking_config over config.thinking_config
     if "thinking_config" not in new_kwargs and user_thinking_config is not None:
@@ -982,28 +1154,35 @@ def handle_genai_tools(
     else:
         system_message = None
 
-    base_config = {
-        "system_instruction": system_message,
-        "tools": [types.Tool(function_declarations=[function_definition])],
-        "tool_config": types.ToolConfig(
+    base_config: dict[str, Any] = {}
+
+    # When cached_content is used, do NOT add tools, tool_config, or system_instruction
+    # These should already be part of the cache. Adding them causes 400 INVALID_ARGUMENT.
+    # See: https://ai.google.dev/gemini-api/docs/caching
+    if user_cached_content is None:
+        base_config["system_instruction"] = system_message
+        base_config["tools"] = [types.Tool(function_declarations=[function_definition])]
+        base_config["tool_config"] = types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(
                 mode=types.FunctionCallingConfigMode.ANY,
                 allowed_function_names=[_get_model_name(response_model)],
             ),
-        ),
-    }
+        )
 
-    generation_config = update_genai_kwargs(new_kwargs, base_config)
-
-    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
+    # Convert messages before building config so we can correctly infer whether
+    # this request includes image content (which affects safety_settings).
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    # Extract multimodal content for GenAI
+    # Extract multimodal content for GenAI (autodetect_images may turn URLs into images)
     from ...processing.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
+
+    generation_config = update_genai_kwargs(new_kwargs, base_config)
+
+    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
 
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)

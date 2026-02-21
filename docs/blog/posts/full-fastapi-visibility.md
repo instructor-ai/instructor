@@ -47,6 +47,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 import instructor
 
+
 class UserData(BaseModel):
     query: str
 
@@ -80,6 +81,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 import instructor
 import logfire  # (1)!
+
 
 class UserData(BaseModel):
     query: str
@@ -177,6 +179,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     import instructor
     import logfire
     import asyncio
+
 
     class UserData(BaseModel):
         query: str
@@ -305,6 +308,7 @@ Let's add a new endpoint to our server to see how this might work
     import asyncio
     from collections.abc import Iterable
     from fastapi.responses import StreamingResponse
+
 
     class UserData(BaseModel):
         query: str

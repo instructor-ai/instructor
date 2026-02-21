@@ -19,16 +19,18 @@ from decimal import Decimal
 from pydantic import BaseModel, field_validator
 import instructor
 
+
 class Receipt(BaseModel):
     item: str
     price: Decimal
-    
+
     @field_validator('price', mode='before')
     @classmethod
     def parse_price(cls, v):
         if isinstance(v, str):
             return Decimal(v)
         return v
+
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 

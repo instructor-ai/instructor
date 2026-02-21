@@ -10,17 +10,15 @@ Finds:
 
 import argparse
 import re
-from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 
-def find_markdown_files(docs_dir: Path) -> List[Path]:
+def find_markdown_files(docs_dir: Path) -> list[Path]:
     """Find all markdown files in the docs directory."""
     return list(docs_dir.rglob("*.md"))
 
 
-def extract_links(content: str, file_path: Path) -> List[Tuple[str, int]]:
+def extract_links(content: str, file_path: Path) -> list[tuple[str, int]]:  # noqa: ARG001
     """
     Extract internal markdown links from content.
 
@@ -44,7 +42,7 @@ def extract_links(content: str, file_path: Path) -> List[Tuple[str, int]]:
     return links
 
 
-def resolve_link(link_url: str, source_file: Path, docs_dir: Path) -> Tuple[bool, str]:
+def resolve_link(link_url: str, source_file: Path, docs_dir: Path) -> tuple[bool, str]:  # noqa: ARG001
     """
     Resolve a relative link and check if target exists.
 
@@ -68,7 +66,7 @@ def resolve_link(link_url: str, source_file: Path, docs_dir: Path) -> Tuple[bool
     return exists, str(target_path)
 
 
-def check_file(file_path: Path, docs_dir: Path) -> Dict[str, List[Tuple[str, int]]]:
+def check_file(file_path: Path, docs_dir: Path) -> dict[str, list[tuple[str, int]]]:
     """Check all links in a file."""
     issues = {}
 
@@ -90,7 +88,7 @@ def check_file(file_path: Path, docs_dir: Path) -> Dict[str, List[Tuple[str, int
         return {"error": [(str(e), 0)]}
 
 
-def find_orphaned_pages(files: List[Path], docs_dir: Path) -> Set[Path]:
+def find_orphaned_pages(files: list[Path], docs_dir: Path) -> set[Path]:
     """Find pages with no incoming links."""
     all_files = set(files)
     referenced_files = set()
@@ -104,7 +102,7 @@ def find_orphaned_pages(files: List[Path], docs_dir: Path) -> Set[Path]:
                 exists, resolved_path = resolve_link(link_url, file_path, docs_dir)
                 if exists:
                     referenced_files.add(Path(resolved_path))
-        except:
+        except Exception:
             pass
 
     # Files that are not referenced (orphaned)

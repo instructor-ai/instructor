@@ -30,8 +30,10 @@ from typing import Optional
 from uuid import UUID, uuid4
 from pydantic.json_schema import SkipJsonSchema
 from sqlmodel import Field, SQLModel, create_engine, Session
+
 # Initialize the Instructor client
 client = instructor.from_provider("openai/gpt-5-nano")
+
 
 class Hero(SQLModel, instructor.OpenAISchema, table=True):
     id: SkipJsonSchema[UUID] = Field(default_factory=lambda: uuid4(), primary_key=True)
@@ -40,15 +42,20 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
     age: Optional[int] = None
     power_level: Optional[int] = Field(default=None, ge=1, le=100)
 
+
 # Generate AI-powered data
 def create_hero() -> Hero:
     return client.create(
         model="gpt-4",
         response_model=Hero,
         messages=[
-            {"role": "user", "content": "Create a superhero with a power level between 1-100"},
+            {
+                "role": "user",
+                "content": "Create a superhero with a power level between 1-100",
+            },
         ],
     )
+
 
 # Database setup and insertion
 engine = create_engine("sqlite:///heroes.db")
@@ -76,6 +83,7 @@ import instructor
 from uuid import UUID, uuid4
 from datetime import datetime
 
+
 class Product(SQLModel, instructor.OpenAISchema, table=True):
     # Auto-generated fields excluded from AI generation
     id: SkipJsonSchema[UUID] = Field(default_factory=uuid4, primary_key=True)
@@ -98,6 +106,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 import instructor
 from pydantic import validator
+
 
 class Customer(SQLModel, instructor.OpenAISchema, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -125,7 +134,9 @@ SQLModel supports relationships between tables, which can be populated using AI:
 from typing import List, Optional
 from sqlmodel import Field, SQLModel, Relationship
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano")
+
 
 class Team(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -134,6 +145,7 @@ class Team(SQLModel, table=True):
 
     # Relationship to heroes
     heroes: List["Hero"] = Relationship(back_populates="team")
+
 
 class Hero(SQLModel, instructor.OpenAISchema, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -144,6 +156,7 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
     # Foreign key to team
     team_id: Optional[int] = Field(default=None, foreign_key="team.id")
     team: Optional[Team] = Relationship(back_populates="heroes")
+
 
 def create_hero_for_team(team_name: str) -> Hero:
     return client.create(
@@ -163,16 +176,22 @@ Generate multiple records efficiently:
 from typing import List
 import instructor
 from sqlmodel import Session
+
 client = instructor.from_provider("openai/gpt-5-nano")
+
 
 def create_hero_team(team_size: int = 5) -> List[Hero]:
     return client.create(
         model="gpt-4",
         response_model=List[Hero],
         messages=[
-            {"role": "user", "content": f"Create a team of {team_size} diverse superheroes"},
+            {
+                "role": "user",
+                "content": f"Create a team of {team_size} diverse superheroes",
+            },
         ],
     )
+
 
 # Bulk insert
 heroes = create_hero_team(10)
@@ -192,21 +211,24 @@ SQLModel's tight integration with FastAPI makes it perfect for building producti
 ```python
 from fastapi import FastAPI, HTTPException, Depends
 from sqlmodel import Session, select
-from typing import List, Optional
+from typing import List
 import instructor
+
 app = FastAPI(title="Hero Management API")
 client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+
 
 def get_session():
     with Session(engine) as session:
         yield session
 
+
+session_dep = Depends(get_session)
+
+
 # Create hero endpoint
 @app.post("/heroes/", response_model=Hero)
-async def create_hero_endpoint(
-    prompt: str,
-    session: Session = Depends(get_session)
-):
+async def create_hero_endpoint(prompt: str, session: Session = session_dep):
     hero = await client.create(
         model="gpt-4",
         response_model=Hero,
@@ -219,20 +241,18 @@ async def create_hero_endpoint(
     session.refresh(hero)
     return hero
 
+
 # List heroes endpoint
 @app.get("/heroes/", response_model=List[Hero])
-def list_heroes(
-    limit: int = 10,
-    offset: int = 0,
-    session: Session = Depends(get_session)
-):
+def list_heroes(limit: int = 10, offset: int = 0, session: Session = session_dep):
     statement = select(Hero).offset(offset).limit(limit)
     heroes = session.exec(statement).all()
     return heroes
 
+
 # Get specific hero
 @app.get("/heroes/{hero_id}", response_model=Hero)
-def get_hero(hero_id: int, session: Session = Depends(get_session)):
+def get_hero(hero_id: int, session: Session = session_dep):
     hero = session.get(Hero, hero_id)
     if not hero:
         raise HTTPException(status_code=404, detail="Hero not found")
@@ -247,22 +267,27 @@ Create specialized models for different API operations:
 from sqlmodel import SQLModel
 from typing import Optional
 
+
 # Base model for database
 class HeroBase(SQLModel):
     name: str
     secret_name: str
     age: Optional[int] = None
 
+
 # Database model
 class Hero(HeroBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+
 
 # API models
 class HeroCreate(HeroBase):
     pass
 
+
 class HeroRead(HeroBase):
     id: int
+
 
 class HeroUpdate(SQLModel):
     name: Optional[str] = None
@@ -287,7 +312,7 @@ engine = create_engine(
     pool_size=20,
     max_overflow=0,
     pool_pre_ping=True,
-    echo=False  # Set to True for debugging
+    echo=False,  # Set to True for debugging
 )
 ```
 
@@ -299,7 +324,9 @@ Optimize AI calls for better performance:
 import asyncio
 from typing import List
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+
 
 async def create_heroes_batch(prompts: List[str]) -> List[Hero]:
     """Generate multiple heroes concurrently"""
@@ -314,11 +341,12 @@ async def create_heroes_batch(prompts: List[str]) -> List[Hero]:
 
     return await asyncio.gather(*tasks)
 
+
 # Usage
 prompts = [
     "Create a fire-based superhero",
     "Create a water-based superhero",
-    "Create an earth-based superhero"
+    "Create an earth-based superhero",
 ]
 heroes = await create_heroes_batch(prompts)
 ```
@@ -334,6 +362,7 @@ import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
 
+
 @pytest.fixture
 def session():
     engine = create_engine(
@@ -345,6 +374,7 @@ def session():
     with Session(engine) as session:
         yield session
 
+
 def test_hero_creation(session):
     hero = Hero(name="Test Hero", secret_name="Test Identity", age=25)
     session.add(hero)
@@ -352,6 +382,7 @@ def test_hero_creation(session):
 
     assert hero.id is not None
     assert hero.name == "Test Hero"
+
 
 @pytest.mark.asyncio
 async def test_ai_hero_generation():
@@ -370,19 +401,17 @@ Test the full stack including AI generation:
 
 ```python
 from fastapi.testclient import TestClient
-import pytest
 
 client = TestClient(app)
 
+
 def test_create_hero_endpoint():
-    response = client.post(
-        "/heroes/",
-        params={"prompt": "Create a test superhero"}
-    )
+    response = client.post("/heroes/", params={"prompt": "Create a test superhero"})
     assert response.status_code == 200
     hero_data = response.json()
     assert "name" in hero_data
     assert "secret_name" in hero_data
+
 
 def test_list_heroes():
     response = client.get("/heroes/")
@@ -401,6 +430,7 @@ Set up proper configuration for different environments:
 from pydantic import BaseSettings
 from sqlmodel import create_engine
 
+
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./app.db"
     openai_api_key: str
@@ -408,6 +438,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
 
 settings = Settings()
 engine = create_engine(settings.database_url)
@@ -421,8 +452,10 @@ Implement robust error handling:
 import logging
 from fastapi import HTTPException
 import instructor
+
 logger = logging.getLogger(__name__)
 client = instructor.from_provider("openai/gpt-5-nano")
+
 
 async def safe_create_hero(prompt: str) -> Hero:
     try:
@@ -437,9 +470,8 @@ async def safe_create_hero(prompt: str) -> Hero:
     except Exception as e:
         logger.error(f"Failed to create hero: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail="Failed to generate hero data"
-        )
+            status_code=500, detail="Failed to generate hero data"
+        ) from e
 ```
 
 # Advanced Use Cases
@@ -451,7 +483,9 @@ Use AI to generate realistic seed data:
 ```python
 from sqlmodel import Session
 import instructor
+
 client = instructor.from_provider("openai/gpt-5-nano")
+
 
 def seed_database():
     """Generate realistic seed data for development"""
@@ -464,12 +498,12 @@ def seed_database():
         "magic-based superhero",
         "strength-based superhero",
         "speed-based superhero",
-        "psychic superhero"
+        "psychic superhero",
     ]
 
     with Session(engine) as session:
         for hero_type in hero_types:
-            for i in range(5):  # 5 heroes of each type
+            for _ in range(5):  # 5 heroes of each type
                 hero = client.create(
                     model="gpt-4",
                     response_model=Hero,
@@ -482,6 +516,7 @@ def seed_database():
         session.commit()
         print("Database seeded successfully!")
 
+
 if __name__ == "__main__":
     seed_database()
 ```
@@ -493,11 +528,12 @@ Combine SQLModel with streaming for real-time applications:
 ```python
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from collections.abc import AsyncIterable
 import instructor
 import json
+
 app = FastAPI()
 client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+
 
 @app.post("/heroes/stream")
 async def stream_hero_creation(prompts: List[str]):
@@ -520,10 +556,7 @@ async def stream_hero_creation(prompts: List[str]):
             except Exception as e:
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-    return StreamingResponse(
-        generate_heroes(),
-        media_type="text/plain"
-    )
+    return StreamingResponse(generate_heroes(), media_type="text/plain")
 ```
 
 # Troubleshooting Common Issues
@@ -547,6 +580,7 @@ Handle conflicts between database and AI schema requirements:
 from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 
+
 class Hero(SQLModel, instructor.OpenAISchema, table=True):
     # Database-only fields
     id: SkipJsonSchema[int] = Field(default=None, primary_key=True)
@@ -565,6 +599,7 @@ Monitor AI generation performance:
 import time
 from functools import wraps
 
+
 def monitor_ai_calls(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
@@ -573,7 +608,9 @@ def monitor_ai_calls(func):
         duration = time.time() - start_time
         logger.info(f"AI call took {duration:.2f} seconds")
         return result
+
     return wrapper
+
 
 @monitor_ai_calls
 async def create_hero(prompt: str) -> Hero:

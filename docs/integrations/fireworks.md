@@ -234,8 +234,8 @@ for user in users:
 
 We provide several modes to make it easy to work with the different response models that Fireworks supports
 
-1. `instructor.Mode.FIREWORKS_JSON` : This parses the raw text completion into a pydantic object
-2. `instructor.Mode.FIREWORKS_TOOLS` : This uses Fireworks's tool calling API to return structured outputs to the client
+1. `instructor.Mode.MD_JSON` : This parses the raw text completion into a pydantic object
+2. `instructor.Mode.TOOLS` : This uses Fireworks's tool calling API to return structured outputs to the client
 
 ## Related Resources
 

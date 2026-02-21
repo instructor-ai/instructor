@@ -73,7 +73,7 @@ class Team(SQLModel, table=True):
     heroes: list["Hero"] = Relationship(back_populates="team")
 
 
-class Hero(SQLModel, instructor.OpenAISchema, table=True):
+class Hero(SQLModel, instructor.ResponseSchema, table=True):
     """Hero model with auto-generated fields and validation"""
 
     __table_args__ = {"extend_existing": True}
@@ -107,7 +107,7 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
         return v
 
 
-class Product(SQLModel, instructor.OpenAISchema, table=True):
+class Product(SQLModel, instructor.ResponseSchema, table=True):
     """Product model demonstrating different AI generation patterns"""
 
     __table_args__ = {"extend_existing": True}
