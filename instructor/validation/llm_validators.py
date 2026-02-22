@@ -57,7 +57,11 @@ def llm_validator(
                 },
                 {
                     "role": "user",
-                    "content": f"Does `{v}` follow the rules: {statement}",
+                    "content": (
+                        "Determine if the following value is valid for the given rules.\n\n"
+                        f"<rules>\n{statement}\n</rules>\n\n"
+                        f"<value>\n{v}\n</value>"
+                    ),
                 },
             ],
             model=model,

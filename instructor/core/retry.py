@@ -10,6 +10,7 @@ from .exceptions import (
     InstructorRetryException,
     AsyncValidationError,
     FailedAttempt,
+    TokenBudgetExceeded,
     ValidationError as InstructorValidationError,
 )
 from .hooks import Hooks
@@ -140,6 +141,19 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
     return []
 
 
+def get_total_tokens(total_usage: Any) -> int:
+    """Extract total token count from either OpenAI or Anthropic usage objects."""
+    # OpenAI: has total_tokens attribute
+    if hasattr(total_usage, "total_tokens") and total_usage.total_tokens is not None:
+        return total_usage.total_tokens
+    # Anthropic: sum input + output tokens
+    input_t = getattr(total_usage, "input_tokens", 0) or 0
+    output_t = getattr(total_usage, "output_tokens", 0) or 0
+    if input_t or output_t:
+        return input_t + output_t
+    return 0
+
+
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: type[T_Model] | None,
@@ -175,6 +189,8 @@ def retry_sync(
     total_usage = initialize_usage(mode)
     # Extract timeout from kwargs if available (for global timeout across retries)
     timeout = kwargs.get("timeout")
+    # Extract token_budget to prevent unbounded retry cost (security fix)
+    token_budget: int | None = kwargs.pop("token_budget", None)
     max_retries = initialize_retrying(max_retries, is_async=False, timeout=timeout)
 
     # Pre-extract stream flag to avoid repeated lookup
@@ -186,6 +202,19 @@ def retry_sync(
     try:
         response = None
         for attempt in max_retries:
+            # Check token budget before each attempt (outside tenacity context)
+            if token_budget is not None:
+                tokens_used = get_total_tokens(total_usage)
+                if tokens_used > token_budget:
+                    raise TokenBudgetExceeded(
+                        total_tokens=tokens_used,
+                        token_budget=token_budget,
+                        last_completion=response,
+                        n_attempts=attempt.retry_state.attempt_number - 1,
+                        total_usage=total_usage,
+                        failed_attempts=failed_attempts,
+                    )
+
             with attempt:
                 logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
                 try:
@@ -331,6 +360,8 @@ async def retry_async(
     total_usage = initialize_usage(mode)
     # Extract timeout from kwargs if available (for global timeout across retries)
     timeout = kwargs.get("timeout")
+    # Extract token_budget to prevent unbounded retry cost (security fix)
+    token_budget: int | None = kwargs.pop("token_budget", None)
     max_retries = initialize_retrying(max_retries, is_async=True, timeout=timeout)
 
     # Pre-extract stream flag to avoid repeated lookup
@@ -342,6 +373,19 @@ async def retry_async(
     try:
         response = None
         async for attempt in max_retries:
+            # Check token budget before each attempt (outside tenacity context)
+            if token_budget is not None:
+                tokens_used = get_total_tokens(total_usage)
+                if tokens_used > token_budget:
+                    raise TokenBudgetExceeded(
+                        total_tokens=tokens_used,
+                        token_budget=token_budget,
+                        last_completion=response,
+                        n_attempts=attempt.retry_state.attempt_number - 1,
+                        total_usage=total_usage,
+                        failed_attempts=failed_attempts,
+                    )
+
             logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
                 try:

@@ -335,6 +335,58 @@ class ProviderError(InstructorError):
         super().__init__(f"{provider}: {message}", *args, **kwargs)
 
 
+class TokenBudgetExceeded(InstructorError):
+    """Exception raised when cumulative token usage exceeds the specified budget.
+
+    This is a safety mechanism to prevent unbounded cost during retries.
+    When validation errors trigger retries, each attempt appends error context
+    to the message history, causing exponential token growth. Setting a
+    token_budget stops retries before costs spiral.
+
+    Attributes:
+        total_tokens: The cumulative token count when the budget was exceeded
+        token_budget: The configured budget that was exceeded
+        last_completion: The last completion received before stopping
+        n_attempts: Number of attempts made before stopping
+        total_usage: The full usage object at time of stopping
+
+    Examples:
+        ```python
+        try:
+            response = client.chat.completions.create(
+                response_model=User,
+                max_retries=10,
+                token_budget=5000,  # Stop if cumulative tokens exceed 5000
+                ...
+            )
+        except TokenBudgetExceeded as e:
+            print(f"Stopped after {e.n_attempts} attempts, used {e.total_tokens} tokens")
+        ```
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        total_tokens: int,
+        token_budget: int,
+        last_completion: Any | None = None,
+        n_attempts: int = 0,
+        total_usage: Any = None,
+        failed_attempts: list[FailedAttempt] | None = None,
+        **kwargs: dict[str, Any],
+    ):
+        self.total_tokens = total_tokens
+        self.token_budget = token_budget
+        self.last_completion = last_completion
+        self.n_attempts = n_attempts
+        self.total_usage = total_usage
+        message = (
+            f"Token budget exceeded: used {total_tokens} tokens "
+            f"(budget: {token_budget}) after {n_attempts} attempts"
+        )
+        super().__init__(message, *args, failed_attempts=failed_attempts, **kwargs)
+
+
 class ConfigurationError(InstructorError):
     """Exception raised for configuration-related errors.
 
