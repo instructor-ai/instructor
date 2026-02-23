@@ -1129,3 +1129,89 @@ class TestRecursiveModels:
         assert result.content[0].text == "Introduction paragraph"
         assert result.content[1].title == "Section 1.1"
         assert result.content[1].content[1].title == "Subsection 1.1.1"
+
+
+import sys
+
+if sys.version_info >= (3, 10):
+    from instructor.dsl.partial import MakeFieldsOptional
+
+    class TestPEP604UnionTypes:
+        """Tests for PEP 604 union syntax (str | int) in Partial models.
+
+        Regression tests for https://github.com/567-labs/instructor/issues/2088
+        """
+
+        def test_partial_with_pep604_union(self):
+            """Partial[Model] should not crash on `str | int` fields."""
+
+            class MyResponse(BaseModel):
+                value: str | int
+
+            partial = Partial[MyResponse]
+            assert partial is not None
+
+        def test_partial_with_pep604_union_validates(self):
+            """Partial model with PEP 604 union should validate data."""
+
+            class MyResponse(BaseModel):
+                value: str | int
+
+            PartialModel = Partial[MyResponse].get_partial_model()
+            result = PartialModel.model_validate({"value": "hello"})
+            assert result.value == "hello"
+
+            result = PartialModel.model_validate({"value": 42})
+            assert result.value == 42
+
+        def test_partial_with_pep604_union_in_list(self):
+            """Partial should handle list[str | int] fields."""
+
+            class MyResponse(BaseModel):
+                values: list[str | int]
+
+            partial = Partial[MyResponse]
+            PartialModel = partial.get_partial_model()
+            result = PartialModel.model_validate({"values": ["hello", 42]})
+            assert result.values == ["hello", 42]
+
+        def test_make_fields_optional_with_pep604_union(self):
+            """MakeFieldsOptional path should handle PEP 604 unions."""
+
+            class MyResponse(BaseModel):
+                value: str | int
+
+            partial = Partial[MyResponse, MakeFieldsOptional]
+            PartialModel = partial.get_partial_model()
+
+            # Should accept empty dict (all fields optional)
+            result = PartialModel.model_validate({})
+            assert result.value is None
+
+            # Should accept valid values
+            result = PartialModel.model_validate({"value": "hello"})
+            assert result.value == "hello"
+
+        def test_make_field_optional_with_pep604_union(self):
+            """_make_field_optional should handle PEP 604 union annotations."""
+
+            class MyResponse(BaseModel):
+                value: str | int
+
+            field = MyResponse.model_fields["value"]
+            annotation, new_field = _make_field_optional(field)
+            assert annotation is not None
+            assert new_field.default is None
+
+        def test_partial_with_nested_pep604_union(self):
+            """Partial should handle nested models with PEP 604 unions."""
+
+            class Inner(BaseModel):
+                x: str | int
+
+            class Outer(BaseModel):
+                inner: Inner
+                tag: str | None
+
+            partial = Partial[Outer]
+            assert partial is not None
