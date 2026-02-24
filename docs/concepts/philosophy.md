@@ -3,11 +3,6 @@ title: Philosophy
 description: The principles behind Instructor - why simple beats complex every time.
 ---
 
----
-title: Instructor Philosophy - Design Principles and Approach
-description: Understand the core philosophy behind Instructor's design. Learn about type safety, validation, and the principles that guide structured LLM output development.
----
-
 # Philosophy
 
 Great tools make hard things easy without making easy things hard. That's Instructor.
