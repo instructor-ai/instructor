@@ -12,7 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 import instructor
 from instructor import OpenAISchema, openai_schema
-from instructor.core.exceptions import IncompleteOutputException
+from instructor.core.exceptions import ConfigurationError, IncompleteOutputException
 from instructor.utils import disable_pydantic_error_url
 
 T = TypeVar("T")
@@ -104,7 +104,7 @@ def test_openai_schema() -> None:
 
 
 def test_openai_schema_raises_error() -> None:
-    with pytest.raises(TypeError, match="must be a subclass of pydantic.BaseModel"):
+    with pytest.raises(ConfigurationError, match="must be a Pydantic BaseModel subclass"):
 
         @openai_schema
         class Dummy:
