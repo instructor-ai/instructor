@@ -38,6 +38,17 @@ from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
 
+# Maximum number of retry message pairs (assistant + error) to keep in context.
+# This prevents exponential context growth when an adversarial or broken LLM
+# repeatedly fails validation.  Only the *initial* messages and the last
+# MAX_RETRY_CONTEXT_MESSAGES pairs are retained.
+MAX_RETRY_CONTEXT_MESSAGES: int = 3
+
+# If the same error string is produced this many times in a row the retry
+# loop will stop early to avoid wasting tokens on a clearly unrecoverable
+# situation.
+MAX_DUPLICATE_ERRORS: int = 3
+
 # Type Variables
 T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
@@ -119,6 +130,62 @@ def initialize_usage(mode: Mode) -> CompletionUsage | Any:
     return total_usage
 
 
+def truncate_retry_messages(
+    kwargs: dict[str, Any],
+    initial_message_count: int,
+    max_retry_pairs: int = MAX_RETRY_CONTEXT_MESSAGES,
+) -> dict[str, Any]:
+    """Truncate retry context to prevent exponential message growth.
+
+    During retries, each failed attempt appends messages (the assistant's
+    response and an error/tool message).  After many retries the context
+    can grow unboundedly, amplifying token costs.
+
+    This function keeps the *initial* messages (the user's original request)
+    and only the most recent ``max_retry_pairs * 2`` retry messages so that
+    the LLM still sees the latest feedback without the full history.
+
+    Args:
+        kwargs: The current request keyword arguments (mutated in-place for
+            the ``messages`` / ``contents`` / ``chat_history`` key).
+        initial_message_count: Number of messages present before the first
+            retry attempt.  These are always preserved.
+        max_retry_pairs: Maximum number of retry message pairs to keep.
+
+    Returns:
+        The (potentially modified) kwargs dict.
+    """
+    for key in ("messages", "contents", "chat_history"):
+        msgs = kwargs.get(key)
+        if msgs is not None and isinstance(msgs, list):
+            retry_msgs = msgs[initial_message_count:]
+            max_retry_msgs = max_retry_pairs * 2
+            if len(retry_msgs) > max_retry_msgs:
+                logger.debug(
+                    "Truncating retry context from %d to %d messages",
+                    len(retry_msgs),
+                    max_retry_msgs,
+                )
+                kwargs[key] = msgs[:initial_message_count] + retry_msgs[-max_retry_msgs:]
+            break
+    return kwargs
+
+
+def _check_duplicate_errors(
+    failed_attempts: list[FailedAttempt],
+    threshold: int = MAX_DUPLICATE_ERRORS,
+) -> bool:
+    """Return True if the last *threshold* errors are identical strings.
+
+    When an LLM keeps producing the exact same invalid output, continuing to
+    retry is unlikely to help and only wastes tokens.
+    """
+    if len(failed_attempts) < threshold:
+        return False
+    recent = [str(a.exception) for a in failed_attempts[-threshold:]]
+    return len(set(recent)) == 1
+
+
 def extract_messages(kwargs: dict[str, Any]) -> Any:
     """
     Extract messages from kwargs, helps handles the cohere and gemini chat history cases
@@ -183,6 +250,10 @@ def retry_sync(
     # Track all failed attempts
     failed_attempts: list[FailedAttempt] = []
 
+    # Capture the initial message count so we can truncate retry context later.
+    initial_messages = extract_messages(kwargs)
+    initial_message_count = len(initial_messages) if isinstance(initial_messages, list) else 0
+
     try:
         response = None
         for attempt in max_retries:
@@ -221,6 +292,18 @@ def retry_sync(
                         )
                     )
 
+                    # Early termination: stop if the LLM keeps producing
+                    # the exact same error — further retries are unlikely
+                    # to help and only waste tokens.
+                    if _check_duplicate_errors(failed_attempts):
+                        logger.warning(
+                            "Stopping retries: last %d attempts produced "
+                            "identical errors",
+                            MAX_DUPLICATE_ERRORS,
+                        )
+                        hooks.emit_completion_last_attempt(e)
+                        raise RetryError(attempt.retry_state.outcome) from e
+
                     # Check if this is the last attempt
                     if isinstance(max_retries, Retrying) and hasattr(
                         max_retries, "stop"
@@ -246,6 +329,12 @@ def retry_sync(
                         response=response,
                         exception=e,
                         failed_attempts=failed_attempts,
+                    )
+
+                    # Prevent unbounded context growth by truncating
+                    # older retry messages (keeps initial + last N pairs).
+                    kwargs = truncate_retry_messages(
+                        kwargs, initial_message_count
                     )
                     raise e
                 except Exception as e:
@@ -339,6 +428,10 @@ async def retry_async(
     # Track all failed attempts
     failed_attempts: list[FailedAttempt] = []
 
+    # Capture the initial message count so we can truncate retry context later.
+    initial_messages = extract_messages(kwargs)
+    initial_message_count = len(initial_messages) if isinstance(initial_messages, list) else 0
+
     try:
         response = None
         async for attempt in max_retries:
@@ -378,6 +471,18 @@ async def retry_async(
                         )
                     )
 
+                    # Early termination: stop if the LLM keeps producing
+                    # the exact same error — further retries are unlikely
+                    # to help and only waste tokens.
+                    if _check_duplicate_errors(failed_attempts):
+                        logger.warning(
+                            "Stopping retries: last %d attempts produced "
+                            "identical errors",
+                            MAX_DUPLICATE_ERRORS,
+                        )
+                        hooks.emit_completion_last_attempt(e)
+                        raise RetryError(attempt.retry_state.outcome) from e
+
                     # Check if this is the last attempt
                     if isinstance(max_retries, AsyncRetrying) and hasattr(
                         max_retries, "stop"
@@ -403,6 +508,12 @@ async def retry_async(
                         response=response,
                         exception=e,
                         failed_attempts=failed_attempts,
+                    )
+
+                    # Prevent unbounded context growth by truncating
+                    # older retry messages (keeps initial + last N pairs).
+                    kwargs = truncate_retry_messages(
+                        kwargs, initial_message_count
                     )
                     raise e
                 except Exception as e:
