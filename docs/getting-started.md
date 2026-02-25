@@ -23,6 +23,8 @@ pip install instructor
 
 To use a specific provider, install the appropriate extras:
 
+> Instructor's core install contains only required dependencies. Provider SDKs are optional and must be added explicitly.
+
 ```bash
 # For OpenAI (included by default)
 pip install instructor

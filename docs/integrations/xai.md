@@ -9,7 +9,7 @@ xAI provides access to Grok models through the `xai-sdk` package, enabling struc
 
 ## Quick Start
 
-Install Instructor with xAI support:
+Instructor is distributed without xAI dependencies by default. Install xAI support with the optional `xai` extra:
 
 ```bash
 pip install "instructor[xai]"
