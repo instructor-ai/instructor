@@ -142,8 +142,9 @@ if importlib.util.find_spec("xai_sdk") is not None:
 
 if importlib.util.find_spec("openai") is not None:
     from .providers.perplexity.client import from_perplexity
+    from .providers.inceptionlabs.client import from_inception
 
-    __all__ += ["from_perplexity"]
+    __all__ += ["from_perplexity", "from_inception"]
 
 if (
     importlib.util.find_spec("google")

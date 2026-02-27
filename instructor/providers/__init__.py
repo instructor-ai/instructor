@@ -58,8 +58,10 @@ if importlib.util.find_spec("mistralai") is not None:
 
 if importlib.util.find_spec("openai") is not None:
     from .perplexity.client import from_perplexity  # noqa: F401
+    from .inceptionlabs.client import from_inception  # noqa: F401
 
     __all__.append("from_perplexity")
+    __all__.append("from_inception")
 
 if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
     try:

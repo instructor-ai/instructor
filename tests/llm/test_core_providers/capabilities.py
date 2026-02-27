@@ -121,6 +121,13 @@ PROVIDER_CAPABILITIES: dict[str, set[Capability]] = {
         "validation",
         "create_with_completion",
     },
+    "inceptionlabs": {
+        # Mercury2 dLLM — conservative until streaming is validated
+        "list_extraction",
+        "nested_models",
+        "validation",
+        "create_with_completion",
+    },
 }
 
 

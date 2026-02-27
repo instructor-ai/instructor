@@ -338,6 +338,7 @@ class IterableBase:
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.INCEPTION_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
                         Mode.WRITER_JSON,
@@ -347,6 +348,7 @@ class IterableBase:
                     elif mode in {
                         Mode.TOOLS,
                         Mode.TOOLS_STRICT,
+                        Mode.INCEPTION_TOOLS,
                         Mode.FIREWORKS_TOOLS,
                         Mode.WRITER_TOOLS,
                     }:
@@ -543,6 +545,7 @@ class IterableBase:
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.INCEPTION_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
                         Mode.WRITER_JSON,
@@ -552,6 +555,7 @@ class IterableBase:
                     elif mode in {
                         Mode.TOOLS,
                         Mode.TOOLS_STRICT,
+                        Mode.INCEPTION_TOOLS,
                         Mode.FIREWORKS_TOOLS,
                         Mode.WRITER_TOOLS,
                     }:

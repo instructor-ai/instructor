@@ -179,6 +179,7 @@ nav:
     
     # Fast inference providers
     - Groq: 'integrations/groq.md'
+    - Inception Labs: 'integrations/inceptionlabs.md'
     - Fireworks: 'integrations/fireworks.md'
     - Together: 'integrations/together.md'
     - Anyscale: 'integrations/anyscale.md'

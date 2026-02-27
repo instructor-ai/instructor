@@ -76,6 +76,12 @@ PROVIDER_CONFIGS = [
         "PERPLEXITY_API_KEY",
         "openai",  # Perplexity transports over OpenAI-compatible API
     ),
+    (
+        "inceptionlabs/mercury-2",
+        instructor.Mode.INCEPTION_JSON,
+        "INCEPTION_API_KEY",
+        "openai",  # Inception Labs transports over OpenAI-compatible API
+    ),
 ]
 
 
@@ -149,6 +155,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "perplexity: mark test as requiring Perplexity provider"
     )
+    config.addinivalue_line(
+        "markers", "inceptionlabs: mark test as requiring Inception Labs provider"
+    )
 
 
 # Convenience function to skip if specific provider not available
@@ -171,6 +180,7 @@ def skip_if_provider_unavailable(provider_name: str):
         "fireworks": ("FIREWORKS_API_KEY", "fireworks"),
         "writer": ("WRITER_API_KEY", "writerai"),
         "perplexity": ("PERPLEXITY_API_KEY", "openai"),
+        "inceptionlabs": ("INCEPTION_API_KEY", "openai"),
     }
 
     if provider_name not in config_map:

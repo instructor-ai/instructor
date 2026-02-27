@@ -63,6 +63,10 @@ class Mode(enum.Enum):
     FIREWORKS_TOOLS = "fireworks_tools"
     FIREWORKS_JSON = "fireworks_json"
 
+    # Inception Labs modes
+    INCEPTION_JSON = "inception_json"
+    INCEPTION_TOOLS = "inception_tools"
+
     # Other providers
     WRITER_TOOLS = "writer_tools"
     WRITER_JSON = "writer_json"
@@ -89,6 +93,7 @@ class Mode(enum.Enum):
             cls.GEMINI_TOOLS,
             cls.COHERE_TOOLS,
             cls.CEREBRAS_TOOLS,
+            cls.INCEPTION_TOOLS,
             cls.FIREWORKS_TOOLS,
             cls.WRITER_TOOLS,
             cls.BEDROCK_TOOLS,
@@ -113,6 +118,7 @@ class Mode(enum.Enum):
             cls.GEMINI_JSON,
             cls.COHERE_JSON_SCHEMA,
             cls.CEREBRAS_JSON,
+            cls.INCEPTION_JSON,
             cls.FIREWORKS_JSON,
             cls.WRITER_JSON,
             cls.BEDROCK_JSON,

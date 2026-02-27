@@ -713,6 +713,7 @@ class PartialBase(Generic[T_Model]):
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.INCEPTION_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
                         Mode.WRITER_JSON,
@@ -722,6 +723,7 @@ class PartialBase(Generic[T_Model]):
                     elif mode in {
                         Mode.TOOLS,
                         Mode.TOOLS_STRICT,
+                        Mode.INCEPTION_TOOLS,
                         Mode.FIREWORKS_TOOLS,
                         Mode.WRITER_TOOLS,
                     }:
@@ -937,6 +939,7 @@ class PartialBase(Generic[T_Model]):
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.INCEPTION_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
                         Mode.WRITER_JSON,
@@ -946,6 +949,7 @@ class PartialBase(Generic[T_Model]):
                     elif mode in {
                         Mode.TOOLS,
                         Mode.TOOLS_STRICT,
+                        Mode.INCEPTION_TOOLS,
                         Mode.FIREWORKS_TOOLS,
                         Mode.WRITER_TOOLS,
                     }:

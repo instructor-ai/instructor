@@ -242,6 +242,7 @@ class OpenAISchema(BaseModel):
             Mode.MISTRAL_TOOLS,
             Mode.TOOLS_STRICT,
             Mode.CEREBRAS_TOOLS,
+            Mode.INCEPTION_TOOLS,
             Mode.FIREWORKS_TOOLS,
         }:
             return cls.parse_tools(completion, validation_context, strict)
@@ -252,6 +253,7 @@ class OpenAISchema(BaseModel):
             Mode.MD_JSON,
             Mode.JSON_O1,
             Mode.CEREBRAS_JSON,
+            Mode.INCEPTION_JSON,
             Mode.FIREWORKS_JSON,
             Mode.PERPLEXITY_JSON,
             Mode.OPENROUTER_STRUCTURED_OUTPUTS,

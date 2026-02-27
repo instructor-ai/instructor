@@ -29,6 +29,7 @@ supported_providers = [
     "writer",
     "bedrock",
     "cerebras",
+    "inceptionlabs",
     "deepseek",
     "fireworks",
     "ollama",
@@ -1029,6 +1030,56 @@ def from_provider(
 
             raise ConfigurationError(
                 "The openai package is required to use the Ollama provider. "
+                "Install it with `pip install openai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
+
+    elif provider == "inceptionlabs":
+        try:
+            import openai
+            from instructor import from_inception  # type: ignore[attr-defined]
+            import os
+
+            api_key = api_key or os.environ.get("INCEPTION_API_KEY")
+
+            if not api_key:
+                raise ValueError(
+                    "INCEPTION_API_KEY is not set. "
+                    "Set it with `export INCEPTION_API_KEY=<your-api-key>` or pass it as a kwarg api_key=<your-api-key>"
+                )
+
+            base_url = kwargs.pop("base_url", "https://api.inceptionlabs.ai/v1")
+
+            client = (
+                openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+                if async_client
+                else openai.OpenAI(api_key=api_key, base_url=base_url)
+            )
+
+            result = from_inception(
+                client,
+                model=model_name,
+                mode=mode if mode else instructor.Mode.INCEPTION_JSON,
+                **kwargs,
+            )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
+        except ImportError:
+            from .core.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The openai package is required to use the Inception Labs provider. "
                 "Install it with `pip install openai`."
             ) from None
         except Exception as e:

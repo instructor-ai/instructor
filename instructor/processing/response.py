@@ -90,6 +90,14 @@ from ..providers.cohere.utils import (
     reask_cohere_tools,
 )
 
+# Inception Labs utils
+from ..providers.inceptionlabs.utils import (
+    handle_inception_json,
+    handle_inception_tools,
+    reask_inception_json,
+    reask_inception_tools,
+)
+
 # Fireworks utils
 from ..providers.fireworks.utils import (
     handle_fireworks_json,
@@ -479,6 +487,8 @@ def handle_response_model(
         Mode.VERTEXAI_JSON: handle_vertexai_json,
         Mode.CEREBRAS_JSON: handle_cerebras_json,
         Mode.CEREBRAS_TOOLS: handle_cerebras_tools,
+        Mode.INCEPTION_JSON: handle_inception_json,
+        Mode.INCEPTION_TOOLS: handle_inception_tools,
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
@@ -673,6 +683,9 @@ def handle_reask_kwargs(
         # Cerebras modes
         Mode.CEREBRAS_TOOLS: reask_cerebras_tools,
         Mode.CEREBRAS_JSON: reask_default,
+        # Inception Labs modes
+        Mode.INCEPTION_JSON: reask_inception_json,
+        Mode.INCEPTION_TOOLS: reask_inception_tools,
         # Fireworks modes
         Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
         Mode.FIREWORKS_JSON: reask_fireworks_json,
