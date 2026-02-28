@@ -21,7 +21,6 @@ dependencies = [
     "jiter>=0.6.1,<0.13",
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
-    "diskcache>=5.6.3",
 ]
 name = "instructor"
 version = "1.14.5"
@@ -83,6 +82,7 @@ test-docs = [
     "mistralai<2.0.0,>=1.5.1",
 ]
 anthropic = ["anthropic==0.76.0", "xmltodict>=0.13,<1.1"]
+diskcache = ["diskcache>=5.6.3"]
 groq = ["groq>=0.4.2,<1.1.0"]
 cohere = ["cohere<6.0.0,>=5.1.8"]
 vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
