@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.9, <4.0"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -145,7 +145,7 @@ wheels = [
 
 [[package]]
 name = "anthropic"
-version = "0.71.0"
+version = "0.76.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -157,9 +157,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/82/4f/70682b068d897841f43223df82d96ec1d617435a8b759c4a2d901a50158b/anthropic-0.71.0.tar.gz", hash = "sha256:eb8e6fa86d049061b3ef26eb4cbae0174ebbff21affa6de7b3098da857d8de6a", size = 489102, upload-time = "2025-10-16T15:54:40.08Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6e/be/d11abafaa15d6304826438170f7574d750218f49a106c54424a40cef4494/anthropic-0.76.0.tar.gz", hash = "sha256:e0cae6a368986d5cf6df743dfbb1b9519e6a9eee9c6c942ad8121c0b34416ffe", size = 495483, upload-time = "2026-01-13T18:41:14.908Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/77/073e8ac488f335aec7001952825275582fb8f433737e90f24eeef9d878f6/anthropic-0.71.0-py3-none-any.whl", hash = "sha256:85c5015fcdbdc728390f11b17642a65a4365d03b12b799b18b6cc57e71fdb327", size = 355035, upload-time = "2025-10-16T15:54:38.238Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/70/7b0fd9c1a738f59d3babe2b4212031c34ab7d0fda4ffef15b58a55c5bcea/anthropic-0.76.0-py3-none-any.whl", hash = "sha256:81efa3113901192af2f0fe977d3ec73fdadb1e691586306c4256cd6d5ccc331c", size = 390309, upload-time = "2026-01-13T18:41:13.483Z" },
 ]
 
 [[package]]
@@ -1770,7 +1770,6 @@ version = "1.14.5"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
-    { name = "diskcache" },
     { name = "docstring-parser" },
     { name = "jinja2" },
     { name = "jiter" },
@@ -1812,6 +1811,9 @@ dev = [
     { name = "python-dotenv" },
     { name = "ty" },
     { name = "xmltodict" },
+]
+diskcache = [
+    { name = "diskcache" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -1877,31 +1879,30 @@ writer = [
     { name = "writer-sdk" },
 ]
 xai = [
-    { name = "python-dotenv" },
     { name = "xai-sdk", marker = "python_full_version >= '3.10'" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.71.0" },
-    { name = "anthropic", marker = "extra == 'dev'", specifier = "==0.71.0" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.76.0" },
+    { name = "anthropic", marker = "extra == 'dev'", specifier = "==0.76.0" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
     { name = "coverage", marker = "extra == 'dev'", specifier = ">=7.3.2,<8.0.0" },
     { name = "datasets", marker = "extra == 'datasets'", specifier = ">=3.0.1,<5.0.0" },
-    { name = "diskcache", specifier = ">=5.6.3" },
+    { name = "diskcache", marker = "extra == 'diskcache'", specifier = ">=5.6.3" },
     { name = "diskcache", marker = "extra == 'test-docs'", specifier = ">=5.6.3,<6.0.0" },
     { name = "docstring-parser", specifier = ">=0.16,<1.0" },
-    { name = "fastapi", marker = "extra == 'test-docs'", specifier = ">=0.109.2,<0.121.0" },
+    { name = "fastapi", marker = "extra == 'test-docs'", specifier = ">=0.109.2,<0.129.0" },
     { name = "fireworks-ai", marker = "extra == 'fireworks-ai'", specifier = ">=0.15.4,<1.0.0" },
     { name = "google-cloud-aiplatform", marker = "extra == 'vertexai'", specifier = ">=1.53.0,<2.0.0" },
     { name = "google-genai", marker = "extra == 'google-genai'", specifier = ">=1.5.0" },
     { name = "graphviz", marker = "extra == 'graphviz'", specifier = ">=0.20.3,<1.0.0" },
-    { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<0.34.0" },
+    { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<1.1.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
-    { name = "jiter", specifier = ">=0.6.1,<0.12" },
+    { name = "jiter", specifier = ">=0.6.1,<0.13" },
     { name = "jsonref", marker = "extra == 'dev'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'google-genai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'vertexai'", specifier = ">=1.1.0,<2.0.0" },
@@ -1934,7 +1935,6 @@ requires-dist = [
     { name = "pytest-examples", marker = "extra == 'docs'", specifier = ">=0.0.15" },
     { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.8.0" },
     { name = "python-dotenv", marker = "extra == 'dev'", specifier = ">=1.0.1" },
-    { name = "python-dotenv", marker = "extra == 'xai'", specifier = ">=1.0.0" },
     { name = "redis", marker = "extra == 'test-docs'", specifier = ">=5.0.1,<8.0.0" },
     { name = "requests", specifier = ">=2.32.3,<3.0.0" },
     { name = "rich", specifier = ">=13.7.0,<15.0.0" },
@@ -1949,7 +1949,7 @@ requires-dist = [
     { name = "xmltodict", marker = "extra == 'anthropic'", specifier = ">=0.13,<1.1" },
     { name = "xmltodict", marker = "extra == 'dev'", specifier = ">=0.13,<1.1" },
 ]
-provides-extras = ["dev", "docs", "test-docs", "anthropic", "groq", "cohere", "vertexai", "cerebras-cloud-sdk", "fireworks-ai", "writer", "bedrock", "mistral", "perplexity", "google-genai", "litellm", "xai", "phonenumbers", "graphviz", "sqlmodel", "trafilatura", "pydub", "datasets"]
+provides-extras = ["dev", "docs", "test-docs", "anthropic", "diskcache", "groq", "cohere", "vertexai", "cerebras-cloud-sdk", "fireworks-ai", "writer", "bedrock", "mistral", "perplexity", "google-genai", "litellm", "xai", "phonenumbers", "graphviz", "sqlmodel", "trafilatura", "pydub", "datasets"]
 
 [[package]]
 name = "invoke"
