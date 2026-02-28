@@ -20,6 +20,7 @@ from typing import (  # noqa: UP035
     Any,
     Generic,
     List,  # needed for runtime check against typing.List annotations from user code
+    Literal,
     NoReturn,
     Optional,
     TypeVar,
@@ -114,6 +115,33 @@ def process_potential_object(potential_object, partial_mode, partial_model, **kw
         return _build_partial_object(parsed, model_for_construct, tracker, "", **kwargs)
 
 
+def _has_deterministic_default(field_info: Any) -> bool:
+    """Check if a field has a deterministic default that should be pre-filled.
+
+    Returns True for single-value Literal fields with a matching default,
+    e.g. ``type: Literal["Person"] = "Person"``.
+    """
+    from pydantic.fields import FieldInfo
+
+    if not isinstance(field_info, FieldInfo):
+        return False
+    if field_info.default is None:
+        return False
+    annotation = field_info.annotation
+    # Unwrap Optional[Literal[...]] -> Literal[...]
+    origin = get_origin(annotation)
+    if origin is Union or origin is types.UnionType:
+        args = [a for a in get_args(annotation) if a is not type(None)]
+        if len(args) == 1:
+            annotation = args[0]
+            origin = get_origin(annotation)
+    if origin is Literal:
+        literal_args = get_args(annotation)
+        if len(literal_args) == 1 and literal_args[0] == field_info.default:
+            return True
+    return False
+
+
 def _build_partial_object(
     data: Any,
     model: type[BaseModel],
@@ -171,7 +199,7 @@ def _build_partial_object(
         else:
             result[field_name] = field_value
 
-    # Set missing fields to None or empty nested models
+    # Set missing fields to None, defaults, or empty nested models
     for field_name, field_info in model.model_fields.items():
         if field_name not in result:
             field_type = field_info.annotation
@@ -179,6 +207,8 @@ def _build_partial_object(
                 result[field_name] = _build_partial_object(
                     {}, field_type, tracker, "", **kwargs
                 )
+            elif _has_deterministic_default(field_info):
+                result[field_name] = field_info.default
             else:
                 result[field_name] = None
 
