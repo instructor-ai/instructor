@@ -333,21 +333,27 @@ def update_total_usage(
     response_usage = getattr(response, "usage", None)
     if isinstance(response_usage, OpenAIUsage) and isinstance(total_usage, OpenAIUsage):
         total_usage.completion_tokens += response_usage.completion_tokens or 0
+        response_usage.completion_tokens = total_usage.completion_tokens
+
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
+        response_usage.prompt_tokens = total_usage.prompt_tokens
+
         total_usage.total_tokens += response_usage.total_tokens or 0
+        response_usage.total_tokens = total_usage.total_tokens
+
         if (rtd := response_usage.completion_tokens_details) and (
             ttd := total_usage.completion_tokens_details
         ):
-            ttd.audio_tokens = (ttd.audio_tokens or 0) + (rtd.audio_tokens or 0)
-            ttd.reasoning_tokens = (ttd.reasoning_tokens or 0) + (
+            rtd.audio_tokens = ttd.audio_tokens = (ttd.audio_tokens or 0) + (rtd.audio_tokens or 0)
+            rtd.reasoning_tokens = ttd.reasoning_tokens = (ttd.reasoning_tokens or 0) + (
                 rtd.reasoning_tokens or 0
             )
         if (rpd := response_usage.prompt_tokens_details) and (
             tpd := total_usage.prompt_tokens_details
         ):
-            tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
-            tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # type: ignore  # Replace each response usage with the total usage
+            rpd.audio_tokens = tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
+            rpd.cached_tokens = tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
+
         return response
 
     # Anthropic usage.
