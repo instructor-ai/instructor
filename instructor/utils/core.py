@@ -347,7 +347,25 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # type: ignore  # Replace each response usage with the total usage
+        # Update usage counts in-place when possible to preserve the runtime type of
+        # response.usage.  Replacing it wholesale with `total_usage` (an OpenAIUsage
+        # instance) would discard any subclass-specific methods added by integrations
+        # such as litellm, which adds a `.get()` method that its Langfuse logger
+        # depends on.  Updating in-place keeps the subclass intact while still
+        # reflecting the accumulated token counts.
+        try:
+            response_usage.completion_tokens = total_usage.completion_tokens
+            response_usage.prompt_tokens = total_usage.prompt_tokens
+            response_usage.total_tokens = total_usage.total_tokens
+            if total_usage.completion_tokens_details is not None:
+                response_usage.completion_tokens_details = (
+                    total_usage.completion_tokens_details
+                )
+            if total_usage.prompt_tokens_details is not None:
+                response_usage.prompt_tokens_details = total_usage.prompt_tokens_details
+        except Exception:
+            # Fall back to the old behaviour for types that don't support mutation.
+            response.usage = total_usage  # type: ignore
         return response
 
     # Anthropic usage.
