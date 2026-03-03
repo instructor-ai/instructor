@@ -19,7 +19,7 @@ from ..processing.response import (
     process_response_async,
     handle_reask_kwargs,
 )
-from ..utils import update_total_usage
+from ..utils import update_total_usage, get_total_tokens
 from openai.types.chat import ChatCompletion
 from openai.types.completion_usage import (
     CompletionUsage,
@@ -150,6 +150,7 @@ def retry_sync(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model | None:
     """
     Retry a synchronous function upon specified exceptions.
@@ -186,6 +187,24 @@ def retry_sync(
     try:
         response = None
         for attempt in max_retries:
+            # Stop retries if token budget exceeded (skip first attempt)
+            if (
+                token_budget is not None
+                and attempt.retry_state.attempt_number > 1
+                and get_total_tokens(total_usage) > token_budget
+            ):
+                raise InstructorRetryException(
+                    Exception(
+                        f"Token budget exceeded: "
+                        f"{get_total_tokens(total_usage)} > {token_budget}"
+                    ),
+                    last_completion=response,
+                    n_attempts=attempt.retry_state.attempt_number - 1,
+                    messages=extract_messages(kwargs),
+                    create_kwargs=kwargs,
+                    total_usage=total_usage,
+                    failed_attempts=failed_attempts,
+                )
             with attempt:
                 logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
                 try:
@@ -306,6 +325,7 @@ async def retry_async(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model | None:
     """
     Retry an asynchronous function upon specified exceptions.
@@ -343,6 +363,24 @@ async def retry_async(
         response = None
         async for attempt in max_retries:
             logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
+            # Stop retries if token budget exceeded (skip first attempt)
+            if (
+                token_budget is not None
+                and attempt.retry_state.attempt_number > 1
+                and get_total_tokens(total_usage) > token_budget
+            ):
+                raise InstructorRetryException(
+                    Exception(
+                        f"Token budget exceeded: "
+                        f"{get_total_tokens(total_usage)} > {token_budget}"
+                    ),
+                    last_completion=response,
+                    n_attempts=attempt.retry_state.attempt_number - 1,
+                    messages=extract_messages(kwargs),
+                    create_kwargs=kwargs,
+                    total_usage=total_usage,
+                    failed_attempts=failed_attempts,
+                )
             with attempt:
                 try:
                     hooks.emit_completion_arguments(*args, **kwargs)

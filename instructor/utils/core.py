@@ -380,6 +380,32 @@ def update_total_usage(
     return response
 
 
+def get_total_tokens(usage: Any) -> int:
+    """Extract total token count from OpenAI or Anthropic usage objects.
+
+    Args:
+        usage: A CompletionUsage (OpenAI) or Usage (Anthropic) object.
+
+    Returns:
+        Total tokens consumed. Returns 0 if usage is None or unrecognized.
+    """
+    if usage is None:
+        return 0
+
+    # OpenAI path: has total_tokens attribute
+    total = getattr(usage, "total_tokens", None)
+    if total is not None:
+        return int(total)
+
+    # Anthropic path: sum input_tokens + output_tokens
+    input_t = getattr(usage, "input_tokens", None)
+    output_t = getattr(usage, "output_tokens", None)
+    if input_t is not None and output_t is not None:
+        return int(input_t) + int(output_t)
+
+    return 0
+
+
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     """Dumps a message to a dict, to be returned to the OpenAI API.
     Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
