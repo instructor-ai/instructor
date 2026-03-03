@@ -8,7 +8,14 @@ from jiter import from_json
 from pydantic import BaseModel, Field, ValidationError
 
 import instructor
-from instructor.dsl.partial import Partial, PartialLiteralMixin, _make_field_optional
+from instructor.dsl.partial import (
+    Partial,
+    PartialLiteralMixin,
+    _build_partial_object,
+    _get_single_literal_value,
+    _make_field_optional,
+)
+from instructor.dsl.json_tracker import JsonCompleteness
 import os
 from openai import OpenAI, AsyncOpenAI
 
@@ -1129,3 +1136,140 @@ class TestRecursiveModels:
         assert result.content[0].text == "Introduction paragraph"
         assert result.content[1].title == "Section 1.1"
         assert result.content[1].content[1].title == "Subsection 1.1.1"
+
+
+class TestSingleLiteralDefaultInPartialStreaming:
+    """Tests for #2054: Single-value Literal fields should be populated immediately
+    in partial streaming responses, not deferred until the end."""
+
+    def test_single_literal_field_present_from_first_partial(self):
+        """A Literal['Person'] field should appear in every partial, not just the last."""
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+        # Simulate streaming: the LLM sends name first, then age, type comes last
+        chunks = [
+            '{"name": "Al',
+            'ice",',
+            ' "age": 3',
+            "0,",
+            ' "type": "Person"}',
+        ]
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        # From the very first partial, type should be "Person" (not None)
+        for result in results:
+            assert result.type == "Person", (
+                f"Expected type='Person' in every partial, got type={result.type!r}"
+            )
+
+    def test_single_literal_field_present_when_not_in_json(self):
+        """Even if the LLM hasn't streamed the literal field yet, it should be filled."""
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+        # JSON that never includes the "type" field
+        chunks = ['{"name": "Bob", "age": 25']
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        assert len(results) > 0
+        # type should be populated even though JSON doesn't contain it
+        assert results[0].type == "Person"
+
+    def test_multi_literal_field_not_auto_populated(self):
+        """Literal fields with multiple possible values should NOT be auto-populated."""
+
+        class Task(BaseModel):
+            status: Literal["active", "inactive"]
+            name: str
+
+        PartialModel = Partial[Task]
+        # JSON without the status field
+        chunks = ['{"name": "my task']
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        assert len(results) > 0
+        # status has multiple possible values, should remain None
+        assert results[0].status is None
+
+    def test_get_single_literal_value_helper(self):
+        """Test the _get_single_literal_value helper function."""
+
+        class Model(BaseModel):
+            single: Literal["only"] = "only"
+            multi: Literal["a", "b"] = "a"
+            regular: str = "default"
+            no_default: int
+
+        single_info = Model.model_fields["single"]
+        multi_info = Model.model_fields["multi"]
+        regular_info = Model.model_fields["regular"]
+        no_default_info = Model.model_fields["no_default"]
+
+        is_single, val = _get_single_literal_value(single_info)
+        assert is_single is True
+        assert val == "only"
+
+        is_single, val = _get_single_literal_value(multi_info)
+        assert is_single is False
+
+        is_single, val = _get_single_literal_value(regular_info)
+        assert is_single is False
+
+        is_single, val = _get_single_literal_value(no_default_info)
+        assert is_single is False
+
+    def test_build_partial_object_fills_single_literal(self):
+        """_build_partial_object should fill single-value Literal fields for missing keys."""
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        tracker = JsonCompleteness()
+        tracker.analyze('{"name": "Alice"}')
+
+        result = _build_partial_object({"name": "Alice"}, Person, tracker, "")
+        assert result.type == "Person"
+        assert result.name == "Alice"
+        assert result.age is None
+
+    def test_single_literal_int_value(self):
+        """Single-value Literal with an int value should also be populated."""
+
+        class Config(BaseModel):
+            version: Literal[1] = 1
+            data: str
+
+        PartialModel = Partial[Config]
+        chunks = ['{"data": "hel', 'lo"}']
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        for result in results:
+            assert result.version == 1
+
+    def test_nested_model_with_single_literal(self):
+        """Single-value Literal fields in nested models should also be populated."""
+
+        class Inner(BaseModel):
+            kind: Literal["inner"] = "inner"
+            value: str
+
+        class Outer(BaseModel):
+            type: Literal["outer"] = "outer"
+            child: Inner
+
+        PartialModel = Partial[Outer]
+        chunks = ['{"child": {"value": "te', 'st"}}']
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        assert results[-1].type == "outer"

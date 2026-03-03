@@ -20,6 +20,7 @@ from typing import (  # noqa: UP035
     Any,
     Generic,
     List,  # needed for runtime check against typing.List annotations from user code
+    Literal,
     NoReturn,
     Optional,
     TypeVar,
@@ -73,6 +74,20 @@ class PartialLiteralMixin:
             DeprecationWarning,
             stacklevel=2,
         )
+
+
+def _get_single_literal_value(field_info: FieldInfo) -> tuple[bool, Any]:
+    """Check if a field is a single-value Literal type and return its value.
+
+    Returns (True, value) if the field's annotation is Literal with exactly one
+    possible value, (False, None) otherwise.
+    """
+    annotation = field_info.annotation
+    if get_origin(annotation) is Literal:
+        args = get_args(annotation)
+        if len(args) == 1:
+            return True, args[0]
+    return False, None
 
 
 def remove_control_chars(s):
@@ -171,11 +186,15 @@ def _build_partial_object(
         else:
             result[field_name] = field_value
 
-    # Set missing fields to None or empty nested models
+    # Set missing fields to their determined value, or None
     for field_name, field_info in model.model_fields.items():
         if field_name not in result:
             field_type = field_info.annotation
-            if isinstance(field_type, type) and issubclass(field_type, BaseModel):
+            # Single-value Literal fields are fully determined — use immediately
+            is_single_literal, literal_value = _get_single_literal_value(field_info)
+            if is_single_literal:
+                result[field_name] = literal_value
+            elif isinstance(field_type, type) and issubclass(field_type, BaseModel):
                 result[field_name] = _build_partial_object(
                     {}, field_type, tracker, "", **kwargs
                 )
