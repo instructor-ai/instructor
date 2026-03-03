@@ -453,6 +453,93 @@ def handle_bedrock_json(
     return response_model, new_kwargs
 
 
+def reask_bedrock_md_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for Bedrock MD_JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (assistant message then user message requesting JSON correction)
+    """
+    kwargs = kwargs.copy()
+    reask_msgs = [response["output"]["message"]]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": (
+                        "Correct your JSON ONLY RESPONSE, based on the following errors:\n"
+                        f"{exception}\n"
+                        "Return the correct JSON response within a ```json codeblock."
+                    )
+                },
+            ],
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def handle_bedrock_md_json(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Bedrock MD_JSON mode for models that produce <think>...</think> tags
+    or other non-JSON preamble before the actual JSON output (e.g. Kimi K2 Thinking).
+
+    This mode instructs the model to return JSON inside a markdown codeblock,
+    then strips any think tags and extracts the JSON during parsing.
+
+    Kwargs modifications:
+    - Adds/Modifies: "system" (prepends JSON instructions)
+    - Adds: user message requesting JSON in markdown codeblock
+    - Applies: _prepare_bedrock_converse_kwargs_internal transformations
+    """
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+    json_message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself.
+        Return the correct JSON response within a ```json codeblock.
+        """
+    )
+    system_message = new_kwargs.pop("system", None)
+    if not system_message:
+        new_kwargs["system"] = [{"text": json_message}]
+    else:
+        if not isinstance(system_message, list):
+            raise ValueError(
+                """system must be a list of SystemMessage, refer to:
+                https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
+                """
+            )
+        system_message.append({"text": json_message})
+        new_kwargs["system"] = system_message
+
+    # Add user message requesting markdown codeblock response
+    if "messages" in new_kwargs:
+        new_kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA"
+                    }
+                ],
+            }
+        )
+
+    return response_model, new_kwargs
+
+
 def handle_bedrock_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
@@ -487,6 +574,10 @@ BEDROCK_HANDLERS = {
     Mode.BEDROCK_JSON: {
         "reask": reask_bedrock_json,
         "response": handle_bedrock_json,
+    },
+    Mode.BEDROCK_MD_JSON: {
+        "reask": reask_bedrock_md_json,
+        "response": handle_bedrock_md_json,
     },
     Mode.BEDROCK_TOOLS: {
         "reask": reask_bedrock_tools,

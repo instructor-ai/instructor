@@ -68,6 +68,7 @@ class Mode(enum.Enum):
     WRITER_JSON = "writer_json"
     BEDROCK_TOOLS = "bedrock_tools"
     BEDROCK_JSON = "bedrock_json"
+    BEDROCK_MD_JSON = "bedrock_md_json"
     PERPLEXITY_JSON = "perplexity_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
@@ -116,6 +117,7 @@ class Mode(enum.Enum):
             cls.FIREWORKS_JSON,
             cls.WRITER_JSON,
             cls.BEDROCK_JSON,
+            cls.BEDROCK_MD_JSON,
             cls.PERPLEXITY_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,

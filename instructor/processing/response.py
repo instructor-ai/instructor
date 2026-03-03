@@ -71,8 +71,10 @@ from ..providers.anthropic.utils import (
 # Bedrock utils
 from ..providers.bedrock.utils import (
     handle_bedrock_json,
+    handle_bedrock_md_json,
     handle_bedrock_tools,
     reask_bedrock_json,
+    reask_bedrock_md_json,
     reask_bedrock_tools,
 )
 
@@ -484,6 +486,7 @@ def handle_response_model(
         Mode.WRITER_TOOLS: handle_writer_tools,
         Mode.WRITER_JSON: handle_writer_json,
         Mode.BEDROCK_JSON: handle_bedrock_json,
+        Mode.BEDROCK_MD_JSON: handle_bedrock_md_json,
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
@@ -682,6 +685,7 @@ def handle_reask_kwargs(
         # Bedrock modes
         Mode.BEDROCK_TOOLS: reask_bedrock_tools,
         Mode.BEDROCK_JSON: reask_bedrock_json,
+        Mode.BEDROCK_MD_JSON: reask_bedrock_md_json,
         # Perplexity modes
         Mode.PERPLEXITY_JSON: reask_perplexity_json,
         # OpenRouter modes

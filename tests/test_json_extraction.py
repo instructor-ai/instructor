@@ -391,3 +391,167 @@ class TestBedrockJSONParsing:
         assert result.name == "First"
         assert result.age == 30
         assert result.skills == ["python"]
+
+
+class TestThinkTagStripping:
+    """Test that <think> tags are stripped from content before JSON extraction."""
+
+    def test_extract_json_strips_think_tags(self):
+        """Test extract_json_from_codeblock strips <think>...</think> blocks."""
+        content = (
+            '<think>Let me reason about this...</think>\n{"name": "Alice", "age": 30}'
+        )
+        result = extract_json_from_codeblock(content)
+        parsed = json.loads(result)
+        assert parsed["name"] == "Alice"
+        assert parsed["age"] == 30
+
+    def test_extract_json_strips_multiline_think_tags(self):
+        """Test stripping multiline think tags."""
+        content = (
+            "<think>\nStep 1: Analyze the request\n"
+            "Step 2: Build the response\n</think>\n"
+            '```json\n{"name": "Bob", "age": 25}\n```'
+        )
+        result = extract_json_from_codeblock(content)
+        parsed = json.loads(result)
+        assert parsed["name"] == "Bob"
+        assert parsed["age"] == 25
+
+    def test_extract_json_no_think_tags(self):
+        """Test that normal JSON without think tags still works."""
+        content = '{"name": "Charlie", "age": 35}'
+        result = extract_json_from_codeblock(content)
+        parsed = json.loads(result)
+        assert parsed["name"] == "Charlie"
+        assert parsed["age"] == 35
+
+
+class TestBedrockMdJsonParsing:
+    """Test the parse_bedrock_md_json functionality."""
+
+    def test_parse_bedrock_md_json_with_think_tags(self):
+        """Test parsing Bedrock MD_JSON response with think tags."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {
+                            "text": (
+                                "<think>Let me analyze this request and determine "
+                                "the correct JSON output.</think>\n"
+                                '```json\n{"name": "Kimi", "age": 28, "skills": ["reasoning"]}\n```'
+                            )
+                        }
+                    ]
+                }
+            }
+        }
+
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_md_json(completion))
+        assert result.name == "Kimi"
+        assert result.age == 28
+        assert result.skills == ["reasoning"]
+
+    def test_parse_bedrock_md_json_plain_json_after_think(self):
+        """Test parsing when model returns plain JSON after think tags (no codeblock)."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {
+                            "text": (
+                                "<think>Reasoning about the response...</think>\n"
+                                '{"name": "Test", "age": 30, "skills": ["python"]}'
+                            )
+                        }
+                    ]
+                }
+            }
+        }
+
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_md_json(completion))
+        assert result.name == "Test"
+        assert result.age == 30
+
+    def test_parse_bedrock_md_json_no_think_tags(self):
+        """Test parsing Bedrock MD_JSON without think tags (regular codeblock)."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {
+                            "text": '```json\n{"name": "Regular", "age": 25, "skills": []}\n```'
+                        }
+                    ]
+                }
+            }
+        }
+
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_md_json(completion))
+        assert result.name == "Regular"
+        assert result.age == 25
+
+    def test_parse_bedrock_md_json_multiline_think(self):
+        """Test parsing with extensive multiline think content."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {
+                            "text": (
+                                "<think>\n"
+                                "Step 1: The user wants to extract a person.\n"
+                                "Step 2: I need to return JSON.\n"
+                                "Step 3: Let me format it properly.\n"
+                                "</think>\n"
+                                '{"name": "Deep Thinker", "age": 42, "skills": ["analysis", "logic"]}'
+                            )
+                        }
+                    ]
+                }
+            }
+        }
+
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_md_json(completion))
+        assert result.name == "Deep Thinker"
+        assert result.age == 42
+        assert "analysis" in result.skills
+
+    def test_parse_bedrock_md_json_no_text_content(self):
+        """Test parsing Bedrock MD_JSON when no text content is found."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {"reasoningText": "Only reasoning, no text response"},
+                    ]
+                }
+            }
+        }
+
+        with pytest.raises(ValueError) as excinfo:
+            PersonSchema.parse_bedrock_md_json(completion)
+        assert "No text content found" in str(excinfo.value)
+
+    def test_parse_bedrock_md_json_with_reasoning_and_think(self):
+        """Test parsing with both reasoningText blocks and think tags in text."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {"reasoningText": "Internal reasoning content..."},
+                        {
+                            "text": (
+                                "<think>Additional visible reasoning</think>\n"
+                                '{"name": "Combined", "age": 33, "skills": ["mixed"]}'
+                            )
+                        },
+                    ]
+                }
+            }
+        }
+
+        result = cast(PersonSchema, PersonSchema.parse_bedrock_md_json(completion))
+        assert result.name == "Combined"
+        assert result.age == 33

@@ -168,6 +168,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.BEDROCK_JSON:
             return cls.parse_bedrock_json(completion, validation_context, strict)
 
+        if mode == Mode.BEDROCK_MD_JSON:
+            return cls.parse_bedrock_md_json(completion, validation_context, strict)
+
         if mode == Mode.BEDROCK_TOOLS:
             return cls.parse_bedrock_tools(completion, validation_context, strict)
 
@@ -448,6 +451,39 @@ class OpenAISchema(BaseModel):
             text = re.sub(r"```?json|\\n", "", text).strip()
         else:
             text = completion.text
+        return cls.model_validate_json(text, context=validation_context, strict=strict)
+
+    @classmethod
+    def parse_bedrock_md_json(
+        cls: type[BaseModel],
+        completion: Any,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        """Parse Bedrock MD_JSON responses, stripping <think>...</think> tags
+        and markdown codeblocks before extracting JSON.
+
+        This is useful for models like Kimi K2 Thinking that prepend
+        reasoning in <think> tags before the actual JSON output.
+        """
+        if isinstance(completion, dict):
+            content = completion["output"]["message"]["content"]
+            text_content = next((c for c in content if "text" in c), None)
+            if not text_content:
+                raise ResponseParsingError(
+                    "Unexpected format. No text content found in Bedrock response.",
+                    mode="BEDROCK_MD_JSON",
+                    raw_response=completion,
+                )
+            text = text_content["text"]
+            # Strip <think>...</think> tags (including multiline content)
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+            # Extract JSON from markdown codeblock or raw text
+            text = extract_json_from_codeblock(text)
+        else:
+            text = completion.text
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+            text = extract_json_from_codeblock(text)
         return cls.model_validate_json(text, context=validation_context, strict=strict)
 
     @classmethod

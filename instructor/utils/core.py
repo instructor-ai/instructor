@@ -8,6 +8,7 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+import re
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
     TYPE_CHECKING,
@@ -44,9 +45,10 @@ def extract_json_from_codeblock(content: str) -> str:
     """
     Extract JSON from a string that may contain extra text.
 
-    The function looks for the first '{' and the last '}' in the string and
-    returns the content between them, inclusive. If no braces are found,
-    the original string is returned.
+    Strips ``<think>...</think>`` blocks (e.g. from reasoning models like
+    Kimi K2 Thinking) before locating the JSON. Then looks for the first
+    ``{`` and the last ``}`` and returns the content between them, inclusive.
+    If no braces are found, the original string is returned.
 
     Args:
         content: The string that may contain JSON
@@ -54,6 +56,8 @@ def extract_json_from_codeblock(content: str) -> str:
     Returns:
         The extracted JSON string
     """
+    # Strip <think>...</think> blocks that some models prepend
+    content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
 
     first_brace = content.find("{")
     last_brace = content.rfind("}")
