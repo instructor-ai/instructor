@@ -1,5 +1,8 @@
 import json
 import pytest
+from openai.types import CompletionUsage
+from openai.types.chat import ChatCompletion
+from openai.types.chat.chat_completion import Choice, ChatCompletionMessage
 from instructor.utils import (
     classproperty,
     extract_json_from_codeblock,
@@ -9,6 +12,7 @@ from instructor.utils import (
     extract_system_messages,
     combine_system_messages,
 )
+from instructor.utils.core import update_total_usage
 
 
 def test_extract_json_from_codeblock():
@@ -386,3 +390,88 @@ def test_combine_system_messages_preserve_cache_control():
         },
     ]
     assert result == expected
+
+
+class CustomUsage(CompletionUsage):
+    """Simulates a provider-specific Usage subclass (e.g. litellm's Usage)."""
+
+    def get(self, key: str, default=None):
+        """Provider-specific method that would be lost if type is replaced."""
+        return getattr(self, key, default)
+
+
+def _make_chat_completion(usage):
+    """Helper to create a ChatCompletion with given usage."""
+    return ChatCompletion(
+        id="chatcmpl-test",
+        choices=[
+            Choice(
+                finish_reason="stop",
+                index=0,
+                message=ChatCompletionMessage(role="assistant", content="test"),
+            )
+        ],
+        created=0,
+        model="test",
+        object="chat.completion",
+        usage=usage,
+    )
+
+
+def test_update_total_usage_preserves_usage_subclass_type():
+    """Test that update_total_usage preserves the original usage object type.
+
+    When response.usage is a subclass of CompletionUsage (e.g. litellm's Usage),
+    the function should copy accumulated totals back to the original object
+    instead of replacing it, preserving provider-specific methods. Fixes #2113.
+    """
+    custom_usage = CustomUsage(
+        completion_tokens=10,
+        prompt_tokens=20,
+        total_tokens=30,
+    )
+    response = _make_chat_completion(custom_usage)
+    total_usage = CompletionUsage(
+        completion_tokens=0,
+        prompt_tokens=0,
+        total_tokens=0,
+    )
+
+    result = update_total_usage(response, total_usage)
+
+    assert result is not None
+    # The usage type must be preserved (not replaced with plain CompletionUsage)
+    assert type(result.usage) is CustomUsage
+    # Provider-specific methods should still work
+    assert result.usage.get("completion_tokens") == 10
+    # Token counts should be accumulated correctly
+    assert result.usage.completion_tokens == 10
+    assert result.usage.prompt_tokens == 20
+    assert result.usage.total_tokens == 30
+
+
+def test_update_total_usage_accumulates_across_retries():
+    """Test that totals accumulate across multiple calls (simulating retries)."""
+    total_usage = CompletionUsage(
+        completion_tokens=0,
+        prompt_tokens=0,
+        total_tokens=0,
+    )
+
+    # First retry
+    r1 = _make_chat_completion(
+        CustomUsage(completion_tokens=5, prompt_tokens=10, total_tokens=15)
+    )
+    update_total_usage(r1, total_usage)
+
+    # Second retry
+    r2 = _make_chat_completion(
+        CustomUsage(completion_tokens=7, prompt_tokens=12, total_tokens=19)
+    )
+    result = update_total_usage(r2, total_usage)
+
+    assert result is not None
+    assert type(result.usage) is CustomUsage
+    assert result.usage.completion_tokens == 5 + 7
+    assert result.usage.prompt_tokens == 10 + 12
+    assert result.usage.total_tokens == 15 + 19
