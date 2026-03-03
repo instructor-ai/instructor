@@ -57,20 +57,24 @@ def llm_validator(
                 },
                 {
                     "role": "user",
-                    "content": f"Does `{v}` follow the rules: {statement}",
+                    "content": (
+                        "Evaluate whether the following value meets the "
+                        "specified rules.\n\n"
+                        f"<value>\n{v}\n</value>\n\n"
+                        f"<rules>\n{statement}\n</rules>\n\n"
+                        "Does the value follow the rules?"
+                    ),
                 },
             ],
             model=model,
             temperature=temperature,
         )
 
-        # If the response is  not valid, return the reason, this could be used in
-        # the future to generate a better response, via reasking mechanism.
-        assert resp.is_valid, resp.reason
-
-        if allow_override and not resp.is_valid and resp.fixed_value is not None:
-            # If the value is not valid, but we allow override, return the fixed value
-            return resp.fixed_value
+        # If the response is not valid, either override with fixed value or raise
+        if not resp.is_valid:
+            if allow_override and resp.fixed_value is not None:
+                return resp.fixed_value
+            raise AssertionError(resp.reason)
         return v
 
     return llm
