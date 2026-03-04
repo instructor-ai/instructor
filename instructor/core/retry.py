@@ -10,6 +10,7 @@ from .exceptions import (
     InstructorRetryException,
     AsyncValidationError,
     FailedAttempt,
+    TokenBudgetExceeded,
     ValidationError as InstructorValidationError,
 )
 from .hooks import Hooks
@@ -37,6 +38,28 @@ from tenacity import (
 from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
+
+
+def _get_total_tokens(total_usage: CompletionUsage | Any) -> int:
+    """Extract the total token count from a usage object.
+
+    Supports both OpenAI CompletionUsage (total_tokens) and Anthropic Usage
+    (input_tokens + output_tokens).
+
+    Args:
+        total_usage: The cumulative usage object being tracked.
+
+    Returns:
+        int: The total number of tokens consumed so far.
+    """
+    # OpenAI style
+    if hasattr(total_usage, "total_tokens"):
+        return int(total_usage.total_tokens or 0)
+    # Anthropic style
+    if hasattr(total_usage, "input_tokens") and hasattr(total_usage, "output_tokens"):
+        return int(total_usage.input_tokens or 0) + int(total_usage.output_tokens or 0)
+    return 0
+
 
 # Type Variables
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -150,6 +173,7 @@ def retry_sync(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    max_tokens_budget: int | None = None,
 ) -> T_Model | None:
     """
     Retry a synchronous function upon specified exceptions.
@@ -164,12 +188,17 @@ def retry_sync(
         strict (Optional[bool], optional): Strict mode flag. Defaults to None.
         mode (Mode, optional): The mode of operation. Defaults to Mode.TOOLS.
         hooks (Optional[Hooks], optional): Hooks for emitting events. Defaults to None.
+        max_tokens_budget (Optional[int], optional): Maximum total tokens allowed across all retry
+            attempts. When exceeded, raises TokenBudgetExceeded instead of continuing to retry.
+            This prevents unbounded token consumption from adversarial or malfunctioning LLM
+            responses. Defaults to None (no limit).
 
     Returns:
         T_Model | None: The processed response model or None.
 
     Raises:
         InstructorRetryException: If all retry attempts fail.
+        TokenBudgetExceeded: If the cumulative token usage exceeds max_tokens_budget.
     """
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
@@ -185,8 +214,25 @@ def retry_sync(
 
     try:
         response = None
+        _last_attempt_number = 0
         for attempt in max_retries:
+            # Check token budget before each retry attempt (after the first)
+            if max_tokens_budget is not None and _last_attempt_number > 0:
+                tokens_used = _get_total_tokens(total_usage)
+                if tokens_used > max_tokens_budget:
+                    logger.warning(
+                        f"Token budget exceeded: {tokens_used}/{max_tokens_budget}"
+                    )
+                    raise TokenBudgetExceeded(
+                        total_tokens=tokens_used,
+                        max_tokens_budget=max_tokens_budget,
+                        n_attempts=_last_attempt_number,
+                        last_completion=response,
+                        total_usage=total_usage,
+                        failed_attempts=failed_attempts,
+                    )
             with attempt:
+                _last_attempt_number = attempt.retry_state.attempt_number
                 logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
                 try:
                     hooks.emit_completion_arguments(*args, **kwargs)
@@ -306,6 +352,7 @@ async def retry_async(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    max_tokens_budget: int | None = None,
 ) -> T_Model | None:
     """
     Retry an asynchronous function upon specified exceptions.
@@ -320,12 +367,17 @@ async def retry_async(
         strict (Optional[bool], optional): Strict mode flag. Defaults to None.
         mode (Mode, optional): The mode of operation. Defaults to Mode.TOOLS.
         hooks (Optional[Hooks], optional): Hooks for emitting events. Defaults to None.
+        max_tokens_budget (Optional[int], optional): Maximum total tokens allowed across all retry
+            attempts. When exceeded, raises TokenBudgetExceeded instead of continuing to retry.
+            This prevents unbounded token consumption from adversarial or malfunctioning LLM
+            responses. Defaults to None (no limit).
 
     Returns:
         T_Model | None: The processed response model or None.
 
     Raises:
         InstructorRetryException: If all retry attempts fail.
+        TokenBudgetExceeded: If the cumulative token usage exceeds max_tokens_budget.
     """
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
@@ -341,7 +393,24 @@ async def retry_async(
 
     try:
         response = None
+        _last_attempt_number = 0
         async for attempt in max_retries:
+            # Check token budget before each retry attempt (after the first)
+            if max_tokens_budget is not None and _last_attempt_number > 0:
+                tokens_used = _get_total_tokens(total_usage)
+                if tokens_used > max_tokens_budget:
+                    logger.warning(
+                        f"Token budget exceeded: {tokens_used}/{max_tokens_budget}"
+                    )
+                    raise TokenBudgetExceeded(
+                        total_tokens=tokens_used,
+                        max_tokens_budget=max_tokens_budget,
+                        n_attempts=_last_attempt_number,
+                        last_completion=response,
+                        total_usage=total_usage,
+                        failed_attempts=failed_attempts,
+                    )
+            _last_attempt_number = attempt.retry_state.attempt_number
             logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
                 try:

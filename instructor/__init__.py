@@ -31,6 +31,7 @@ from .utils.providers import Provider
 from .auto_client import from_provider
 from .batch import BatchProcessor, BatchRequest, BatchJob
 from .distil import FinetuneFormat, Instructions
+from .core.exceptions import TokenBudgetExceeded
 
 # Backward compatibility: Re-export removed functions
 from .processing.response import handle_response_model
@@ -64,6 +65,7 @@ __all__ = [
     "BatchJob",
     "llm_validator",
     "openai_moderation",
+    "TokenBudgetExceeded",
     "hooks",
     "client",  # Backward compatibility
     # Backward compatibility exports

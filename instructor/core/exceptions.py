@@ -133,6 +133,60 @@ class FailedAttempt(NamedTuple):
     completion: Any | None = None
 
 
+class TokenBudgetExceeded(InstructorError):
+    """Exception raised when the cumulative token usage exceeds a configured budget.
+
+    This exception is raised during the retry loop when the total tokens consumed
+    across all retry attempts exceeds the user-specified ``max_tokens_budget``.
+    It acts as a safety valve to prevent unbounded cost amplification when an
+    adversarial or malfunctioning LLM continuously returns invalid responses.
+
+    Attributes:
+        total_tokens: The cumulative token count when the budget was exceeded.
+        max_tokens_budget: The configured budget limit.
+        n_attempts: The number of attempts made before the budget was exceeded.
+
+    Examples:
+        ```python
+        try:
+            response = client.chat.completions.create(
+                response_model=MyModel,
+                max_retries=10,
+                max_tokens_budget=5000,  # Stop retrying after 5000 tokens
+                ...
+            )
+        except TokenBudgetExceeded as e:
+            print(f"Budget exceeded: used {e.total_tokens}/{e.max_tokens_budget} tokens")
+            print(f"Stopped after {e.n_attempts} attempts")
+        ```
+
+    See Also:
+        - InstructorRetryException: Raised when retries are exhausted normally
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        total_tokens: int,
+        max_tokens_budget: int,
+        n_attempts: int,
+        last_completion: Any | None = None,
+        total_usage: Any | None = None,
+        failed_attempts: list[FailedAttempt] | None = None,
+        **kwargs: dict[str, Any],
+    ):
+        self.total_tokens = total_tokens
+        self.max_tokens_budget = max_tokens_budget
+        self.n_attempts = n_attempts
+        self.last_completion = last_completion
+        self.total_usage = total_usage
+        message = (
+            f"Token budget exceeded: used {total_tokens} tokens "
+            f"(budget: {max_tokens_budget}) after {n_attempts} attempts"
+        )
+        super().__init__(message, *args, failed_attempts=failed_attempts, **kwargs)
+
+
 class IncompleteOutputException(InstructorError):
     """Exception raised when LLM output is truncated due to token limits.
 

@@ -148,6 +148,7 @@ def patch(  # type: ignore
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         max_retries: int | AsyncRetrying = 1,
+        max_tokens_budget: int | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
@@ -195,6 +196,7 @@ def patch(  # type: ignore
             strict=strict,
             mode=mode,
             hooks=hooks,
+            max_tokens_budget=max_tokens_budget,
         )
 
         # Store in cache *after* successful call
@@ -217,6 +219,7 @@ def patch(  # type: ignore
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         max_retries: int | Retrying = 1,
+        max_tokens_budget: int | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
@@ -265,6 +268,7 @@ def patch(  # type: ignore
             strict=strict,
             kwargs=new_kwargs,
             mode=mode,
+            max_tokens_budget=max_tokens_budget,
         )
 
         # Save to cache
