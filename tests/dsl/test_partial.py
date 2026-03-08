@@ -1129,3 +1129,111 @@ class TestRecursiveModels:
         assert result.content[0].text == "Introduction paragraph"
         assert result.content[1].title == "Section 1.1"
         assert result.content[1].content[1].title == "Subsection 1.1.1"
+
+
+class TestFieldDefaultsDuringStreaming:
+    """Tests that field defaults are preserved in partial objects during streaming.
+
+    When streaming incomplete JSON, fields not yet present in the data should
+    use their declared default values instead of being set to None.
+    Fixes: https://github.com/instructor-ai/instructor/issues/2054
+    """
+
+    def test_literal_default_preserved_in_partial_stream(self):
+        """Literal field with default should show default in partial responses."""
+        from instructor.dsl.partial import Partial, process_potential_object
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+        partial_model = PartialModel.get_partial_model()
+
+        # Simulate early streaming: only name has arrived, type not yet streamed
+        incomplete_json = '{"name": "Joh'
+        result = process_potential_object(
+            incomplete_json, partial_mode="trailing-strings", partial_model=partial_model
+        )
+        # type should use its default value "Person", not None
+        assert result.type == "Person"
+        assert result.name == "Joh"
+        assert result.age is None
+
+    def test_literal_default_preserved_with_complete_partial(self):
+        """Literal field default should be present even when other fields are complete."""
+        from instructor.dsl.partial import Partial, process_potential_object
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+        partial_model = PartialModel.get_partial_model()
+
+        # name and age are present but type hasn't been streamed yet
+        incomplete_json = '{"name": "John", "age": 31'
+        result = process_potential_object(
+            incomplete_json, partial_mode="trailing-strings", partial_model=partial_model
+        )
+        assert result.type == "Person"
+        assert result.name == "John"
+        assert result.age == 31
+
+    def test_default_factory_preserved_in_partial_stream(self):
+        """Fields with default_factory should use factory value in partial responses."""
+        from instructor.dsl.partial import Partial, process_potential_object
+
+        class TaggedItem(BaseModel):
+            name: str
+            tags: list[str] = Field(default_factory=list)
+
+        PartialModel = Partial[TaggedItem]
+        partial_model = PartialModel.get_partial_model()
+
+        incomplete_json = '{"name": "ite'
+        result = process_potential_object(
+            incomplete_json, partial_mode="trailing-strings", partial_model=partial_model
+        )
+        assert result.name == "ite"
+        assert result.tags == []
+
+    def test_simple_default_preserved_in_partial_stream(self):
+        """Fields with simple default values should use them in partial responses."""
+        from instructor.dsl.partial import Partial, process_potential_object
+
+        class Config(BaseModel):
+            name: str
+            enabled: bool = True
+            priority: int = 5
+
+        PartialModel = Partial[Config]
+        partial_model = PartialModel.get_partial_model()
+
+        incomplete_json = '{"name": "tes'
+        result = process_potential_object(
+            incomplete_json, partial_mode="trailing-strings", partial_model=partial_model
+        )
+        assert result.name == "tes"
+        assert result.enabled is True
+        assert result.priority == 5
+
+    def test_no_default_still_none_in_partial_stream(self):
+        """Fields without defaults should still be None in partial responses."""
+        from instructor.dsl.partial import Partial, process_potential_object
+
+        class Person(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+        partial_model = PartialModel.get_partial_model()
+
+        incomplete_json = '{"name": "Jo'
+        result = process_potential_object(
+            incomplete_json, partial_mode="trailing-strings", partial_model=partial_model
+        )
+        assert result.name == "Jo"
+        assert result.age is None
