@@ -966,6 +966,7 @@ def convert_contents(
                 Mode.ANTHROPIC_JSON,
                 Mode.ANTHROPIC_TOOLS,
                 Mode.ANTHROPIC_REASONING_TOOLS,
+                Mode.ANTHROPIC_PARALLEL_TOOLS,
             }:
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
