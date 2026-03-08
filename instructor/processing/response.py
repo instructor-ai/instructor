@@ -263,7 +263,7 @@ async def process_response_async(
             raw_response=response,
         )
 
-    if isinstance(response_model, ParallelBase):
+    if inspect.isclass(response_model) and issubclass(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
         model._raw_response = response
         return model
@@ -381,7 +381,7 @@ def process_response(
             raw_response=response,
         )
 
-    if isinstance(response_model, ParallelBase):
+    if inspect.isclass(response_model) and issubclass(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
         model._raw_response = response
         return model
