@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 
-from mistralai import Mistral
+try:
+    from mistralai.client import Mistral  # New v2 path
+except ImportError:
+    from mistralai import Mistral         # Old v1 path
 import instructor
 from typing import overload, Any, Literal
 
