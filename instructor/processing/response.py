@@ -429,12 +429,22 @@ def process_response(
         and stream
     ):
         # Collect partial stream to surface validation errors inside retry logic.
-        return list(
-            response_model.from_streaming_response(  # type: ignore
+        # Return the generator directly so callers get real-time partial models
+        # instead of waiting for the entire stream to be buffered.
+        # retry_sync / retry_async will handle the generator results separately
+        # to check for validation errors and raise them as needed.
+        
+        return response_model.from_streaming_response(  # type: ignore
                 response,
                 mode=mode,
             )
-        )
+    
+    # When stream = True but response_model is NOT Partial/Iterable, the response object
+    # is a raw Stream (iterator of ChatCompletionChunks).
+    # Accumulate it into a synthetic ChatCompletion so from_response works.
+    if stream and hasattr(response, "__iter__") and not hasattr(response, "choices"):
+        response = _accumulate_stream(response, mode)
+        
 
     model = response_model.from_response(  # type: ignore
         response,
