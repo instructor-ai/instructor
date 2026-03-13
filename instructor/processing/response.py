@@ -170,6 +170,77 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 
+def _accumulate_stream(stream: Any, mode: Mode) -> ChatCompletion:
+    import json as _json
+    
+    content_parts: list[str] = []
+    tool_calls_data: dict[int, dict] = {}
+    finish_reason: str | None = None
+    model_name: str = ""
+    response_id: str = ""
+    
+    for chunk in stream:
+        model_name = getattr(chunk, "model", None) or model_name
+        response_id = getattr(chunk, "id", None) or response_id
+        if not getattr(chunk, "choices", None):
+            continue
+        
+        delta = chunk.choices[0].delta
+        finish_reason = chunk.choices[0].finish_reason or finish_reason
+        if getattr(delta, "content", None):
+            content_parts.append(delta.content)
+        if getattr(delta, "tool_calls", None):
+            for tool_call in delta.tool_calls:
+                idx = tool_call.index
+                if idx not in tool_calls_data:
+                    tool_calls_data[idx] = {
+                        "id": getattr(tool_call, "id", None) or "",
+                        "type": "function",
+                        "function": {
+                            "name": getattr(tool_call, "name", None) or "",
+                            "arguments": "",
+                        }
+                    }
+                if tool_call.function and tool_call.function.arguments:
+                    tool_calls_data[idx]["function"]["arguments"] += tool_call.function.arguments
+                if tool_call.id:
+                    tool_calls_data[idx]["id"] = tool_call.id
+                if tool_call.function and tool_call.function.name:
+                    tool_calls_data[idx]["function"]["name"] = tool_call.function.name
+    
+    from openai.types import ChatCompletionChoice
+    from openai.types.chat.chat_completion import Choice
+    from openai.types.chat.chat_completion_message import ChatCompletionMessage
+    from openai.types.chat.chat_completion_message_tool_call import (
+        ChatCompletionMessageToolCall,
+        Function,
+    )
+    
+    tool_calls = None
+    if tool_calls_data:
+        tool_calls = [
+            ChatCompletionMessageToolCall(
+                id = v["id"],
+                type = "function",
+                function = Function(name=v["function"]["name"], arguments=v["function"]["arguments"])
+            )
+            for _, v in sorted(tool_calls_data.items())
+        ]
+    
+    message = ChatCompletionMessage(
+        role="assistant",
+        content="".join(content_parts) if content_parts else None,
+        tool_calls=tool_calls
+    )
+    
+    return ChatCompletion(
+        id=response_id or "accumulated",
+        choices=[ChatCompletionChoice(message=message, finish_reason=finish_reason or "stop", index=0)],
+        model=model_name or "unknown",
+        object="chat.completion",
+    )
+    
+
 async def process_response_async(
     response: ChatCompletion,
     *,
