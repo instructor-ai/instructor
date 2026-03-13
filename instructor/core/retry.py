@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Generator
 from json import JSONDecodeError
 from typing import Any, Callable, TypeVar
 
@@ -196,7 +197,7 @@ def retry_sync(
                         response=response, total_usage=total_usage
                     )
 
-                    return process_response(  # type: ignore
+                    result = process_response(  # type: ignore
                         response=response,
                         response_model=response_model,
                         validation_context=context,
@@ -204,6 +205,15 @@ def retry_sync(
                         mode=mode,
                         stream=stream,
                     )
+                    
+                    # When process_response returns a generator (streaming Partial),
+                    # return it directly, as retry is incompatible with streaming
+                    # because we can't un-yield partial models already sent to the caller
+                    if isinstance(result, Generator):
+                        return result # type: ignore
+                    
+                    return result # type: ignore
+                    
                 except (
                     ValidationError,
                     JSONDecodeError,
