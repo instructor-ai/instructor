@@ -347,7 +347,18 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # type: ignore  # Replace each response usage with the total usage
+        # Update response_usage in-place to preserve its original type.
+        # Subclasses (e.g. LiteLLM's Usage) may add extra methods that
+        # downstream integrations (Langfuse, Arize) rely on.
+        response_usage.completion_tokens = total_usage.completion_tokens
+        response_usage.prompt_tokens = total_usage.prompt_tokens
+        response_usage.total_tokens = total_usage.total_tokens
+        if total_usage.completion_tokens_details:
+            response_usage.completion_tokens_details = (
+                total_usage.completion_tokens_details
+            )
+        if total_usage.prompt_tokens_details:
+            response_usage.prompt_tokens_details = total_usage.prompt_tokens_details
         return response
 
     # Anthropic usage.
@@ -371,7 +382,15 @@ def update_total_usage(
             total_usage.cache_read_input_tokens += (
                 response_usage.cache_read_input_tokens or 0
             )
-            response.usage = total_usage  # type: ignore
+            # Update in-place to preserve the original usage type
+            response_usage.input_tokens = total_usage.input_tokens
+            response_usage.output_tokens = total_usage.output_tokens
+            response_usage.cache_creation_input_tokens = (
+                total_usage.cache_creation_input_tokens
+            )
+            response_usage.cache_read_input_tokens = (
+                total_usage.cache_read_input_tokens
+            )
             return response
     except ImportError:
         pass
