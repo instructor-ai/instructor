@@ -52,9 +52,14 @@ if importlib.util.find_spec("groq") is not None:
     __all__.append("from_groq")
 
 if importlib.util.find_spec("mistralai") is not None:
-    from .mistral.client import from_mistral  # noqa: F401
-
-    __all__.append("from_mistral")
+    try:
+        from .mistral.client import from_mistral  # noqa: F401
+    except ImportError:
+        # mistralai package structure may have changed (e.g., v2.0.0).
+        # Avoid breaking `import instructor` for users of other providers.
+        pass
+    else:
+        __all__.append("from_mistral")
 
 if importlib.util.find_spec("openai") is not None:
     from .perplexity.client import from_perplexity  # noqa: F401
