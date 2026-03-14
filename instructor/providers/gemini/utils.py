@@ -373,52 +373,32 @@ def update_genai_kwargs(
         base_config["safety_settings"] = safety_settings
         safety_settings = None
 
-    # Filter out image related harm categories which are not
-    # supported for text based models
-    # Exclude JAILBREAK category as it's only for Vertex AI, not google.genai
+    # Exclude categories not supported by the google.genai Gemini API:
+    # - HARM_CATEGORY_UNSPECIFIED is a sentinel value
+    # - HARM_CATEGORY_JAILBREAK is only for Vertex AI
+    # - HARM_CATEGORY_IMAGE_* categories are only for Vertex AI, NOT the
+    #   Gemini API (google.genai). Sending them causes a 400 INVALID_ARGUMENT
+    #   error. See: https://github.com/instructor-ai/instructor/issues/2146
     excluded_categories = {HarmCategory.HARM_CATEGORY_UNSPECIFIED}
     if hasattr(HarmCategory, "HARM_CATEGORY_JAILBREAK"):
         excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
+    # Exclude all IMAGE_* categories — they are Vertex AI only
+    for c in HarmCategory:
+        if c.name.startswith("HARM_CATEGORY_IMAGE_"):
+            excluded_categories.add(c)
 
     if safety_settings is not None:
-        # google-genai has separate categories for image content.
-        has_image = _genai_kwargs_has_image_content(new_kwargs)
-        image_categories = [
+        supported_categories = [
             c
             for c in HarmCategory
             if c not in excluded_categories
-            and c.name.startswith("HARM_CATEGORY_IMAGE_")
         ]
-        text_categories = [
-            c
-            for c in HarmCategory
-            if c not in excluded_categories
-            and not c.name.startswith("HARM_CATEGORY_IMAGE_")
-        ]
-
-        supported_categories = (
-            image_categories if (has_image and image_categories) else text_categories
-        )
-
-        def _map_text_to_image_category_name(image_category_name: str) -> str | None:
-            suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
-            # google-genai uses IMAGE_HATE while text uses HATE_SPEECH
-            if suffix == "HATE":
-                return "HARM_CATEGORY_HATE_SPEECH"
-            return f"HARM_CATEGORY_{suffix}"
 
         for category in supported_categories:
             threshold = HarmBlockThreshold.OFF
             if isinstance(safety_settings, dict):
                 if category in safety_settings:
                     threshold = safety_settings[category]
-                # If we are using image categories, try to honor thresholds passed via text categories.
-                elif has_image and category.name.startswith("HARM_CATEGORY_IMAGE_"):
-                    mapped_name = _map_text_to_image_category_name(category.name)
-                    if mapped_name is not None and hasattr(HarmCategory, mapped_name):
-                        mapped_category = getattr(HarmCategory, mapped_name)
-                        if mapped_category in safety_settings:
-                            threshold = safety_settings[mapped_category]
 
             base_config["safety_settings"].append(
                 {
