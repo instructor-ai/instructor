@@ -2,9 +2,25 @@
 from __future__ import annotations
 
 
-from mistralai import Mistral
 import instructor
-from typing import overload, Any, Literal
+from typing import overload, Any, Literal, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from mistralai import Mistral  # type: ignore[import-untyped]
+
+
+def _import_mistral_class() -> type:
+    """Import the Mistral client class, supporting both v1.x and v2.x.
+
+    mistralai 2.0.0 moved the Mistral class from ``mistralai.Mistral``
+    to ``mistralai.client.Mistral``.  We try the v1 path first (more
+    common in existing installs) and fall back to the v2 path.
+    """
+    try:
+        from mistralai import Mistral as _Mistral  # v1.x
+    except ImportError:
+        from mistralai.client import Mistral as _Mistral  # v2.x  # type: ignore[no-redef]
+    return _Mistral
 
 
 @overload
@@ -45,7 +61,8 @@ def from_mistral(
             valid_modes=[str(m) for m in valid_modes],
         )
 
-    if not isinstance(client, Mistral):
+    MistralClass = _import_mistral_class()
+    if not isinstance(client, MistralClass):
         from ...core.exceptions import ClientError
 
         raise ClientError(
