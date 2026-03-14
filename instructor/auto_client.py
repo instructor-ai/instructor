@@ -519,7 +519,10 @@ def from_provider(
 
     elif provider == "mistral":
         try:
-            from mistralai import Mistral
+            try:
+                from mistralai import Mistral  # v1.x
+            except ImportError:
+                from mistralai.client import Mistral  # v2.x  # type: ignore[no-redef]
             from instructor import from_mistral  # type: ignore[attr-defined]
             import os
 
