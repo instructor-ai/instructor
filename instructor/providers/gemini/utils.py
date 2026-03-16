@@ -396,9 +396,10 @@ def update_genai_kwargs(
             and not c.name.startswith("HARM_CATEGORY_IMAGE_")
         ]
 
-        supported_categories = (
-            image_categories if (has_image and image_categories) else text_categories
-        )
+        # Gemini API (google.genai) does not support IMAGE_ harm categories.
+        # These are only supported in Vertex AI.
+        # See: https://github.com/instructor-ai/instructor/issues/2146
+        supported_categories = text_categories
 
         def _map_text_to_image_category_name(image_category_name: str) -> str | None:
             suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
