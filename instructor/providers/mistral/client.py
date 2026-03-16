@@ -2,7 +2,15 @@
 from __future__ import annotations
 
 
-from mistralai import Mistral
+try:
+    from mistralai import Mistral
+except ImportError:
+    try:
+        from mistralai.client import Mistral
+    except ImportError:
+        # Fallback for older versions or if mistralai is not installed
+        Mistral = Any
+
 import instructor
 from typing import overload, Any, Literal
 
