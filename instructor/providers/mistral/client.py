@@ -2,7 +2,13 @@
 from __future__ import annotations
 
 
-from mistralai import Mistral
+try:
+    # mistralai >= 2.0.0
+    from mistralai.client import Mistral
+except ImportError:
+    # mistralai < 2.0.0
+    from mistralai import Mistral
+
 import instructor
 from typing import overload, Any, Literal
 
