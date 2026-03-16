@@ -27,7 +27,7 @@ print(user)  # User(name='John', age=25)
 
 [![PyPI](https://img.shields.io/pypi/v/instructor?style=flat-square)](https://pypi.org/project/instructor/)
 [![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square)](https://pypi.org/project/instructor/)
-[![GitHub Stars](https://img.shields.io/github/stars/instructor-ai/instructor?style=flat-square)](https://github.com/instructor-ai/instructor)
+[![GitHub Stars](https://img.shields.io/github/stars/567-labs/instructor?style=flat-square)](https://github.com/567-labs/instructor)
 [![Discord](https://img.shields.io/discord/1192334452110659664?style=flat-square)](https://discord.gg/bD9YE9JArw)
 [![Twitter](https://img.shields.io/twitter/follow/jxnlco?style=flat-square)](https://twitter.com/jxnlco)
 
@@ -283,14 +283,14 @@ Instructor's simple API is available in many languages:
 
 ## Contributing
 
-We welcome contributions! Check out our [good first issues](https://github.com/instructor-ai/instructor/labels/good%20first%20issue) to get started.
+We welcome contributions! Check out our [good first issues](https://github.com/567-labs/instructor/labels/good%20first%20issue) to get started.
 
 ## License
 
-MIT License - see [LICENSE](https://github.com/instructor-ai/instructor/blob/main/LICENSE) for details.
+MIT License - see [LICENSE](https://github.com/567-labs/instructor/blob/main/LICENSE) for details.
 
 ---
 
 <p align="center">
-Built by the Instructor community. Special thanks to <a href="https://twitter.com/jxnlco">Jason Liu</a> and all <a href="https://github.com/instructor-ai/instructor/graphs/contributors">contributors</a>.
+Built by the Instructor community. Special thanks to <a href="https://twitter.com/jxnlco">Jason Liu</a> and all <a href="https://github.com/567-labs/instructor/graphs/contributors">contributors</a>.
 </p>
