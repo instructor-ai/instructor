@@ -247,6 +247,16 @@ class OpenAISchema(BaseModel):
         }:
             return cls.parse_tools(completion, validation_context, strict)
 
+        if mode == Mode.MINIMAX_JSON:
+            # Strip <think>...</think> from MiniMax thinking model output
+            import re
+            msg = completion.choices[0].message
+            if msg.content and "<think>" in msg.content:
+                msg.content = re.sub(
+                    r"<think>.*?</think>", "", msg.content, flags=re.DOTALL
+                ).strip()
+            return cls.parse_json(completion, validation_context, strict)
+
         if mode in {
             Mode.JSON,
             Mode.JSON_SCHEMA,
@@ -256,7 +266,6 @@ class OpenAISchema(BaseModel):
             Mode.FIREWORKS_JSON,
             Mode.PERPLEXITY_JSON,
             Mode.OPENROUTER_STRUCTURED_OUTPUTS,
-            Mode.MINIMAX_JSON,
         }:
             return cls.parse_json(completion, validation_context, strict)
 
