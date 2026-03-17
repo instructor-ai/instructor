@@ -131,15 +131,24 @@ class TestReaskMiniMaxTools:
         assert "Validation Error" in result["messages"][-1]["content"]
 
     def test_reask_with_valid_response(self):
-        mock_tool_call = MagicMock()
-        mock_tool_call.function.name = "User"
-        mock_tool_call.function.arguments = '{"name": "test"}'
+        from openai.types.chat import ChatCompletionMessage
+        from openai.types.chat.chat_completion_message_tool_call import (
+            ChatCompletionMessageToolCall,
+            Function,
+        )
 
-        mock_message = MagicMock()
-        mock_message.tool_calls = [mock_tool_call]
-
+        tool_call = ChatCompletionMessageToolCall(
+            id="call_1",
+            type="function",
+            function=Function(name="User", arguments='{"name": "test"}'),
+        )
+        message = ChatCompletionMessage(
+            role="assistant",
+            content=None,
+            tool_calls=[tool_call],
+        )
         mock_response = MagicMock()
-        mock_response.choices = [MagicMock(message=mock_message)]
+        mock_response.choices = [MagicMock(message=message)]
 
         kwargs = {"messages": [{"role": "user", "content": "test"}]}
         result = reask_minimax_tools(kwargs, mock_response, ValueError("test error"))
@@ -151,9 +160,14 @@ class TestReaskMiniMaxJSON:
     """Tests for MiniMax JSON reask handler."""
 
     def test_reask_appends_correction_message(self):
-        mock_message = MagicMock()
+        from openai.types.chat import ChatCompletionMessage
+
+        message = ChatCompletionMessage(
+            role="assistant",
+            content='{"name": "test"}',
+        )
         mock_response = MagicMock()
-        mock_response.choices = [MagicMock(message=mock_message)]
+        mock_response.choices = [MagicMock(message=message)]
 
         kwargs = {"messages": [{"role": "user", "content": "test"}]}
         result = reask_minimax_json(kwargs, mock_response, ValueError("bad json"))
