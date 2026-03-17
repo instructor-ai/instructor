@@ -354,7 +354,7 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[T_Model, None]:
         json_chunks = cls.extract_json_async(completion, mode)
 
-        if mode == Mode.MD_JSON:
+        if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream_async(json_chunks)
 
         if mode == Mode.WRITER_TOOLS:
