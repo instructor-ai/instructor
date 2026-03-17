@@ -12,6 +12,8 @@ if importlib.util.find_spec("openai") is not None:
     from .openai import OpenAIProvider
 if importlib.util.find_spec("anthropic") is not None:
     from .anthropic import AnthropicProvider
+if importlib.util.find_spec("mistralai") is not None:
+    from .mistral import MistralProvider
 
 
 def get_provider(provider_name: str) -> BatchProvider:
@@ -24,8 +26,18 @@ def get_provider(provider_name: str) -> BatchProvider:
         if AnthropicProvider is None:
             raise ValueError("Anthropic is not installed")
         return AnthropicProvider()
+    elif provider_name == "mistral":
+        if MistralProvider is None:
+            raise ValueError("Mistral is not installed")
+        return MistralProvider()
     else:
         raise ValueError(f"Unsupported provider: {provider_name}")
 
 
-__all__ = ["BatchProvider", "OpenAIProvider", "AnthropicProvider", "get_provider"]
+__all__ = [
+    "BatchProvider",
+    "OpenAIProvider",
+    "AnthropicProvider",
+    "MistralProvider",
+    "get_provider",
+]

@@ -288,6 +288,92 @@ class BatchJobInfo(BaseModel):
             raw_data=batch_data,
         )
 
+    @classmethod
+    def from_mistral(cls, batch_data: dict[str, Any]) -> BatchJobInfo:
+        """Create from Mistral batch response"""
+        # Normalize status
+        # Mistral statuses: QUEUED, RUNNING, SUCCESS, FAILED, TIMEOUT_EXCEEDED, CANCELLATION_REQUESTED, CANCELLED
+        status_map = {
+            "QUEUED": BatchStatus.PENDING,
+            "RUNNING": BatchStatus.PROCESSING,
+            "SUCCESS": BatchStatus.COMPLETED,
+            "FAILED": BatchStatus.FAILED,
+            "TIMEOUT_EXCEEDED": BatchStatus.FAILED,
+            "CANCELLATION_REQUESTED": BatchStatus.CANCELLED,
+            "CANCELLED": BatchStatus.CANCELLED,
+        }
+
+        # Parse timestamps
+        def parse_iso_timestamp(timestamp_value):
+            if not timestamp_value:
+                return None
+            try:
+                # Handle different timestamp format variations
+                if isinstance(timestamp_value, datetime):
+                    return timestamp_value
+                elif isinstance(timestamp_value, str):
+                    return datetime.fromisoformat(
+                        timestamp_value.replace("Z", "+00:00")
+                    )
+                elif isinstance(timestamp_value, int):
+                    # Unix timestamp
+                    return datetime.fromtimestamp(timestamp_value, tz=timezone.utc)
+                else:
+                    return None
+            except (ValueError, AttributeError):
+                return None
+
+        timestamps = BatchTimestamps(
+            created_at=parse_iso_timestamp(batch_data.get("created_at")),
+            started_at=parse_iso_timestamp(batch_data.get("started_at")),
+            completed_at=parse_iso_timestamp(batch_data.get("completed_at")),
+        )
+
+        # Parse request counts
+        request_counts = BatchRequestCounts(
+            total=batch_data.get("total_requests"),
+            completed=batch_data.get("succeeded_requests"),
+            failed=batch_data.get("failed_requests"),
+        )
+
+        # Parse files
+        files = BatchFiles(
+            input_file_id=batch_data.get("input_file")
+            if isinstance(batch_data.get("input_files"), str)
+            else (
+                batch_data.get("input_files", [None])[0]
+                if batch_data.get("input_files")
+                else None
+            ),
+            output_file_id=batch_data.get("output_file"),
+        )
+
+        # Parse error information
+        error = None
+        if batch_data.get("error"):
+            error_data = batch_data["error"]
+            error = BatchErrorInfo(
+                error_type=error_data.get("type"),
+                error_message=error_data.get("message"),
+            )
+
+        return cls(
+            id=batch_data["id"],
+            provider="mistral",
+            status=status_map.get(
+                batch_data.get("status", "QUEUED"), BatchStatus.PENDING
+            ),
+            raw_status=batch_data.get("status", "UNKNOWN"),
+            timestamps=timestamps,
+            request_counts=request_counts,
+            files=files,
+            error=error,
+            metadata=batch_data.get("metadata", {}),
+            raw_data=batch_data,
+            model=batch_data.get("model"),
+            endpoint=batch_data.get("endpoint"),
+        )
+
 
 # Union type for batch results - like a Maybe/Result type
 BatchResult: TypeAlias = Union[BatchSuccess[T], BatchError]  # type: ignore

@@ -285,6 +285,10 @@ class BatchProcessor(Generic[T]):
                                     continue
 
                 return None
+            elif self.provider_name == "mistral":
+                # Mistral batch response format
+                content = data["response"]["body"]["choices"][0]["message"]["content"]
+                return json.loads(content)
 
         except Exception:
             return None

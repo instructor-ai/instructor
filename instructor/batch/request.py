@@ -56,6 +56,32 @@ class BatchRequest(BaseModel, Generic[T]):
         """Generate JSON schema from response_model"""
         return self.response_model.model_json_schema()
 
+    def to_mistral_format(self) -> dict[str, Any]:
+        schema = self.get_json_schema()
+
+        if "type" not in schema:
+            schema["type"] = "object"
+        if "additionalProperties" not in schema:
+            schema["additionalProperties"] = False
+
+        data = {
+            "custom_id": self.custom_id,
+            "body": {
+                "messages": self.messages,
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "schema": schema,
+                        "name": self.response_model.__name__.lower(),
+                        "strict": True,
+                    },
+                },
+                "max_tokens": self.max_tokens,
+                "temperature": self.temperature,
+            },
+        }
+        return data
+
     def to_openai_format(self) -> dict[str, Any]:
         """Convert to OpenAI batch format with JSON schema"""
         schema = self.get_json_schema()
@@ -159,6 +185,8 @@ class BatchRequest(BaseModel, Generic[T]):
             data = self.to_openai_format()
         elif provider == "anthropic":
             data = self.to_anthropic_format()
+        elif provider == "mistral":
+            data = self.to_mistral_format()
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
