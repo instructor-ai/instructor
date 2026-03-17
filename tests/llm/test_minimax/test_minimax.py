@@ -136,12 +136,16 @@ class TestHandleMiniMaxJSON:
         assert result_model is User
         assert "response_format" in result_kwargs
         assert result_kwargs["response_format"]["type"] == "json_schema"
+        assert result_kwargs["response_format"]["json_schema"]["name"] == "User"
 
     def test_json_schema_has_correct_structure(self):
         new_kwargs: dict = {"messages": []}
         _, result_kwargs = handle_minimax_json(User, new_kwargs)
 
-        schema = result_kwargs["response_format"]["json_schema"]["schema"]
+        json_schema = result_kwargs["response_format"]["json_schema"]
+        assert "name" in json_schema
+        assert "schema" in json_schema
+        schema = json_schema["schema"]
         assert "properties" in schema
         assert "name" in schema["properties"]
         assert "age" in schema["properties"]
@@ -155,6 +159,7 @@ class TestHandleMiniMaxJSON:
 
         assert result_kwargs["model"] == "MiniMax-M2.5"
         assert "response_format" in result_kwargs
+        assert result_kwargs["response_format"]["json_schema"]["name"] == "User"
 
 
 class TestReaskMiniMaxTools:
