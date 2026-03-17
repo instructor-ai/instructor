@@ -69,6 +69,8 @@ class Mode(enum.Enum):
     BEDROCK_TOOLS = "bedrock_tools"
     BEDROCK_JSON = "bedrock_json"
     PERPLEXITY_JSON = "perplexity_json"
+    MINIMAX_TOOLS = "minimax_tools"
+    MINIMAX_JSON = "minimax_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
     # Classification helpers
@@ -90,6 +92,7 @@ class Mode(enum.Enum):
             cls.COHERE_TOOLS,
             cls.CEREBRAS_TOOLS,
             cls.FIREWORKS_TOOLS,
+            cls.MINIMAX_TOOLS,
             cls.WRITER_TOOLS,
             cls.BEDROCK_TOOLS,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
@@ -117,6 +120,7 @@ class Mode(enum.Enum):
             cls.WRITER_JSON,
             cls.BEDROCK_JSON,
             cls.PERPLEXITY_JSON,
+            cls.MINIMAX_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_JSON,

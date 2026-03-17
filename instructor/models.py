@@ -129,6 +129,9 @@ KnownModelName = TypeAliasType(
         # Writer
         "writer/palmyra-x5",
         "writer/palmyra-x4",
+        # MiniMax
+        "minimax/MiniMax-M2.5",
+        "minimax/MiniMax-M2.5-highspeed",
         # Perplexity
         "perplexity/sonar-deep-research",
         "perplexity/sonar-reasoning-pro",

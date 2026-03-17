@@ -141,6 +141,10 @@ if importlib.util.find_spec("xai_sdk") is not None:
     __all__ += ["from_xai"]
 
 if importlib.util.find_spec("openai") is not None:
+    from .providers.minimax.client import from_minimax
+
+    __all__ += ["from_minimax"]
+
     from .providers.perplexity.client import from_perplexity
 
     __all__ += ["from_perplexity"]

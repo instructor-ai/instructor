@@ -57,6 +57,10 @@ if importlib.util.find_spec("mistralai") is not None:
     __all__.append("from_mistral")
 
 if importlib.util.find_spec("openai") is not None:
+    from .minimax.client import from_minimax  # noqa: F401
+
+    __all__.append("from_minimax")
+
     from .perplexity.client import from_perplexity  # noqa: F401
 
     __all__.append("from_perplexity")
