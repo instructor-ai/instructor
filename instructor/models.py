@@ -130,6 +130,8 @@ KnownModelName = TypeAliasType(
         "writer/palmyra-x5",
         "writer/palmyra-x4",
         # MiniMax
+        "minimax/MiniMax-M2.7",
+        "minimax/MiniMax-M2.7-highspeed",
         "minimax/MiniMax-M2.5",
         "minimax/MiniMax-M2.5-highspeed",
         # Perplexity

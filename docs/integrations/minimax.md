@@ -5,7 +5,7 @@ description: Guide to using instructor with MiniMax
 
 # Structured outputs with MiniMax, a complete guide w/ instructor
 
-MiniMax offers the MiniMax-M2.5 and MiniMax-M2.5-highspeed models with a 204,800-token context window. MiniMax provides an OpenAI-compatible API, making integration straightforward with the standard OpenAI SDK.
+MiniMax offers the MiniMax-M2.7 (latest flagship) and MiniMax-M2.7-highspeed models with a 204,800-token context window. MiniMax provides an OpenAI-compatible API, making integration straightforward with the standard OpenAI SDK.
 
 ## Quick Start
 
@@ -49,7 +49,7 @@ class UserExtract(BaseModel):
 
 
 user = client.chat.completions.create(
-    model="MiniMax-M2.5",
+    model="MiniMax-M2.7",
     response_model=UserExtract,
     messages=[
         {
@@ -94,7 +94,7 @@ class UserExtract(BaseModel):
 
 async def extract_user(text: str) -> UserExtract:
     return await client.chat.completions.create(
-        model="MiniMax-M2.5",
+        model="MiniMax-M2.7",
         response_model=UserExtract,
         messages=[{"role": "user", "content": text}],
         temperature=1.0,
@@ -117,7 +117,7 @@ You can also use the `from_provider` helper:
 ```python
 import instructor
 
-client = instructor.from_provider("minimax/MiniMax-M2.5")
+client = instructor.from_provider("minimax/MiniMax-M2.7")
 ```
 
 ## Supported Modes
@@ -131,6 +131,8 @@ MiniMax supports the following instructor modes:
 
 | Model | Context Window | Description |
 |-------|---------------|-------------|
+| `MiniMax-M2.7` | 204,800 tokens | Latest flagship model with enhanced reasoning and coding |
+| `MiniMax-M2.7-highspeed` | 204,800 tokens | High-speed version of M2.7 for low-latency scenarios |
 | `MiniMax-M2.5` | 204,800 tokens | Peak performance, ultimate value |
 | `MiniMax-M2.5-highspeed` | 204,800 tokens | Same performance, faster and more agile |
 

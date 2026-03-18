@@ -47,7 +47,7 @@ class TestMiniMaxToolsIntegration:
     def test_basic_extraction(self):
         client = self._make_client()
         user = client.chat.completions.create(
-            model="MiniMax-M2.5",
+            model="MiniMax-M2.7",
             response_model=UserExtract,
             messages=[
                 {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -61,7 +61,7 @@ class TestMiniMaxToolsIntegration:
     def test_sentiment_analysis(self):
         client = self._make_client()
         result = client.chat.completions.create(
-            model="MiniMax-M2.5",
+            model="MiniMax-M2.7",
             response_model=Sentiment,
             messages=[
                 {"role": "user", "content": "Analyze sentiment: I love this product!"},
@@ -89,7 +89,7 @@ class TestMiniMaxJSONIntegration:
     def test_basic_extraction(self):
         client = self._make_client()
         user = client.chat.completions.create(
-            model="MiniMax-M2.5",
+            model="MiniMax-M2.7",
             response_model=UserExtract,
             messages=[
                 {"role": "user", "content": "Extract: Alice is 30 years old"},

@@ -129,37 +129,34 @@ class TestHandleMiniMaxTools:
 class TestHandleMiniMaxJSON:
     """Unit tests for handle_minimax_json."""
 
-    def test_adds_response_format(self):
+    def test_prepends_system_instruction(self):
         new_kwargs: dict = {"messages": [{"role": "user", "content": "test"}]}
         result_model, result_kwargs = handle_minimax_json(User, new_kwargs)
 
         assert result_model is User
-        assert "response_format" in result_kwargs
-        assert result_kwargs["response_format"]["type"] == "json_schema"
-        assert result_kwargs["response_format"]["json_schema"]["name"] == "User"
+        assert len(result_kwargs["messages"]) == 2
+        assert result_kwargs["messages"][0]["role"] == "system"
+        assert "JSON" in result_kwargs["messages"][0]["content"]
+        assert "User" in result_kwargs["messages"][0]["content"]
 
-    def test_json_schema_has_correct_structure(self):
+    def test_system_instruction_contains_schema(self):
         new_kwargs: dict = {"messages": []}
         _, result_kwargs = handle_minimax_json(User, new_kwargs)
 
-        json_schema = result_kwargs["response_format"]["json_schema"]
-        assert "name" in json_schema
-        assert "schema" in json_schema
-        schema = json_schema["schema"]
-        assert "properties" in schema
-        assert "name" in schema["properties"]
-        assert "age" in schema["properties"]
+        system_msg = result_kwargs["messages"][0]["content"]
+        assert "name" in system_msg
+        assert "age" in system_msg
+        assert "model_validate_json" in system_msg
 
     def test_preserves_existing_kwargs(self):
         new_kwargs: dict = {
             "messages": [],
-            "model": "MiniMax-M2.5",
+            "model": "MiniMax-M2.7",
         }
         _, result_kwargs = handle_minimax_json(User, new_kwargs)
 
-        assert result_kwargs["model"] == "MiniMax-M2.5"
-        assert "response_format" in result_kwargs
-        assert result_kwargs["response_format"]["json_schema"]["name"] == "User"
+        assert result_kwargs["model"] == "MiniMax-M2.7"
+        assert result_kwargs["messages"][0]["role"] == "system"
 
 
 class TestReaskMiniMaxTools:
@@ -375,7 +372,7 @@ class TestMiniMaxIntegration:
     def test_from_provider_sync(self):
         """Test sync client via from_provider."""
         client = instructor.from_provider(
-            "minimax/MiniMax-M2.5",
+            "minimax/MiniMax-M2.7",
             api_key=os.getenv("MINIMAX_API_KEY"),
         )
 
@@ -401,7 +398,7 @@ class TestMiniMaxIntegration:
         client = from_minimax(openai_client, mode=instructor.Mode.MINIMAX_TOOLS)
 
         user = client.chat.completions.create(
-            model="MiniMax-M2.5",
+            model="MiniMax-M2.7",
             messages=[
                 {"role": "user", "content": "Extract: Alice is 30 years old"},
             ],
@@ -423,7 +420,7 @@ class TestMiniMaxIntegration:
         client = from_minimax(openai_client, mode=instructor.Mode.MINIMAX_JSON)
 
         user = client.chat.completions.create(
-            model="MiniMax-M2.5",
+            model="MiniMax-M2.7",
             messages=[
                 {"role": "user", "content": "Extract: Bob is 42 years old"},
             ],
