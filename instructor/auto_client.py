@@ -170,8 +170,9 @@ def from_provider(
 
             timeout_raw = kwargs.pop("timeout", not_given)
             timeout: float | Timeout | None | NotGiven
+            # Default to 60s timeout to prevent indefinite hangs
             timeout = (
-                not_given
+                60.0
                 if timeout_raw is not_given
                 else cast(float | Timeout | None, timeout_raw)
             )
@@ -413,10 +414,12 @@ def from_provider(
             import anthropic
             from instructor import from_anthropic  # type: ignore[attr-defined]  # type: ignore[attr-defined]
 
+            # Extract timeout from kwargs, default to 60s to prevent indefinite hangs
+            timeout = kwargs.pop("timeout", 60.0)
             client = (
-                anthropic.AsyncAnthropic(api_key=api_key)
+                anthropic.AsyncAnthropic(api_key=api_key, timeout=timeout)
                 if async_client
-                else anthropic.Anthropic(api_key=api_key)
+                else anthropic.Anthropic(api_key=api_key, timeout=timeout)
             )
             max_tokens = kwargs.pop("max_tokens", 4096)
             result = from_anthropic(
