@@ -171,8 +171,11 @@ class OpenAISchema(BaseModel):
         if mode == Mode.BEDROCK_TOOLS:
             return cls.parse_bedrock_tools(completion, validation_context, strict)
 
-        if mode in {Mode.VERTEXAI_TOOLS, Mode.GEMINI_TOOLS}:
+        if mode == Mode.VERTEXAI_TOOLS:
             return cls.parse_vertexai_tools(completion, validation_context)
+
+        if mode == Mode.GEMINI_TOOLS:
+            return cls.parse_gemini_tools(completion, validation_context, strict)
 
         if mode == Mode.VERTEXAI_JSON:
             return cls.parse_vertexai_json(completion, validation_context, strict)
@@ -187,9 +190,6 @@ class OpenAISchema(BaseModel):
             return cls.parse_genai_structured_outputs(
                 completion, validation_context, strict
             )
-
-        if mode == Mode.GEMINI_TOOLS:
-            return cls.parse_gemini_tools(completion, validation_context, strict)
 
         if mode == Mode.GENAI_TOOLS:
             return cls.parse_genai_tools(completion, validation_context, strict)
@@ -518,6 +518,39 @@ class OpenAISchema(BaseModel):
             parsed = json.loads(extra_text, strict=False)
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
             return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_gemini_tools(
+        cls: type[BaseModel],
+        completion: Any,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        try:
+            function_call = completion.candidates[0].content.parts[0].function_call
+        except Exception as exc:
+            raise ResponseParsingError(
+                "No tool call found in Gemini response",
+                mode="GEMINI_TOOLS",
+                raw_response=completion,
+            ) from exc
+
+        args = getattr(function_call, "args", None)
+        if args is None and hasattr(type(function_call), "to_dict"):
+            try:
+                resp_dict = type(function_call).to_dict(function_call)
+            except Exception:
+                resp_dict = {}
+            args = resp_dict.get("args")
+
+        if args is None:
+            raise ResponseParsingError(
+                "No tool call args found in Gemini response",
+                mode="GEMINI_TOOLS",
+                raw_response=completion,
+            )
+
+        return cls.model_validate(args, context=validation_context, strict=strict)
 
     @classmethod
     def parse_vertexai_tools(
