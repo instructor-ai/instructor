@@ -14,6 +14,7 @@ Batch processing lets you send multiple requests in a single operation, saving u
 | OpenAI | gpt-4o, gpt-4.1-mini, gpt-4-turbo | 50% |
 | Anthropic | claude-3-5-sonnet, claude-3-opus, claude-3-haiku | 50% |
 | Google GenAI | gemini-2.5-flash, gemini-2.0-flash, gemini-pro | 50% |
+| Mistral AI | all models except `codestral-mamba` | 50% |
 
 ## Basic Usage
 
@@ -151,6 +152,16 @@ processor = BatchProcessor("google/gemini-2.5-flash", User)
 ```
 
 Required permissions: `roles/aiplatform.user` and `roles/storage.objectUser`.
+
+
+### Mistral AI
+```bash
+export MISTRAL_API_KEY="your-mistral-key"
+```
+
+```python
+processor = BatchProcessor("mistral/mistral-small-latest", User)
+```
 
 ## Processing Results
 
