@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator, Generator
+from types import SimpleNamespace
 
 import pytest
 from pydantic import BaseModel
 
+from instructor.dsl.parallel import ParallelBase
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.response_list import ListResponse
 from instructor.mode import Mode
@@ -44,6 +46,26 @@ class DummyCompletion(BaseModel):
     """Minimal stand-in for a provider completion object."""
 
 
+class DummyParallelModel(BaseModel):
+    name: str
+
+
+def _make_parallel_completion(*, name: str = "DummyParallelModel", arguments: str = '{"name":"Alice"}'):
+    return SimpleNamespace(
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(
+                    tool_calls=[
+                        SimpleNamespace(
+                            function=SimpleNamespace(name=name, arguments=arguments)
+                        )
+                    ]
+                )
+            )
+        ]
+    )
+
+
 def test_process_response_returns_list_response_for_iterable_model():
     raw = DummyCompletion()
 
@@ -57,6 +79,21 @@ def test_process_response_returns_list_response_for_iterable_model():
     assert isinstance(result, ListResponse)
     assert list(result) == [1, 2]
     assert result._raw_response == raw
+
+
+def test_process_response_returns_list_response_for_parallel_model():
+    raw = _make_parallel_completion()
+
+    result = process_response(
+        raw,
+        response_model=ParallelBase(DummyParallelModel),
+        stream=False,
+        mode=Mode.PARALLEL_TOOLS,
+    )
+
+    assert isinstance(result, ListResponse)
+    assert [item.name for item in result] == ["Alice"]
+    assert result.get_raw_response() is raw
 
 
 def test_process_response_streaming_returns_list_response_for_iterable_model():
@@ -92,6 +129,22 @@ async def test_process_response_async_streaming_returns_list_response_for_iterab
     async for item in result:
         collected.append(item)
     assert collected == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_process_response_async_returns_list_response_for_parallel_model():
+    raw = _make_parallel_completion()
+
+    result = await process_response_async(
+        raw,
+        response_model=ParallelBase(DummyParallelModel),
+        stream=False,
+        mode=Mode.PARALLEL_TOOLS,
+    )
+
+    assert isinstance(result, ListResponse)
+    assert [item.name for item in result] == ["Alice"]
+    assert result.get_raw_response() is raw
 
 
 def test_prepare_response_model_treats_list_as_iterable_model():
