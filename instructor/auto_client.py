@@ -893,12 +893,14 @@ def from_provider(
                 result = from_genai(
                     client,
                     use_async=True,
-                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    mode=mode if mode else instructor.Mode.VERTEXAI_TOOLS,
                     **kwargs,
                 )  # type: ignore
             else:
                 result = from_genai(
-                    client, mode=mode if mode else instructor.Mode.GENAI_TOOLS, **kwargs
+                    client,
+                    mode=mode if mode else instructor.Mode.VERTEXAI_TOOLS,
+                    **kwargs,
                 )  # type: ignore
             logger.info(
                 "Client initialized",

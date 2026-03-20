@@ -657,3 +657,84 @@ def test_generative_ai_provider_runtime_import_error_propagates():
 
             # Should be the socksio error, NOT a ConfigurationError
             assert "socksio" in str(excinfo.value)
+
+
+def test_vertexai_provider_defaults_to_vertexai_tools_mode():
+    """VertexAI provider should use VertexAI-specific handling by default."""
+    from unittest.mock import patch, MagicMock
+    import warnings
+    import instructor
+    import sys
+
+    mock_genai_module = MagicMock()
+    mock_client = MagicMock()
+    mock_genai_module.Client.return_value = mock_client
+    mock_google = MagicMock()
+    mock_google.genai = mock_genai_module
+
+    with patch.dict(
+        sys.modules,
+        {"google": mock_google, "google.genai": mock_genai_module},
+    ):
+        with patch.object(
+            __import__("instructor"), "from_genai", create=True
+        ) as mock_from_genai:
+            mock_instructor = MagicMock()
+            mock_from_genai.return_value = mock_instructor
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                client = from_provider(
+                    "vertexai/gemini-3-flash",
+                    project="test-project",
+                )
+
+            mock_genai_module.Client.assert_called_once_with(
+                vertexai=True,
+                project="test-project",
+                location="us-central1",
+            )
+            mock_from_genai.assert_called_once()
+            _, kwargs = mock_from_genai.call_args
+            assert kwargs["mode"] == instructor.Mode.VERTEXAI_TOOLS
+            assert kwargs["model"] == "gemini-3-flash"
+            assert client is mock_instructor
+
+
+def test_vertexai_provider_async_defaults_to_vertexai_tools_mode():
+    """Async VertexAI provider should also use VertexAI-specific handling."""
+    from unittest.mock import patch, MagicMock
+    import warnings
+    import instructor
+    import sys
+
+    mock_genai_module = MagicMock()
+    mock_client = MagicMock()
+    mock_genai_module.Client.return_value = mock_client
+    mock_google = MagicMock()
+    mock_google.genai = mock_genai_module
+
+    with patch.dict(
+        sys.modules,
+        {"google": mock_google, "google.genai": mock_genai_module},
+    ):
+        with patch.object(
+            __import__("instructor"), "from_genai", create=True
+        ) as mock_from_genai:
+            mock_instructor = MagicMock()
+            mock_from_genai.return_value = mock_instructor
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                client = from_provider(
+                    "vertexai/gemini-3-flash",
+                    async_client=True,
+                    project="test-project",
+                )
+
+            mock_from_genai.assert_called_once()
+            _, kwargs = mock_from_genai.call_args
+            assert kwargs["use_async"] is True
+            assert kwargs["mode"] == instructor.Mode.VERTEXAI_TOOLS
+            assert kwargs["model"] == "gemini-3-flash"
+            assert client is mock_instructor
