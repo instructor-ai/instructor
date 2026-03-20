@@ -259,6 +259,18 @@ def _process_generic_arg(
             return arg
 
 
+def _rebuild_generic_annotation(
+    generic_base: Any,
+    generic_args: tuple[Any, ...],
+) -> Any:
+    # `types.UnionType` (the runtime origin of `str | int`) cannot be
+    # subscripted directly, so reconstruct unions through `typing.Union`.
+    if generic_base in UNION_ORIGINS:
+        return Union[generic_args]  # type: ignore[arg-type]
+
+    return generic_base[generic_args]
+
+
 def _make_field_optional(
     field: FieldInfo,
 ) -> tuple[Any, FieldInfo]:
@@ -278,7 +290,9 @@ def _make_field_optional(
 
         # Reconstruct the generic type with modified arguments
         tmp_field.annotation = (
-            Optional[generic_base[modified_args]] if generic_base else None
+            Optional[_rebuild_generic_annotation(generic_base, modified_args)]
+            if generic_base
+            else None
         )
         tmp_field.default = None
         tmp_field.default_factory = None
@@ -1027,7 +1041,9 @@ class Partial(Generic[T_Model]):
 
                 # Reconstruct the generic type with modified arguments
                 tmp_field.annotation = (
-                    generic_base[modified_args] if generic_base else None
+                    _rebuild_generic_annotation(generic_base, modified_args)
+                    if generic_base
+                    else None
                 )
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
