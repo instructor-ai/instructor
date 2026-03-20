@@ -1,10 +1,13 @@
 # Future imports to ensure compatibility with Python 3.9
 from __future__ import annotations
 
-
-from mistralai import Mistral
 import instructor
 from typing import overload, Any, Literal
+
+try:
+    from mistralai import Mistral
+except ImportError:
+    from mistralai.client import Mistral
 
 
 @overload

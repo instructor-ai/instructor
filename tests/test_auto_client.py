@@ -657,3 +657,43 @@ def test_generative_ai_provider_runtime_import_error_propagates():
 
             # Should be the socksio error, NOT a ConfigurationError
             assert "socksio" in str(excinfo.value)
+
+
+def test_mistral_provider_falls_back_to_legacy_client_module_import():
+    """Support mistralai layouts where Mistral lives in mistralai.client."""
+    import os
+    import sys
+    import types
+    from unittest.mock import MagicMock, patch
+    import instructor
+
+    class FakeMistral:
+        def __init__(self, api_key=None):
+            self.api_key = api_key
+
+    mock_mistralai = types.ModuleType("mistralai")
+    mock_mistralai.__path__ = []
+    mock_mistralai_client = types.ModuleType("mistralai.client")
+    mock_mistralai_client.Mistral = FakeMistral
+
+    with patch.dict(
+        sys.modules,
+        {
+            "mistralai": mock_mistralai,
+            "mistralai.client": mock_mistralai_client,
+        },
+    ):
+        with patch.object(
+            instructor, "from_mistral", create=True
+        ) as mock_from_mistral:
+            mock_instructor = MagicMock()
+            mock_from_mistral.return_value = mock_instructor
+
+            with patch.dict(os.environ, {"MISTRAL_API_KEY": "test-key"}, clear=True):
+                client = from_provider("mistral/ministral-8b-latest")
+
+            mock_from_mistral.assert_called_once()
+            passed_client = mock_from_mistral.call_args.args[0]
+            assert isinstance(passed_client, FakeMistral)
+            assert passed_client.api_key == "test-key"
+            assert client is mock_instructor
