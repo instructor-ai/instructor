@@ -265,8 +265,7 @@ async def process_response_async(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
-        return model
+        return ListResponse.from_list(list(model), raw_response=response)
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
@@ -383,8 +382,7 @@ def process_response(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
-        return model
+        return ListResponse.from_list(list(model), raw_response=response)
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
