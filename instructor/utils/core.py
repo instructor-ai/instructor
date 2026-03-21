@@ -38,6 +38,10 @@ logger = logging.getLogger("instructor")
 R_co = TypeVar("R_co", covariant=True)
 T_Model = TypeVar("T_Model", bound=BaseModel)
 T = TypeVar("T")
+_OPTIONAL_OPENAI_USAGE_FIELDS = (
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+)
 
 
 def extract_json_from_codeblock(content: str) -> str:
@@ -347,7 +351,32 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # type: ignore  # Replace each response usage with the total usage
+        for field_name in _OPTIONAL_OPENAI_USAGE_FIELDS:
+            if hasattr(response_usage, field_name):
+                setattr(
+                    total_usage,
+                    field_name,
+                    (getattr(total_usage, field_name, 0) or 0)
+                    + (getattr(response_usage, field_name, 0) or 0),
+                )
+        # Keep the original usage object attached so provider-specific fields
+        # from LiteLLM/Bedrock remain available after retries.
+        response_usage.completion_tokens = total_usage.completion_tokens
+        response_usage.prompt_tokens = total_usage.prompt_tokens
+        response_usage.total_tokens = total_usage.total_tokens
+        response_usage.completion_tokens_details = (
+            total_usage.completion_tokens_details.model_copy(deep=True)
+            if total_usage.completion_tokens_details is not None
+            else None
+        )
+        response_usage.prompt_tokens_details = (
+            total_usage.prompt_tokens_details.model_copy(deep=True)
+            if total_usage.prompt_tokens_details is not None
+            else None
+        )
+        for field_name in _OPTIONAL_OPENAI_USAGE_FIELDS:
+            if hasattr(total_usage, field_name):
+                setattr(response_usage, field_name, getattr(total_usage, field_name))
         return response
 
     # Anthropic usage.

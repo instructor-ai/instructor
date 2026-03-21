@@ -1,7 +1,9 @@
 import json
 import pytest
+from openai.types import CompletionUsage
 from instructor.utils import (
     classproperty,
+    update_total_usage,
     extract_json_from_codeblock,
     extract_json_from_stream,
     extract_json_from_stream_async,
@@ -187,6 +189,49 @@ def test_classproperty():
             return cls.clvar
 
     assert MyClass.my_property == 1
+
+
+def test_update_total_usage_preserves_openai_cache_token_counts():
+    class LiteLLMUsage(CompletionUsage):
+        def get(self, key, default=None):
+            return getattr(self, key, default)
+
+    class Response:
+        def __init__(self, usage):
+            self.usage = usage
+
+    total_usage = CompletionUsage(
+        prompt_tokens=0,
+        completion_tokens=0,
+        total_tokens=0,
+    )
+
+    first_usage = LiteLLMUsage(
+        prompt_tokens=3,
+        completion_tokens=4,
+        total_tokens=7,
+    )
+    first_usage.cache_read_input_tokens = 11
+    first_usage.cache_creation_input_tokens = 5
+
+    second_usage = LiteLLMUsage(
+        prompt_tokens=2,
+        completion_tokens=1,
+        total_tokens=3,
+    )
+    second_usage.cache_read_input_tokens = 13
+    second_usage.cache_creation_input_tokens = 7
+
+    update_total_usage(Response(first_usage), total_usage)
+    updated = update_total_usage(Response(second_usage), total_usage)
+
+    assert updated is not None
+    assert isinstance(updated.usage, LiteLLMUsage)
+    assert updated.usage.prompt_tokens == 5
+    assert updated.usage.completion_tokens == 5
+    assert updated.usage.total_tokens == 10
+    assert updated.usage.get("cache_read_input_tokens") == 24
+    assert updated.usage.get("cache_creation_input_tokens") == 12
 
 
 def test_combine_system_messages_string_string():
