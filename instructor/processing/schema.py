@@ -14,8 +14,6 @@ from typing import Any, cast
 from docstring_parser import parse
 from pydantic import BaseModel
 
-from ..providers.gemini.utils import map_to_gemini_function_schema
-
 __all__ = [
     "generate_openai_schema",
     "generate_anthropic_schema",
@@ -118,6 +116,7 @@ def generate_gemini_schema(model: type[BaseModel]) -> Any:
 
         # Use OpenAI schema
         openai_schema = generate_openai_schema(model)
+        from ..providers.gemini.utils import map_to_gemini_function_schema
 
         # Transform to Gemini format
         function = genai_types.FunctionDeclaration(
