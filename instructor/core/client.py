@@ -28,6 +28,8 @@ from .hooks import Hooks, HookName
 
 
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
+T_think = TypeVar("T_think", bound=BaseModel)
+T_final = TypeVar("T_final", bound=BaseModel)
 
 
 class Response:
@@ -910,3 +912,107 @@ def from_litellm(
             mode=mode,
             **kwargs,
         )
+
+
+def two_step(
+    client: Instructor,
+    think_model: type[T_think],
+    final_model: type[T_final],
+    messages: list[ChatCompletionMessageParam],
+    think_max_tokens: int,
+    final_max_tokens: int,
+    think_kwargs: dict | None = None,
+    final_kwargs: dict | None = None,
+) -> tuple[T_final, T_think]:
+    """Two-step inference for models without native thinking support"""
+
+    if any(msg["role"] == "system" for msg in messages):
+        raise ValueError(
+            "System messages in 'messages' are not allowed. "
+            "The pipeline uses its own system prompts for each step."
+        )
+
+    reasoning_result = client.create(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a reasoning assistant. "
+                "Do NOT answer the question directly. "
+                "Only think step-by-step and write your thought process.",
+            },
+            *messages,
+        ],
+        response_model=think_model,
+        max_tokens=think_max_tokens,
+        **(think_kwargs or {}),
+    )
+
+    final_result = client.create(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a precise assistant. "
+                "Based on the provided reasoning, give ONLY the final answer.",
+            },
+            *messages,
+            {"role": "assistant", "content": reasoning_result.model_dump_json()},
+            {"role": "user", "content": "Now produce the final structured answer."},
+        ],
+        response_model=final_model,
+        max_tokens=final_max_tokens,
+        **(final_kwargs or {}),
+    )
+
+    return final_result, reasoning_result
+
+
+async def two_step_async(
+    client: AsyncInstructor,
+    think_model: type[T_think],
+    final_model: type[T_final],
+    messages: list[ChatCompletionMessageParam],
+    think_max_tokens: int,
+    final_max_tokens: int,
+    think_kwargs: dict | None = None,
+    final_kwargs: dict | None = None,
+) -> tuple[T_final, T_think]:
+    """Two-step inference for models without native thinking support"""
+
+    if any(msg["role"] == "system" for msg in messages):
+        raise ValueError(
+            "System messages in 'messages' are not allowed. "
+            "The pipeline uses its own system prompts for each step."
+        )
+
+    reasoning_result = await client.create(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a reasoning assistant. "
+                "Do NOT answer the question directly. "
+                "Only think step-by-step and write your thought process.",
+            },
+            *messages,
+        ],
+        response_model=think_model,
+        max_tokens=think_max_tokens,
+        **(think_kwargs or {}),
+    )
+
+    final_result = await client.create(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a precise assistant. "
+                "Based on the provided reasoning, give ONLY the final answer.",
+            },
+            *messages,
+            {"role": "assistant", "content": reasoning_result.model_dump_json()},
+            {"role": "user", "content": "Now produce the final structured answer."},
+        ],
+        response_model=final_model,
+        max_tokens=final_max_tokens,
+        **(final_kwargs or {}),
+    )
+
+    return final_result, reasoning_result

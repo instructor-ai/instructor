@@ -29,6 +29,14 @@ Functions to create Instructor clients from various providers.
 
 ::: instructor.from_litellm
 
+## Two-Step Pipeline
+
+Helper functions for separating reasoning and structured output into two LLM calls.
+
+::: instructor.two_step
+
+::: instructor.two_step_async
+
 ## DSL Components
 
 Domain-specific language components for advanced patterns and data handling.

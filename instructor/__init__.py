@@ -25,6 +25,8 @@ from .core.client import (
     AsyncInstructor,
     from_openai,
     from_litellm,
+    two_step,
+    two_step_async,
 )
 from .core import hooks
 from .utils.providers import Provider
@@ -43,6 +45,8 @@ __all__ = [
     "from_openai",
     "from_litellm",
     "from_provider",
+    "two_step",
+    "two_step_async",
     "AsyncInstructor",
     "Provider",
     "OpenAISchema",
