@@ -424,7 +424,7 @@ def download_file(
         else:
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batch = client.batches.retrieve(batch_id=batch_id)
             status = batch.status
 
@@ -459,7 +459,7 @@ def results(
         if provider == "openai":
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batch = client.batches.retrieve(batch_id=batch_id)
 
             if batch.status != "completed":

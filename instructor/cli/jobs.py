@@ -10,7 +10,7 @@ from rich.console import Console
 from datetime import datetime
 from openai.types.fine_tuning import FineTuningJob
 
-client = OpenAI()
+client = OpenAI(timeout=60.0, max_retries=3)
 app = typer.Typer()
 console = Console()
 
