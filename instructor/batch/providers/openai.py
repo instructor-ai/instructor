@@ -26,7 +26,7 @@ class OpenAIProvider(BatchProvider):
         try:
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
 
             if metadata is None:
                 metadata = {"description": "Instructor batch job"}
@@ -69,7 +69,7 @@ class OpenAIProvider(BatchProvider):
         try:
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batch = client.batches.retrieve(batch_id)
             return {
                 "id": batch.id,
@@ -90,7 +90,7 @@ class OpenAIProvider(BatchProvider):
             from openai import OpenAI
             import time
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batch = client.batches.retrieve(batch_id)
 
             if batch.status != "completed":
@@ -148,7 +148,7 @@ class OpenAIProvider(BatchProvider):
             from openai import OpenAI
             import time
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batch = client.batches.retrieve(batch_id)
 
             if batch.status != "completed":
@@ -206,7 +206,7 @@ class OpenAIProvider(BatchProvider):
         try:
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batch = client.batches.cancel(batch_id)
             return batch.model_dump()
         except Exception as e:
@@ -217,7 +217,7 @@ class OpenAIProvider(BatchProvider):
         try:
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             # OpenAI doesn't have a delete endpoint, so we'll return the batch info
             batch = client.batches.retrieve(batch_id)
             return {
@@ -233,7 +233,7 @@ class OpenAIProvider(BatchProvider):
         try:
             from openai import OpenAI
 
-            client = OpenAI()
+            client = OpenAI(timeout=60.0, max_retries=3)
             batches = client.batches.list(limit=limit)
             return [
                 BatchJobInfo.from_openai(batch.model_dump()) for batch in batches.data

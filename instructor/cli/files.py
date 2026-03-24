@@ -10,7 +10,7 @@ from openai import OpenAI
 from rich.console import Console
 from rich.table import Table
 
-client = OpenAI()
+client = OpenAI(timeout=60.0, max_retries=3)
 app = typer.Typer()
 console = Console()
 
