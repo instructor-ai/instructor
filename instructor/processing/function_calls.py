@@ -269,6 +269,14 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
+        from google.genai import types
+
+        if (
+            hasattr(completion, "candidates")
+            and completion.candidates
+            and completion.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
+        ):
+            raise IncompleteOutputException(last_completion=completion)
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
