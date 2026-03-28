@@ -392,9 +392,7 @@ def update_total_usage(
             response_usage.cache_creation_input_tokens = (
                 total_usage.cache_creation_input_tokens
             )
-            response_usage.cache_read_input_tokens = (
-                total_usage.cache_read_input_tokens
-            )
+            response_usage.cache_read_input_tokens = total_usage.cache_read_input_tokens
             return response
     except ImportError:
         pass
