@@ -9,7 +9,6 @@ def test_update_genai_kwargs_safety_settings_excludes_image_categories():
     See: https://github.com/567-labs/instructor/issues/2146
     """
     from google.genai import types
-    from google.genai.types import HarmCategory
 
     kwargs = {
         "contents": [

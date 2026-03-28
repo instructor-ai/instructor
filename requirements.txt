@@ -95,8 +95,6 @@ typer==0.21.1
     # via instructor (pyproject.toml)
 typing-extensions==4.15.0
     # via
-    #   aiosignal
-    #   anyio
     #   openai
     #   pydantic
     #   pydantic-core
