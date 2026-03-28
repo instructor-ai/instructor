@@ -347,18 +347,22 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        # Update response_usage in-place to preserve its original type.
-        # Subclasses (e.g. LiteLLM's Usage) may add extra methods that
-        # downstream integrations (Langfuse, Arize) rely on.
+        # Keep the concrete usage type attached to the response (for example
+        # LiteLLM subclasses CompletionUsage with helper methods), while still
+        # surfacing the accumulated totals.
         response_usage.completion_tokens = total_usage.completion_tokens
         response_usage.prompt_tokens = total_usage.prompt_tokens
         response_usage.total_tokens = total_usage.total_tokens
-        if total_usage.completion_tokens_details:
-            response_usage.completion_tokens_details = (
-                total_usage.completion_tokens_details
-            )
-        if total_usage.prompt_tokens_details:
-            response_usage.prompt_tokens_details = total_usage.prompt_tokens_details
+        response_usage.completion_tokens_details = (
+            total_usage.completion_tokens_details.model_copy(deep=True)
+            if total_usage.completion_tokens_details is not None
+            else None
+        )
+        response_usage.prompt_tokens_details = (
+            total_usage.prompt_tokens_details.model_copy(deep=True)
+            if total_usage.prompt_tokens_details is not None
+            else None
+        )
         return response
 
     # Anthropic usage.
