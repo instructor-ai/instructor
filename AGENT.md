@@ -78,3 +78,17 @@ Keep PR descriptions short and easy to review:
 
 If the PR was authored by Cursor, include:
 - `This PR was written by [Cursor](https://cursor.com)`
+
+### Changelog Requirement
+
+**Every PR that changes behavior must update `CHANGELOG.md`.**
+
+Add an entry under the `## [Unreleased]` section (or the current in-progress version):
+
+```
+- **Area**: Short description of the change ([#PR_NUMBER](url))
+```
+
+Group entries under: `Security`, `Fixed`, `Added`, `Changed`, `Deprecated`, `Removed`, `Tests / CI`.
+
+Do not add changelog entries for docs-only or example-only changes unless they fix something user-visible.
