@@ -3,7 +3,7 @@ pydantic
 docstring-parser
 rich
 aiohttp
-ruff==0.14.14
+ruff==0.15.9
 pre-commit==4.3.0
 typer
 cohere
