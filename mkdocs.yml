@@ -196,6 +196,7 @@ nav:
     - OpenRouter: 'integrations/openrouter.md'
     - SambaNova: 'integrations/sambanova.md'
     - TrueFoundry: 'integrations/truefoundry.md'
+    - Token0 (Vision Optimizer): 'integrations/token0.md'
   - Cookbook:
     - Overview: 'examples/index.md'
     - "Audio Information Extraction": 'examples/audio_extraction.md'
