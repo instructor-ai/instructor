@@ -21,7 +21,6 @@ dependencies = [
     "jiter>=0.6.1,<0.13",
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
-    "diskcache>=5.6.3",
 ]
 name = "instructor"
 version = "1.14.5"
@@ -98,6 +97,7 @@ xai = ["xai-sdk>=0.2.0 ; python_version >= '3.10'"]
 phonenumbers = ["phonenumbers>=8.13.33,<10.0.0"]
 graphviz = ["graphviz<1.0.0,>=0.20.3"]
 sqlmodel = ["sqlmodel<1.0.0,>=0.0.22"]
+diskcache = ["diskcache<6.0.0,>=5.6.3"]
 trafilatura = ["trafilatura<3.0.0,>=1.12.2"]
 pydub = ["pydub<1.0.0,>=0.25.1"]
 datasets = ["datasets>=3.0.1,<5.0.0"]
