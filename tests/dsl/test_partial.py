@@ -423,6 +423,23 @@ class TestLiteralTypeStreaming:
         assert result.name == "John"
         assert result.status is None
 
+    def test_literal_default_is_available_during_streaming(self):
+        """Literal fields with explicit defaults should be present in partial results."""
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+
+        results = list(PartialModel.model_from_chunks(['{"name": "Joh']))
+
+        assert len(results) == 1
+        assert results[0].type == "Person"
+        assert results[0].name == "Joh"
+        assert results[0].age is None
+
     def test_literal_rejects_complete_invalid_value(self):
         """Complete but invalid Literal values should fail validation."""
 
