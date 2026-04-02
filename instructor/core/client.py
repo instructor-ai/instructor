@@ -823,6 +823,7 @@ def from_openai(
         assert mode in {
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,
+            instructor.Mode.JSON_SCHEMA,
             instructor.Mode.FUNCTIONS,
             instructor.Mode.PARALLEL_TOOLS,
             instructor.Mode.MD_JSON,

@@ -685,7 +685,7 @@ def handle_reask_kwargs(
         # Perplexity modes
         Mode.PERPLEXITY_JSON: reask_perplexity_json,
         # OpenRouter modes
-        Mode.OPENROUTER_STRUCTURED_OUTPUTS: reask_default,
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: reask_md_json,
         # XAI modes
         Mode.XAI_JSON: reask_xai_json,
         Mode.XAI_TOOLS: reask_xai_tools,

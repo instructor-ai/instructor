@@ -119,12 +119,12 @@ def handle_templating(
     if isinstance(new_kwargs, list):
         messages = new_kwargs
         if not messages:
-            return
+            return new_kwargs
     elif isinstance(new_kwargs, dict):
         messages = new_kwargs.get("messages") or new_kwargs.get("contents")
 
     if not messages:
-        return
+        return new_kwargs
 
     if "messages" in new_kwargs:
         new_kwargs["messages"] = [
