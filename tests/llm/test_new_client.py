@@ -27,7 +27,7 @@ class User(BaseModel):
 
 
 def test_client_create():
-    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-4.1-mini")
 
     user = client.create(
         response_model=User,
@@ -39,7 +39,7 @@ def test_client_create():
 
 
 def test_client_messages_create():
-    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-4.1-mini")
 
     user = client.messages.create(
         response_model=User,
@@ -51,7 +51,7 @@ def test_client_messages_create():
 
 
 def test_client_chat_completions_create_with_response():
-    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-4.1-mini")
 
     user, completion = client.chat.completions.create_with_completion(
         response_model=User,
@@ -67,7 +67,7 @@ def test_client_chat_completions_create_with_response():
 
 
 def test_client_chat_completions_create():
-    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-4.1-mini")
 
     user = client.chat.completions.create(
         response_model=User,
@@ -79,7 +79,7 @@ def test_client_chat_completions_create():
 
 
 def test_client_chat_completions_create_partial():
-    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-4.1-mini")
 
     for user in client.chat.completions.create_partial(
         response_model=User,
@@ -90,7 +90,7 @@ def test_client_chat_completions_create_partial():
 
 
 def test_client_chat_completions_create_iterable():
-    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-4.1-mini")
 
     users = [
         user
@@ -106,7 +106,7 @@ def test_client_chat_completions_create_iterable():
 @pytest.mark.asyncio
 async def test_async_client_chat_completions_create():
     client = openai.AsyncOpenAI()
-    instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
+    instructor_client = instructor.from_openai(client, model="gpt-4.1-mini")
 
     user = await instructor_client.chat.completions.create(
         response_model=User,
@@ -120,7 +120,7 @@ async def test_async_client_chat_completions_create():
 @pytest.mark.asyncio
 async def test_async_client_chat_completions_create_partial():
     client = openai.AsyncOpenAI()
-    instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
+    instructor_client = instructor.from_openai(client, model="gpt-4.1-mini")
 
     async for user in instructor_client.chat.completions.create_partial(
         response_model=User,
@@ -133,7 +133,7 @@ async def test_async_client_chat_completions_create_partial():
 @pytest.mark.asyncio
 async def test_async_client_chat_completions_create_iterable():
     client = openai.AsyncOpenAI()
-    instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
+    instructor_client = instructor.from_openai(client, model="gpt-4.1-mini")
 
     async for user in instructor_client.chat.completions.create_iterable(
         response_model=User,
@@ -146,7 +146,7 @@ async def test_async_client_chat_completions_create_iterable():
 @pytest.mark.asyncio
 async def test_async_client_chat_completions_create_with_response():
     client = openai.AsyncOpenAI()
-    instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
+    instructor_client = instructor.from_openai(client, model="gpt-4.1-mini")
 
     user, response = await instructor_client.chat.completions.create_with_completion(
         response_model=User,
@@ -164,7 +164,7 @@ def test_client_from_anthropic_with_response():
     client = instructor.from_anthropic(
         anthropic.Anthropic(),
         max_tokens=1000,
-        model="claude-3-haiku-20240307",
+        model="claude-haiku-4-0-20250414",
     )
 
     user, response = client.messages.create_with_completion(
@@ -182,7 +182,7 @@ def test_client_anthropic_response():
     instructor_client = instructor.from_anthropic(
         client,
         max_tokens=1000,
-        model="claude-3-haiku-20240307",
+        model="claude-haiku-4-0-20250414",
     )
 
     user = instructor_client.messages.create(
@@ -206,7 +206,7 @@ def test_client_anthropic_bedrock_response():
     instructor_client = instructor.from_anthropic(
         client,
         max_tokens=1000,
-        model="anthropic.claude-3-haiku-20240307-v1:0",
+        model="anthropic.claude-haiku-4-0-20250414-v1:0",
     )
 
     user = instructor_client.messages.create(
@@ -224,7 +224,7 @@ async def test_async_client_anthropic_response():
     instructor_client = instructor.from_anthropic(
         client,
         max_tokens=1000,
-        model="claude-3-haiku-20240307",
+        model="claude-haiku-4-0-20250414",
     )
 
     user = await instructor_client.messages.create(
@@ -249,7 +249,7 @@ async def test_async_client_anthropic_bedrock_response():
     instructor_client = instructor.from_anthropic(
         client,
         max_tokens=1000,
-        model="anthropic.claude-3-haiku-20240307-v1:0",
+        model="anthropic.claude-haiku-4-0-20250414-v1:0",
     )
 
     user = await instructor_client.messages.create(

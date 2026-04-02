@@ -1,74 +1,44 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+All notable changes to instructor are documented here.
 
-## [Unreleased]
+Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-<!-- Add upcoming changes here -->
+---
 
-## [1.14.4] - 2026-01-16
+## [1.15.0] - Unreleased
 
-### Changed
-- Simplified `JsonCompleteness` by using `jiter` parsing and a sibling-based completeness heuristic (#2000)
+### Security
+- Pin litellm to `<=1.82.6` to block compromised versions 1.82.7 and 1.82.8 ([#2219](https://github.com/567-labs/instructor/pull/2219))
+- Make `diskcache` an optional dependency, removing it from all users' transitive dependency trees and mitigating CVE-2025-69872 ([#2211](https://github.com/567-labs/instructor/pull/2211))
 
 ### Fixed
-
-- Fixed Google GenAI `safety_settings` causing `400 INVALID_ARGUMENT` when requests include image content by using image-specific harm categories when needed (#1773)
-- Fixed `create_with_completion()` crashing for `list[T]` response models (where `T` is a Pydantic model) by preserving `_raw_response` on list outputs (#1303)
-- Fixed Responses API retries crashing on reasoning items by skipping non-tool-call items in `reask_responses_tools` (#2002)
-- Fixed Google GenAI dict-style `config` handling to preserve `labels` and other settings like `cached_content` and `thinking_config` (#2005)
-
-
-## [1.14.3] - 2026-01-13
+- **Usage tracking**: Preserve `response.usage` subclass type (e.g. LiteLLM, Langfuse) when accumulating token counts across retries — fixes downstream `.get()` method loss ([#2217](https://github.com/567-labs/instructor/pull/2217), [#2199](https://github.com/567-labs/instructor/pull/2199))
+- **Gemini**: Exclude `HARM_CATEGORY_IMAGE_*` safety categories from standard Gemini API calls — these are Vertex AI-only and caused `400 INVALID_ARGUMENT` errors ([#2174](https://github.com/567-labs/instructor/pull/2174))
+- **Gemini**: Detect truncated responses (`finish_reason=MAX_TOKENS`) in `GENAI_STRUCTURED_OUTPUTS` mode and raise `IncompleteOutputException` immediately instead of retrying with malformed JSON ([#2232](https://github.com/567-labs/instructor/pull/2232))
+- **`create_with_completion`**: Handle `List[Model]` response models that lack `_raw_response` attribute — previously raised `AttributeError`, now returns `None` for the completion ([#2167](https://github.com/567-labs/instructor/pull/2167))
+- **Partial streaming**: Preserve default `Literal` field values (e.g. `type: Literal["Person"] = "Person"`) during streaming instead of emitting `None` before the field arrives ([#2204](https://github.com/567-labs/instructor/pull/2204))
+- **Partial streaming**: Support PEP 604 union syntax (`str | int`) in `Partial` models on Python 3.10+ ([#2200](https://github.com/567-labs/instructor/pull/2200))
+- **Validators**: Fix `allow_override=True` in `llm_validator` — the override branch was unreachable due to a misplaced assertion, so `fixed_value` was never returned ([#2215](https://github.com/567-labs/instructor/pull/2215))
+- **Parallel tools**: `ParallelBase` responses now return `ListResponse` (consistent with `IterableBase`) instead of a raw generator with `_raw_response` set on it ([#2216](https://github.com/567-labs/instructor/pull/2216))
+- **Multimodal**: Add missing `continue` in `convert_messages` after handling typed (`audio`/`image`) messages — previously fell through to `message["role"]` causing `KeyError` ([#2139](https://github.com/567-labs/instructor/pull/2139))
+- **Anthropic**: Fix dead code path for `ANTHROPIC_REASONING_TOOLS` mode — the mode was shadowed by a duplicate `ANTHROPIC_TOOLS` check and never routed correctly ([#2140](https://github.com/567-labs/instructor/pull/2140))
 
 ### Added
-- Completeness-based validation for Partial streaming - only validates JSON structures that are structurally complete (#1999)
-- New `JsonCompleteness` class in `instructor/dsl/json_tracker.py` for tracking JSON completeness during streaming (#1999)
+- **Models**: Add Claude 4 (Opus, Sonnet, Haiku), OpenAI GPT-4.1 series, o3/o4 reasoning models, xAI Grok 3, and DeepSeek R1/V3 to `KnownModelName` type ([#2235](https://github.com/567-labs/instructor/pull/2235))
 
-### Fixed
-- Fixed Stream objects crashing reask handlers when using streaming with `max_retries > 1` (#1992)
-- Field constraints (`min_length`, `max_length`, `ge`, `le`, etc.) now work correctly during streaming (#1999)
+### Docs
+- Update GitHub organization links in README from `instructor-ai` to `567-labs` ([#2149](https://github.com/567-labs/instructor/pull/2149))
 
-### Deprecated
-- `PartialLiteralMixin` is now deprecated - completeness-based validation handles Literal/Enum types automatically (#1999)
+### Tests / CI
+- Fix `test_xai_optional_dependency` tests to use `monkeypatch` so they pass regardless of whether `xai-sdk` is installed
+- Update deprecated Anthropic model names (`claude-3-5-haiku-latest` -> `claude-haiku-4-0-20250414`, `claude-3-7-sonnet-latest` -> `claude-sonnet-4-5-20250514`)
+- Update deprecated OpenAI model names (`gpt-3.5-turbo` -> `gpt-4.1-mini`) across unit tests
+- Update stale provider model strings in `shared_config.py`: Writer palmyra-x5, Fireworks llama-v3p3, Perplexity sonar-pro
 
-## [1.14.2] - 2026-01-13
+---
 
-### Fixed
-- Fixed model validators crashing during partial streaming by skipping them until streaming completes (#1994)
-- Fixed infinite recursion with self-referential models in Partial (e.g., TreeNode with children: List["TreeNode"]) (#1997)
+## [1.14.5] - 2026-01-29
 
-### Added
-- Added `PartialLiteralMixin` documentation for handling Literal/Enum types during streaming (#1994)
-- Added final validation against original model after streaming completes to enforce required fields (#1994)
-- Added tests for recursive Partial models (#1997)
-
-## [1.14.1] - 2026-01-08
-
-### Fixed
-- Added support for cached_content in Google Gemini context caching (#1987)
-
-## [1.14.0] - 2026-01-08
-
-### Added
-- Pre-commit hook to auto-export requirements.txt for build consistency
-
-### Changed
-- Standardized provider factory methods across codebase for improved consistency
-- Standardized provider imports throughout documentation
-- Audited and standardized exception handling throughout the instructor library
-
-### Fixed
-- Fixed build issues with requirements.txt regeneration from pyproject.toml
-- Fixed provider functionality issue (#1914)
-
-### Documentation
-- Comprehensive documentation audit and SEO optimization improvements (#1944)
-- Updated documentation for responses API mode (#1946)
-- Enhanced README with PydanticAI promotion and clear feature distinctions
-- Removed incorrect model reference in client.create extraction example (#1951)
-- Fixed image base URLs in Jupyter notebook tutorials (#1922)
-
-## [1.13.0] - Previous Release
-
-For changes in earlier versions, see the [git history](https://github.com/instructor-ai/instructor/releases).
+See [GitHub releases](https://github.com/567-labs/instructor/releases/tag/v1.14.5) for details.
