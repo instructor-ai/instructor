@@ -9,7 +9,7 @@ KnownModelName = TypeAliasType(
         "anthropic/claude-opus-4-0-20250514",
         "anthropic/claude-sonnet-4-0-20250514",
         "anthropic/claude-sonnet-4-6-20250627",
-        "anthropic/claude-haiku-4-0-20250414",
+        "anthropic/claude-3-5-haiku-20241022",
         "anthropic/claude-3-7-sonnet-latest",
         "anthropic/claude-3-7-sonnet-20250219",
         "anthropic/claude-3-5-sonnet-latest",

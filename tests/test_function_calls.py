@@ -71,7 +71,7 @@ def mock_anthropic_message(request: Any) -> Message:
     return Message(
         id="test_id",
         content=[{"type": "text", "text": data_content}],
-        model="claude-haiku-4-0-20250414",
+        model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",
         stop_sequence=None,

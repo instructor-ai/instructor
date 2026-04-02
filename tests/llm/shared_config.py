@@ -23,7 +23,7 @@ PROVIDER_CONFIGS = [
         "openai",
     ),
     (
-        "anthropic/claude-haiku-4-0-20250414",
+        "anthropic/claude-3-5-haiku-20241022",
         instructor.Mode.ANTHROPIC_TOOLS,
         "ANTHROPIC_API_KEY",
         "anthropic",
