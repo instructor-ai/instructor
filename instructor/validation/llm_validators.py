@@ -64,13 +64,14 @@ def llm_validator(
             temperature=temperature,
         )
 
-        # If the response is  not valid, return the reason, this could be used in
-        # the future to generate a better response, via reasking mechanism.
-        assert resp.is_valid, resp.reason
+        # If the value is not valid but we allow overrides and the LLM
+        # suggested a corrected value, return the fixed value instead of
+        # raising an assertion error.
+        if not resp.is_valid:
+            if allow_override and resp.fixed_value is not None:
+                return resp.fixed_value
+            assert resp.is_valid, resp.reason
 
-        if allow_override and not resp.is_valid and resp.fixed_value is not None:
-            # If the value is not valid, but we allow override, return the fixed value
-            return resp.fixed_value
         return v
 
     return llm
