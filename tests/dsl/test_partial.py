@@ -531,6 +531,19 @@ class TestPartialStreamingWithComplexTypes:
         result = TruePartial.model_validate({"value": 42})
         assert result.value == 42
 
+    def test_partial_model_supports_pep604_union_annotations(self):
+        class MyResponse(BaseModel):
+            value: str | int
+
+        PartialModel = Partial[MyResponse]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"value": "hello"})
+        assert result.value == "hello"
+
+        result = TruePartial.model_validate({"value": 42})
+        assert result.value == 42
+
     def test_union_of_literals_matches_all_branches(self):
         """Union[Literal, Literal] should match values from all branches."""
 
