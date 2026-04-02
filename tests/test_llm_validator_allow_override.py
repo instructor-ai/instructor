@@ -13,7 +13,9 @@ from instructor.processing.validators import Validator
 from instructor.validation.llm_validators import llm_validator
 
 
-def _make_mock_client(*, is_valid: bool, reason: str | None = None, fixed_value: str | None = None):
+def _make_mock_client(
+    *, is_valid: bool, reason: str | None = None, fixed_value: str | None = None
+):
     """Create a mock instructor client that returns a predetermined Validator response."""
     mock_client = Mock()
     mock_client.chat.completions.create.return_value = Validator(

@@ -37,7 +37,7 @@ repos:
       - id: ty-check
         name: Run Type Check (ty)
         entry: uv
-        args: [run, ty, check, --ignore, unresolved-import]
+        args: [run, --frozen, ty, check, instructor/]
         language: system
         files: ^instructor/
         pass_filenames: false

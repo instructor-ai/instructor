@@ -271,8 +271,7 @@ class OpenAISchema(BaseModel):
         if (
             hasattr(completion, "candidates")
             and completion.candidates
-            and completion.candidates[0].finish_reason
-            == types.FinishReason.MAX_TOKENS
+            and completion.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
         ):
             raise IncompleteOutputException(last_completion=completion)
 
