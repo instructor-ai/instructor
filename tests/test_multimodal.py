@@ -608,25 +608,17 @@ def test_pdf_to_bedrock_with_path_source(tmp_path):
 
 
 def test_pdf_to_bedrock_with_url_source():
-    """Test PDF.to_bedrock with HTTP URL source."""
-    pdf_bytes = b"%PDF-1.4\nfetched content"
-
-    with patch("instructor.processing.multimodal.requests.get") as mock_get:
-        resp = MagicMock()
-        resp.content = pdf_bytes
-        resp.raise_for_status = MagicMock()
-        mock_get.return_value = resp
-
-        pdf = PDF(
-            source="https://example.com/doc.pdf",
-            media_type="application/pdf",
-            data=None,
-        )
-        bedrock_format = pdf.to_bedrock()
-
-    assert bedrock_format["document"]["format"] == "pdf"
-    assert bedrock_format["document"]["name"] == "docpdf"
-    assert bedrock_format["document"]["source"]["bytes"] == pdf_bytes
+    """Test PDF.to_bedrock rejects HTTP URL source without data (SSRF prevention)."""
+    pdf = PDF(
+        source="https://example.com/doc.pdf",
+        media_type="application/pdf",
+        data=None,
+    )
+    with pytest.raises(
+        ValueError,
+        match="PDF data is missing. Provide base64-encoded data or use an s3:// source.",
+    ):
+        pdf.to_bedrock()
 
 
 def test_pdf_to_bedrock_name_sanitization():
@@ -668,21 +660,18 @@ def test_pdf_to_bedrock_name_from_path_source(tmp_path):
 
 
 def test_pdf_to_bedrock_name_from_url():
-    """Test that PDF.to_bedrock extracts name from URL."""
+    """Test that PDF.to_bedrock uses URL path for name when data is provided."""
+    import base64
+
     pdf_bytes = b"%PDF-1.4\ntest"
+    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
 
-    with patch("instructor.processing.multimodal.requests.get") as mock_get:
-        resp = MagicMock()
-        resp.content = pdf_bytes
-        resp.raise_for_status = MagicMock()
-        mock_get.return_value = resp
-
-        pdf = PDF(
-            source="https://example.com/reports/annual-report-2024.pdf",
-            media_type="application/pdf",
-            data=None,
-        )
-        bedrock_format = pdf.to_bedrock()
+    pdf = PDF(
+        source="https://example.com/reports/annual-report-2024.pdf",
+        media_type="application/pdf",
+        data=encoded,
+    )
+    bedrock_format = pdf.to_bedrock()
 
     assert bedrock_format["document"]["name"] == "annual-report-2024pdf"
 
@@ -730,6 +719,7 @@ def test_pdf_to_bedrock_missing_data_no_source():
     )
 
     with pytest.raises(
-        ValueError, match="PDF data is missing and source cannot be loaded"
+        ValueError,
+        match="PDF data is missing. Provide base64-encoded data or use an s3:// source.",
     ):
         pdf.to_bedrock()
