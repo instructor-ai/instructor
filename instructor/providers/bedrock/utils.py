@@ -268,6 +268,10 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
                 if "document" in p and isinstance(p["document"], dict):
                     items.append(p)
                     continue
+                # Pass-through Bedrock cache point as-is
+                if "cachePoint" in p:
+                    items.append(p)
+                    continue
 
                 raise ValueError(f"Unsupported dict content for Bedrock: {p}")
 
