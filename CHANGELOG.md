@@ -9,12 +9,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased] - 1.15.1
 
+### Security
+- **Bedrock**: Block remote HTTP(S) image URL fetching in `_openai_image_part_to_bedrock` — only `data:` URLs are now accepted, preventing SSRF via user-controlled image URLs
+- **Bedrock/PDF**: Block remote URL and local file fetching in `PDF.to_bedrock` — only base64 data or `s3://` sources are now supported, preventing SSRF and local file disclosure
+
+### Added
+- **Hooks**: `completion:error` and `completion:last_attempt` handlers now receive `attempt_number`, `max_attempts`, and `is_last_attempt` as keyword arguments. Old-style handlers remain fully backward-compatible.
+- **Anthropic**: `from_provider("anthropic/...")` now sets a `User-Agent: instructor/<version>` header on the Anthropic client
+
 ### Fixed
 - **Anthropic usage**: Initialize usage correctly for `ANTHROPIC_REASONING_TOOLS` and `ANTHROPIC_PARALLEL_TOOLS` modes — previously fell through to OpenAI usage tracking with wrong field names
 - **OpenRouter**: Use `reask_md_json` for `OPENROUTER_STRUCTURED_OUTPUTS` retries instead of `reask_default` (tool-call format), fixing malformed retry prompts
 - **Templating**: Return `kwargs` unchanged instead of `None` in `handle_templating` when message list is empty or format is unrecognized; `process_message` also now returns the original message unchanged for unrecognized formats instead of `None`
 - **`from_openai`**: Allow `Mode.JSON_SCHEMA` for the OpenAI provider — it was incorrectly blocked by the mode validation check
 - **Bedrock**: Pass through `cachePoint` dicts in message content unchanged — previously raised `ValueError: Unsupported dict content for Bedrock`, breaking prompt caching (regression since v1.13.0)
+- **Bedrock**: Allow `Mode.MD_JSON` in `from_bedrock`
 - **Parallel tools**: `ParallelBase` generator now consumed into `ListResponse` in both sync and async paths, fixing `AttributeError` when setting `_raw_response` on a generator
 
 ---
