@@ -837,21 +837,11 @@ class PDF(BaseModel):
                 }
             }
 
-        # Handle bytes-based sources (URLs, paths, base64)
+        # Handle bytes-based sources (base64 only)
         if not self.data:
-            # Need to fetch/load the data
-            if isinstance(self.source, str) and self.source.startswith(
-                ("http://", "https://")
-            ):
-                response = requests.get(self.source)
-                response.raise_for_status()
-                pdf_bytes = response.content
-            elif isinstance(self.source, Path) or (
-                isinstance(self.source, str) and Path(self.source).exists()
-            ):
-                pdf_bytes = Path(self.source).read_bytes()
-            else:
-                raise ValueError("PDF data is missing and source cannot be loaded")
+            raise ValueError(
+                "PDF data is missing. Provide base64-encoded data or use an s3:// source."
+            )
         else:
             # Decode base64 data to bytes
             pdf_bytes = base64.b64decode(self.data)

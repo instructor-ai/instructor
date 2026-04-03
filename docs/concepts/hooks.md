@@ -13,9 +13,11 @@ Hooks let you intercept and handle events during the completion and parsing proc
 |-------|-------------|-------------------|
 | `completion:kwargs` | Arguments passed to completion | `def handler(*args, **kwargs)` |
 | `completion:response` | Raw API response received | `def handler(response)` |
-| `completion:error` | Error before retries | `def handler(error)` |
+| `completion:error` | Error during a retry attempt | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
 | `parse:error` | Pydantic validation failed | `def handler(error)` |
-| `completion:last_attempt` | Last retry attempt | `def handler(error)` |
+| `completion:last_attempt` | Final retry attempt exhausted | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
+
+`completion:error` and `completion:last_attempt` handlers receive optional retry metadata as keyword arguments. Old-style handlers that only accept `error` continue to work — the metadata is silently dropped for backward compatibility.
 
 ## Registering and Removing Hooks
 
@@ -61,6 +63,27 @@ from instructor.hooks import HookName
 client.on(HookName.COMPLETION_KWARGS, log_kwargs)  # Using enum
 client.on("completion:kwargs", log_kwargs)          # Using string
 ```
+
+## Retry Metadata
+
+`completion:error` and `completion:last_attempt` handlers can receive attempt metadata:
+
+```python
+import instructor
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+
+def on_error(error: Exception, *, attempt_number: int, max_attempts: int | None, is_last_attempt: bool):
+    print(f"Attempt {attempt_number}/{max_attempts or '?'} failed: {error}")
+    if is_last_attempt:
+        print("No more retries.")
+
+
+client.on("completion:error", on_error)
+```
+
+Old-style handlers that only accept `error` continue to work unchanged — the metadata is silently dropped.
 
 ## Practical Example: Logging
 

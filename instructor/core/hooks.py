@@ -3,6 +3,7 @@ from enum import Enum
 from collections import defaultdict
 from typing import Any, Literal, TypeVar, Protocol, Union
 
+import inspect
 import traceback
 import warnings
 
@@ -136,6 +137,13 @@ class Hooks:
         """
         for handler in self._handlers[hook_name]:
             try:
+                if kwargs:
+                    try:
+                        sig = inspect.signature(handler)
+                        sig.bind(*args, **kwargs)
+                    except TypeError:
+                        handler(*args)  # type: ignore
+                        continue
                 handler(*args, **kwargs)  # type: ignore
             except Exception:
                 error_traceback = traceback.format_exc()
@@ -163,23 +171,25 @@ class Hooks:
         """
         self.emit(HookName.COMPLETION_RESPONSE, response)
 
-    def emit_completion_error(self, error: Exception) -> None:
+    def emit_completion_error(self, error: Exception, **kwargs: Any) -> None:
         """
         Emit a completion error event.
 
         Args:
             error: The exception to pass to handlers
+            **kwargs: Optional metadata (attempt_number, max_attempts, is_last_attempt)
         """
-        self.emit(HookName.COMPLETION_ERROR, error)
+        self.emit(HookName.COMPLETION_ERROR, error, **kwargs)
 
-    def emit_completion_last_attempt(self, error: Exception) -> None:
+    def emit_completion_last_attempt(self, error: Exception, **kwargs: Any) -> None:
         """
         Emit a completion last attempt event.
 
         Args:
             error: The exception to pass to handlers
+            **kwargs: Optional metadata (attempt_number, max_attempts, is_last_attempt)
         """
-        self.emit(HookName.COMPLETION_LAST_ATTEMPT, error)
+        self.emit(HookName.COMPLETION_LAST_ATTEMPT, error, **kwargs)
 
     def emit_parse_error(self, error: Exception) -> None:
         """
