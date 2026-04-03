@@ -80,6 +80,8 @@ def process_message(
         message["message"] = apply_template(message["message"], context)
         return message
 
+    return message
+
 
 def handle_templating(
     kwargs: dict[str, Any], mode: Mode, context: dict[str, Any] | None = None
