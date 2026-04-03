@@ -7,6 +7,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased] - 1.15.1
+
+### Fixed
+- **Anthropic usage**: Initialize usage correctly for `ANTHROPIC_REASONING_TOOLS` and `ANTHROPIC_PARALLEL_TOOLS` modes — previously fell through to OpenAI usage tracking with wrong field names
+- **OpenRouter**: Use `reask_md_json` for `OPENROUTER_STRUCTURED_OUTPUTS` retries instead of `reask_default` (tool-call format), fixing malformed retry prompts
+- **Templating**: Return `kwargs` unchanged instead of `None` in `handle_templating` when message list is empty or format is unrecognized; `process_message` also now returns the original message unchanged for unrecognized formats instead of `None`
+- **`from_openai`**: Allow `Mode.JSON_SCHEMA` for the OpenAI provider — it was incorrectly blocked by the mode validation check
+- **Bedrock**: Pass through `cachePoint` dicts in message content unchanged — previously raised `ValueError: Unsupported dict content for Bedrock`, breaking prompt caching (regression since v1.13.0)
+- **Parallel tools**: `ParallelBase` generator now consumed into `ListResponse` in both sync and async paths, fixing `AttributeError` when setting `_raw_response` on a generator
+
+---
+
 ## [1.15.0] - 2026-04-02
 
 ### Security
