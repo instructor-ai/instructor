@@ -59,6 +59,7 @@ exclude = [
 ]
 
 [tool.ty.rules]
+unused-ignore-comment = "error"
 
 [project.optional-dependencies]
 dev = [
