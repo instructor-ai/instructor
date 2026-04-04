@@ -44,6 +44,22 @@ markers = [
     "llm: marks tests that make LLM API calls",
 ]
 
+[tool.ty.src]
+respect-ignore-files = true
+exclude = [
+    ".venv/",
+    "docs/",
+    "examples/",
+    "plan/",
+    "scripts/",
+    "tests/docs/",
+    "tests/llm/",
+    "tests/v2/",
+    "**/*.ipynb",
+]
+
+[tool.ty.rules]
+
 [project.optional-dependencies]
 dev = [
     "pytest<9.0.0,>=8.3.3",
