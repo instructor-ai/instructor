@@ -35,6 +35,7 @@ Example:
 
 from __future__ import annotations
 
+import importlib.util
 import inspect
 import logging
 from typing import Any, TypeVar, TYPE_CHECKING, cast
@@ -58,109 +59,137 @@ from ..mode import Mode
 from .multimodal import convert_messages
 from ..utils.core import prepare_response_model
 
-# Anthropic utils
-from ..providers.anthropic.utils import (
-    handle_anthropic_json,
-    handle_anthropic_parallel_tools,
-    handle_anthropic_reasoning_tools,
-    handle_anthropic_tools,
-    reask_anthropic_json,
-    reask_anthropic_tools,
-)
 
-# Bedrock utils
-from ..providers.bedrock.utils import (
-    handle_bedrock_json,
-    handle_bedrock_tools,
-    reask_bedrock_json,
-    reask_bedrock_tools,
-)
+# Lazy loading mechanism for provider-specific utilities
+# This prevents unnecessary memory usage during import
 
-# Cerebras utils
-from ..providers.cerebras.utils import (
-    handle_cerebras_json,
-    handle_cerebras_tools,
-    reask_cerebras_tools,
-)
 
-# Cohere utils
-from ..providers.cohere.utils import (
-    handle_cohere_json_schema,
-    handle_cohere_tools,
-    reask_cohere_tools,
-)
+class _LazyLoader:
+    """Lazy loader for provider-specific utilities."""
+    
+    def __init__(self):
+        self._loaded_modules = {}
+    
+    def _import_provider_module(self, provider_name: str, module_name: str = "utils"):
+        """Import a provider module lazily."""
+        if provider_name not in self._loaded_modules:
+            try:
+                # Use relative import from the current module
+                module_path = f"instructor.providers.{provider_name}.{module_name}"
+                module = importlib.import_module(module_path)
+                self._loaded_modules[provider_name] = module
+                return module
+            except ImportError:
+                # If the module cannot be imported, return None
+                # This allows the code to continue even if a provider is not available
+                return None
+        return self._loaded_modules[provider_name]
+    
+    def get_function(self, provider_name: str, function_name: str):
+        """Get a function from a provider module."""
+        module = self._import_provider_module(provider_name)
+        if module and hasattr(module, function_name):
+            return getattr(module, function_name)
+        return None
 
-# Fireworks utils
-from ..providers.fireworks.utils import (
-    handle_fireworks_json,
-    handle_fireworks_tools,
-    reask_fireworks_json,
-    reask_fireworks_tools,
-)
 
-# Google/Gemini/VertexAI utils
-from ..providers.gemini.utils import (
-    handle_gemini_json,
-    handle_gemini_tools,
-    handle_genai_structured_outputs,
-    handle_genai_tools,
-    handle_vertexai_json,
-    handle_vertexai_parallel_tools,
-    handle_vertexai_tools,
-    reask_gemini_json,
-    reask_gemini_tools,
-    reask_genai_structured_outputs,
-    reask_genai_tools,
-    reask_vertexai_json,
-    reask_vertexai_tools,
-)
+# Initialize lazy loader
+_lazy_loader = _LazyLoader()
 
-# Mistral utils
-from ..providers.mistral.utils import (
-    handle_mistral_structured_outputs,
-    handle_mistral_tools,
-    reask_mistral_structured_outputs,
-    reask_mistral_tools,
-)
 
-# OpenAI utils
-from ..providers.openai.utils import (
-    handle_functions,
-    handle_json_modes,
-    handle_json_o1,
-    handle_openrouter_structured_outputs,
-    handle_parallel_tools,
-    handle_responses_tools,
-    handle_responses_tools_with_inbuilt_tools,
-    handle_tools,
-    handle_tools_strict,
-    reask_default,
-    reask_md_json,
-    reask_responses_tools,
-    reask_tools,
-)
+# Define provider-specific function mappings
+# This allows us to map function names to their provider modules
+# without importing the modules at module initialization time
 
-# Perplexity utils
-from ..providers.perplexity.utils import (
-    handle_perplexity_json,
-    reask_perplexity_json,
-)
+_PROVIDER_FUNCTIONS = {
+    "anthropic": [
+        "handle_anthropic_json",
+        "handle_anthropic_parallel_tools", 
+        "handle_anthropic_reasoning_tools",
+        "handle_anthropic_tools",
+        "reask_anthropic_json",
+        "reask_anthropic_tools",
+    ],
+    "bedrock": [
+        "handle_bedrock_json",
+        "handle_bedrock_tools",
+        "reask_bedrock_json",
+        "reask_bedrock_tools",
+    ],
+    "cerebras": [
+        "handle_cerebras_json",
+        "handle_cerebras_tools",
+        "reask_cerebras_tools",
+    ],
+    "cohere": [
+        "handle_cohere_json_schema",
+        "handle_cohere_tools",
+        "reask_cohere_tools",
+    ],
+    "fireworks": [
+        "handle_fireworks_json",
+        "handle_fireworks_tools",
+        "reask_fireworks_json",
+        "reask_fireworks_tools",
+    ],
+    "gemini": [
+        "handle_gemini_json",
+        "handle_gemini_tools",
+        "handle_genai_structured_outputs",
+        "handle_genai_tools",
+        "handle_vertexai_json",
+        "handle_vertexai_parallel_tools",
+        "handle_vertexai_tools",
+        "reask_gemini_json",
+        "reask_gemini_tools",
+        "reask_genai_structured_outputs",
+        "reask_genai_tools",
+        "reask_vertexai_json",
+        "reask_vertexai_tools",
+    ],
+    "mistral": [
+        "handle_mistral_structured_outputs",
+        "handle_mistral_tools",
+        "reask_mistral_structured_outputs",
+        "reask_mistral_tools",
+    ],
+    "openai": [
+        "handle_functions",
+        "handle_json_modes",
+        "handle_json_o1",
+        "handle_openrouter_structured_outputs",
+        "handle_parallel_tools",
+        "handle_responses_tools",
+        "handle_responses_tools_with_inbuilt_tools",
+        "handle_tools",
+        "handle_tools_strict",
+        "reask_default",
+        "reask_md_json",
+        "reask_responses_tools",
+        "reask_tools",
+    ],
+    "perplexity": [
+        "handle_perplexity_json",
+        "reask_perplexity_json",
+    ],
+    "writer": [
+        "handle_writer_json",
+        "handle_writer_tools",
+        "reask_writer_json",
+        "reask_writer_tools",
+    ],
+    "xai": [
+        "handle_xai_json",
+        "handle_xai_tools",
+        "reask_xai_json",
+        "reask_xai_tools",
+    ],
+}
 
-# Writer utils
-from ..providers.writer.utils import (
-    handle_writer_json,
-    handle_writer_tools,
-    reask_writer_json,
-    reask_writer_tools,
-)
 
-# XAI utils
-from ..providers.xai.utils import (
-    handle_xai_json,
-    handle_xai_tools,
-    reask_xai_json,
-    reask_xai_tools,
-)
+def _get_provider_function(provider_name: str, function_name: str):
+    """Get a function from a provider module using lazy loading."""
+    return _lazy_loader.get_function(provider_name, function_name)
 
 logger = logging.getLogger("instructor")
 
