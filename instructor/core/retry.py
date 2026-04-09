@@ -44,6 +44,36 @@ T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
+# Maximum number of retry-appended messages kept in context.
+# Each retry typically adds 2 messages (assistant response + error feedback).
+# The default of 6 retains ~3 recent retries, preventing unbounded growth
+# while preserving enough history for the LLM to self-correct.
+DEFAULT_MAX_RETRY_CONTEXT_MESSAGES = 6
+
+
+def _trim_retry_context(
+    kwargs: dict[str, Any],
+    original_message_count: int,
+    max_retry_messages: int = DEFAULT_MAX_RETRY_CONTEXT_MESSAGES,
+) -> dict[str, Any]:
+    """Trim retry context messages to prevent unbounded context growth.
+
+    Keeps the original messages and at most *max_retry_messages* of the most
+    recent retry feedback messages appended by ``handle_reask_kwargs``.
+    """
+    for key in ("messages", "contents", "chat_history"):
+        if key not in kwargs:
+            continue
+        messages = kwargs[key]
+        retry_messages = messages[original_message_count:]
+        if len(retry_messages) > max_retry_messages:
+            kwargs[key] = (
+                messages[:original_message_count]
+                + retry_messages[-max_retry_messages:]
+            )
+        break
+    return kwargs
+
 
 def initialize_retrying(
     max_retries: int | Retrying | AsyncRetrying,
@@ -188,6 +218,9 @@ def retry_sync(
     # Track all failed attempts
     failed_attempts: list[FailedAttempt] = []
 
+    # Record original message count to cap retry-appended context growth
+    original_message_count = len(extract_messages(kwargs))
+
     try:
         response = None
         for attempt in max_retries:
@@ -259,6 +292,7 @@ def retry_sync(
                         exception=e,
                         failed_attempts=failed_attempts,
                     )
+                    kwargs = _trim_retry_context(kwargs, original_message_count)
                     raise e
                 except Exception as e:
                     # Emit completion:error for non-validation errors (API errors, network errors, etc.)
@@ -366,6 +400,9 @@ async def retry_async(
     # Track all failed attempts
     failed_attempts: list[FailedAttempt] = []
 
+    # Record original message count to cap retry-appended context growth
+    original_message_count = len(extract_messages(kwargs))
+
     try:
         response = None
         async for attempt in max_retries:
@@ -438,6 +475,7 @@ async def retry_async(
                         exception=e,
                         failed_attempts=failed_attempts,
                     )
+                    kwargs = _trim_retry_context(kwargs, original_message_count)
                     raise e
                 except Exception as e:
                     # Emit completion:error for non-validation errors (API errors, network errors, etc.)
