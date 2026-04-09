@@ -12,6 +12,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 
+### Tests
+- **Hooks**: Add unit tests covering `completion:error` and `completion:last_attempt` attempt metadata forwarding (`attempt_number`, `max_attempts`, `is_last_attempt`) and backward compatibility with old-style handlers ([#2222](https://github.com/567-labs/instructor/issues/2222))
+
 ---
 
 ## [1.15.1] - 2026-04-03
