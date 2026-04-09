@@ -10,7 +10,7 @@ against the validation LLM.
 
 from __future__ import annotations
 
-from unittest.mock import Mock, call
+from unittest.mock import Mock
 
 import pytest
 
