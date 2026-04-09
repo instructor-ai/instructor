@@ -61,7 +61,7 @@ multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
-openai==2.30.0
+openai==2.31.0
     # via instructor (pyproject.toml)
 propcache==0.4.1
     # via
@@ -71,7 +71,7 @@ pydantic==2.12.5
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.41.5
+pydantic-core==2.45.0
     # via
     #   instructor (pyproject.toml)
     #   pydantic
