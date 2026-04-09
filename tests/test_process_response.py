@@ -1,7 +1,11 @@
 from typing_extensions import TypedDict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from instructor.processing.response import handle_response_model
 from instructor.providers.bedrock.utils import _prepare_bedrock_converse_kwargs_internal
+from instructor.providers.openai.utils import (
+    handle_responses_tools,
+    handle_responses_tools_with_inbuilt_tools,
+)
 
 
 def test_typed_dict_conversion() -> None:
@@ -130,3 +134,49 @@ def test_bedrock_invalid_content_format() -> None:
         raise AssertionError("Should have raised ValueError")
     except ValueError as e:
         assert "Unsupported message content type for Bedrock" in str(e)
+
+
+def test_handle_responses_tools_includes_description() -> None:
+    """Tool description must be included in the RESPONSES_TOOLS payload."""
+
+    class User(BaseModel):
+        """Extract a user from text."""
+
+        name: str = Field(description="The user's full name")
+        age: int
+
+    _, new_kwargs = handle_responses_tools(User, {})
+    tool = new_kwargs["tools"][0]
+    assert "description" in tool, "tool description missing from RESPONSES_TOOLS payload"
+    assert tool["description"] == "Extract a user from text."
+
+
+def test_handle_responses_tools_fallback_description() -> None:
+    """Models without a docstring get a generated description."""
+
+    class Item(BaseModel):
+        title: str
+
+    _, new_kwargs = handle_responses_tools(Item, {})
+    tool = new_kwargs["tools"][0]
+    assert "description" in tool
+    assert "Item" in tool["description"]
+
+
+def test_handle_responses_tools_matches_inbuilt_tools_format() -> None:
+    """RESPONSES_TOOLS and RESPONSES_TOOLS_WITH_INBUILT_TOOLS must produce
+    the same tool definition for an identical response model."""
+
+    class Order(BaseModel):
+        """Process an order."""
+
+        product: str
+        quantity: int
+
+    _, kwargs_plain = handle_responses_tools(Order, {})
+    _, kwargs_inbuilt = handle_responses_tools_with_inbuilt_tools(Order, {})
+
+    plain_tool = kwargs_plain["tools"][0]
+    inbuilt_tool = kwargs_inbuilt["tools"][0]
+
+    assert plain_tool == inbuilt_tool
