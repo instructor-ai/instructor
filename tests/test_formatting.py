@@ -141,3 +141,25 @@ def test_handle_templating_with_gemini_format():
     assert result == {
         "contents": [{"role": "user", "parts": ["Hello Eve!", "How are you Eve?"]}]
     }
+
+
+def test_handle_templating_genai_skips_non_text_parts():
+    types = pytest.importorskip("google.genai").types
+
+    from instructor.templating import process_message
+
+    message = types.Content(
+        role="user",
+        parts=[
+            types.Part.from_text(text="Describe this for {{ user }}"),
+            types.Part.from_uri(
+                file_uri="https://example.com/image.jpg",
+                mime_type="image/jpeg",
+            ),
+        ],
+    )
+
+    result = process_message(message, {"user": "Alice"}, Mode.GENAI_TOOLS)
+
+    assert result.parts[0].text == "Describe this for Alice"
+    assert result.parts[1] is message.parts[1]
