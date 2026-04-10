@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Templating**: Skip non-text `google.genai.types.Part` objects (image, binary) in GENAI and VertexAI templating branches — `part.text` is `None` for these, which crashed `SandboxedEnvironment().from_string(None)` ([#2257](https://github.com/instructor-ai/instructor/pull/2257))
+
+---
+
 ## [1.15.1] - 2026-04-03
 
 ### Security
