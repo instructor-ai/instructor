@@ -446,11 +446,60 @@ Consider these trade-offs when implementing semantic validation, especially for 
 | **Flexibility** | Limited to programmable rules | Can validate against any natural language criteria |
 | **Maintenance** | Rules must be updated manually | Criteria can be more adaptable |
 
+## Local Semantic Validation with Semantix
+
+While `llm_validator` uses an LLM API call for each validation, [semantix](https://github.com/labrat-akhona/semantix-ai) offers an alternative approach that runs semantic validation **locally** using Natural Language Inference (NLI) models — no API calls, no additional cost per validation.
+
+Semantix provides a `semantic_validator` function that integrates directly with Instructor's retry mechanism:
+
+```bash
+pip install 'semantix-ai[instructor]'
+```
+
+```python
+from pydantic import BaseModel
+from semantix.integrations.instructor import semantic_validator, SemanticStr
+from semantix import Intent
+
+# Define what the output should mean
+class Polite(Intent):
+    """The text must be polite, professional, and free of aggressive language."""
+
+# Use as a field validator
+class Response(BaseModel):
+    reply: Annotated[str, AfterValidator(semantic_validator(Polite))]
+```
+
+Or use the shorthand `SemanticStr` type annotation:
+
+```python
+from semantix.integrations.instructor import SemanticStr
+
+class Response(BaseModel):
+    reply: SemanticStr["must be polite and professional", 0.85]
+```
+
+On validation failure, `semantic_validator` raises `ValueError` — which Instructor catches and retries automatically with `max_retries`.
+
+### When to Use Each Approach
+
+| Aspect | `llm_validator` | `semantix` |
+|--------|----------------|------------|
+| **Validation engine** | LLM API call | Local NLI model |
+| **Latency** | 500ms+ per validation | ~15ms per validation |
+| **Cost** | Tokens per validation | Zero (runs locally) |
+| **Offline support** | No | Yes |
+| **Nuance** | High (full LLM reasoning) | Good (NLI entailment scoring) |
+| **Best for** | Complex, subjective criteria | High-volume, latency-sensitive validation |
+
+Both approaches work with Instructor's retry system. You can even combine them — use semantix for fast local checks and `llm_validator` for complex criteria that benefit from full LLM reasoning.
+
 ## Related Resources
 
 - [Validation in Instructor](./validation.md) - Core validation concepts
 - [Custom Validators](../learning/validation/custom_validators.md) - Creating custom validators
 - [llm_validator API Reference](../api.md#api-reference) - Full API reference
+- [semantix documentation](https://github.com/labrat-akhona/semantix-ai) - Local semantic validation
 
 ---
 
