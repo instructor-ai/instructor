@@ -54,113 +54,113 @@ from ..dsl.simple_type import AdapterBase
 
 if TYPE_CHECKING:
     from .function_calls import OpenAISchema
+
+    # Provider utils (type-checking only; loaded lazily at runtime)
+    from ..providers.anthropic.utils import (
+        handle_anthropic_json as handle_anthropic_json,
+        handle_anthropic_parallel_tools as handle_anthropic_parallel_tools,
+        handle_anthropic_reasoning_tools as handle_anthropic_reasoning_tools,
+        handle_anthropic_tools as handle_anthropic_tools,
+        reask_anthropic_json as reask_anthropic_json,
+        reask_anthropic_tools as reask_anthropic_tools,
+    )
+    from ..providers.bedrock.utils import (
+        handle_bedrock_json as handle_bedrock_json,
+        handle_bedrock_tools as handle_bedrock_tools,
+        reask_bedrock_json as reask_bedrock_json,
+        reask_bedrock_tools as reask_bedrock_tools,
+    )
+    from ..providers.cerebras.utils import (
+        handle_cerebras_json as handle_cerebras_json,
+        handle_cerebras_tools as handle_cerebras_tools,
+        reask_cerebras_tools as reask_cerebras_tools,
+    )
+    from ..providers.cohere.utils import (
+        handle_cohere_json_schema as handle_cohere_json_schema,
+        handle_cohere_tools as handle_cohere_tools,
+        reask_cohere_tools as reask_cohere_tools,
+    )
+    from ..providers.fireworks.utils import (
+        handle_fireworks_json as handle_fireworks_json,
+        handle_fireworks_tools as handle_fireworks_tools,
+        reask_fireworks_json as reask_fireworks_json,
+        reask_fireworks_tools as reask_fireworks_tools,
+    )
+    from ..providers.gemini.utils import (
+        handle_gemini_json as handle_gemini_json,
+        handle_gemini_tools as handle_gemini_tools,
+        handle_genai_structured_outputs as handle_genai_structured_outputs,
+        handle_genai_tools as handle_genai_tools,
+        handle_vertexai_json as handle_vertexai_json,
+        handle_vertexai_parallel_tools as handle_vertexai_parallel_tools,
+        handle_vertexai_tools as handle_vertexai_tools,
+        reask_gemini_json as reask_gemini_json,
+        reask_gemini_tools as reask_gemini_tools,
+        reask_genai_structured_outputs as reask_genai_structured_outputs,
+        reask_genai_tools as reask_genai_tools,
+        reask_vertexai_json as reask_vertexai_json,
+        reask_vertexai_tools as reask_vertexai_tools,
+    )
+    from ..providers.mistral.utils import (
+        handle_mistral_structured_outputs as handle_mistral_structured_outputs,
+        handle_mistral_tools as handle_mistral_tools,
+        reask_mistral_structured_outputs as reask_mistral_structured_outputs,
+        reask_mistral_tools as reask_mistral_tools,
+    )
+    from ..providers.openai.utils import (
+        handle_functions as handle_functions,
+        handle_json_modes as handle_json_modes,
+        handle_json_o1 as handle_json_o1,
+        handle_openrouter_structured_outputs as handle_openrouter_structured_outputs,
+        handle_parallel_tools as handle_parallel_tools,
+        handle_responses_tools as handle_responses_tools,
+        handle_responses_tools_with_inbuilt_tools as handle_responses_tools_with_inbuilt_tools,
+        handle_tools as handle_tools,
+        handle_tools_strict as handle_tools_strict,
+        reask_default as reask_default,
+        reask_md_json as reask_md_json,
+        reask_responses_tools as reask_responses_tools,
+        reask_tools as reask_tools,
+    )
+    from ..providers.perplexity.utils import (
+        handle_perplexity_json as handle_perplexity_json,
+        reask_perplexity_json as reask_perplexity_json,
+    )
+    from ..providers.writer.utils import (
+        handle_writer_json as handle_writer_json,
+        handle_writer_tools as handle_writer_tools,
+        reask_writer_json as reask_writer_json,
+        reask_writer_tools as reask_writer_tools,
+    )
+    from ..providers.xai.utils import (
+        handle_xai_json as handle_xai_json,
+        handle_xai_tools as handle_xai_tools,
+        reask_xai_json as reask_xai_json,
+        reask_xai_tools as reask_xai_tools,
+    )
+
+import importlib
+
 from ..mode import Mode
 from .multimodal import convert_messages
 from ..utils.core import prepare_response_model
 
-# Anthropic utils
-from ..providers.anthropic.utils import (
-    handle_anthropic_json,
-    handle_anthropic_parallel_tools,
-    handle_anthropic_reasoning_tools,
-    handle_anthropic_tools,
-    reask_anthropic_json,
-    reask_anthropic_tools,
-)
+_provider_cache: dict[str, Any] = {}
 
-# Bedrock utils
-from ..providers.bedrock.utils import (
-    handle_bedrock_json,
-    handle_bedrock_tools,
-    reask_bedrock_json,
-    reask_bedrock_tools,
-)
 
-# Cerebras utils
-from ..providers.cerebras.utils import (
-    handle_cerebras_json,
-    handle_cerebras_tools,
-    reask_cerebras_tools,
-)
+def _lazy(module_path: str, func_name: str):
+    """Return a callable that lazily imports a provider function on first use."""
 
-# Cohere utils
-from ..providers.cohere.utils import (
-    handle_cohere_json_schema,
-    handle_cohere_tools,
-    reask_cohere_tools,
-)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        key = f"{module_path}.{func_name}"
+        func = _provider_cache.get(key)
+        if func is None:
+            mod = importlib.import_module(module_path, package=__package__)
+            func = getattr(mod, func_name)
+            _provider_cache[key] = func
+        return func(*args, **kwargs)
 
-# Fireworks utils
-from ..providers.fireworks.utils import (
-    handle_fireworks_json,
-    handle_fireworks_tools,
-    reask_fireworks_json,
-    reask_fireworks_tools,
-)
-
-# Google/Gemini/VertexAI utils
-from ..providers.gemini.utils import (
-    handle_gemini_json,
-    handle_gemini_tools,
-    handle_genai_structured_outputs,
-    handle_genai_tools,
-    handle_vertexai_json,
-    handle_vertexai_parallel_tools,
-    handle_vertexai_tools,
-    reask_gemini_json,
-    reask_gemini_tools,
-    reask_genai_structured_outputs,
-    reask_genai_tools,
-    reask_vertexai_json,
-    reask_vertexai_tools,
-)
-
-# Mistral utils
-from ..providers.mistral.utils import (
-    handle_mistral_structured_outputs,
-    handle_mistral_tools,
-    reask_mistral_structured_outputs,
-    reask_mistral_tools,
-)
-
-# OpenAI utils
-from ..providers.openai.utils import (
-    handle_functions,
-    handle_json_modes,
-    handle_json_o1,
-    handle_openrouter_structured_outputs,
-    handle_parallel_tools,
-    handle_responses_tools,
-    handle_responses_tools_with_inbuilt_tools,
-    handle_tools,
-    handle_tools_strict,
-    reask_default,
-    reask_md_json,
-    reask_responses_tools,
-    reask_tools,
-)
-
-# Perplexity utils
-from ..providers.perplexity.utils import (
-    handle_perplexity_json,
-    reask_perplexity_json,
-)
-
-# Writer utils
-from ..providers.writer.utils import (
-    handle_writer_json,
-    handle_writer_tools,
-    reask_writer_json,
-    reask_writer_tools,
-)
-
-# XAI utils
-from ..providers.xai.utils import (
-    handle_xai_json,
-    handle_xai_tools,
-    reask_xai_json,
-    reask_xai_tools,
-)
+    return wrapper
 
 logger = logging.getLogger("instructor")
 
@@ -432,9 +432,9 @@ def handle_response_model(
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     PARALLEL_MODES = {
-        Mode.PARALLEL_TOOLS: handle_parallel_tools,
-        Mode.VERTEXAI_PARALLEL_TOOLS: handle_vertexai_parallel_tools,
-        Mode.ANTHROPIC_PARALLEL_TOOLS: handle_anthropic_parallel_tools,
+        Mode.PARALLEL_TOOLS: _lazy("..providers.openai.utils", "handle_parallel_tools"),
+        Mode.VERTEXAI_PARALLEL_TOOLS: _lazy("..providers.gemini.utils", "handle_vertexai_parallel_tools"),
+        Mode.ANTHROPIC_PARALLEL_TOOLS: _lazy("..providers.anthropic.utils", "handle_anthropic_parallel_tools"),
     }
 
     if mode in PARALLEL_MODES:
@@ -458,43 +458,55 @@ def handle_response_model(
     if response_model is not None:
         response_model = prepare_response_model(response_model)
 
+    _openai = "..providers.openai.utils"
+    _anthropic = "..providers.anthropic.utils"
+    _gemini = "..providers.gemini.utils"
+    _mistral = "..providers.mistral.utils"
+    _cohere = "..providers.cohere.utils"
+    _cerebras = "..providers.cerebras.utils"
+    _fireworks = "..providers.fireworks.utils"
+    _writer = "..providers.writer.utils"
+    _bedrock = "..providers.bedrock.utils"
+    _perplexity = "..providers.perplexity.utils"
+    _xai = "..providers.xai.utils"
+
     mode_handlers = {  # type: ignore
-        Mode.FUNCTIONS: handle_functions,
-        Mode.TOOLS_STRICT: handle_tools_strict,
-        Mode.TOOLS: handle_tools,
-        Mode.MISTRAL_TOOLS: handle_mistral_tools,
-        Mode.MISTRAL_STRUCTURED_OUTPUTS: handle_mistral_structured_outputs,
-        Mode.JSON_O1: handle_json_o1,
-        Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
-        Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
-        Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
-        Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
-        Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
-        Mode.ANTHROPIC_JSON: handle_anthropic_json,
-        Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
-        Mode.COHERE_TOOLS: handle_cohere_tools,
-        Mode.GEMINI_JSON: handle_gemini_json,
-        Mode.GEMINI_TOOLS: handle_gemini_tools,
-        Mode.GENAI_TOOLS: lambda rm, nk: handle_genai_tools(rm, nk, autodetect_images),
-        Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: handle_genai_structured_outputs(
+        Mode.FUNCTIONS: _lazy(_openai, "handle_functions"),
+        Mode.TOOLS_STRICT: _lazy(_openai, "handle_tools_strict"),
+        Mode.TOOLS: _lazy(_openai, "handle_tools"),
+        Mode.MISTRAL_TOOLS: _lazy(_mistral, "handle_mistral_tools"),
+        Mode.MISTRAL_STRUCTURED_OUTPUTS: _lazy(_mistral, "handle_mistral_structured_outputs"),
+        Mode.JSON_O1: _lazy(_openai, "handle_json_o1"),
+        Mode.JSON: lambda rm, nk: _lazy(_openai, "handle_json_modes")(rm, nk, Mode.JSON),  # type: ignore
+        Mode.MD_JSON: lambda rm, nk: _lazy(_openai, "handle_json_modes")(rm, nk, Mode.MD_JSON),  # type: ignore
+        Mode.JSON_SCHEMA: lambda rm, nk: _lazy(_openai, "handle_json_modes")(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
+        Mode.ANTHROPIC_TOOLS: _lazy(_anthropic, "handle_anthropic_tools"),
+        Mode.ANTHROPIC_REASONING_TOOLS: _lazy(_anthropic, "handle_anthropic_reasoning_tools"),
+        Mode.ANTHROPIC_JSON: _lazy(_anthropic, "handle_anthropic_json"),
+        Mode.COHERE_JSON_SCHEMA: _lazy(_cohere, "handle_cohere_json_schema"),
+        Mode.COHERE_TOOLS: _lazy(_cohere, "handle_cohere_tools"),
+        Mode.GEMINI_JSON: _lazy(_gemini, "handle_gemini_json"),
+        Mode.GEMINI_TOOLS: _lazy(_gemini, "handle_gemini_tools"),
+        Mode.GENAI_TOOLS: lambda rm, nk: _lazy(_gemini, "handle_genai_tools")(rm, nk, autodetect_images),
+        Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: _lazy(_gemini, "handle_genai_structured_outputs")(
             rm, nk, autodetect_images
         ),
-        Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
-        Mode.VERTEXAI_JSON: handle_vertexai_json,
-        Mode.CEREBRAS_JSON: handle_cerebras_json,
-        Mode.CEREBRAS_TOOLS: handle_cerebras_tools,
-        Mode.FIREWORKS_JSON: handle_fireworks_json,
-        Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
-        Mode.WRITER_TOOLS: handle_writer_tools,
-        Mode.WRITER_JSON: handle_writer_json,
-        Mode.BEDROCK_JSON: handle_bedrock_json,
-        Mode.BEDROCK_TOOLS: handle_bedrock_tools,
-        Mode.PERPLEXITY_JSON: handle_perplexity_json,
-        Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
-        Mode.RESPONSES_TOOLS: handle_responses_tools,
-        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
-        Mode.XAI_JSON: handle_xai_json,
-        Mode.XAI_TOOLS: handle_xai_tools,
+        Mode.VERTEXAI_TOOLS: _lazy(_gemini, "handle_vertexai_tools"),
+        Mode.VERTEXAI_JSON: _lazy(_gemini, "handle_vertexai_json"),
+        Mode.CEREBRAS_JSON: _lazy(_cerebras, "handle_cerebras_json"),
+        Mode.CEREBRAS_TOOLS: _lazy(_cerebras, "handle_cerebras_tools"),
+        Mode.FIREWORKS_JSON: _lazy(_fireworks, "handle_fireworks_json"),
+        Mode.FIREWORKS_TOOLS: _lazy(_fireworks, "handle_fireworks_tools"),
+        Mode.WRITER_TOOLS: _lazy(_writer, "handle_writer_tools"),
+        Mode.WRITER_JSON: _lazy(_writer, "handle_writer_json"),
+        Mode.BEDROCK_JSON: _lazy(_bedrock, "handle_bedrock_json"),
+        Mode.BEDROCK_TOOLS: _lazy(_bedrock, "handle_bedrock_tools"),
+        Mode.PERPLEXITY_JSON: _lazy(_perplexity, "handle_perplexity_json"),
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: _lazy(_openai, "handle_openrouter_structured_outputs"),
+        Mode.RESPONSES_TOOLS: _lazy(_openai, "handle_responses_tools"),
+        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: _lazy(_openai, "handle_responses_tools_with_inbuilt_tools"),
+        Mode.XAI_JSON: _lazy(_xai, "handle_xai_json"),
+        Mode.XAI_TOOLS: _lazy(_xai, "handle_xai_tools"),
     }
 
     if mode in mode_handlers:
@@ -641,61 +653,73 @@ def handle_reask_kwargs(
         exception, failed_attempts=failed_attempts
     )
 
+    _openai = "..providers.openai.utils"
+    _anthropic = "..providers.anthropic.utils"
+    _gemini = "..providers.gemini.utils"
+    _mistral = "..providers.mistral.utils"
+    _cohere = "..providers.cohere.utils"
+    _cerebras = "..providers.cerebras.utils"
+    _fireworks = "..providers.fireworks.utils"
+    _writer = "..providers.writer.utils"
+    _bedrock = "..providers.bedrock.utils"
+    _perplexity = "..providers.perplexity.utils"
+    _xai = "..providers.xai.utils"
+
     # Organized by provider (matching process_response.py structure)
     REASK_HANDLERS = {
         # OpenAI modes
-        Mode.FUNCTIONS: reask_default,
-        Mode.TOOLS_STRICT: reask_tools,
-        Mode.TOOLS: reask_tools,
-        Mode.JSON_O1: reask_default,
-        Mode.JSON: reask_md_json,
-        Mode.MD_JSON: reask_md_json,
-        Mode.JSON_SCHEMA: reask_md_json,
-        Mode.PARALLEL_TOOLS: reask_tools,
-        Mode.RESPONSES_TOOLS: reask_responses_tools,
-        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: reask_responses_tools,
+        Mode.FUNCTIONS: _lazy(_openai, "reask_default"),
+        Mode.TOOLS_STRICT: _lazy(_openai, "reask_tools"),
+        Mode.TOOLS: _lazy(_openai, "reask_tools"),
+        Mode.JSON_O1: _lazy(_openai, "reask_default"),
+        Mode.JSON: _lazy(_openai, "reask_md_json"),
+        Mode.MD_JSON: _lazy(_openai, "reask_md_json"),
+        Mode.JSON_SCHEMA: _lazy(_openai, "reask_md_json"),
+        Mode.PARALLEL_TOOLS: _lazy(_openai, "reask_tools"),
+        Mode.RESPONSES_TOOLS: _lazy(_openai, "reask_responses_tools"),
+        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: _lazy(_openai, "reask_responses_tools"),
         # Mistral modes
-        Mode.MISTRAL_TOOLS: reask_mistral_tools,
-        Mode.MISTRAL_STRUCTURED_OUTPUTS: reask_mistral_structured_outputs,
+        Mode.MISTRAL_TOOLS: _lazy(_mistral, "reask_mistral_tools"),
+        Mode.MISTRAL_STRUCTURED_OUTPUTS: _lazy(_mistral, "reask_mistral_structured_outputs"),
         # Anthropic modes
-        Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
-        Mode.ANTHROPIC_REASONING_TOOLS: reask_anthropic_tools,
-        Mode.ANTHROPIC_JSON: reask_anthropic_json,
-        Mode.ANTHROPIC_PARALLEL_TOOLS: reask_anthropic_tools,
+        Mode.ANTHROPIC_TOOLS: _lazy(_anthropic, "reask_anthropic_tools"),
+        Mode.ANTHROPIC_REASONING_TOOLS: _lazy(_anthropic, "reask_anthropic_tools"),
+        Mode.ANTHROPIC_JSON: _lazy(_anthropic, "reask_anthropic_json"),
+        Mode.ANTHROPIC_PARALLEL_TOOLS: _lazy(_anthropic, "reask_anthropic_tools"),
         # Cohere modes
-        Mode.COHERE_TOOLS: reask_cohere_tools,
-        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,
+        Mode.COHERE_TOOLS: _lazy(_cohere, "reask_cohere_tools"),
+        Mode.COHERE_JSON_SCHEMA: _lazy(_cohere, "reask_cohere_tools"),
         # Gemini/Google modes
-        Mode.GEMINI_TOOLS: reask_gemini_tools,
-        Mode.GEMINI_JSON: reask_gemini_json,
-        Mode.GENAI_TOOLS: reask_genai_tools,
-        Mode.GENAI_STRUCTURED_OUTPUTS: reask_genai_structured_outputs,
+        Mode.GEMINI_TOOLS: _lazy(_gemini, "reask_gemini_tools"),
+        Mode.GEMINI_JSON: _lazy(_gemini, "reask_gemini_json"),
+        Mode.GENAI_TOOLS: _lazy(_gemini, "reask_genai_tools"),
+        Mode.GENAI_STRUCTURED_OUTPUTS: _lazy(_gemini, "reask_genai_structured_outputs"),
         # VertexAI modes
-        Mode.VERTEXAI_TOOLS: reask_vertexai_tools,
-        Mode.VERTEXAI_JSON: reask_vertexai_json,
-        Mode.VERTEXAI_PARALLEL_TOOLS: reask_vertexai_tools,
+        Mode.VERTEXAI_TOOLS: _lazy(_gemini, "reask_vertexai_tools"),
+        Mode.VERTEXAI_JSON: _lazy(_gemini, "reask_vertexai_json"),
+        Mode.VERTEXAI_PARALLEL_TOOLS: _lazy(_gemini, "reask_vertexai_tools"),
         # Cerebras modes
-        Mode.CEREBRAS_TOOLS: reask_cerebras_tools,
-        Mode.CEREBRAS_JSON: reask_default,
+        Mode.CEREBRAS_TOOLS: _lazy(_cerebras, "reask_cerebras_tools"),
+        Mode.CEREBRAS_JSON: _lazy(_openai, "reask_default"),
         # Fireworks modes
-        Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
-        Mode.FIREWORKS_JSON: reask_fireworks_json,
+        Mode.FIREWORKS_TOOLS: _lazy(_fireworks, "reask_fireworks_tools"),
+        Mode.FIREWORKS_JSON: _lazy(_fireworks, "reask_fireworks_json"),
         # Writer modes
-        Mode.WRITER_TOOLS: reask_writer_tools,
-        Mode.WRITER_JSON: reask_writer_json,
+        Mode.WRITER_TOOLS: _lazy(_writer, "reask_writer_tools"),
+        Mode.WRITER_JSON: _lazy(_writer, "reask_writer_json"),
         # Bedrock modes
-        Mode.BEDROCK_TOOLS: reask_bedrock_tools,
-        Mode.BEDROCK_JSON: reask_bedrock_json,
+        Mode.BEDROCK_TOOLS: _lazy(_bedrock, "reask_bedrock_tools"),
+        Mode.BEDROCK_JSON: _lazy(_bedrock, "reask_bedrock_json"),
         # Perplexity modes
-        Mode.PERPLEXITY_JSON: reask_perplexity_json,
+        Mode.PERPLEXITY_JSON: _lazy(_perplexity, "reask_perplexity_json"),
         # OpenRouter modes
-        Mode.OPENROUTER_STRUCTURED_OUTPUTS: reask_md_json,
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: _lazy(_openai, "reask_md_json"),
         # XAI modes
-        Mode.XAI_JSON: reask_xai_json,
-        Mode.XAI_TOOLS: reask_xai_tools,
+        Mode.XAI_JSON: _lazy(_xai, "reask_xai_json"),
+        Mode.XAI_TOOLS: _lazy(_xai, "reask_xai_tools"),
     }
 
     if mode in REASK_HANDLERS:
         return REASK_HANDLERS[mode](kwargs_copy, response, exception)
     else:
-        return reask_default(kwargs_copy, response, exception)
+        return _lazy(_openai, "reask_default")(kwargs_copy, response, exception)
