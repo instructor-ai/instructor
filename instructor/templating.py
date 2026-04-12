@@ -23,7 +23,7 @@ def process_message(
             parts=[
                 (
                     types.Part.from_text(text=apply_template(part.text, context))
-                    if hasattr(part, "text")
+                    if isinstance(getattr(part, "text", None), str)
                     else part
                 )
                 for part in message.parts
@@ -44,7 +44,7 @@ def process_message(
             parts=[
                 (
                     gm.Part.from_text(apply_template(part.text, context))
-                    if hasattr(part, "text")
+                    if isinstance(getattr(part, "text", None), str)
                     else part
                 )
                 for part in message.parts

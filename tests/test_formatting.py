@@ -141,3 +141,28 @@ def test_handle_templating_with_gemini_format():
     assert result == {
         "contents": [{"role": "user", "parts": ["Hello Eve!", "How are you Eve?"]}]
     }
+
+
+def test_handle_templating_with_genai_multimodal_parts():
+    """Non-text Parts (images/URIs) have text=None and must pass through untouched.
+
+    Regression test for #2253: apply_template was being called with None,
+    crashing Jinja2 with "Can't compile non template nodes".
+    """
+    from google.genai import types
+
+    text_part = types.Part.from_text(text="Describe {{ subject }}")
+    image_part = types.Part.from_uri(
+        file_uri="gs://example/cat.png", mime_type="image/png"
+    )
+    content = types.Content(role="user", parts=[text_part, image_part])
+
+    kwargs = {"contents": [content]}
+    context = {"subject": "this image"}
+
+    result = handle_templating(kwargs, Mode.GENAI_TOOLS, context)
+
+    processed = result["contents"][0]
+    assert processed.parts[0].text == "Describe this image"
+    assert processed.parts[1].text is None
+    assert processed.parts[1].file_data.file_uri == "gs://example/cat.png"
