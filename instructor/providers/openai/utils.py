@@ -383,17 +383,11 @@ def handle_responses_tools(
             f"the required parameters with correct types"
         )
 
-    new_kwargs["tools"] = [
-        {
-            "type": "function",
-            "name": schema["function"]["name"],
-            "parameters": schema["function"]["parameters"],
-        }
-    ]
+    new_kwargs["tools"] = [tool_definition]
 
     new_kwargs["tool_choice"] = {
         "type": "function",
-        "name": generate_openai_schema(response_model)["name"],
+        "name": tool_definition["name"],
     }
 
     return response_model, new_kwargs
