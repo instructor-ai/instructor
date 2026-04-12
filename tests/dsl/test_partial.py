@@ -45,6 +45,10 @@ class UnionWithNested(BaseModel):
     c: NestedB
 
 
+class PEP604UnionField(BaseModel):
+    value: str | int
+
+
 def test_partial():
     partial = Partial[SamplePartial]
     assert partial.model_json_schema() == {
@@ -208,6 +212,14 @@ def test_union_with_nested():
     partial.get_partial_model().model_validate_json(
         '{"a": [{"b": "b"}, {"d": "d"}], "b": [{"b": "b"}], "c": {"d": "d"}, "e": [1, "a"]}'
     )
+
+
+def test_partial_streaming_with_pep604_union_field():
+    partial = Partial[PEP604UnionField]
+
+    models = list(partial.model_from_chunks(['{"value": ', "1}"]))
+
+    assert models[-1].model_dump() == {"value": 1}
 
 
 def test_partial_with_default_factory():
