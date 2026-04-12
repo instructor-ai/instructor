@@ -145,7 +145,7 @@ wheels = [
 
 [[package]]
 name = "anthropic"
-version = "0.88.0"
+version = "0.93.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -157,9 +157,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/86/68/565f13059c0a6a6fd5f96f306f2a0fb478a0e1174ec18a4df16b5fac9379/anthropic-0.88.0.tar.gz", hash = "sha256:f4c7f6863d08c869913516f08d658fe53caaf8bcc4fbea3218df343d2a876c58", size = 596654, upload-time = "2026-04-01T19:59:05.287Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/70/2429d6f7c2516db99fb342c3ad89575ab3e0cd31d3d2f6cba5fdf5e9c65b/anthropic-0.93.0.tar.gz", hash = "sha256:fea8376f7d5cdf99d5e8e85a48fe7a7bd8ab307cdfee4b1e8283a18b1c0ce1b5", size = 654155, upload-time = "2026-04-09T18:13:53.522Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/ac/68f646998160c9f2e6f9353a31dd87292ef02b915b455aaf70a52a059a75/anthropic-0.88.0-py3-none-any.whl", hash = "sha256:71898b32332bc75d9739bc10095288d40a29605da6d00da2fe832b1aa036552f", size = 478338, upload-time = "2026-04-01T19:59:03.832Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/7b/5b2c11902707c49c7a99418eb027ed3eb63876193fee5c80b5c878e3a673/anthropic-0.93.0-py3-none-any.whl", hash = "sha256:2c20b2ce6d305564c66a6cbaedddee8efdd3b9753098bf314093fcf4c662d04c", size = 627482, upload-time = "2026-04-09T18:13:51.606Z" },
 ]
 
 [[package]]
@@ -1818,6 +1818,7 @@ diskcache = [
 docs = [
     { name = "mkdocs" },
     { name = "mkdocs-jupyter" },
+    { name = "mkdocs-llmstxt", marker = "python_full_version >= '3.10'" },
     { name = "mkdocs-material", extra = ["imaging"] },
     { name = "mkdocs-material-extensions" },
     { name = "mkdocs-minify-plugin" },
@@ -1885,8 +1886,8 @@ xai = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.88.0" },
-    { name = "anthropic", marker = "extra == 'dev'", specifier = "==0.88.0" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.93.0" },
+    { name = "anthropic", marker = "extra == 'dev'", specifier = "==0.93.0" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
@@ -1902,16 +1903,17 @@ requires-dist = [
     { name = "graphviz", marker = "extra == 'graphviz'", specifier = ">=0.20.3,<1.0.0" },
     { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<1.1.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
-    { name = "jiter", specifier = ">=0.6.1,<0.14" },
+    { name = "jiter", specifier = ">=0.6.1,<0.15" },
     { name = "jsonref", marker = "extra == 'dev'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'google-genai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'vertexai'", specifier = ">=1.1.0,<2.0.0" },
-    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.35.31,<=1.83.0" },
-    { name = "litellm", marker = "extra == 'test-docs'", specifier = ">=1.35.31,<=1.83.0" },
+    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.35.31,<=1.83.4" },
+    { name = "litellm", marker = "extra == 'test-docs'", specifier = ">=1.35.31,<=1.83.4" },
     { name = "mistralai", marker = "extra == 'mistral'", specifier = ">=1.5.1,<2.0.0" },
     { name = "mistralai", marker = "extra == 'test-docs'", specifier = ">=1.5.1,<2.0.0" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6.1,<2.0.0" },
     { name = "mkdocs-jupyter", marker = "extra == 'docs'", specifier = ">=0.24.6,<0.27.0" },
+    { name = "mkdocs-llmstxt", marker = "python_full_version >= '3.10' and extra == 'docs'", specifier = ">=0.5.0,<0.6.0" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.6.14" },
     { name = "mkdocs-material", extras = ["imaging"], marker = "extra == 'docs'", specifier = ">=9.5.9,<10.0.0" },
     { name = "mkdocs-material-extensions", marker = "extra == 'docs'", specifier = ">=1.3.1" },
@@ -2468,6 +2470,19 @@ wheels = [
 ]
 
 [[package]]
+name = "markdownify"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4", marker = "python_full_version >= '3.10'" },
+    { name = "six", marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3f/bc/c8c8eea5335341306b0fa7e1cb33c5e1c8d24ef70ddd684da65f41c49c92/markdownify-1.2.2.tar.gz", hash = "sha256:b274f1b5943180b031b699b199cbaeb1e2ac938b75851849a31fd0c3d6603d09", size = 18816, upload-time = "2025-11-16T19:21:18.565Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/ce/f1e3e9d959db134cedf06825fae8d5b294bd368aacdd0831a3975b7c4d55/markdownify-1.2.2-py3-none-any.whl", hash = "sha256:3f02d3cc52714084d6e589f70397b6fc9f2f3a8531481bf35e8cc39f975e186a", size = 15724, upload-time = "2025-11-16T19:21:17.622Z" },
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2545,6 +2560,32 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/99/5b/a36a337438a14116b16480db471ad061c36c3694df7c2084a0da7ba538b7/matplotlib_inline-0.1.7.tar.gz", hash = "sha256:8423b23ec666be3d16e16b60bdd8ac4e86e840ebd1dd11a30b9f117f2fa0ab90", size = 8159, upload-time = "2024-04-15T13:44:44.803Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8f/8e/9ad090d3553c280a8060fbf6e24dc1c0c29704ee7d1c372f0c174aa59285/matplotlib_inline-0.1.7-py3-none-any.whl", hash = "sha256:df192d39a4ff8f21b1895d72e6a13f5fcc5099f00fa84384e0ea28c2cc0653ca", size = 9899, upload-time = "2024-04-15T13:44:43.265Z" },
+]
+
+[[package]]
+name = "mdformat"
+version = "0.7.22"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown-it-py", marker = "python_full_version >= '3.10'" },
+    { name = "tomli", marker = "python_full_version == '3.10.*'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fc/eb/b5cbf2484411af039a3d4aeb53a5160fae25dd8c84af6a4243bc2f3fedb3/mdformat-0.7.22.tar.gz", hash = "sha256:eef84fa8f233d3162734683c2a8a6222227a229b9206872e6139658d99acb1ea", size = 34610, upload-time = "2025-01-30T18:00:51.418Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f2/6f/94a7344f6d634fe3563bea8b33bccedee37f2726f7807e9a58440dc91627/mdformat-0.7.22-py3-none-any.whl", hash = "sha256:61122637c9e1d9be1329054f3fa216559f0d1f722b7919b060a8c2a4ae1850e5", size = 34447, upload-time = "2025-01-30T18:00:48.708Z" },
+]
+
+[[package]]
+name = "mdformat-tables"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mdformat", marker = "python_full_version >= '3.10'" },
+    { name = "wcwidth", marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/64/fc/995ba209096bdebdeb8893d507c7b32b7e07d9a9f2cdc2ec07529947794b/mdformat_tables-1.0.0.tar.gz", hash = "sha256:a57db1ac17c4a125da794ef45539904bb8a9592e80557d525e1f169c96daa2c8", size = 6106, upload-time = "2024-08-23T23:41:33.413Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/37/d78e37d14323da3f607cd1af7daf262cb87fe614a245c15ad03bb03a2706/mdformat_tables-1.0.0-py3-none-any.whl", hash = "sha256:94cd86126141b2adc3b04c08d1441eb1272b36c39146bab078249a41c7240a9a", size = 5104, upload-time = "2024-08-23T23:41:31.863Z" },
 ]
 
 [[package]]
@@ -2698,6 +2739,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6c/23/6ffb8d2fd2117aa860a04c6fe2510b21bc3c3c085907ffdd851caba53152/mkdocs_jupyter-0.25.1.tar.gz", hash = "sha256:0e9272ff4947e0ec683c92423a4bfb42a26477c103ab1a6ab8277e2dcc8f7afe", size = 1626747, upload-time = "2024-10-15T14:56:32.373Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/08/37/5f1fd5c3f6954b3256f8126275e62af493b96fb6aef6c0dbc4ee326032ad/mkdocs_jupyter-0.25.1-py3-none-any.whl", hash = "sha256:3f679a857609885d322880e72533ef5255561bbfdb13cfee2a1e92ef4d4ad8d8", size = 1456197, upload-time = "2024-10-15T14:56:29.854Z" },
+]
+
+[[package]]
+name = "mkdocs-llmstxt"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4", marker = "python_full_version >= '3.10'" },
+    { name = "markdownify", marker = "python_full_version >= '3.10'" },
+    { name = "mdformat", marker = "python_full_version >= '3.10'" },
+    { name = "mdformat-tables", marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7f/f5/4c31cdffa7c09bf48d8c7a50d8342dc100abac98ac4150826bc11afc0c9f/mkdocs_llmstxt-0.5.0.tar.gz", hash = "sha256:b2fa9e6d68df41d7467e948a4745725b6c99434a36b36204857dbd7bb3dfe041", size = 33909, upload-time = "2025-11-20T14:02:24.861Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ad/2b/82928cc9e8d9269cd79e7ebf015efdc4945e6c646e86ec1d4dba1707f215/mkdocs_llmstxt-0.5.0-py3-none-any.whl", hash = "sha256:753c699913d2d619a9072604b26b6dc9f5fb6d257d9b107857f80c8a0b787533", size = 12040, upload-time = "2025-11-20T14:02:23.483Z" },
 ]
 
 [[package]]

@@ -71,7 +71,7 @@ pydantic==2.12.5
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.45.0
+pydantic-core==2.41.5
     # via
     #   instructor (pyproject.toml)
     #   pydantic
