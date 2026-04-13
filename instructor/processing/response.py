@@ -164,6 +164,38 @@ from ..providers.xai.utils import (
 
 logger = logging.getLogger("instructor")
 
+SENSITIVE_KEYS = {
+    "api_key",
+    "api_secret",
+    "access_token",
+    "refresh_token",
+    "authorization",
+    "x-api-key",
+    "token",
+    "secret",
+}
+
+REDACTED = "***REDACTED***"
+
+
+def _redact_sensitive_data(value: Any) -> Any:
+    if isinstance(value, dict):
+        redacted = {}
+        for k, v in value.items():
+            if isinstance(k, str) and k.lower() in SENSITIVE_KEYS:
+                redacted[k] = REDACTED
+            else:
+                redacted[k] = _redact_sensitive_data(v)
+        return redacted
+
+    if isinstance(value, list):
+        return [_redact_sensitive_data(v) for v in value]
+
+    if isinstance(value, tuple):
+        return tuple(_redact_sensitive_data(v) for v in value)
+
+    return value
+
 T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
@@ -439,8 +471,9 @@ def handle_response_model(
 
     if mode in PARALLEL_MODES:
         response_model, new_kwargs = PARALLEL_MODES[mode](response_model, new_kwargs)  # type: ignore
+        safe_new_kwargs = _redact_sensitive_data(new_kwargs)
         logger.debug(
-            f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+            f"Instructor Request: {mode.value=}, {response_model=}, {safe_new_kwargs=}",
             extra={
                 "mode": mode.value,
                 "response_model": (
@@ -449,7 +482,7 @@ def handle_response_model(
                     and hasattr(response_model, "__name__")
                     else str(response_model)
                 ),
-                "new_kwargs": new_kwargs,
+                "new_kwargs": safe_new_kwargs,
             },
         )
         return response_model, new_kwargs
@@ -514,8 +547,10 @@ def handle_response_model(
             autodetect_images=autodetect_images,
         )
 
+    safe_new_kwargs = _redact_sensitive_data(new_kwargs)
+
     logger.debug(
-        f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+        f"Instructor Request: {mode.value=}, {response_model=}, {safe_new_kwargs=}",
         extra={
             "mode": mode.value,
             "response_model": (
@@ -523,7 +558,7 @@ def handle_response_model(
                 if response_model is not None and hasattr(response_model, "__name__")
                 else str(response_model)
             ),
-            "new_kwargs": new_kwargs,
+            "new_kwargs": safe_new_kwargs,
         },
     )
     return response_model, new_kwargs
