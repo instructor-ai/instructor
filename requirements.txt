@@ -27,7 +27,7 @@ click==8.3.1
     # via typer
 distro==1.9.0
     # via openai
-docstring-parser==0.17.0
+docstring-parser==0.18.0
     # via instructor (pyproject.toml)
 frozenlist==1.8.0
     # via
@@ -67,11 +67,11 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-pydantic==2.12.5
+pydantic==2.13.0
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.41.5
+pydantic-core==2.46.0
     # via
     #   instructor (pyproject.toml)
     #   pydantic
@@ -79,7 +79,7 @@ pygments==2.20.0
     # via rich
 requests==2.32.5
     # via instructor (pyproject.toml)
-rich==14.3.3
+rich==15.0.0
     # via
     #   instructor (pyproject.toml)
     #   typer
