@@ -78,3 +78,45 @@ Keep PR descriptions short and easy to review:
 
 If the PR was authored by Cursor, include:
 - `This PR was written by [Cursor](https://cursor.com)`
+
+### Changelog Requirement
+
+**Every PR that changes behavior must update `CHANGELOG.md`.**
+
+Add an entry under the `## [Unreleased]` section (or the current in-progress version):
+
+```
+- **Area**: Short description of the change ([#PR_NUMBER](url))
+```
+
+Group entries under: `Security`, `Fixed`, `Added`, `Changed`, `Deprecated`, `Removed`, `Tests / CI`.
+
+Do not add changelog entries for docs-only or example-only changes unless they fix something user-visible.
+
+## Release Process
+
+Steps to publish a new version (e.g. `v1.15.0`):
+
+1. **Ensure CI is green** on the staging PR before merging.
+
+2. **Merge staging → main** via the GitHub PR.
+
+3. **Bump version** in `pyproject.toml` (field `version = "X.Y.Z"`), then update the lockfile:
+   ```
+   uv lock
+   ```
+
+4. **Commit and tag** (tags use lowercase `v` prefix):
+   ```
+   git add pyproject.toml uv.lock
+   git commit -m "chore(release): vX.Y.Z"
+   git tag vX.Y.Z
+   git push origin main --tags
+   ```
+
+5. **Create a GitHub Release** for the tag — this triggers `.github/workflows/python-publish.yml`, which builds and publishes to PyPI automatically using the `PYPI_TOKEN` secret.
+
+Version bump rules (based on commits since last tag):
+- `feat!:` / `fix!:` / `BREAKING` → major
+- `feat:` → minor
+- `fix:` / `chore:` / everything else → patch

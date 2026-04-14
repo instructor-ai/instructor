@@ -156,10 +156,7 @@ class OpenAISchema(BaseModel):
             cls (OpenAISchema): An instance of the class
         """
 
-        if mode == Mode.ANTHROPIC_TOOLS:
-            return cls.parse_anthropic_tools(completion, validation_context, strict)
-
-        if mode == Mode.ANTHROPIC_TOOLS or mode == Mode.ANTHROPIC_REASONING_TOOLS:
+        if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}:
             return cls.parse_anthropic_tools(completion, validation_context, strict)
 
         if mode == Mode.ANTHROPIC_JSON:
@@ -269,6 +266,15 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
+        from google.genai import types
+
+        if (
+            hasattr(completion, "candidates")
+            and completion.candidates
+            and completion.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
+        ):
+            raise IncompleteOutputException(last_completion=completion)
+
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )

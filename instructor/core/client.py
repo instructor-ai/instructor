@@ -553,7 +553,7 @@ class Instructor:
             hooks=combined_hooks,
             **kwargs,
         )
-        return model, model._raw_response
+        return model, getattr(model, "_raw_response", None)
 
     def handle_kwargs(self, kwargs: dict[str, Any]) -> dict[str, Any]:
         """
@@ -747,7 +747,7 @@ class AsyncInstructor(Instructor):
             hooks=combined_hooks,
             **kwargs,
         )
-        return response, response._raw_response
+        return response, getattr(response, "_raw_response", None)
 
 
 @overload
@@ -823,6 +823,7 @@ def from_openai(
         assert mode in {
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,
+            instructor.Mode.JSON_SCHEMA,
             instructor.Mode.FUNCTIONS,
             instructor.Mode.PARALLEL_TOOLS,
             instructor.Mode.MD_JSON,

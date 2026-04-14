@@ -23,7 +23,7 @@ def _build_message(data_content: str) -> Message:
     return Message(
         id="test_id",
         content=[{"type": "text", "text": data_content}],
-        model="claude-3-haiku-20240307",
+        model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",
         stop_sequence=None,

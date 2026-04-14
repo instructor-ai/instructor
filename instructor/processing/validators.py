@@ -14,7 +14,6 @@ class Validator(OpenAISchema):
     """
 
     is_valid: bool = Field(
-        default=True,
         description="Whether the attribute is valid based on the requirements",
     )
     reason: Optional[str] = Field(

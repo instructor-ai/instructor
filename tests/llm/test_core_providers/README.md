@@ -114,7 +114,7 @@ Required API keys (set only what you have):
 All providers automatically skip if API keys are missing.
 
 - **OpenAI**: `gpt-4o-mini` with `Mode.TOOLS`
-- **Anthropic**: `claude-3-5-haiku-latest` with `Mode.ANTHROPIC_TOOLS`
+- **Anthropic**: `claude-haiku-4-5-20251001` with `Mode.ANTHROPIC_TOOLS`
 - **Google**: `gemini-pro` with `Mode.GENAI_STRUCTURED_OUTPUTS`
 - **Cohere**: `command-a-03-2025` with `Mode.COHERE_TOOLS`
 - **xAI**: `grok-3-mini` with `Mode.XAI_TOOLS`

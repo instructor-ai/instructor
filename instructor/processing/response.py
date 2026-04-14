@@ -265,8 +265,10 @@ async def process_response_async(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
-        return model
+        return ListResponse.from_list(  # type: ignore[return-value]
+            list(model),
+            raw_response=response,
+        )
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
@@ -383,8 +385,10 @@ def process_response(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
-        return model
+        return ListResponse.from_list(  # type: ignore[return-value]
+            list(model),
+            raw_response=response,
+        )
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
@@ -685,7 +689,7 @@ def handle_reask_kwargs(
         # Perplexity modes
         Mode.PERPLEXITY_JSON: reask_perplexity_json,
         # OpenRouter modes
-        Mode.OPENROUTER_STRUCTURED_OUTPUTS: reask_default,
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: reask_md_json,
         # XAI modes
         Mode.XAI_JSON: reask_xai_json,
         Mode.XAI_TOOLS: reask_xai_tools,

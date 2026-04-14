@@ -1,5 +1,6 @@
 import json
 import pytest
+from openai.types import CompletionUsage
 from instructor.utils import (
     classproperty,
     extract_json_from_codeblock,
@@ -8,6 +9,7 @@ from instructor.utils import (
     merge_consecutive_messages,
     extract_system_messages,
     combine_system_messages,
+    update_total_usage,
 )
 
 
@@ -224,6 +226,37 @@ def test_combine_system_messages_list_string():
         {"type": "text", "text": "Existing"},
         {"type": "text", "text": "New"},
     ]
+
+
+def test_update_total_usage_preserves_openai_usage_subclass():
+    class LiteLLMUsage(CompletionUsage):
+        def get(self, key, default=None):
+            return getattr(self, key, default)
+
+    class Response:
+        def __init__(self, usage):
+            self.usage = usage
+
+    response_usage = LiteLLMUsage(
+        prompt_tokens=3,
+        completion_tokens=4,
+        total_tokens=7,
+    )
+    total_usage = CompletionUsage(
+        prompt_tokens=10,
+        completion_tokens=20,
+        total_tokens=30,
+    )
+    response = Response(response_usage)
+
+    updated = update_total_usage(response, total_usage)
+
+    assert updated is response
+    assert response.usage is response_usage
+    assert isinstance(response.usage, LiteLLMUsage)
+    assert response.usage.get("total_tokens") == 37
+    assert response.usage.prompt_tokens == 13
+    assert response.usage.completion_tokens == 24
 
 
 def test_combine_system_messages_none_string():

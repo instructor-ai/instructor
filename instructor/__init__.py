@@ -1,6 +1,6 @@
 import importlib.util
 
-__version__ = "1.14.4"
+__version__ = "1.15.1"
 
 from .mode import Mode
 from .processing.multimodal import Image, Audio

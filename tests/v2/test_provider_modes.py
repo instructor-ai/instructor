@@ -55,7 +55,7 @@ class GoogleSearch(BaseModel):
 # Provider-specific configurations
 PROVIDER_CONFIGS = {
     Provider.ANTHROPIC: {
-        "provider_string": "anthropic/claude-3-5-haiku-latest",
+        "provider_string": "anthropic/claude-sonnet-4-6-20250627",
         "modes": [
             Mode.TOOLS,
             Mode.JSON_SCHEMA,
@@ -171,7 +171,7 @@ async def test_mode_async_extraction(provider: Provider, mode: Mode):
 def test_anthropic_parallel_tools_extraction():
     """Test PARALLEL_TOOLS mode extraction (Anthropic-specific)."""
     client = instructor.from_provider(
-        "anthropic/claude-3-5-haiku-latest",
+        "anthropic/claude-sonnet-4-6-20250627",
         mode=Mode.PARALLEL_TOOLS,
     )
     response = client.chat.completions.create(
@@ -257,7 +257,7 @@ def test_anthropic_reasoning_tools_deprecation():
 
         # Also test that it works
         client = instructor.from_provider(
-            "anthropic/claude-3-5-haiku-latest",
+            "anthropic/claude-sonnet-4-6-20250627",
             mode=Mode.ANTHROPIC_REASONING_TOOLS,
         )
         response = client.chat.completions.create(

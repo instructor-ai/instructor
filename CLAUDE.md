@@ -157,6 +157,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Update documentation as needed
 - Follow PR template
 - Link to relevant issues
+- **Update CHANGELOG.md**: Every PR that changes behavior (fix, feat, security, deprecation) must add an entry under the current `[Unreleased]` section in `CHANGELOG.md`. Format: `- **Area**: Description ([#PR](url))`
 
 ## Type System and Best Practices
 

@@ -80,7 +80,7 @@ def test_instructor_retry_exception():
     messages = [{"role": "user", "content": "test"}]
     n_attempts = 3
     total_usage = 150
-    create_kwargs = {"model": "gpt-3.5-turbo"}
+    create_kwargs = {"model": "gpt-4.1-mini"}
 
     with pytest.raises(InstructorRetryException) as exc_info:
         raise InstructorRetryException(
@@ -507,7 +507,7 @@ def test_failed_attempts_accumulation_simulation():
         failed_attempts=attempts,
         last_completion={"final": "attempt"},
         messages=[{"role": "user", "content": "test"}],
-        create_kwargs={"model": "gpt-3.5-turbo", "max_retries": 3},
+        create_kwargs={"model": "gpt-4.1-mini", "max_retries": 3},
     )
 
     # Verify all data is preserved

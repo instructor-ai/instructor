@@ -347,7 +347,22 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # type: ignore  # Replace each response usage with the total usage
+        # Keep the concrete usage type attached to the response (for example
+        # LiteLLM subclasses CompletionUsage with helper methods), while still
+        # surfacing the accumulated totals.
+        response_usage.completion_tokens = total_usage.completion_tokens
+        response_usage.prompt_tokens = total_usage.prompt_tokens
+        response_usage.total_tokens = total_usage.total_tokens
+        response_usage.completion_tokens_details = (
+            total_usage.completion_tokens_details.model_copy(deep=True)
+            if total_usage.completion_tokens_details is not None
+            else None
+        )
+        response_usage.prompt_tokens_details = (
+            total_usage.prompt_tokens_details.model_copy(deep=True)
+            if total_usage.prompt_tokens_details is not None
+            else None
+        )
         return response
 
     # Anthropic usage.
@@ -371,7 +386,13 @@ def update_total_usage(
             total_usage.cache_read_input_tokens += (
                 response_usage.cache_read_input_tokens or 0
             )
-            response.usage = total_usage  # type: ignore
+            # Update in-place to preserve the original usage type
+            response_usage.input_tokens = total_usage.input_tokens
+            response_usage.output_tokens = total_usage.output_tokens
+            response_usage.cache_creation_input_tokens = (
+                total_usage.cache_creation_input_tokens
+            )
+            response_usage.cache_read_input_tokens = total_usage.cache_read_input_tokens
             return response
     except ImportError:
         pass

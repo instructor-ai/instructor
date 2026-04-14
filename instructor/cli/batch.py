@@ -15,9 +15,11 @@ app = typer.Typer()
 console = Console()
 
 
-def generate_table(batch_jobs: list[BatchJobInfo], provider: str, full_id: bool = False):
+def generate_table(
+    batch_jobs: list[BatchJobInfo], provider: str, full_id: bool = False
+):
     """Generate enhanced table for batch jobs using unified BatchJobInfo objects
-    
+
     Args:
         batch_jobs: List of batch job info objects
         provider: Provider name (openai, anthropic)

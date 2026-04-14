@@ -1,8 +1,9 @@
 from __future__ import annotations
+import pytest
 from instructor.providers.bedrock.utils import _prepare_bedrock_converse_kwargs_internal
 
 
-def test_prepare_bedrock_kwargs_openai_text_plus_image(image_url: str):
+def test_prepare_bedrock_kwargs_openai_text_plus_image(tiny_png_data_url: str):
     call_kwargs = {
         "model": "anthropic.claude-3-5-sonnet",
         "temperature": 0.3,
@@ -15,7 +16,7 @@ def test_prepare_bedrock_kwargs_openai_text_plus_image(image_url: str):
                 "role": "user",
                 "content": [
                     {"type": "text", "text": "hi"},
-                    {"type": "image_url", "image_url": {"url": image_url}},
+                    {"type": "image_url", "image_url": {"url": tiny_png_data_url}},
                 ],
             },
         ],
@@ -36,3 +37,23 @@ def test_prepare_bedrock_kwargs_openai_text_plus_image(image_url: str):
     assert parts[1]["image"]["format"] in {"jpeg", "png", "gif", "webp"}
     assert isinstance(parts[1]["image"]["source"]["bytes"], (bytes, bytearray))
     assert len(parts[1]["image"]["source"]["bytes"]) > 0
+
+
+def test_prepare_bedrock_kwargs_openai_image_url_rejects_http():
+    """Remote HTTP(S) URLs are not fetched (SSRF prevention) — must use data: URLs."""
+    call_kwargs = {
+        "model": "anthropic.claude-3-5-sonnet",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": "https://example.com/image.jpg"},
+                    }
+                ],
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="Unsupported image_url scheme for Bedrock"):
+        _prepare_bedrock_converse_kwargs_internal(call_kwargs)

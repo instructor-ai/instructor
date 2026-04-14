@@ -6,6 +6,10 @@ KnownModelName = TypeAliasType(
     "KnownModelName",
     Literal[
         # Anthropic Models
+        "anthropic/claude-opus-4-0-20250514",
+        "anthropic/claude-sonnet-4-0-20250514",
+        "anthropic/claude-sonnet-4-6-20250627",
+        "anthropic/claude-3-5-haiku-20241022",
         "anthropic/claude-3-7-sonnet-latest",
         "anthropic/claude-3-7-sonnet-20250219",
         "anthropic/claude-3-5-sonnet-latest",
@@ -63,6 +67,18 @@ KnownModelName = TypeAliasType(
         "openai/gpt-4o-audio-preview-2024-12-17",
         "openai/gpt-4o-mini",
         "openai/gpt-4o-mini-2024-07-18",
+        "openai/o1",
+        "openai/o1-2024-12-17",
+        "openai/o1-mini",
+        "openai/o1-mini-2024-09-12",
+        "openai/o1-preview",
+        "openai/o1-preview-2024-09-12",
+        "openai/o3",
+        "openai/o3-2025-04-16",
+        "openai/o3-mini",
+        "openai/o3-mini-2025-01-31",
+        "openai/o4-mini",
+        "openai/o4-mini-2025-04-16",
         # Groq Models
         "groq/gemma2-9b-it",
         "groq/llama-3.3-70b-versatile",
@@ -135,5 +151,13 @@ KnownModelName = TypeAliasType(
         "perplexity/sonar-pro",
         "perplexity/sonar",
         "perplexity/r1-1776",
+        # XAI (Grok) Models
+        "xai/grok-3",
+        "xai/grok-3-fast",
+        "xai/grok-3-mini",
+        "xai/grok-3-mini-fast",
+        # DeepSeek Models
+        "deepseek/deepseek-chat",
+        "deepseek/deepseek-reasoner",
     ],
 )
