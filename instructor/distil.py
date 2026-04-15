@@ -6,6 +6,7 @@ import inspect
 import functools
 
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Optional,
@@ -19,8 +20,10 @@ from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 from pydantic import BaseModel, validate_call
 
-from openai import OpenAI
 from .processing.function_calls import openai_schema
+
+if TYPE_CHECKING:
+    from openai import OpenAI
 
 
 P = ParamSpec("P")
@@ -105,7 +108,7 @@ class Instructions:
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
         indent: int = 2,
         include_code_body: bool = False,
-        openai_client: Optional[OpenAI] = None,
+        openai_client: Optional["OpenAI"] = None,
     ) -> None:
         """
         Instructions for distillation and dispatch.
@@ -123,7 +126,12 @@ class Instructions:
         self.finetune_format = finetune_format
         self.indent = indent
         self.include_code_body = include_code_body
-        self.client = openai_client or OpenAI()
+        if openai_client is not None:
+            self.client = openai_client
+        else:
+            from openai import OpenAI
+
+            self.client = OpenAI()
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:

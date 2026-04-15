@@ -58,109 +58,163 @@ from ..mode import Mode
 from .multimodal import convert_messages
 from ..utils.core import prepare_response_model
 
+# Provider utils are imported lazily to avoid pulling in heavy SDK dependencies
+# (anthropic, boto3, google-genai, etc.) at module load time.
+# See https://github.com/567-labs/instructor/issues/2205
+
+
+def _lazy_import(module_path: str, attr: str):
+    """Return a wrapper that lazily imports ``attr`` from ``module_path`` on first call."""
+    _cached = {}
+
+    def wrapper(*args, **kwargs):
+        if "fn" not in _cached:
+            import importlib
+
+            mod = importlib.import_module(module_path, package=__package__)
+            _cached["fn"] = getattr(mod, attr)
+        return _cached["fn"](*args, **kwargs)
+
+    wrapper.__name__ = attr  # type: ignore[attr-defined]
+    wrapper.__qualname__ = attr  # type: ignore[attr-defined]
+    return wrapper
+
+
 # Anthropic utils
-from ..providers.anthropic.utils import (
-    handle_anthropic_json,
-    handle_anthropic_parallel_tools,
-    handle_anthropic_reasoning_tools,
-    handle_anthropic_tools,
-    reask_anthropic_json,
-    reask_anthropic_tools,
+handle_anthropic_json = _lazy_import(
+    "..providers.anthropic.utils", "handle_anthropic_json"
+)
+handle_anthropic_parallel_tools = _lazy_import(
+    "..providers.anthropic.utils", "handle_anthropic_parallel_tools"
+)
+handle_anthropic_reasoning_tools = _lazy_import(
+    "..providers.anthropic.utils", "handle_anthropic_reasoning_tools"
+)
+handle_anthropic_tools = _lazy_import(
+    "..providers.anthropic.utils", "handle_anthropic_tools"
+)
+reask_anthropic_json = _lazy_import(
+    "..providers.anthropic.utils", "reask_anthropic_json"
+)
+reask_anthropic_tools = _lazy_import(
+    "..providers.anthropic.utils", "reask_anthropic_tools"
 )
 
 # Bedrock utils
-from ..providers.bedrock.utils import (
-    handle_bedrock_json,
-    handle_bedrock_tools,
-    reask_bedrock_json,
-    reask_bedrock_tools,
-)
+handle_bedrock_json = _lazy_import("..providers.bedrock.utils", "handle_bedrock_json")
+handle_bedrock_tools = _lazy_import("..providers.bedrock.utils", "handle_bedrock_tools")
+reask_bedrock_json = _lazy_import("..providers.bedrock.utils", "reask_bedrock_json")
+reask_bedrock_tools = _lazy_import("..providers.bedrock.utils", "reask_bedrock_tools")
 
 # Cerebras utils
-from ..providers.cerebras.utils import (
-    handle_cerebras_json,
-    handle_cerebras_tools,
-    reask_cerebras_tools,
+handle_cerebras_json = _lazy_import(
+    "..providers.cerebras.utils", "handle_cerebras_json"
+)
+handle_cerebras_tools = _lazy_import(
+    "..providers.cerebras.utils", "handle_cerebras_tools"
+)
+reask_cerebras_tools = _lazy_import(
+    "..providers.cerebras.utils", "reask_cerebras_tools"
 )
 
 # Cohere utils
-from ..providers.cohere.utils import (
-    handle_cohere_json_schema,
-    handle_cohere_tools,
-    reask_cohere_tools,
+handle_cohere_json_schema = _lazy_import(
+    "..providers.cohere.utils", "handle_cohere_json_schema"
 )
+handle_cohere_tools = _lazy_import("..providers.cohere.utils", "handle_cohere_tools")
+reask_cohere_tools = _lazy_import("..providers.cohere.utils", "reask_cohere_tools")
 
 # Fireworks utils
-from ..providers.fireworks.utils import (
-    handle_fireworks_json,
-    handle_fireworks_tools,
-    reask_fireworks_json,
-    reask_fireworks_tools,
+handle_fireworks_json = _lazy_import(
+    "..providers.fireworks.utils", "handle_fireworks_json"
+)
+handle_fireworks_tools = _lazy_import(
+    "..providers.fireworks.utils", "handle_fireworks_tools"
+)
+reask_fireworks_json = _lazy_import(
+    "..providers.fireworks.utils", "reask_fireworks_json"
+)
+reask_fireworks_tools = _lazy_import(
+    "..providers.fireworks.utils", "reask_fireworks_tools"
 )
 
 # Google/Gemini/VertexAI utils
-from ..providers.gemini.utils import (
-    handle_gemini_json,
-    handle_gemini_tools,
-    handle_genai_structured_outputs,
-    handle_genai_tools,
-    handle_vertexai_json,
-    handle_vertexai_parallel_tools,
-    handle_vertexai_tools,
-    reask_gemini_json,
-    reask_gemini_tools,
-    reask_genai_structured_outputs,
-    reask_genai_tools,
-    reask_vertexai_json,
-    reask_vertexai_tools,
+handle_gemini_json = _lazy_import("..providers.gemini.utils", "handle_gemini_json")
+handle_gemini_tools = _lazy_import("..providers.gemini.utils", "handle_gemini_tools")
+handle_genai_structured_outputs = _lazy_import(
+    "..providers.gemini.utils", "handle_genai_structured_outputs"
 )
+handle_genai_tools = _lazy_import("..providers.gemini.utils", "handle_genai_tools")
+handle_vertexai_json = _lazy_import("..providers.gemini.utils", "handle_vertexai_json")
+handle_vertexai_parallel_tools = _lazy_import(
+    "..providers.gemini.utils", "handle_vertexai_parallel_tools"
+)
+handle_vertexai_tools = _lazy_import(
+    "..providers.gemini.utils", "handle_vertexai_tools"
+)
+reask_gemini_json = _lazy_import("..providers.gemini.utils", "reask_gemini_json")
+reask_gemini_tools = _lazy_import("..providers.gemini.utils", "reask_gemini_tools")
+reask_genai_structured_outputs = _lazy_import(
+    "..providers.gemini.utils", "reask_genai_structured_outputs"
+)
+reask_genai_tools = _lazy_import("..providers.gemini.utils", "reask_genai_tools")
+reask_vertexai_json = _lazy_import("..providers.gemini.utils", "reask_vertexai_json")
+reask_vertexai_tools = _lazy_import("..providers.gemini.utils", "reask_vertexai_tools")
 
 # Mistral utils
-from ..providers.mistral.utils import (
-    handle_mistral_structured_outputs,
-    handle_mistral_tools,
-    reask_mistral_structured_outputs,
-    reask_mistral_tools,
+handle_mistral_structured_outputs = _lazy_import(
+    "..providers.mistral.utils", "handle_mistral_structured_outputs"
 )
+handle_mistral_tools = _lazy_import("..providers.mistral.utils", "handle_mistral_tools")
+reask_mistral_structured_outputs = _lazy_import(
+    "..providers.mistral.utils", "reask_mistral_structured_outputs"
+)
+reask_mistral_tools = _lazy_import("..providers.mistral.utils", "reask_mistral_tools")
 
 # OpenAI utils
-from ..providers.openai.utils import (
-    handle_functions,
-    handle_json_modes,
-    handle_json_o1,
-    handle_openrouter_structured_outputs,
-    handle_parallel_tools,
-    handle_responses_tools,
-    handle_responses_tools_with_inbuilt_tools,
-    handle_tools,
-    handle_tools_strict,
-    reask_default,
-    reask_md_json,
-    reask_responses_tools,
-    reask_tools,
+handle_functions = _lazy_import("..providers.openai.utils", "handle_functions")
+handle_json_modes = _lazy_import("..providers.openai.utils", "handle_json_modes")
+handle_json_o1 = _lazy_import("..providers.openai.utils", "handle_json_o1")
+handle_openrouter_structured_outputs = _lazy_import(
+    "..providers.openai.utils", "handle_openrouter_structured_outputs"
 )
+handle_parallel_tools = _lazy_import(
+    "..providers.openai.utils", "handle_parallel_tools"
+)
+handle_responses_tools = _lazy_import(
+    "..providers.openai.utils", "handle_responses_tools"
+)
+handle_responses_tools_with_inbuilt_tools = _lazy_import(
+    "..providers.openai.utils", "handle_responses_tools_with_inbuilt_tools"
+)
+handle_tools = _lazy_import("..providers.openai.utils", "handle_tools")
+handle_tools_strict = _lazy_import("..providers.openai.utils", "handle_tools_strict")
+reask_default = _lazy_import("..providers.openai.utils", "reask_default")
+reask_md_json = _lazy_import("..providers.openai.utils", "reask_md_json")
+reask_responses_tools = _lazy_import(
+    "..providers.openai.utils", "reask_responses_tools"
+)
+reask_tools = _lazy_import("..providers.openai.utils", "reask_tools")
 
 # Perplexity utils
-from ..providers.perplexity.utils import (
-    handle_perplexity_json,
-    reask_perplexity_json,
+handle_perplexity_json = _lazy_import(
+    "..providers.perplexity.utils", "handle_perplexity_json"
+)
+reask_perplexity_json = _lazy_import(
+    "..providers.perplexity.utils", "reask_perplexity_json"
 )
 
 # Writer utils
-from ..providers.writer.utils import (
-    handle_writer_json,
-    handle_writer_tools,
-    reask_writer_json,
-    reask_writer_tools,
-)
+handle_writer_json = _lazy_import("..providers.writer.utils", "handle_writer_json")
+handle_writer_tools = _lazy_import("..providers.writer.utils", "handle_writer_tools")
+reask_writer_json = _lazy_import("..providers.writer.utils", "reask_writer_json")
+reask_writer_tools = _lazy_import("..providers.writer.utils", "reask_writer_tools")
 
 # XAI utils
-from ..providers.xai.utils import (
-    handle_xai_json,
-    handle_xai_tools,
-    reask_xai_json,
-    reask_xai_tools,
-)
+handle_xai_json = _lazy_import("..providers.xai.utils", "handle_xai_json")
+handle_xai_tools = _lazy_import("..providers.xai.utils", "handle_xai_tools")
+reask_xai_json = _lazy_import("..providers.xai.utils", "reask_xai_json")
+reask_xai_tools = _lazy_import("..providers.xai.utils", "reask_xai_tools")
 
 logger = logging.getLogger("instructor")
 

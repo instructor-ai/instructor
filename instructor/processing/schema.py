@@ -14,7 +14,6 @@ from typing import Any, cast
 from docstring_parser import parse
 from pydantic import BaseModel
 
-from ..providers.gemini.utils import map_to_gemini_function_schema
 
 __all__ = [
     "generate_openai_schema",
@@ -115,6 +114,7 @@ def generate_gemini_schema(model: type[BaseModel]) -> Any:
         import importlib
 
         genai_types = cast(Any, importlib.import_module("google.generativeai.types"))
+        from ..providers.gemini.utils import map_to_gemini_function_schema
 
         # Use OpenAI schema
         openai_schema = generate_openai_schema(model)

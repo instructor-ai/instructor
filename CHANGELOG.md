@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Performance
+- **Import**: Lazy-load provider SDK imports (`anthropic`, `boto3`, `google-genai`, etc.) to reduce `import instructor` memory footprint and startup time. Provider factory functions and response handlers are now loaded on first use instead of at module import. ([#2205](https://github.com/567-labs/instructor/issues/2205))
+
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 

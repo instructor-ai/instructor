@@ -76,79 +76,57 @@ __all__ = [
 from . import client
 
 
-if importlib.util.find_spec("anthropic") is not None:
-    from .providers.anthropic.client import from_anthropic
+# Provider factory functions are loaded lazily via __getattr__ to avoid pulling
+# in heavy SDK dependencies (anthropic, boto3, google-genai, etc.) at import time.
+# See https://github.com/567-labs/instructor/issues/2205
 
-    __all__ += ["from_anthropic"]
+_LAZY_PROVIDERS: dict[str, tuple[str, str | list[str]]] = {
+    # name -> (module_path, required_spec_or_specs)
+    "from_anthropic": (".providers.anthropic.client", "anthropic"),
+    "from_gemini": (".providers.gemini.client", ["google", "google.generativeai"]),
+    "from_fireworks": (".providers.fireworks.client", "fireworks"),
+    "from_cerebras": (".providers.cerebras.client", "cerebras"),
+    "from_groq": (".providers.groq.client", "groq"),
+    "from_mistral": (".providers.mistral.client", "mistralai"),
+    "from_cohere": (".providers.cohere.client", "cohere"),
+    "from_vertexai": (".providers.vertexai.client", ["vertexai", "jsonref"]),
+    "from_bedrock": (".providers.bedrock.client", "boto3"),
+    "from_writer": (".providers.writer.client", "writerai"),
+    "from_xai": (".providers.xai.client", "xai_sdk"),
+    "from_perplexity": (".providers.perplexity.client", "openai"),
+    "from_genai": (".providers.genai.client", ["google", "google.genai"]),
+}
 
-# Keep from_gemini for backward compatibility but it's deprecated
-if (
-    importlib.util.find_spec("google")
-    and importlib.util.find_spec("google.generativeai") is not None
-):
-    from .providers.gemini.client import from_gemini
+# Populate __all__ based on available specs without importing the providers
+for _name, (_, _specs) in _LAZY_PROVIDERS.items():
+    _spec_list = [_specs] if isinstance(_specs, str) else _specs
+    if all(importlib.util.find_spec(s) is not None for s in _spec_list):
+        __all__ += [_name]
 
-    __all__ += ["from_gemini"]
 
-if importlib.util.find_spec("fireworks") is not None:
-    from .providers.fireworks.client import from_fireworks
-
-    __all__ += ["from_fireworks"]
-
-if importlib.util.find_spec("cerebras") is not None:
-    from .providers.cerebras.client import from_cerebras
-
-    __all__ += ["from_cerebras"]
-
-if importlib.util.find_spec("groq") is not None:
-    from .providers.groq.client import from_groq
-
-    __all__ += ["from_groq"]
-
-if importlib.util.find_spec("mistralai") is not None:
-    from .providers.mistral.client import from_mistral
-
-    __all__ += ["from_mistral"]
-
-if importlib.util.find_spec("cohere") is not None:
-    from .providers.cohere.client import from_cohere
-
-    __all__ += ["from_cohere"]
-
-if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
-    try:
-        from .providers.vertexai.client import from_vertexai
-    except Exception:
-        # Optional dependency may be present but broken/misconfigured at import time.
-        # Avoid failing `import instructor` in that case.
-        pass
-    else:
-        __all__ += ["from_vertexai"]
-
-if importlib.util.find_spec("boto3") is not None:
-    from .providers.bedrock.client import from_bedrock
-
-    __all__ += ["from_bedrock"]
-
-if importlib.util.find_spec("writerai") is not None:
-    from .providers.writer.client import from_writer
-
-    __all__ += ["from_writer"]
-
-if importlib.util.find_spec("xai_sdk") is not None:
-    from .providers.xai.client import from_xai
-
-    __all__ += ["from_xai"]
-
-if importlib.util.find_spec("openai") is not None:
-    from .providers.perplexity.client import from_perplexity
-
-    __all__ += ["from_perplexity"]
-
-if (
-    importlib.util.find_spec("google")
-    and importlib.util.find_spec("google.genai") is not None
-):
-    from .providers.genai.client import from_genai
-
-    __all__ += ["from_genai"]
+def __getattr__(name: str):
+    if name in _LAZY_PROVIDERS:
+        module_path, specs = _LAZY_PROVIDERS[name]
+        spec_list = [specs] if isinstance(specs, str) else specs
+        try:
+            specs_found = all(
+                importlib.util.find_spec(s) is not None for s in spec_list
+            )
+        except (ValueError, ModuleNotFoundError):
+            specs_found = False
+        if not specs_found:
+            raise AttributeError(
+                f"module 'instructor' has no attribute {name!r} "
+                f"(missing optional dependency)"
+            )
+        try:
+            mod = importlib.import_module(module_path, package=__name__)
+            attr = getattr(mod, name)
+        except Exception as exc:
+            raise AttributeError(
+                f"module 'instructor' has no attribute {name!r}"
+            ) from exc
+        # Cache on the module so __getattr__ is not called again
+        globals()[name] = attr
+        return attr
+    raise AttributeError(f"module 'instructor' has no attribute {name!r}")
