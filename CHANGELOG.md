@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+- **Logging**: Redact `api_key`, `api_secret`, `api_token`, and `authorization` from `logger.debug` output in `handle_response_model` — previously these values were logged verbatim when a downstream project enabled DEBUG-level logging ([#2265](https://github.com/567-labs/instructor/issues/2265))
+
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 

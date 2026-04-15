@@ -164,6 +164,14 @@ from ..providers.xai.utils import (
 
 logger = logging.getLogger("instructor")
 
+_SENSITIVE_KEYS = frozenset({"api_key", "api_secret", "api_token", "authorization"})
+
+
+def _redact_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Return a shallow copy of *kwargs* with sensitive values replaced by ``'[REDACTED]'``."""
+    return {k: "[REDACTED]" if k in _SENSITIVE_KEYS else v for k, v in kwargs.items()}
+
+
 T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
@@ -439,8 +447,9 @@ def handle_response_model(
 
     if mode in PARALLEL_MODES:
         response_model, new_kwargs = PARALLEL_MODES[mode](response_model, new_kwargs)  # type: ignore
+        safe_kwargs = _redact_kwargs(new_kwargs)
         logger.debug(
-            f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+            f"Instructor Request: {mode.value=}, {response_model=}, new_kwargs={safe_kwargs}",
             extra={
                 "mode": mode.value,
                 "response_model": (
@@ -449,7 +458,7 @@ def handle_response_model(
                     and hasattr(response_model, "__name__")
                     else str(response_model)
                 ),
-                "new_kwargs": new_kwargs,
+                "new_kwargs": safe_kwargs,
             },
         )
         return response_model, new_kwargs
@@ -514,8 +523,9 @@ def handle_response_model(
             autodetect_images=autodetect_images,
         )
 
+    safe_kwargs = _redact_kwargs(new_kwargs)
     logger.debug(
-        f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+        f"Instructor Request: {mode.value=}, {response_model=}, new_kwargs={safe_kwargs}",
         extra={
             "mode": mode.value,
             "response_model": (
@@ -523,7 +533,7 @@ def handle_response_model(
                 if response_model is not None and hasattr(response_model, "__name__")
                 else str(response_model)
             ),
-            "new_kwargs": new_kwargs,
+            "new_kwargs": safe_kwargs,
         },
     )
     return response_model, new_kwargs
