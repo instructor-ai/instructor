@@ -7,6 +7,7 @@ from json import JSONDecodeError
 from typing import Any, Callable, TypeVar
 
 from .exceptions import (
+    IncompleteOutputException,
     InstructorRetryException,
     AsyncValidationError,
     FailedAttempt,
@@ -188,6 +189,14 @@ def retry_sync(
     # Track all failed attempts
     failed_attempts: list[FailedAttempt] = []
 
+    # IncompleteOutputException is stored here so it can be re-raised
+    # *outside* the tenacity retry loop.  Raising it inside the
+    # ``with attempt:`` context manager would cause tenacity to treat it
+    # as a retryable failure and wrap it in RetryError, which in turn
+    # gets converted to InstructorRetryException — making it impossible
+    # for callers to catch IncompleteOutputException directly.
+    _incomplete_error: IncompleteOutputException | None = None
+
     try:
         response = None
         for attempt in max_retries:
@@ -260,6 +269,18 @@ def retry_sync(
                         failed_attempts=failed_attempts,
                     )
                     raise e
+                except IncompleteOutputException as e:
+                    # Store for re-raise after exiting the tenacity context.
+                    # Do NOT re-raise here — tenacity would catch it and
+                    # wrap it in RetryError → InstructorRetryException.
+                    logger.debug(f"Incomplete output: {e}")
+                    hooks.emit_completion_error(
+                        e,
+                        attempt_number=attempt.retry_state.attempt_number,
+                        max_attempts=None,
+                        is_last_attempt=True,
+                    )
+                    _incomplete_error = e
                 except Exception as e:
                     # Emit completion:error for non-validation errors (API errors, network errors, etc.)
                     logger.debug(f"Completion error: {e}")
@@ -307,6 +328,14 @@ def retry_sync(
                             is_last_attempt=True,
                         )
                     raise e
+
+        # Re-raise IncompleteOutputException outside the retry loop so
+        # callers can catch it directly (fixes #2273).
+        if _incomplete_error is not None:
+            raise _incomplete_error
+
+    except IncompleteOutputException:
+        raise
     except RetryError as e:
         logger.debug(f"Retry error: {e}")
         raise InstructorRetryException(
@@ -365,6 +394,9 @@ async def retry_async(
 
     # Track all failed attempts
     failed_attempts: list[FailedAttempt] = []
+
+    # See comment in retry_sync for rationale.
+    _incomplete_error: IncompleteOutputException | None = None
 
     try:
         response = None
@@ -439,6 +471,16 @@ async def retry_async(
                         failed_attempts=failed_attempts,
                     )
                     raise e
+                except IncompleteOutputException as e:
+                    # Store for re-raise after exiting the tenacity context.
+                    logger.debug(f"Incomplete output: {e}")
+                    hooks.emit_completion_error(
+                        e,
+                        attempt_number=attempt.retry_state.attempt_number,
+                        max_attempts=None,
+                        is_last_attempt=True,
+                    )
+                    _incomplete_error = e
                 except Exception as e:
                     # Emit completion:error for non-validation errors (API errors, network errors, etc.)
                     logger.debug(f"Completion error: {e}")
@@ -486,6 +528,14 @@ async def retry_async(
                             is_last_attempt=True,
                         )
                     raise e
+
+        # Re-raise IncompleteOutputException outside the retry loop so
+        # callers can catch it directly (fixes #2273).
+        if _incomplete_error is not None:
+            raise _incomplete_error
+
+    except IncompleteOutputException:
+        raise
     except RetryError as e:
         logger.debug(f"Retry error: {e}")
         raise InstructorRetryException(
