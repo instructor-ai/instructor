@@ -11,6 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
+- **Retry**: `IncompleteOutputException` now propagates directly to the caller without being wrapped in `InstructorRetryException`, making `except IncompleteOutputException` catch blocks work as documented. Applies to both sync and async paths. ([#2273](https://github.com/567-labs/instructor/issues/2273))
 
 ---
 
