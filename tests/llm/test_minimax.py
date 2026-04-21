@@ -138,9 +138,7 @@ def test_handle_minimax_json_adds_response_format_and_schema_message():
     assert kwargs["response_format"] == {"type": "json_object"}
     assert kwargs["messages"][-1]["role"] == "user"
     # The appended message must include the JSON schema for the model.
-    schema_fragment = json.dumps(
-        User.model_json_schema(), indent=2, ensure_ascii=False
-    )
+    schema_fragment = json.dumps(User.model_json_schema(), indent=2, ensure_ascii=False)
     assert schema_fragment in kwargs["messages"][-1]["content"]
 
 
