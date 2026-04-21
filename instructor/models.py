@@ -159,5 +159,11 @@ KnownModelName = TypeAliasType(
         # DeepSeek Models
         "deepseek/deepseek-chat",
         "deepseek/deepseek-reasoner",
+        # MiniMax Models
+        "minimax/MiniMax-Text-01",
+        "minimax/abab6.5s-chat",
+        "minimax/abab6.5-chat",
+        "minimax/abab5.5s-chat",
+        "minimax/abab5.5-chat",
     ],
 )

@@ -145,6 +145,11 @@ if importlib.util.find_spec("openai") is not None:
 
     __all__ += ["from_perplexity"]
 
+if importlib.util.find_spec("openai") is not None:
+    from .providers.minimax.client import from_minimax
+
+    __all__ += ["from_minimax"]
+
 if (
     importlib.util.find_spec("google")
     and importlib.util.find_spec("google.genai") is not None
