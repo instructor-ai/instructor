@@ -193,6 +193,7 @@ nav:
     - Ollama: 'integrations/ollama.md'
     - Perplexity: 'integrations/perplexity.md'
     - Writer: 'integrations/writer.md'
+    - Manifest: 'integrations/manifest.md'
     - OpenRouter: 'integrations/openrouter.md'
     - SambaNova: 'integrations/sambanova.md'
     - TrueFoundry: 'integrations/truefoundry.md'
