@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- **MiniMax**: New provider support via `from_minimax()` and `from_provider("minimax/...")`, with `MINIMAX_TOOLS` and `MINIMAX_JSON` modes targeting MiniMax's OpenAI-compatible chat completions API ([#2260](https://github.com/567-labs/instructor/issues/2260))
+
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 
