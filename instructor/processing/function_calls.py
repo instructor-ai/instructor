@@ -240,6 +240,7 @@ class OpenAISchema(BaseModel):
             Mode.TOOLS_STRICT,
             Mode.CEREBRAS_TOOLS,
             Mode.FIREWORKS_TOOLS,
+            Mode.MINIMAX_TOOLS,
         }:
             return cls.parse_tools(completion, validation_context, strict)
 
@@ -252,6 +253,7 @@ class OpenAISchema(BaseModel):
             Mode.FIREWORKS_JSON,
             Mode.PERPLEXITY_JSON,
             Mode.OPENROUTER_STRUCTURED_OUTPUTS,
+            Mode.MINIMAX_JSON,
         }:
             return cls.parse_json(completion, validation_context, strict)
 

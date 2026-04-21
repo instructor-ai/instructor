@@ -340,6 +340,7 @@ class IterableBase:
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
+                        Mode.MINIMAX_JSON,
                         Mode.WRITER_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
@@ -349,6 +350,7 @@ class IterableBase:
                         Mode.TOOLS_STRICT,
                         Mode.FIREWORKS_TOOLS,
                         Mode.WRITER_TOOLS,
+                        Mode.MINIMAX_TOOLS,
                     }:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             if json_chunk[0].function.arguments is not None:
@@ -545,6 +547,7 @@ class IterableBase:
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
+                        Mode.MINIMAX_JSON,
                         Mode.WRITER_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
@@ -554,6 +557,7 @@ class IterableBase:
                         Mode.TOOLS_STRICT,
                         Mode.FIREWORKS_TOOLS,
                         Mode.WRITER_TOOLS,
+                        Mode.MINIMAX_TOOLS,
                     }:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             if json_chunk[0].function.arguments is not None:
