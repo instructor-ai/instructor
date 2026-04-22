@@ -32,9 +32,38 @@ class CompletionResponseHandler(Protocol):
 
 
 class CompletionErrorHandler(Protocol):
-    """Protocol for completion error and last attempt handlers."""
+    """Protocol for completion error and last attempt handlers.
 
-    def __call__(self, error: Exception) -> None: ...
+    Handlers may optionally accept retry metadata as keyword arguments:
+
+    - ``attempt_number`` (int): 1-based index of the current attempt.
+    - ``max_attempts`` (int | None): Maximum number of attempts configured, or
+      ``None`` when unbounded.
+    - ``is_last_attempt`` (bool): ``True`` when no further retries will be made.
+
+    Example::
+
+        def on_error(
+            error: Exception,
+            *,
+            attempt_number: int = 1,
+            max_attempts: int | None = None,
+            is_last_attempt: bool = False,
+        ) -> None:
+            severity = "ERROR" if is_last_attempt else "WARNING"
+            print(f"[{severity}] attempt {attempt_number}/{max_attempts}: {error}")
+
+        client.on("completion:error", on_error)
+    """
+
+    def __call__(
+        self,
+        error: Exception,
+        *,
+        attempt_number: int = ...,
+        max_attempts: int | None = ...,
+        is_last_attempt: bool = ...,
+    ) -> None: ...
 
 
 class ParseErrorHandler(Protocol):
