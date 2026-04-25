@@ -10,6 +10,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **Bedrock**: Strip `<think>...</think>` blocks from Bedrock responses in both `BEDROCK_JSON` and `MD_JSON` modes before JSON extraction, fixing parse failures with reasoning models such as Kimi K2 Thinking ([#2076](https://github.com/567-labs/instructor/issues/2076))
+- **Bedrock/MD_JSON**: `reask_md_json` no longer raises `AttributeError: 'dict' object has no attribute 'choices'` when retrying after a validation failure with a Bedrock converse dict response ([#2076](https://github.com/567-labs/instructor/issues/2076))
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 
 ---

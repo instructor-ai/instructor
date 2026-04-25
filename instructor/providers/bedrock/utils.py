@@ -42,6 +42,21 @@ def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
     }
 
 
+def _strip_think_tags(text: str) -> str:
+    """
+    Strip <think>...</think> blocks from model output.
+
+    Some Bedrock models (e.g. Kimi K2 Thinking) prepend a reasoning block
+    wrapped in <think> tags before emitting the actual response.  These tags
+    must be removed before attempting JSON extraction; otherwise the first
+    '{' / last '}' found by the extractor may land inside the think block and
+    produce invalid JSON.
+    """
+    import re
+
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+
 def reask_bedrock_json(
     kwargs: dict[str, Any],
     response: Any,

@@ -162,6 +162,23 @@ def reask_md_json(
     """
     kwargs = kwargs.copy()
 
+    # Handle Bedrock dict responses (no .choices attribute) before stream check,
+    # because dicts also fail hasattr(response, "choices").
+    if isinstance(response, dict) and "output" in response:
+        reask_msgs = [response["output"]["message"]]
+        reask_msgs.append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}"
+                    }
+                ],
+            }
+        )
+        kwargs["messages"].extend(reask_msgs)
+        return kwargs
+
     # Handle Stream objects which don't have choices attribute
     if _is_stream_response(response):
         kwargs["messages"].append(

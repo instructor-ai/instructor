@@ -71,7 +71,9 @@ def _extract_text_content(completion: Any) -> str:
     # Bedrock format
     if isinstance(completion, dict) and "output" in completion:
         try:
-            return completion.get("output").get("message").get("content")[0].get("text")
+            text = completion.get("output").get("message").get("content")[0].get("text")
+            # Strip <think>...</think> blocks emitted by reasoning models before extraction
+            return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
         except (AttributeError, IndexError):
             pass
 
@@ -447,6 +449,10 @@ class OpenAISchema(BaseModel):
                     raw_response=completion,
                 )
             text = text_content["text"]
+            # Strip <think>...</think> blocks emitted by reasoning models (e.g. Kimi K2)
+            # before attempting JSON extraction; the think block may itself contain
+            # braces that would confuse the JSON extractor.
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
             match = re.search(r"```?json(.*?)```?", text, re.DOTALL)
             if match:
                 text = match.group(1).strip()
