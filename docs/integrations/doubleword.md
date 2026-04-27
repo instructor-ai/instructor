@@ -155,7 +155,66 @@ for user in users:
 #> name='Mike' age=41
 ```
 
-The concurrent `create` calls are collected into a single batch submission. Pricing follows Doubleword's batch tier — up to 90% less than realtime. Your code stays the same; only the client changes.
+The concurrent `create` calls are collected into a single batch submission. Pricing follows Doubleword's 24-hour batch tier — up to 90% less than realtime. Your code stays the same; only the client changes.
+
+## Async (1-hour flex) pricing with Autobatcher
+
+When 24-hour batch turnaround is too slow but realtime cost is too high, use `autobatcher.AsyncOpenAI` instead. Same drop-in `AsyncOpenAI` machinery, but pinned to Doubleword's **1-hour flex tier** — sits between realtime and 24-hour batch on cost and latency.
+
+```bash
+pip install "instructor" autobatcher
+```
+
+```python
+import os
+from autobatcher import AsyncOpenAI
+from pydantic import BaseModel
+import instructor
+import asyncio
+
+
+client = instructor.from_openai(
+    AsyncOpenAI(
+        base_url="https://api.doubleword.ai/v1",
+        api_key=os.environ["DOUBLEWORD_API_KEY"],
+    )
+)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+async def extract_users():
+    sentences = [
+        "Jason is 25 years old",
+        "Sarah is 32 and lives in London",
+        "Mike turned 41 last week",
+    ]
+
+    users = await asyncio.gather(*[
+        client.chat.completions.create(
+            model="Qwen/Qwen3.5-35B-A3B-FP8",
+            messages=[
+                {"role": "user", "content": f"Extract: {s}"},
+            ],
+            response_model=User,
+        )
+        for s in sentences
+    ])
+    return users
+
+
+users = asyncio.run(extract_users())
+for user in users:
+    print(user)
+#> name='Jason' age=25
+#> name='Sarah' age=32
+#> name='Mike' age=41
+```
+
+`AsyncOpenAI` is a thin subclass of `BatchOpenAI` with a 1-hour completion window default — same fan-out semantics, results back within the hour rather than next-day.
 
 ## Available Models
 
