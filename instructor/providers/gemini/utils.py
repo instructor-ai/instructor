@@ -161,7 +161,13 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
 
     Ref: https://ai.google.dev/api/python/google/generativeai/protos/Schema
     """
-    import jsonref
+    try:
+        import jsonref
+    except ModuleNotFoundError as err:
+        raise ConfigurationError(
+            "jsonref is required for Gemini schema generation. "
+            'Install it with `pip install "instructor[google-genai]"`.'
+        ) from err
 
     class FunctionSchema(BaseModel):
         description: str | None = None
