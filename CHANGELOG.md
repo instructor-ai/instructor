@@ -11,6 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
+- **Gemini (GenAI)**: `map_to_gemini_function_schema` now raises a helpful `ImportError` pointing to `pip install 'instructor[google-genai]'` when `jsonref` is missing, instead of surfacing a bare `ModuleNotFoundError` deep in the call stack. ([#2288](https://github.com/567-labs/instructor/issues/2288))
 
 ---
 
