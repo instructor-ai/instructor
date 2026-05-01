@@ -20,6 +20,7 @@ dependencies = [
     "pydantic-core<3.0.0,>=2.18.0",
     "jiter>=0.6.1,<0.15",
     "jinja2<4.0.0,>=3.1.4",
+    "jsonref<2.0.0,>=1.1.0",
     "requests<3.0.0,>=2.32.3",
 ]
 name = "instructor"
