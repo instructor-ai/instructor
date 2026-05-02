@@ -49,6 +49,8 @@ def initialize_retrying(
     max_retries: int | Retrying | AsyncRetrying,
     is_async: bool,
     timeout: float | None = None,
+    token_budget: int | None = None,
+    usage_container: list | None = None,
 ):
     """
     Initialize the retrying mechanism based on the type (synchronous or asynchronous).
@@ -57,6 +59,8 @@ def initialize_retrying(
         max_retries (int | Retrying | AsyncRetrying): Maximum number of retries or a retrying object.
         is_async (bool): Flag indicating if the retrying is asynchronous.
         timeout (float | None): Optional timeout in seconds to limit total retry duration.
+        token_budget (int | None): Optional max total tokens before stopping retries.
+        usage_container (list | None): Mutable container holding the running CompletionUsage object.
 
     Returns:
         Retrying | AsyncRetrying: Configured retrying object.
@@ -69,6 +73,19 @@ def initialize_retrying(
         if timeout is not None:
             # Add global timeout: stop after timeout seconds total
             stop_conditions.append(stop_after_delay(timeout))
+
+        if token_budget is not None and usage_container is not None:
+
+            def _stop_on_token_budget(retry_state: Any) -> bool:  # noqa: ARG001
+                usage = usage_container[0]
+                total = getattr(usage, "total_tokens", None)
+                if total is None:
+                    total = getattr(usage, "input_tokens", 0) + getattr(
+                        usage, "output_tokens", 0
+                    )
+                return total >= token_budget
+
+            stop_conditions.append(_stop_on_token_budget)
 
         # Combine stop conditions with OR logic (stop if ANY condition is met)
         stop_condition = stop_conditions[0]
@@ -178,9 +195,17 @@ def retry_sync(
     """
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
-    # Extract timeout from kwargs if available (for global timeout across retries)
+    # Extract timeout and token_budget from kwargs if available
     timeout = kwargs.get("timeout")
-    max_retries = initialize_retrying(max_retries, is_async=False, timeout=timeout)
+    token_budget = kwargs.pop("token_budget", None)
+    usage_container = [total_usage]
+    max_retries = initialize_retrying(
+        max_retries,
+        is_async=False,
+        timeout=timeout,
+        token_budget=token_budget,
+        usage_container=usage_container,
+    )
 
     # Pre-extract stream flag to avoid repeated lookup
     stream = kwargs.get("stream", False)
@@ -356,9 +381,17 @@ async def retry_async(
     """
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
-    # Extract timeout from kwargs if available (for global timeout across retries)
+    # Extract timeout and token_budget from kwargs if available
     timeout = kwargs.get("timeout")
-    max_retries = initialize_retrying(max_retries, is_async=True, timeout=timeout)
+    token_budget = kwargs.pop("token_budget", None)
+    usage_container = [total_usage]
+    max_retries = initialize_retrying(
+        max_retries,
+        is_async=True,
+        timeout=timeout,
+        token_budget=token_budget,
+        usage_container=usage_container,
+    )
 
     # Pre-extract stream flag to avoid repeated lookup
     stream = kwargs.get("stream", False)
