@@ -8,12 +8,13 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 import sys
 import types
 import warnings
-from collections.abc import AsyncGenerator, Generator, Iterable
+from collections.abc import AsyncGenerator, Callable, Generator, Iterable
 from copy import deepcopy
 from functools import cache
 from typing import (  # noqa: UP035
@@ -352,9 +353,13 @@ class PartialBase(Generic[T_Model]):
 
     @classmethod
     def from_streaming_response(
-        cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
+        cls,
+        completion: Iterable[Any],
+        mode: Mode,
+        on_event: Callable[..., Any] | None = None,
+        **kwargs: Any,
     ) -> Generator[T_Model, None, None]:
-        json_chunks = cls.extract_json(completion, mode)
+        json_chunks = cls.extract_json(completion, mode, on_event=on_event)
 
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
@@ -366,9 +371,13 @@ class PartialBase(Generic[T_Model]):
 
     @classmethod
     async def from_streaming_response_async(
-        cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
+        cls,
+        completion: AsyncGenerator[Any, None],
+        mode: Mode,
+        on_event: Callable[..., Any] | None = None,
+        **kwargs: Any,
     ) -> AsyncGenerator[T_Model, None]:
-        json_chunks = cls.extract_json_async(completion, mode)
+        json_chunks = cls.extract_json_async(completion, mode, on_event=on_event)
 
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream_async(json_chunks)
@@ -524,7 +533,9 @@ class PartialBase(Generic[T_Model]):
 
     @staticmethod
     def extract_json(
-        completion: Iterable[Any], mode: Mode
+        completion: Iterable[Any],
+        mode: Mode,
+        on_event: Callable[..., Any] | None = None,
     ) -> Generator[str, None, None]:
         """Extract JSON chunks from various LLM provider streaming responses.
 
@@ -714,10 +725,20 @@ class PartialBase(Generic[T_Model]):
                 }:
                     from openai.types.responses import (
                         ResponseFunctionCallArgumentsDeltaEvent,
+                        ResponseReasoningSummaryTextDeltaEvent,
+                        ResponseReasoningSummaryTextDoneEvent,
                     )
 
                     if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
                         yield chunk.delta
+                    elif on_event is not None and isinstance(
+                        chunk,
+                        (
+                            ResponseReasoningSummaryTextDeltaEvent,
+                            ResponseReasoningSummaryTextDoneEvent,
+                        ),
+                    ):
+                        on_event(chunk)
 
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
@@ -753,7 +774,9 @@ class PartialBase(Generic[T_Model]):
 
     @staticmethod
     async def extract_json_async(
-        completion: AsyncGenerator[Any, None], mode: Mode
+        completion: AsyncGenerator[Any, None],
+        mode: Mode,
+        on_event: Callable[..., Any] | None = None,
     ) -> AsyncGenerator[str, None]:
         json_started = False
         async for chunk in completion:
@@ -939,10 +962,23 @@ class PartialBase(Generic[T_Model]):
                 }:
                     from openai.types.responses import (
                         ResponseFunctionCallArgumentsDeltaEvent,
+                        ResponseReasoningSummaryTextDeltaEvent,
+                        ResponseReasoningSummaryTextDoneEvent,
                     )
 
                     if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
                         yield chunk.delta
+                    elif on_event is not None and isinstance(
+                        chunk,
+                        (
+                            ResponseReasoningSummaryTextDeltaEvent,
+                            ResponseReasoningSummaryTextDoneEvent,
+                        ),
+                    ):
+                        if asyncio.iscoroutinefunction(on_event):
+                            await on_event(chunk)
+                        else:
+                            on_event(chunk)
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()

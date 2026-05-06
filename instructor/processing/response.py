@@ -38,7 +38,7 @@ from __future__ import annotations
 import inspect
 import logging
 from typing import Any, TypeVar, TYPE_CHECKING, cast
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
@@ -178,6 +178,7 @@ async def process_response_async(
     validation_context: dict[str, Any] | None = None,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
+    on_event: Callable[..., Any] | None = None,
 ) -> Any:
     """Asynchronously process and transform LLM responses into structured models.
 
@@ -245,6 +246,7 @@ async def process_response_async(
         return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
             cast(AsyncGenerator[Any, None], response),
             mode=mode,
+            on_event=on_event,
         )
 
     model = response_model.from_response(  # type: ignore
@@ -286,6 +288,7 @@ def process_response(
     validation_context: dict[str, Any] | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
+    on_event: Callable[..., Any] | None = None,
 ) -> Any:
     """Process and transform LLM responses into structured models (synchronous).
 
@@ -364,6 +367,7 @@ def process_response(
             response_model.from_streaming_response(  # type: ignore
                 response,
                 mode=mode,
+                on_event=on_event,
             )
         )
 

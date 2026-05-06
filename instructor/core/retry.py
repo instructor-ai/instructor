@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from json import JSONDecodeError
 from typing import Any, Callable, TypeVar
+from collections.abc import Callable as CallableABC
 
 from .exceptions import (
     InstructorRetryException,
@@ -155,6 +156,7 @@ def retry_sync(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    on_event: CallableABC[..., Any] | None = None,
 ) -> T_Model | None:
     """
     Retry a synchronous function upon specified exceptions.
@@ -208,6 +210,7 @@ def retry_sync(
                         strict=strict,
                         mode=mode,
                         stream=stream,
+                        on_event=on_event,
                     )
                 except (
                     ValidationError,
@@ -333,6 +336,7 @@ async def retry_async(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
     hooks: Hooks | None = None,
+    on_event: CallableABC[..., Any] | None = None,
 ) -> T_Model | None:
     """
     Retry an asynchronous function upon specified exceptions.
@@ -386,6 +390,7 @@ async def retry_async(
                         strict=strict,
                         mode=mode,
                         stream=stream,
+                        on_event=on_event,
                     )
                 except (
                     ValidationError,

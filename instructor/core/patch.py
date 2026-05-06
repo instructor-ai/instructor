@@ -163,6 +163,7 @@ def patch(  # type: ignore
         cache_ttl: int | None = (
             cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
         )
+        on_event = kwargs.pop("on_event", None)
 
         context = handle_context(context, validation_context)
 
@@ -195,6 +196,7 @@ def patch(  # type: ignore
             strict=strict,
             mode=mode,
             hooks=hooks,
+            on_event=on_event,
         )
 
         # Store in cache *after* successful call
@@ -232,6 +234,7 @@ def patch(  # type: ignore
         cache_ttl: int | None = (
             cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
         )
+        on_event = kwargs.pop("on_event", None)
 
         context = handle_context(context, validation_context)
         # print(f"instructor.patch: patched_function {func.__name__}")
@@ -265,6 +268,7 @@ def patch(  # type: ignore
             strict=strict,
             kwargs=new_kwargs,
             mode=mode,
+            on_event=on_event,
         )
 
         # Save to cache
