@@ -12,6 +12,7 @@ __all__ = [
     "Audio",
     "from_openai",
     "from_litellm",
+    "from_vertexai",
     "from_provider",
     "AsyncInstructor",
     "Provider",
@@ -37,7 +38,6 @@ __all__ = [
     "llm_validator",
     "openai_moderation",
     "hooks",
-    "client",
 ]
 
 _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
@@ -71,7 +71,6 @@ _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "BatchJob": (".batch", "BatchJob"),
     "FinetuneFormat": (".distil", "FinetuneFormat"),
     "Instructions": (".distil", "Instructions"),
-    "client": (".client", None),
     "from_anthropic": (".v2.providers.anthropic.client", "from_anthropic"),
     "from_gemini": (".v2.providers.gemini.client", "from_gemini"),
     "from_fireworks": (".v2.providers.fireworks.client", "from_fireworks"),
@@ -99,6 +98,12 @@ def __getattr__(name: str) -> Any:
     return value
 
 
+def from_vertexai(*args: Any, **kwargs: Any) -> Any:
+    from .v2.providers.vertexai.client import from_vertexai as from_vertexai_v2
+
+    return from_vertexai_v2(*args, **kwargs)
+
+
 def _add_optional_export(name: str, *packages: str) -> None:
     if all(importlib.util.find_spec(package) is not None for package in packages):
         __all__.append(name)
@@ -111,7 +116,6 @@ _add_optional_export("from_cerebras", "cerebras")
 _add_optional_export("from_groq", "groq")
 _add_optional_export("from_mistral", "mistralai")
 _add_optional_export("from_cohere", "cohere")
-_add_optional_export("from_vertexai", "vertexai")
 _add_optional_export("from_bedrock", "boto3")
 _add_optional_export("from_writer", "writerai")
 _add_optional_export("from_xai", "xai_sdk")

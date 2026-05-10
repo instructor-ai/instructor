@@ -4,7 +4,6 @@ from .partial import Partial
 from .citation import CitationMixin
 from .simple_type import is_simple_type, ModelAdapter
 from .response_list import ListResponse, ResponseList
-from . import validators  # Backwards compatibility module
 
 __all__ = [  # noqa: F405
     "CitationMixin",
@@ -15,5 +14,4 @@ __all__ = [  # noqa: F405
     "ResponseList",
     "is_simple_type",
     "ModelAdapter",
-    "validators",
 ]

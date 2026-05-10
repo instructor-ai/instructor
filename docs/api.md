@@ -33,8 +33,6 @@ Functions to create Instructor clients from various providers.
 
 Domain-specific language components for advanced patterns and data handling.
 
-::: instructor.dsl.validators
-
 ::: instructor.dsl.iterable
 
 ::: instructor.dsl.partial
@@ -132,7 +130,5 @@ Event hooks system for monitoring and intercepting LLM interactions.
 Decorators for patching LLM client methods.
 
 ::: instructor.core.patch
-
-::: instructor.patch
 
 ::: instructor.apatch
