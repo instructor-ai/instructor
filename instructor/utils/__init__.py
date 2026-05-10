@@ -80,7 +80,7 @@ def __getattr__(name):
         "combine_system_messages",
         "extract_system_messages",
     ]:
-        from ..v2.providers.anthropic import utils as anthropic_utils
+        from ..providers.anthropic import utils as anthropic_utils
 
         return getattr(anthropic_utils, name)
 

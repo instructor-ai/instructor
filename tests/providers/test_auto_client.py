@@ -18,7 +18,7 @@ USER_EXTRACTION_PROMPT = {
 
 # --- Providers to test (from main.py) ---
 PROVIDERS = [
-    "anthropic/claude-3-5-haiku-latest",
+    "anthropic/claude-sonnet-4-6-20250627",
     "google/gemini-pro",
     "openai/gpt-4o-mini",
     "azure_openai/gpt-4o-mini",
@@ -118,7 +118,7 @@ def test_additional_kwargs_passed():
         return
 
     client = instructor.from_provider(
-        "anthropic/claude-3-5-haiku-latest", max_tokens=10
+        "anthropic/claude-sonnet-4-6-20250627", max_tokens=10
     )
 
     with pytest.raises(InstructorRetryException) as excinfo:

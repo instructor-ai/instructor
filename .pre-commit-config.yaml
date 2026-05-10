@@ -22,7 +22,7 @@ repos:
       - id: uv-sync-check
         name: Verify dependencies can be installed
         entry: uv
-        args: [sync, --check]
+        args: [sync, --check, --all-extras]
         language: system
         files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false
@@ -37,7 +37,7 @@ repos:
       - id: ty-check
         name: Run Type Check (ty)
         entry: uv
-        args: [run, ty, check, --ignore, unresolved-import]
+        args: [run, --frozen, ty, check, instructor/]
         language: system
         files: ^instructor/
         pass_filenames: false

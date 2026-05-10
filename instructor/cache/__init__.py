@@ -113,7 +113,7 @@ def _import_diskcache():  # pragma: no cover – only executed when requested
 
     if importlib.util.find_spec("diskcache") is None:
         raise ImportError(
-            "diskcache is not installed.  Install it with `pip install diskcache`."
+            'diskcache is not installed. Install it with `pip install "instructor[diskcache]"`.'
         )
     import diskcache
 

@@ -20,7 +20,11 @@ from tenacity import (
 
 from instructor.mode import Mode
 from instructor.utils.providers import Provider
-from instructor.core.exceptions import FailedAttempt, InstructorRetryException
+from instructor.core.exceptions import (
+    FailedAttempt,
+    IncompleteOutputException,
+    InstructorRetryException,
+)
 from instructor.utils.core import extract_messages
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.response_list import ListResponse
@@ -121,7 +125,7 @@ def retry_sync_v2(
 
     # Setup retrying
     if isinstance(max_retries, int):
-        stop_condition = stop_after_attempt(max_retries)
+        stop_condition = stop_after_attempt(max(max_retries, 1))
         timeout = kwargs.get("timeout")
         if isinstance(timeout, (int, float)):
             stop_condition = stop_condition | stop_after_delay(timeout)
@@ -146,6 +150,8 @@ def retry_sync_v2(
 
                 try:
                     response = func(*args, **kwargs)
+                except IncompleteOutputException:
+                    raise
                 except Exception as e:
                     logger.error(
                         f"API call failed on attempt "
@@ -175,6 +181,8 @@ def retry_sync_v2(
                     )
                     return _finalize_parsed_response(parsed, response)  # type: ignore
 
+                except IncompleteOutputException:
+                    raise
                 except ValidationError as e:
                     attempt_number = attempt.retry_state.attempt_number
                     logger.debug(f"Validation error on attempt {attempt_number}: {e}")
@@ -200,6 +208,8 @@ def retry_sync_v2(
                     # Will retry with modified kwargs
                     raise
 
+    except IncompleteOutputException:
+        raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred
         if last_exception is None:
@@ -275,7 +285,7 @@ async def retry_async_v2(
 
     # Setup retrying
     if isinstance(max_retries, int):
-        stop_condition = stop_after_attempt(max_retries)
+        stop_condition = stop_after_attempt(max(max_retries, 1))
         timeout = kwargs.get("timeout")
         if isinstance(timeout, (int, float)):
             stop_condition = stop_condition | stop_after_delay(timeout)
@@ -300,6 +310,8 @@ async def retry_async_v2(
 
                 try:
                     response = await func(*args, **kwargs)
+                except IncompleteOutputException:
+                    raise
                 except Exception as e:
                     logger.error(
                         f"API call failed on attempt "
@@ -329,6 +341,8 @@ async def retry_async_v2(
                     )
                     return _finalize_parsed_response(parsed, response)  # type: ignore
 
+                except IncompleteOutputException:
+                    raise
                 except ValidationError as e:
                     attempt_number = attempt.retry_state.attempt_number
                     logger.debug(f"Validation error on attempt {attempt_number}: {e}")
@@ -354,6 +368,8 @@ async def retry_async_v2(
                     # Will retry with modified kwargs
                     raise
 
+    except IncompleteOutputException:
+        raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred
         if last_exception is None:

@@ -44,7 +44,7 @@ MarkdownDataFrame = Annotated[
             "description": """
                 The markdown representation of the table, 
                 each one should be tidy, do not try to join tables
-                that should be seperate""",
+                that should be separate""",
         }
     ),
 ]

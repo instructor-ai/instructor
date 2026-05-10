@@ -55,7 +55,7 @@ def mock_completion(request: Any) -> ChatCompletion:
             )
         ],
         created=1234567890,
-        model="gpt-3.5-turbo",
+        model="gpt-4.1-mini",
         object="chat.completion",
     )
 
@@ -71,7 +71,7 @@ def mock_anthropic_message(request: Any) -> Message:
     return Message(
         id="test_id",
         content=[{"type": "text", "text": data_content}],
-        model="claude-3-haiku-20240307",
+        model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",
         stop_sequence=None,
@@ -275,7 +275,7 @@ def test_refusal_attribute(test_model: type[ResponseSchema]):
     completion = ChatCompletion(
         id="test_id",
         created=1234567890,
-        model="gpt-3.5-turbo",
+        model="gpt-4.1-mini",
         object="chat.completion",
         choices=[
             Choice(
@@ -302,7 +302,7 @@ def test_no_refusal_attribute(test_model: type[ResponseSchema]):
     completion = ChatCompletion(
         id="test_id",
         created=1234567890,
-        model="gpt-3.5-turbo",
+        model="gpt-4.1-mini",
         object="chat.completion",
         choices=[
             Choice(
@@ -356,7 +356,7 @@ def test_missing_refusal_attribute(test_model: type[ResponseSchema]):
     completion = ChatCompletion(
         id="test_id",
         created=1234567890,
-        model="gpt-3.5-turbo",
+        model="gpt-4.1-mini",
         object="chat.completion",
         choices=[
             Choice(

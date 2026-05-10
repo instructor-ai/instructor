@@ -6,6 +6,7 @@ from typing import Any, Callable, TypeVar
 from tenacity import AsyncRetrying, Retrying
 
 from instructor.mode import Mode
+from instructor.utils.core import extract_messages  # noqa: F401
 from instructor.utils.providers import Provider
 from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 

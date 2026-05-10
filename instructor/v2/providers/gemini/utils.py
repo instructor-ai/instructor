@@ -206,57 +206,6 @@ def update_genai_kwargs(
             if val is not None:
                 base_config[gemini_key] = val
 
-    def _genai_kwargs_has_image_content(genai_kwargs: dict[str, Any]) -> bool:
-        contents = genai_kwargs.get("contents")
-        if isinstance(contents, list):
-            for content in contents:
-                parts = getattr(content, "parts", None)
-                if not parts:
-                    continue
-                for part in parts:
-                    inline_data = getattr(part, "inline_data", None)
-                    if inline_data is not None:
-                        mime_type = getattr(inline_data, "mime_type", None)
-                        if isinstance(mime_type, str) and mime_type.startswith(
-                            "image/"
-                        ):
-                            return True
-
-                    file_data = getattr(part, "file_data", None)
-                    if file_data is not None:
-                        mime_type = getattr(file_data, "mime_type", None)
-                        if isinstance(mime_type, str) and mime_type.startswith(
-                            "image/"
-                        ):
-                            return True
-
-        messages = genai_kwargs.get("messages")
-        if isinstance(messages, list):
-            for message in messages:
-                if not isinstance(message, dict):
-                    continue
-                content = message.get("content")
-                if isinstance(content, Image):
-                    return True
-                if isinstance(content, list):
-                    for item in content:
-                        if isinstance(item, Image):
-                            return True
-                        if isinstance(item, dict) and item.get("type") in {
-                            "image",
-                            "image_url",
-                            "input_image",
-                        }:
-                            return True
-                if isinstance(content, dict) and content.get("type") in {
-                    "image",
-                    "image_url",
-                    "input_image",
-                }:
-                    return True
-
-        return False
-
     safety_settings = new_kwargs.pop("safety_settings", {})
     base_config["safety_settings"] = []
 
@@ -269,13 +218,6 @@ def update_genai_kwargs(
         excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
 
     if safety_settings is not None:
-        has_image = _genai_kwargs_has_image_content(new_kwargs)
-        image_categories = [
-            c
-            for c in HarmCategory
-            if c not in excluded_categories
-            and c.name.startswith("HARM_CATEGORY_IMAGE_")
-        ]
         text_categories = [
             c
             for c in HarmCategory
@@ -283,27 +225,11 @@ def update_genai_kwargs(
             and not c.name.startswith("HARM_CATEGORY_IMAGE_")
         ]
 
-        supported_categories = (
-            image_categories if (has_image and image_categories) else text_categories
-        )
-
-        def _map_text_to_image_category_name(image_category_name: str) -> str | None:
-            suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
-            if suffix == "HATE":
-                return "HARM_CATEGORY_HATE_SPEECH"
-            return f"HARM_CATEGORY_{suffix}"
-
-        for category in supported_categories:
+        for category in text_categories:
             threshold = HarmBlockThreshold.OFF
             if isinstance(safety_settings, dict):
                 if category in safety_settings:
                     threshold = safety_settings[category]
-                elif has_image and category.name.startswith("HARM_CATEGORY_IMAGE_"):
-                    mapped_name = _map_text_to_image_category_name(category.name)
-                    if mapped_name is not None and hasattr(HarmCategory, mapped_name):
-                        mapped_category = getattr(HarmCategory, mapped_name)
-                        if mapped_category in safety_settings:
-                            threshold = safety_settings[mapped_category]
 
             base_config["safety_settings"].append(
                 {
@@ -372,10 +298,14 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     try:
         from google.genai.types import HarmBlockThreshold, HarmCategory  # type: ignore
     except ImportError:
-        from google.generativeai.types import (  # type: ignore
-            HarmBlockThreshold,
-            HarmCategory,
-        )
+        try:
+            from google.generativeai.types import (  # type: ignore
+                HarmBlockThreshold,
+                HarmCategory,
+            )
+        except ImportError:
+            result.setdefault("safety_settings", {})
+            return result
 
     safety_settings = result.get("safety_settings", {})
     result["safety_settings"] = safety_settings

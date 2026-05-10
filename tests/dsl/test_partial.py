@@ -45,6 +45,10 @@ class UnionWithNested(BaseModel):
     c: NestedB
 
 
+class PEP604UnionField(BaseModel):
+    value: str | int
+
+
 def test_partial():
     partial = Partial[SamplePartial]
     assert partial.model_json_schema() == {
@@ -208,6 +212,14 @@ def test_union_with_nested():
     partial.get_partial_model().model_validate_json(
         '{"a": [{"b": "b"}, {"d": "d"}], "b": [{"b": "b"}], "c": {"d": "d"}, "e": [1, "a"]}'
     )
+
+
+def test_partial_streaming_with_pep604_union_field():
+    partial = Partial[PEP604UnionField]
+
+    models = list(partial.model_from_chunks(['{"value": ', "1}"]))
+
+    assert models[-1].model_dump() == {"value": 1}
 
 
 def test_partial_with_default_factory():
@@ -423,6 +435,23 @@ class TestLiteralTypeStreaming:
         assert result.name == "John"
         assert result.status is None
 
+    def test_literal_default_is_available_during_streaming(self):
+        """Literal fields with explicit defaults should be present in partial results."""
+
+        class Person(BaseModel):
+            type: Literal["Person"] = "Person"
+            name: str
+            age: int
+
+        PartialModel = Partial[Person]
+
+        results = list(PartialModel.model_from_chunks(['{"name": "Joh']))
+
+        assert len(results) == 1
+        assert results[0].type == "Person"
+        assert results[0].name == "Joh"
+        assert results[0].age is None
+
     def test_literal_rejects_complete_invalid_value(self):
         """Complete but invalid Literal values should fail validation."""
 
@@ -527,6 +556,19 @@ class TestPartialStreamingWithComplexTypes:
 
         result = TruePartial.model_validate({"value": "yes"})
         assert result.value == "yes"
+
+        result = TruePartial.model_validate({"value": 42})
+        assert result.value == 42
+
+    def test_partial_model_supports_pep604_union_annotations(self):
+        class MyResponse(BaseModel):
+            value: str | int
+
+        PartialModel = Partial[MyResponse]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"value": "hello"})
+        assert result.value == "hello"
 
         result = TruePartial.model_validate({"value": 42})
         assert result.value == 42

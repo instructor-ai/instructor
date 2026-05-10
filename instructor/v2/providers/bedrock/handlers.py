@@ -18,9 +18,6 @@ from instructor.utils.core import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
-import requests
-
-
 def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
     """Generate Bedrock tool schema from a Pydantic model."""
     schema = response_model.model_json_schema()
@@ -144,9 +141,6 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
     if not image_url:
         raise ValueError("image_url.url is required for OpenAI-style image parts")
 
-    guessed_mime = mimetypes.guess_type(image_url)[0] or "image/jpeg"
-    fmt = _normalize_bedrock_image_format(guessed_mime)
-
     if image_url.startswith("data:"):
         try:
             header, b64 = image_url.split(",", 1)
@@ -154,39 +148,23 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("Invalid data URL in image_url.url") from exc
         if ";base64" not in header:
             raise ValueError("Only base64 data URLs are supported for Bedrock")
+        meta = header[5:]
+        mime = meta.split(";", 1)[0]
+        if not mime or "/" not in mime:
+            guessed = None
+            for token in meta.split(";")[1:]:
+                if token.startswith("name="):
+                    name = token[len("name=") :].strip().strip('"')
+                    guessed = mimetypes.guess_type(name)[0]
+                    if guessed:
+                        break
+            mime = guessed or "image/jpeg"
+        fmt = _normalize_bedrock_image_format(mime)
         return {"image": {"format": fmt, "source": {"bytes": base64.b64decode(b64)}}}
 
-    if image_url.startswith(("http://", "https://")):
-        try:
-            resp = requests.get(image_url, timeout=15)
-            resp.raise_for_status()
-            ctype = resp.headers.get("Content-Type")
-            if ctype and "/" in ctype:
-                fmt = _normalize_bedrock_image_format(ctype)
-            return {"image": {"format": fmt, "source": {"bytes": resp.content}}}
-        except requests.exceptions.Timeout as exc:  # type: ignore[attr-defined]
-            raise ValueError(
-                f"Timed out while fetching image from {image_url}"
-            ) from exc
-        except requests.exceptions.ConnectionError as exc:  # type: ignore[attr-defined]
-            raise ValueError(
-                f"Connection error while fetching image from {image_url}: {exc}"
-            ) from exc
-        except requests.exceptions.HTTPError as exc:  # type: ignore[attr-defined]
-            raise ValueError(
-                f"HTTP error while fetching image from {image_url}: {exc}"
-            ) from exc
-        except requests.exceptions.RequestException as exc:  # type: ignore[attr-defined]
-            raise ValueError(
-                f"Request error while fetching image from {image_url}: {exc}"
-            ) from exc
-        except Exception as exc:
-            raise ValueError(
-                f"Unexpected error while fetching image from {image_url}: {exc}"
-            ) from exc
-
     raise ValueError(
-        "Unsupported image_url scheme. Use http(s) or data:image/...;base64,..."
+        "Unsupported image_url scheme for Bedrock. "
+        "Use data:image/...;base64,... or pass Bedrock-native image bytes."
     )
 
 
@@ -223,6 +201,9 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
                     items.append(part)
                     continue
                 if "document" in part and isinstance(part["document"], dict):
+                    items.append(part)
+                    continue
+                if "cachePoint" in part:
                     items.append(part)
                     continue
                 raise ValueError(f"Unsupported dict content for Bedrock: {part}")

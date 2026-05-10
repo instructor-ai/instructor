@@ -181,3 +181,4 @@ check_zero_width_chars.py
 # Suggestion files from architectural analysis
 *_SUGGESTIONS.md
 ORGANIZED_SUGGESTIONS.md
+*.orig

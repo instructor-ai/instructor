@@ -535,6 +535,21 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
         )
 
 
+@register_mode_handler(Provider.ANTHROPIC, Mode.ANTHROPIC_REASONING_TOOLS)
+class AnthropicReasoningToolsHandler(AnthropicToolsHandler):
+    """Compatibility wrapper for the deprecated reasoning-tools mode."""
+
+    mode = Mode.ANTHROPIC_REASONING_TOOLS
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        Mode.warn_anthropic_reasoning_tools_deprecation()
+        return super().prepare_request(response_model, kwargs)
+
+
 @register_mode_handler(Provider.ANTHROPIC, Mode.PARALLEL_TOOLS)
 class AnthropicParallelToolsHandler(AnthropicHandlerBase):
     """Handler for Anthropic parallel tool calling."""

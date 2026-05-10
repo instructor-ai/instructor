@@ -415,7 +415,8 @@ plugins:
          'hub/single_classification.md': 'examples/single_classification.md'
          'hub/tables_from_vision.md': 'examples/tables_from_vision.md'
          'hub/youtube_clips.md': 'examples/youtube_clips.md'
-  - social
+  - social:
+      enabled: !ENV [ENABLE_MKDOCS_SOCIAL, false]
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\b)(?=[A-Z][a-z])'
   - minify:

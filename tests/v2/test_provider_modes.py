@@ -96,7 +96,7 @@ PROVIDER_CONFIGS = {
         "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
     },
     Provider.ANTHROPIC: {
-        "provider_string": "anthropic/claude-3-5-haiku-latest",
+        "provider_string": "anthropic/claude-sonnet-4-6-20250627",
         "modes": [
             Mode.TOOLS,
             Mode.JSON_SCHEMA,
@@ -283,7 +283,7 @@ async def test_mode_async_extraction(provider: Provider, mode: Mode):
 def test_anthropic_parallel_tools_extraction():
     """Test PARALLEL_TOOLS mode extraction (Anthropic-specific)."""
     client = instructor.from_provider(
-        "anthropic/claude-3-5-haiku-latest",
+        "anthropic/claude-sonnet-4-6-20250627",
         mode=Mode.PARALLEL_TOOLS,
     )
     response = client.chat.completions.create(
@@ -331,6 +331,55 @@ def test_anthropic_tools_with_thinking(mode: Mode):
 
     assert isinstance(response, Answer)
     assert response.answer == 10.0
+
+
+@pytest.mark.requires_api_key
+def test_anthropic_reasoning_tools_deprecation():
+    """Test that ANTHROPIC_REASONING_TOOLS shows deprecation warning."""
+    import warnings
+
+    import instructor.mode as mode_module
+
+    mode_module._reasoning_tools_deprecation_shown = False  # type: ignore[attr-defined]
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+
+        # Trigger deprecation by accessing the handler
+        from instructor.v2.providers.anthropic.handlers import (
+            AnthropicReasoningToolsHandler,
+        )
+
+        handler = AnthropicReasoningToolsHandler()
+        handler.prepare_request(Answer, {"messages": []})
+
+        # Verify deprecation warning was issued
+        deprecation_warnings = [
+            warning
+            for warning in w
+            if issubclass(warning.category, DeprecationWarning)
+            and "ANTHROPIC_REASONING_TOOLS" in str(warning.message)
+        ]
+        assert len(deprecation_warnings) >= 1
+
+        # Also test that it works
+        client = instructor.from_provider(
+            "anthropic/claude-sonnet-4-6-20250627",
+            mode=Mode.ANTHROPIC_REASONING_TOOLS,
+        )
+        response = client.chat.completions.create(
+            response_model=Answer,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "What is 6 + 6? Reply with a number.",
+                },
+            ],
+            max_tokens=1000,
+        )
+
+        assert isinstance(response, Answer)
+        assert response.answer == 12.0
 
 
 @pytest.mark.parametrize("provider", PROVIDER_CONFIGS.keys())

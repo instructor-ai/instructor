@@ -66,7 +66,7 @@ class QuestionAnswer(instructor.ResponseSchema):
     question: str = Field(..., description="Question that was asked")
     answer: list[Fact] = Field(
         ...,
-        description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
+        description="Body of the answer, each fact should be its separate object with a body and a list of sources",
     )
 
     @model_validator(mode="after")

@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field  # type: ignore[import-not-found]
 messages = [
     {"role": "user", "content": "hello"},
 ]
-model_name = "gpt-3.5-turbo"
+model_name = "gpt-4.1-mini"
 
 
 class UserV1(BaseModel):

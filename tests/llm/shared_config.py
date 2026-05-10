@@ -17,13 +17,13 @@ GOOGLE_GENAI_MODEL = os.getenv("GOOGLE_GENAI_MODEL", "")
 # Provider configurations: (model_string, mode, required_env_var, required_package)
 PROVIDER_CONFIGS = [
     (
-        "openai/gpt-4o-mini",
+        "openai/gpt-4.1-mini",
         instructor.Mode.TOOLS,
         "OPENAI_API_KEY",
         "openai",
     ),
     (
-        "anthropic/claude-3-5-haiku-latest",
+        "anthropic/claude-3-haiku-20240307",
         instructor.Mode.ANTHROPIC_TOOLS,
         "ANTHROPIC_API_KEY",
         "anthropic",
@@ -59,19 +59,19 @@ PROVIDER_CONFIGS = [
         "cerebras",
     ),
     (
-        "fireworks/llama-v3p1-70b-instruct",
+        "fireworks/accounts/fireworks/models/llama-v3p3-70b-instruct",
         instructor.Mode.FIREWORKS_TOOLS,
         "FIREWORKS_API_KEY",
         "fireworks",
     ),
     (
-        "writer/palmyra-x-004",
+        "writer/palmyra-x5",
         instructor.Mode.WRITER_TOOLS,
         "WRITER_API_KEY",
         "writerai",
     ),
     (
-        "perplexity/llama-3.1-sonar-large-128k-online",
+        "perplexity/sonar-pro",
         instructor.Mode.PERPLEXITY_JSON,
         "PERPLEXITY_API_KEY",
         "openai",  # Perplexity transports over OpenAI-compatible API

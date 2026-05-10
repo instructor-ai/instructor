@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, Union, Literal, overload
 from .core.client import AsyncInstructor, Instructor
 import instructor
+from instructor import __version__
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
 import warnings
@@ -422,9 +423,15 @@ def from_provider(
                 )
 
             client = (
-                anthropic.AsyncAnthropic(api_key=api_key)
+                anthropic.AsyncAnthropic(
+                    api_key=api_key,
+                    default_headers={"User-Agent": f"instructor/{__version__}"},
+                )
                 if async_client
-                else anthropic.Anthropic(api_key=api_key)
+                else anthropic.Anthropic(
+                    api_key=api_key,
+                    default_headers={"User-Agent": f"instructor/{__version__}"},
+                )
             )
             # Set default max_tokens if not provided (like v1)
             if "max_tokens" not in kwargs:

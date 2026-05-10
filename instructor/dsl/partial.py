@@ -507,8 +507,34 @@ class PartialBase(Generic[T_Model]):
     @staticmethod
     def extract_json(
         completion: Iterable[Any],
-        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]],
+        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]]
+        | Any,
+        on_event: Callable[..., Any] | None = None,
     ) -> Generator[str, None, None]:
+        from instructor.mode import Mode
+
+        if stream_extractor in {
+            Mode.RESPONSES_TOOLS,
+            Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }:
+            from openai.types.responses import (
+                ResponseFunctionCallArgumentsDeltaEvent,
+                ResponseReasoningSummaryTextDeltaEvent,
+                ResponseReasoningSummaryTextDoneEvent,
+            )
+
+            for chunk in completion:
+                if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
+                    yield chunk.delta
+                elif on_event and isinstance(
+                    chunk,
+                    (
+                        ResponseReasoningSummaryTextDeltaEvent,
+                        ResponseReasoningSummaryTextDoneEvent,
+                    ),
+                ):
+                    on_event(chunk)
+            return
         if stream_extractor is None:
             raise ValueError("stream_extractor is required for streaming responses")
         yield from stream_extractor(completion)
@@ -518,8 +544,38 @@ class PartialBase(Generic[T_Model]):
         completion: AsyncGenerator[Any, None],
         stream_extractor: Callable[
             [AsyncGenerator[Any, None]], AsyncGenerator[str, None]
-        ],
+        ]
+        | Any,
+        on_event: Callable[..., Any] | None = None,
     ) -> AsyncGenerator[str, None]:
+        import inspect
+
+        from instructor.mode import Mode
+
+        if stream_extractor in {
+            Mode.RESPONSES_TOOLS,
+            Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }:
+            from openai.types.responses import (
+                ResponseFunctionCallArgumentsDeltaEvent,
+                ResponseReasoningSummaryTextDeltaEvent,
+                ResponseReasoningSummaryTextDoneEvent,
+            )
+
+            async for chunk in completion:
+                if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
+                    yield chunk.delta
+                elif on_event and isinstance(
+                    chunk,
+                    (
+                        ResponseReasoningSummaryTextDeltaEvent,
+                        ResponseReasoningSummaryTextDoneEvent,
+                    ),
+                ):
+                    maybe_awaitable = on_event(chunk)
+                    if inspect.isawaitable(maybe_awaitable):
+                        await maybe_awaitable
+            return
         if stream_extractor is None:
             raise ValueError("stream_extractor is required for streaming responses")
         async for chunk in stream_extractor(completion):
