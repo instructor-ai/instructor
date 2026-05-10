@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import openai
-import inspect
-from functools import partial
 import instructor
-from ..utils.providers import Provider, get_provider, normalize_mode_for_provider
+from ..utils.providers import Provider
 from openai.types.chat import ChatCompletionMessageParam
 from typing import (
     TypeVar,
@@ -25,7 +23,6 @@ from typing_extensions import Self
 from pydantic import BaseModel
 from ..dsl.partial import Partial
 from .hooks import Hooks, HookName
-from .exceptions import ConfigurationError
 
 
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
@@ -754,98 +751,15 @@ def from_openai(
     pass
 
 
-def map_chat_completion_to_response(messages, client, *args, **kwargs) -> Any:
-    return client.responses.create(
-        *args,
-        input=messages,
-        **kwargs,
-    )
-
-
-async def async_map_chat_completion_to_response(
-    messages, client, *args, **kwargs
-) -> Any:
-    return await client.responses.create(
-        *args,
-        input=messages,
-        **kwargs,
-    )
-
-
 def from_openai(
     client: openai.OpenAI | openai.AsyncOpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    """Create a patched Instructor client from an OpenAI client."""
-    if hasattr(client, "base_url"):
-        provider = get_provider(str(client.base_url))
-    else:
-        provider = Provider.OPENAI
-    if provider is Provider.UNKNOWN:
-        provider = Provider.OPENAI
+    """Compatibility wrapper for the v2 OpenAI factory."""
+    from instructor.v2.providers.openai.client import from_openai as from_openai_v2
 
-    if not isinstance(client, (openai.OpenAI, openai.AsyncOpenAI)):
-        import warnings
-
-        warnings.warn(
-            "Client should be an instance of openai.OpenAI or openai.AsyncOpenAI. Unexpected behavior may occur with other client types.",
-            stacklevel=2,
-        )
-
-    _ensure_registry_loaded()
-    normalized_mode = normalize_mode_for_provider(mode, provider)
-    try:
-        from instructor.v2.core.registry import mode_registry
-
-        if not mode_registry.is_registered(provider, normalized_mode):
-            raise ConfigurationError(
-                f"Mode {mode} is not registered for provider {provider}."
-            )
-    except ImportError as exc:
-        raise ConfigurationError("Mode registry is not available.") from exc
-
-    if isinstance(client, openai.OpenAI):
-        return Instructor(
-            client=client,
-            create=instructor.patch(
-                create=(
-                    client.chat.completions.create
-                    if mode
-                    not in {
-                        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
-                        instructor.Mode.RESPONSES_TOOLS,
-                    }
-                    else partial(map_chat_completion_to_response, client=client)
-                ),
-                mode=mode,
-                provider=provider,
-            ),
-            mode=mode,
-            provider=provider,
-            **kwargs,
-        )
-
-    if isinstance(client, openai.AsyncOpenAI):
-        return AsyncInstructor(
-            client=client,
-            create=instructor.patch(
-                create=(
-                    client.chat.completions.create
-                    if mode
-                    not in {
-                        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
-                        instructor.Mode.RESPONSES_TOOLS,
-                    }
-                    else partial(async_map_chat_completion_to_response, client=client)
-                ),
-                mode=mode,
-                provider=provider,
-            ),
-            mode=mode,
-            provider=provider,
-            **kwargs,
-        )
+    return from_openai_v2(client=client, mode=mode, **kwargs)
 
 
 @overload
@@ -869,24 +783,7 @@ def from_litellm(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    """Create an Instructor client from a LiteLLM completion function."""
-    is_async = inspect.iscoroutinefunction(completion)
+    """Compatibility wrapper for the v2 LiteLLM factory."""
+    from instructor.v2.providers.litellm.client import from_litellm as from_litellm_v2
 
-    if not is_async:
-        return Instructor(
-            client=None,
-            create=instructor.patch(
-                create=completion, mode=mode, provider=Provider.OPENAI
-            ),
-            mode=mode,
-            **kwargs,
-        )
-    else:
-        return AsyncInstructor(
-            client=None,
-            create=instructor.patch(
-                create=completion, mode=mode, provider=Provider.OPENAI
-            ),
-            mode=mode,
-            **kwargs,
-        )
+    return from_litellm_v2(completion=completion, mode=mode, **kwargs)

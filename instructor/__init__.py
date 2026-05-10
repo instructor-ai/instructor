@@ -44,7 +44,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "Instructor": (".core.client", "Instructor"),
     "AsyncInstructor": (".core.client", "AsyncInstructor"),
     "from_openai": (".v2.providers.openai.client", "from_openai"),
-    "from_litellm": (".core.client", "from_litellm"),
+    "from_litellm": (".v2.providers.litellm.client", "from_litellm"),
     "Mode": (".mode", "Mode"),
     "patch": (".core.patch", "patch"),
     "apatch": (".core.patch", "apatch"),
