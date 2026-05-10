@@ -4,7 +4,7 @@ import importlib.util
 from importlib import import_module
 from typing import Any
 
-__version__ = "1.15.1"
+__version__ = "1.15.2"
 
 __all__ = [
     "Instructor",
