@@ -12,6 +12,17 @@ The v2 architecture uses a hierarchical registry system for managing provider mo
 - **Retry**: Intelligent retry with registry-based handling
 - **Exceptions**: Organized, centralized error handling
 
+### Ownership Rules
+
+- Provider request preparation, response parsing, reask formatting, and
+  wire-format helpers belong under `instructor/v2/providers/<provider>/`.
+- Shared core modules should contain provider-agnostic primitives only.
+- `ResponseSchema.parse_*` helpers are deprecated compatibility shims that
+  delegate into the registry; they are not homes for new provider behavior.
+- Public modules under `instructor/core`, `instructor/processing`,
+  `instructor/dsl`, and `instructor/validation` are compatibility facades over
+  v2-owned implementations.
+
 ## Core Components
 
 ### Protocols (`instructor/v2/core/protocols.py`)
@@ -301,11 +312,12 @@ This guide walks through migrating a provider from v1 to v2 architecture.
 
 ### Understanding V1 vs V2 Architecture
 
-**V1 Architecture**:
+**Compatibility Architecture**:
 
-- Registry lookup from compatibility entry points for request, response, and reask
-- Legacy mode enums are still accepted and normalized in the registry
-- Thin public adapters call v2 handler methods
+- Legacy public entry points remain as thin shims for free upgrades.
+- Compatibility methods delegate into the v2 registry instead of owning live
+  provider logic.
+- Legacy mode enums are still accepted and normalized in the registry.
 
 **V2 Architecture**:
 
@@ -323,10 +335,11 @@ Before migrating, understand your current v1 provider:
 1. **Locate provider files**:
    - `instructor/v2/providers/<provider>/client.py` - provider factories
    - `instructor/v2/providers/<provider>/handlers.py` - request, response, and reask behavior
-   - `instructor/auto_client.py` - unified `from_provider()` routing
-   - `instructor/core/client.py` - shared client wrapper plus compatibility exports
-   - `instructor/core/patch.py` / `instructor/core/retry.py` - compatibility facades over v2 internals
-   - `instructor/client.py` / `instructor/patch.py` - deprecated public shims
+   - `instructor/v2/auto_client.py` - unified `from_provider()` routing
+   - `instructor/v2/core/client.py` - shared client wrapper
+   - `instructor/v2/core/patch.py` / `instructor/v2/core/retry.py` - shared orchestration
+   - `instructor/core/*`, `instructor/processing/*`, `instructor/dsl/*`,
+     `instructor/validation/*` - compatibility facades over v2 internals
 
    **Current migration footprint**: provider-specific runtime behavior belongs in
    `instructor/v2/providers/*`. The remaining non-v2 modules are shared public
@@ -403,11 +416,16 @@ Identify the three handler methods needed:
 and `instructor/processing/response.py`):
 
 ```python
-# V1: Response parsing helpers on ResponseSchema
+# Compatibility: deprecated helper delegates through the registry
 @classmethod
 def parse_cohere_json_schema(cls, completion, validation_context=None, strict=None):
-    text = completion.text
-    return cls.model_validate_json(text, context=validation_context, strict=strict)
+    return cls._parse_with_registry(
+        completion,
+        mode=Mode.JSON_SCHEMA,
+        provider=Provider.COHERE,
+        validation_context=validation_context,
+        strict=strict,
+    )
 
 def handle_reask_kwargs(kwargs, mode, response, exception, provider=Provider.OPENAI):
     # Dispatch to provider-specific reask handler for retries

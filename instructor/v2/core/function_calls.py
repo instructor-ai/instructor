@@ -3,7 +3,6 @@ import inspect
 import json
 import logging
 import warnings
-import re
 from functools import wraps
 from typing import Any, Optional, TypeVar, cast
 from openai.types.chat import ChatCompletion
@@ -16,13 +15,10 @@ from pydantic import (
 
 from instructor.v2.core.errors import (
     IncompleteOutputException,
-    ResponseParsingError,
-    ConfigurationError,
 )
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider, normalize_mode_for_provider, provider_from_mode
 from instructor.v2.core.utils import classproperty
-from instructor.v2.core.json import extract_json_from_codeblock
 from .schema import (
     generate_openai_schema,
     generate_anthropic_schema,
@@ -204,8 +200,17 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        return cls.model_validate_json(
-            completion.text, context=validation_context, strict=strict
+        """Legacy GenAI structured parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.JSON,
+            provider=Provider.GENAI,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_genai_structured_outputs is deprecated. "
+                "Use process_response(..., provider=Provider.GENAI, mode=Mode.JSON)."
+            ),
         )
 
     @classmethod
@@ -215,28 +220,17 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        from google.genai import types
-
-        assert isinstance(completion, types.GenerateContentResponse)
-        assert len(completion.candidates) == 1
-
-        # Filter out thought parts (parts with thought: true)
-        parts = completion.candidates[0].content.parts
-        non_thought_parts = [
-            part for part in parts if not (hasattr(part, "thought") and part.thought)
-        ]
-
-        assert len(non_thought_parts) == 1, (
-            f"Instructor does not support multiple function calls, use List[Model] instead"
-        )
-        function_call = non_thought_parts[0].function_call
-        assert function_call is not None, (
-            f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
-        )
-
-        assert function_call.name == cls.openai_schema["name"]
-        return cls.model_validate(
-            obj=function_call.args, context=validation_context, strict=strict
+        """Legacy GenAI tools parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.TOOLS,
+            provider=Provider.GENAI,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_genai_tools is deprecated. "
+                "Use process_response(..., provider=Provider.GENAI, mode=Mode.TOOLS)."
+            ),
         )
 
     @classmethod
@@ -246,47 +240,18 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
-        # Handle both V1 and V2 response structures
-        if hasattr(completion, "text"):
-            # V1 format: direct text access
-            text = completion.text
-        elif hasattr(completion, "message") and hasattr(completion.message, "content"):
-            # V2 format: nested structure (message.content[].text)
-            # V2 responses may have multiple content items (thinking, text, etc.)
-            content_items = completion.message.content
-            if content_items and len(content_items) > 0:
-                # Find the text content item (skip thinking/other types)
-                text = None
-                for item in content_items:
-                    if (
-                        hasattr(item, "type")
-                        and item.type == "text"
-                        and hasattr(item, "text")
-                    ):
-                        text = item.text
-                        break
-
-                if text is None:
-                    raise ResponseParsingError(
-                        "Cohere V2 response has no text content item",
-                        mode="COHERE_JSON_SCHEMA",
-                        raw_response=completion,
-                    )
-            else:
-                raise ResponseParsingError(
-                    "Cohere V2 response has no content",
-                    mode="COHERE_JSON_SCHEMA",
-                    raw_response=completion,
-                )
-        else:
-            raise ResponseParsingError(
-                f"Unsupported Cohere response format. Expected 'text' (V1) or "
-                f"'message.content[].text' (V2), got: {type(completion)}",
-                mode="COHERE_JSON_SCHEMA",
-                raw_response=completion,
-            )
-
-        return cls.model_validate_json(text, context=validation_context, strict=strict)
+        """Legacy Cohere JSON schema parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.JSON_SCHEMA,
+            provider=Provider.COHERE,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_cohere_json_schema is deprecated. "
+                "Use process_response(..., provider=Provider.COHERE, mode=Mode.JSON_SCHEMA)."
+            ),
+        )
 
     @classmethod
     def parse_anthropic_tools(
@@ -337,25 +302,18 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        if isinstance(completion, dict):
-            # OpenAI will send the first content to be 'reasoningText', and then 'text'
-            content = completion["output"]["message"]["content"]
-            text_content = next((c for c in content if "text" in c), None)
-            if not text_content:
-                raise ResponseParsingError(
-                    "Unexpected format. No text content found in Bedrock response.",
-                    mode="BEDROCK_JSON",
-                    raw_response=completion,
-                )
-            text = text_content["text"]
-            match = re.search(r"```?json(.*?)```?", text, re.DOTALL)
-            if match:
-                text = match.group(1).strip()
-
-            text = re.sub(r"```?json|\\n", "", text).strip()
-        else:
-            text = completion.text
-        return cls.model_validate_json(text, context=validation_context, strict=strict)
+        """Legacy Bedrock JSON parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.MD_JSON,
+            provider=Provider.BEDROCK,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_bedrock_json is deprecated. "
+                "Use process_response(..., provider=Provider.BEDROCK, mode=Mode.MD_JSON)."
+            ),
+        )
 
     @classmethod
     def parse_bedrock_tools(
@@ -364,34 +322,18 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        if isinstance(completion, dict):
-            # Extract the tool use from Bedrock response
-            message = completion.get("output", {}).get("message", {})
-            content = message.get("content", [])
-
-            # Find the tool use content block
-            for content_block in content:
-                if "toolUse" in content_block:
-                    tool_use = content_block["toolUse"]
-                    assert tool_use.get("name") == cls.__name__, (
-                        f"Tool name mismatch: expected {cls.__name__}, got {tool_use.get('name')}"
-                    )
-                    return cls.model_validate(
-                        tool_use.get("input", {}),
-                        context=validation_context,
-                        strict=strict,
-                    )
-
-            raise ResponseParsingError(
-                "No tool use found in Bedrock response",
-                mode="BEDROCK_TOOLS",
-                raw_response=completion,
-            )
-        else:
-            # Fallback for other response formats
-            return cls.model_validate_json(
-                completion.text, context=validation_context, strict=strict
-            )
+        """Legacy Bedrock tools parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.TOOLS,
+            provider=Provider.BEDROCK,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_bedrock_tools is deprecated. "
+                "Use process_response(..., provider=Provider.BEDROCK, mode=Mode.TOOLS)."
+            ),
+        )
 
     @classmethod
     def parse_gemini_json(
@@ -400,31 +342,18 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        try:
-            text = completion.text
-        except ValueError:
-            logger.debug(
-                f"Error response: {completion.result.candidates[0].finish_reason}\n\n{completion.result.candidates[0].safety_ratings}"
-            )
-
-        try:
-            extra_text = extract_json_from_codeblock(text)  # type: ignore
-        except UnboundLocalError:
-            raise ResponseParsingError(
-                "Unable to extract JSON from completion text. The response may have been blocked or empty.",
-                mode="GEMINI_JSON",
-                raw_response=completion,
-            ) from None
-
-        if strict:
-            return cls.model_validate_json(
-                extra_text, context=validation_context, strict=True
-            )
-        else:
-            # Allow control characters.
-            parsed = json.loads(extra_text, strict=False)
-            # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
-            return cls.model_validate(parsed, context=validation_context, strict=False)
+        """Legacy Gemini JSON parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.MD_JSON,
+            provider=Provider.GEMINI,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_gemini_json is deprecated. "
+                "Use process_response(..., provider=Provider.GEMINI, mode=Mode.MD_JSON)."
+            ),
+        )
 
     @classmethod
     def parse_gemini_tools(
@@ -433,31 +362,18 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        try:
-            function_call = completion.candidates[0].content.parts[0].function_call
-        except Exception as exc:
-            raise ResponseParsingError(
-                "No tool call found in Gemini response",
-                mode="GEMINI_TOOLS",
-                raw_response=completion,
-            ) from exc
-
-        args = getattr(function_call, "args", None)
-        if args is None and hasattr(type(function_call), "to_dict"):
-            try:
-                resp_dict = type(function_call).to_dict(function_call)
-            except Exception:
-                resp_dict = {}
-            args = resp_dict.get("args")
-
-        if args is None:
-            raise ResponseParsingError(
-                "No tool call args found in Gemini response",
-                mode="GEMINI_TOOLS",
-                raw_response=completion,
-            )
-
-        return cls.model_validate(args, context=validation_context, strict=strict)
+        """Legacy Gemini tools parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.TOOLS,
+            provider=Provider.GEMINI,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_gemini_tools is deprecated. "
+                "Use process_response(..., provider=Provider.GEMINI, mode=Mode.TOOLS)."
+            ),
+        )
 
     @classmethod
     def parse_vertexai_tools(
@@ -465,12 +381,18 @@ class ResponseSchema(BaseModel):
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
     ) -> BaseModel:
-        tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
-        model = {}
-        for field in tool_call:  # type: ignore
-            model[field] = tool_call[field]
-        # We enable strict=False because the conversion from protobuf -> dict often results in types like ints being cast to floats, as a result in order for model.validate to work we need to disable strict mode.
-        return cls.model_validate(model, context=validation_context, strict=False)
+        """Legacy VertexAI tools parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.TOOLS,
+            provider=Provider.VERTEXAI,
+            validation_context=validation_context,
+            strict=False,
+            warning=(
+                "ResponseSchema.parse_vertexai_tools is deprecated. "
+                "Use process_response(..., provider=Provider.VERTEXAI, mode=Mode.TOOLS)."
+            ),
+        )
 
     @classmethod
     def parse_vertexai_json(
@@ -479,8 +401,17 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        return cls.model_validate_json(
-            completion.text, context=validation_context, strict=strict
+        """Legacy VertexAI JSON parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.MD_JSON,
+            provider=Provider.VERTEXAI,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_vertexai_json is deprecated. "
+                "Use process_response(..., provider=Provider.VERTEXAI, mode=Mode.MD_JSON)."
+            ),
         )
 
     @classmethod
@@ -490,86 +421,17 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        """
-        Parse Cohere tools response.
-
-        Supports:
-        - V1 native tool calls: completion.tool_calls[0].parameters
-        - V2 native tool calls: completion.message.tool_calls[0].function.arguments (JSON string)
-        - V1 text-based: completion.text (prompt-based approach)
-        - V2 text-based: completion.message.content[].text (prompt-based approach)
-        """
-        # First, check for native Cohere tool calls (V1 and V2)
-        # V1: completion.tool_calls with tc.parameters (dict)
-        if hasattr(completion, "tool_calls") and completion.tool_calls:
-            # V1 tool call format
-            tool_call = completion.tool_calls[0]
-            # Parameters in V1 are already a dict
-            return cls.model_validate(
-                tool_call.parameters, context=validation_context, strict=strict
-            )
-
-        # V2: completion.message.tool_calls with tc.function.arguments (JSON string)
-        if (
-            hasattr(completion, "message")
-            and hasattr(completion.message, "tool_calls")
-            and completion.message.tool_calls
-        ):
-            # V2 tool call format
-            tool_call = completion.message.tool_calls[0]
-            # Arguments in V2 are a JSON string
-            import json
-
-            arguments = json.loads(tool_call.function.arguments)
-            return cls.model_validate(
-                arguments, context=validation_context, strict=strict
-            )
-
-        # Fallback to text-based extraction (current prompt-based approach)
-        # Handle both V1 and V2 text response structures
-        if hasattr(completion, "text"):
-            # V1 format: direct text access
-            text = completion.text
-        elif hasattr(completion, "message") and hasattr(completion.message, "content"):
-            # V2 format: nested structure (message.content[].text)
-            # V2 responses may have multiple content items (thinking, text, etc.)
-            content_items = completion.message.content
-            if content_items and len(content_items) > 0:
-                # Find the text content item (skip thinking/other types)
-                text = None
-                for item in content_items:
-                    if (
-                        hasattr(item, "type")
-                        and item.type == "text"
-                        and hasattr(item, "text")
-                    ):
-                        text = item.text
-                        break
-
-                if text is None:
-                    raise ResponseParsingError(
-                        "Cohere V2 response has no text content item",
-                        mode="COHERE_TOOLS",
-                        raw_response=completion,
-                    )
-            else:
-                raise ResponseParsingError(
-                    "Cohere V2 response has no content",
-                    mode="COHERE_TOOLS",
-                    raw_response=completion,
-                )
-        else:
-            raise ResponseParsingError(
-                f"Unsupported Cohere response format. Expected tool_calls or text content. "
-                f"Got: {type(completion)}",
-                mode="COHERE_TOOLS",
-                raw_response=completion,
-            )
-
-        # Extract JSON from text (for prompt-based approach)
-        extra_text = extract_json_from_codeblock(text)
-        return cls.model_validate_json(
-            extra_text, context=validation_context, strict=strict
+        """Legacy Cohere tools parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.TOOLS,
+            provider=Provider.COHERE,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_cohere_tools is deprecated. "
+                "Use process_response(..., provider=Provider.COHERE, mode=Mode.TOOLS)."
+            ),
         )
 
     @classmethod
@@ -579,19 +441,17 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        message = completion.choices[0].message
-        tool_calls = message.tool_calls if message.tool_calls else "{}"
-        assert len(tool_calls) == 1, (
-            "Instructor does not support multiple tool calls, use List[Model] instead"
-        )
-        assert tool_calls[0].function.name == cls.openai_schema["name"], (
-            "Tool name does not match"
-        )
-        loaded_args = json.loads(tool_calls[0].function.arguments)
-        return cls.model_validate_json(
-            json.dumps(loaded_args) if isinstance(loaded_args, dict) else loaded_args,
-            context=validation_context,
+        """Legacy Writer tools parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.TOOLS,
+            provider=Provider.WRITER,
+            validation_context=validation_context,
             strict=strict,
+            warning=(
+                "ResponseSchema.parse_writer_tools is deprecated. "
+                "Use process_response(..., provider=Provider.WRITER, mode=Mode.TOOLS)."
+            ),
         )
 
     @classmethod
@@ -601,18 +461,18 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        _handle_incomplete_output(completion)
-
-        message = completion.choices[0].message.content or ""
-        json_content = extract_json_from_codeblock(message)
-
-        if strict:
-            return cls.model_validate_json(
-                json_content, context=validation_context, strict=True
-            )
-        else:
-            parsed = json.loads(json_content, strict=False)
-            return cls.model_validate(parsed, context=validation_context, strict=False)
+        """Legacy Writer JSON parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.MD_JSON,
+            provider=Provider.WRITER,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_writer_json is deprecated. "
+                "Use process_response(..., provider=Provider.WRITER, mode=Mode.MD_JSON)."
+            ),
+        )
 
     @classmethod
     def parse_functions(
@@ -681,16 +541,17 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        if not completion.choices or len(completion.choices) > 1:
-            raise ConfigurationError(
-                "Instructor does not support multiple tool calls in MISTRAL_STRUCTURED_OUTPUTS mode. "
-                "Use list[Model] instead to handle multiple items."
-            )
-
-        message = completion.choices[0].message
-
-        return cls.model_validate_json(
-            message.content, context=validation_context, strict=strict
+        """Legacy Mistral structured-output parser (deprecated)."""
+        return cls._parse_with_registry(
+            completion,
+            mode=Mode.JSON_SCHEMA,
+            provider=Provider.MISTRAL,
+            validation_context=validation_context,
+            strict=strict,
+            warning=(
+                "ResponseSchema.parse_mistral_structured_outputs is deprecated. "
+                "Use process_response(..., provider=Provider.MISTRAL, mode=Mode.JSON_SCHEMA)."
+            ),
         )
 
     @classmethod

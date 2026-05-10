@@ -386,7 +386,7 @@ def _extract_bedrock_text(response: Any) -> str:
         text_block = next((block for block in content if "text" in block), None)
         if not text_block:
             raise ResponseParsingError(
-                "Unexpected Bedrock response format: no text content found.",
+                "Unexpected Bedrock response format: No text content found.",
                 mode="BEDROCK_JSON",
                 raw_response=response,
             )

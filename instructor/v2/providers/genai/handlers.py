@@ -109,6 +109,48 @@ def reask_genai_structured_outputs(
     return kwargs
 
 
+def parse_genai_structured_outputs(
+    response_model: type[BaseModel],
+    completion: Any,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+) -> BaseModel:
+    """Parse GenAI native structured-output responses."""
+    return response_model.model_validate_json(
+        completion.text,
+        context=validation_context,
+        strict=strict,
+    )
+
+
+def parse_genai_tools(
+    response_model: type[BaseModel],
+    completion: Any,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+) -> BaseModel:
+    """Parse GenAI function-call responses."""
+    from google.genai import types
+
+    assert isinstance(completion, types.GenerateContentResponse)
+    assert len(completion.candidates) == 1
+    parts = completion.candidates[0].content.parts
+    non_thought_parts = [
+        part for part in parts if not (hasattr(part, "thought") and part.thought)
+    ]
+    assert len(non_thought_parts) == 1, (
+        "Instructor does not support multiple function calls, use List[Model] instead"
+    )
+    function_call = non_thought_parts[0].function_call
+    assert function_call is not None, "Please return your response as a function call"
+    assert function_call.name == gemini_utils._get_model_name(response_model)
+    return response_model.model_validate(
+        obj=function_call.args,
+        context=validation_context,
+        strict=strict,
+    )
+
+
 class GenAIHandlerBase(ModeHandler):
     """Common utilities shared across GenAI mode handlers."""
 
@@ -272,13 +314,15 @@ class GenAIHandlerBase(ModeHandler):
             return list(generator)
 
         if self.mode == Mode.TOOLS:
-            model = response_model.parse_genai_tools(  # type: ignore[attr-defined]
+            model = parse_genai_tools(
+                response_model,
                 response,
                 validation_context,
                 strict,
             )
         else:
-            model = response_model.parse_genai_structured_outputs(  # type: ignore[attr-defined]
+            model = parse_genai_structured_outputs(
+                response_model,
                 response,
                 validation_context,
                 strict,

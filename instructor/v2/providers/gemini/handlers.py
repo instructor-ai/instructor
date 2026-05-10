@@ -25,6 +25,8 @@ from instructor.v2.providers.gemini.utils import (
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.errors import ResponseParsingError
+from instructor.v2.core.json import extract_json_from_codeblock
 
 
 def reask_gemini_tools(
@@ -81,6 +83,73 @@ def reask_gemini_json(
         }
     )
     return kwargs
+
+
+def parse_gemini_json(
+    response_model: type[BaseModel],
+    completion: Any,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+) -> BaseModel:
+    """Parse Gemini text JSON responses."""
+    try:
+        text = completion.text
+    except ValueError:
+        text = None
+    if text is None:
+        raise ResponseParsingError(
+            "Unable to extract JSON from completion text. The response may have been blocked or empty.",
+            mode="GEMINI_JSON",
+            raw_response=completion,
+        )
+    extra_text = extract_json_from_codeblock(text)
+    if strict:
+        return response_model.model_validate_json(
+            extra_text,
+            context=validation_context,
+            strict=True,
+        )
+    parsed = json.loads(extra_text, strict=False)
+    return response_model.model_validate(
+        parsed,
+        context=validation_context,
+        strict=False,
+    )
+
+
+def parse_gemini_tools(
+    response_model: type[BaseModel],
+    completion: Any,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+) -> BaseModel:
+    """Parse Gemini tool-call responses."""
+    try:
+        function_call = completion.candidates[0].content.parts[0].function_call
+    except Exception as exc:
+        raise ResponseParsingError(
+            "No tool call found in Gemini response",
+            mode="GEMINI_TOOLS",
+            raw_response=completion,
+        ) from exc
+    args = getattr(function_call, "args", None)
+    if args is None and hasattr(type(function_call), "to_dict"):
+        try:
+            resp_dict = type(function_call).to_dict(function_call)
+        except Exception:
+            resp_dict = {}
+        args = resp_dict.get("args")
+    if args is None:
+        raise ResponseParsingError(
+            "No tool call args found in Gemini response",
+            mode="GEMINI_TOOLS",
+            raw_response=completion,
+        )
+    return response_model.model_validate(
+        args,
+        context=validation_context,
+        strict=strict,
+    )
 
 
 class GeminiHandlerBase(ModeHandler):
@@ -215,9 +284,7 @@ class GeminiToolsHandler(GeminiHandlerBase):
             return self._parse_streaming(
                 response_model, response, validation_context, strict
             )
-        parsed = response_model.parse_gemini_tools(  # type: ignore[attr-defined]
-            response, validation_context, strict
-        )
+        parsed = parse_gemini_tools(response_model, response, validation_context, strict)
         return self._finalize(response_model, response, parsed)
 
 
@@ -260,9 +327,7 @@ class GeminiJSONHandler(GeminiHandlerBase):
             return self._parse_streaming(
                 response_model, response, validation_context, strict
             )
-        parsed = response_model.parse_gemini_json(  # type: ignore[attr-defined]
-            response, validation_context, strict
-        )
+        parsed = parse_gemini_json(response_model, response, validation_context, strict)
         return self._finalize(response_model, response, parsed)
 
 

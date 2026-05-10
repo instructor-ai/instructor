@@ -121,6 +121,35 @@ def reask_vertexai_json(
     return kwargs
 
 
+def parse_vertexai_tools(
+    response_model: type[BaseModel],
+    completion: Any,
+    validation_context: dict[str, Any] | None = None,
+) -> BaseModel:
+    """Parse VertexAI function-call responses."""
+    tool_call = completion.candidates[0].content.parts[0].function_call.args
+    model = {field: tool_call[field] for field in tool_call}
+    return response_model.model_validate(
+        model,
+        context=validation_context,
+        strict=False,
+    )
+
+
+def parse_vertexai_json(
+    response_model: type[BaseModel],
+    completion: Any,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+) -> BaseModel:
+    """Parse VertexAI text JSON responses."""
+    return response_model.model_validate_json(
+        completion.text,
+        context=validation_context,
+        strict=strict,
+    )
+
+
 def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
     if get_origin(model) is not None:
         raise TypeError(f"Expected concrete model class, got type hint {model}")
@@ -331,9 +360,7 @@ class VertexAIToolsHandler(VertexAIHandlerBase):
                 validation_context=validation_context,
                 strict=strict,
             )
-        parsed = response_model.parse_vertexai_tools(  # type: ignore[attr-defined]
-            response, validation_context
-        )
+        parsed = parse_vertexai_tools(response_model, response, validation_context)
         return self._finalize(response_model, response, parsed)
 
 
@@ -376,9 +403,7 @@ class VertexAIJSONHandler(VertexAIHandlerBase):
             return self._parse_streaming(
                 response_model, response, validation_context, strict
             )
-        parsed = response_model.parse_vertexai_json(  # type: ignore[attr-defined]
-            response, validation_context, strict
-        )
+        parsed = parse_vertexai_json(response_model, response, validation_context, strict)
         return self._finalize(response_model, response, parsed)
 
 
@@ -422,9 +447,7 @@ class VertexAIParallelToolsHandler(VertexAIHandlerBase):
                 validation_context=validation_context,
                 strict=strict,
             )
-        parsed = response_model.parse_vertexai_tools(  # type: ignore[attr-defined]
-            response, validation_context
-        )
+        parsed = parse_vertexai_tools(response_model, response, validation_context)
         return self._finalize(response_model, response, parsed)
 
 
