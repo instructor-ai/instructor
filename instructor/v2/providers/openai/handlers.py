@@ -34,7 +34,7 @@ from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase, ParallelModel, get_types_array
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase
-from instructor.processing.multimodal import convert_messages as convert_messages_v1
+from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
     extract_json_from_stream,

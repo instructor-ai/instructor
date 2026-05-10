@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from instructor.dsl.partial import Partial, PartialBase
 from instructor.core.exceptions import ConfigurationError
-from instructor.processing.multimodal import Audio, Image, PDF
+from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.messages import get_message_content
 
 if TYPE_CHECKING:
@@ -619,7 +619,7 @@ def handle_genai_message_conversion(
 
     new_kwargs["contents"] = convert_to_genai_messages(messages)
 
-    from instructor.processing.multimodal import extract_genai_multimodal_content
+    from instructor.v2.core.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
@@ -735,7 +735,7 @@ def handle_genai_structured_outputs(
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    from instructor.processing.multimodal import extract_genai_multimodal_content
+    from instructor.v2.core.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
@@ -820,7 +820,7 @@ def handle_genai_tools(
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    from instructor.processing.multimodal import extract_genai_multimodal_content
+    from instructor.v2.core.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images

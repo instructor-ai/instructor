@@ -10,7 +10,7 @@ from ....dsl.iterable import IterableBase
 from ....dsl.parallel import ParallelBase
 from ....dsl.partial import Partial, PartialBase
 from ....dsl.simple_type import AdapterBase
-from ....processing.multimodal import extract_genai_multimodal_content
+from ...core.multimodal import extract_genai_multimodal_content
 from ...providers.gemini import utils as gemini_utils
 from ...core.response_model import prepare_response_model
 from ...core.decorators import register_mode_handler
