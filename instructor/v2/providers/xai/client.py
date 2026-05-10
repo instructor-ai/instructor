@@ -17,7 +17,7 @@ from instructor import AsyncInstructor, Instructor, Mode, Provider
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase
-from instructor.utils.core import prepare_response_model
+from instructor.v2.core.response_model import prepare_response_model
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.xai import handlers  # noqa: F401

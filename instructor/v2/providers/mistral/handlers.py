@@ -262,7 +262,7 @@ class MistralToolsHandler(MistralHandlerBase):
 
         # Prepare response model: wrap simple types in ModelAdapter
         if not is_parallel:
-            from instructor.utils.core import prepare_response_model
+            from instructor.v2.core.response_model import prepare_response_model
 
             response_model = prepare_response_model(response_model)
 

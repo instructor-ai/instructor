@@ -395,7 +395,7 @@ class XAIToolsHandler(XAIHandlerBase):
         if response_model is None:
             return None, new_kwargs
 
-        from instructor.utils.core import prepare_response_model
+        from instructor.v2.core.response_model import prepare_response_model
 
         prepared_model = prepare_response_model(response_model)
         assert prepared_model is not None  # Already checked response_model is not None

@@ -132,7 +132,7 @@ class WriterToolsHandler(ModeHandler):
         if response_model is None:
             return None, kwargs
 
-        from instructor.utils.core import prepare_response_model
+        from instructor.v2.core.response_model import prepare_response_model
 
         response_model = prepare_response_model(response_model)
 

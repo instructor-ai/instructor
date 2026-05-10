@@ -15,7 +15,7 @@ import requests
 from instructor.mode import Mode
 from instructor.utils.providers import Provider
 from instructor.core.exceptions import ConfigurationError, ResponseParsingError
-from instructor.utils.core import prepare_response_model
+from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 

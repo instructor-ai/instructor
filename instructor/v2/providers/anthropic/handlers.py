@@ -372,7 +372,7 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
         # Prepare response model: wrap simple types in ModelAdapter
         # Skip for parallel tools as they're handled separately
         if not is_parallel:
-            from instructor.utils.core import prepare_response_model
+            from instructor.v2.core.response_model import prepare_response_model
 
             # Use prepare_response_model to handle simple types, TypedDict, etc.
             response_model = prepare_response_model(response_model)

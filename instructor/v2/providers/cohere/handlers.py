@@ -188,7 +188,7 @@ class CohereToolsHandler(CohereHandlerBase):
             return None, new_kwargs
 
         # Prepare response model for simple types
-        from instructor.utils.core import prepare_response_model
+        from instructor.v2.core.response_model import prepare_response_model
 
         prepared_model = prepare_response_model(response_model)
         assert prepared_model is not None  # Already checked response_model is not None
@@ -320,7 +320,7 @@ class CohereJSONSchemaHandler(CohereHandlerBase):
             return None, new_kwargs
 
         # Prepare response model for simple types
-        from instructor.utils.core import prepare_response_model
+        from instructor.v2.core.response_model import prepare_response_model
 
         prepared_model = prepare_response_model(response_model)
         assert prepared_model is not None  # Already checked response_model is not None
@@ -398,7 +398,7 @@ class CohereMDJSONHandler(CohereHandlerBase):
             return None, new_kwargs
 
         # Prepare response model for simple types
-        from instructor.utils.core import prepare_response_model
+        from instructor.v2.core.response_model import prepare_response_model
 
         prepared_model = prepare_response_model(response_model)
         assert prepared_model is not None  # Already checked response_model is not None
