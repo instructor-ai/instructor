@@ -43,3 +43,20 @@ def pdf_to_anthropic(pdf: Any) -> dict[str, Any]:
             "data": pdf.data,
         },
     }
+
+
+def image_with_cache_control_to_anthropic(image: Any) -> dict[str, Any]:
+    result = image_to_anthropic(image)
+    if image.cache_control:
+        result["cache_control"] = image.cache_control
+    return result
+
+
+def pdf_with_cache_control_to_anthropic(pdf: Any) -> dict[str, Any]:
+    result = pdf_to_anthropic(pdf)
+    result["cache_control"] = {"type": "ephemeral"}
+    return result
+
+
+def audio_to_anthropic(_audio: Any) -> dict[str, Any]:
+    raise NotImplementedError("Anthropic is not supported yet")

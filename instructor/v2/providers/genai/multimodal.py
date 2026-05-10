@@ -63,3 +63,46 @@ def pdf_to_genai(pdf: Any) -> Any:
             mime_type=pdf.media_type,
         )
     raise ValueError("Unsupported PDF format")
+
+
+def upload_new_pdf_file(
+    cls: type[Any], file_path: str, retry_delay: int = 10, max_retries: int = 20
+) -> Any:
+    from google.genai import Client
+    from google.genai.types import FileState
+    import time
+
+    client = Client()
+    file = client.files.upload(file=file_path)
+    while file.state != FileState.ACTIVE:
+        time.sleep(retry_delay)
+        file = client.files.get(name=file.name)  # type: ignore
+        if max_retries > 0:
+            max_retries -= 1
+        else:
+            raise Exception(
+                "Max retries reached. File upload has been started but is still pending"
+            )
+    return cls(source=file.uri, media_type=file.mime_type, data=None)
+
+
+def load_existing_pdf_file(cls: type[Any], file_name: str) -> Any:
+    from google.genai import Client, types
+    from google.genai.types import FileState
+
+    client = Client()
+    file = client.files.get(name=file_name)
+    if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
+        return cls(source=file.uri, media_type=file.mime_type, data=None)
+    raise ValueError("We only support uploaded PDFs for now")
+
+
+def uploaded_pdf_to_genai(pdf: Any) -> Any:
+    types = _types()
+    if (
+        pdf.source
+        and isinstance(pdf.source, str)
+        and "https://generativelanguage.googleapis.com/v1beta/files/" in pdf.source
+    ):
+        return types.Part.from_uri(file_uri=pdf.source, mime_type=pdf.media_type)
+    return pdf_to_genai(pdf)

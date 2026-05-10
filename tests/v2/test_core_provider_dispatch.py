@@ -8,7 +8,14 @@ import pytest
 
 from instructor import Mode, Provider
 from instructor.v2.core import retry, templating
-from instructor.v2.core.multimodal import Audio, Image, PDF
+from instructor.v2.core.multimodal import (
+    Audio,
+    Image,
+    ImageWithCacheControl,
+    PDF,
+    PDFWithCacheControl,
+    PDFWithGenaiFile,
+)
 
 
 @pytest.mark.parametrize(
@@ -104,6 +111,37 @@ def test_initialize_usage_dispatches_anthropic_to_provider_module(
             PDF(source="https://example.com/file.pdf", media_type="application/pdf", data=None),
             "to_mistral",
             "instructor.v2.providers.mistral.multimodal.pdf_to_mistral",
+            (),
+        ),
+        (
+            ImageWithCacheControl(
+                source="data:image/png;base64,AA==",
+                media_type="image/png",
+                data="AA==",
+                cache_control={"type": "ephemeral"},
+            ),
+            "to_anthropic",
+            "instructor.v2.providers.anthropic.multimodal.image_with_cache_control_to_anthropic",
+            (),
+        ),
+        (
+            PDFWithCacheControl(
+                source="data:application/pdf;base64,AA==",
+                media_type="application/pdf",
+                data="AA==",
+            ),
+            "to_anthropic",
+            "instructor.v2.providers.anthropic.multimodal.pdf_with_cache_control_to_anthropic",
+            (),
+        ),
+        (
+            PDFWithGenaiFile(
+                source="https://generativelanguage.googleapis.com/v1beta/files/123",
+                media_type="application/pdf",
+                data=None,
+            ),
+            "to_genai",
+            "instructor.v2.providers.genai.multimodal.uploaded_pdf_to_genai",
             (),
         ),
     ],

@@ -383,7 +383,9 @@ class Audio(BaseModel):
         return audio_to_openai(self, mode)
 
     def to_anthropic(self) -> dict[str, Any]:
-        raise NotImplementedError("Anthropic is not supported yet")
+        from instructor.v2.providers.anthropic.multimodal import audio_to_anthropic
+
+        return audio_to_anthropic(self)
 
     def to_genai(self):
         from instructor.v2.providers.genai.multimodal import audio_to_genai
@@ -411,11 +413,11 @@ class ImageWithCacheControl(Image):
         )
 
     def to_anthropic(self) -> dict[str, Any]:
-        """Override Anthropic return with cache_control."""
-        result = super().to_anthropic()
-        if self.cache_control:
-            result["cache_control"] = self.cache_control
-        return result
+        from instructor.v2.providers.anthropic.multimodal import (
+            image_with_cache_control_to_anthropic,
+        )
+
+        return image_with_cache_control_to_anthropic(self)
 
 
 class PDF(BaseModel):
@@ -667,10 +669,11 @@ class PDFWithCacheControl(PDF):
     """PDF with Anthropic prompt caching support."""
 
     def to_anthropic(self) -> dict[str, Any]:
-        """Override Anthropic return with cache_control."""
-        result = super().to_anthropic()
-        result["cache_control"] = {"type": "ephemeral"}
-        return result
+        from instructor.v2.providers.anthropic.multimodal import (
+            pdf_with_cache_control_to_anthropic,
+        )
+
+        return pdf_with_cache_control_to_anthropic(self)
 
 
 class PDFWithGenaiFile(PDF):
@@ -678,62 +681,20 @@ class PDFWithGenaiFile(PDF):
     def from_new_genai_file(
         cls, file_path: str, retry_delay: int = 10, max_retries: int = 20
     ) -> PDFWithGenaiFile:
-        """Create a new PDFWithGenaiFile from a file path."""
-        from google.genai.types import FileState
-        import time
-        from google.genai import Client
+        from instructor.v2.providers.genai.multimodal import upload_new_pdf_file
 
-        client = Client()
-        file = client.files.upload(file=file_path)
-        while file.state != FileState.ACTIVE:
-            time.sleep(retry_delay)
-            file = client.files.get(name=file.name)  # type: ignore
-            if max_retries > 0:
-                max_retries -= 1
-            else:
-                raise Exception(
-                    "Max retries reached. File upload has been started but is still pending"
-                )
-
-        return cls(source=file.uri, media_type=file.mime_type, data=None)  # type: ignore
+        return upload_new_pdf_file(cls, file_path, retry_delay, max_retries)
 
     @classmethod
     def from_existing_genai_file(cls, file_name: str) -> PDFWithGenaiFile:
-        """Create a new PDFWithGenaiFile from a file URL."""
-        from google.genai import types
-        from google.genai.types import FileState
-        from google.genai import Client
+        from instructor.v2.providers.genai.multimodal import load_existing_pdf_file
 
-        client = Client()
-        file = client.files.get(name=file_name)
-        if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
-            return cls(
-                source=file.uri,  # type: ignore
-                media_type=file.mime_type,  # type: ignore
-                data=None,
-            )
-        else:
-            raise ValueError("We only support uploaded PDFs for now")
+        return load_existing_pdf_file(cls, file_name)
 
     def to_genai(self):
-        try:
-            from google.genai import types
-        except ImportError as err:
-            raise ImportError(
-                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
-            ) from err
+        from instructor.v2.providers.genai.multimodal import uploaded_pdf_to_genai
 
-        if (
-            self.source
-            and isinstance(self.source, str)
-            and "https://generativelanguage.googleapis.com/v1beta/files/" in self.source
-        ):
-            return types.Part.from_uri(
-                file_uri=self.source,
-                mime_type=self.media_type,
-            )
-
-        return super().to_genai()
+        return uploaded_pdf_to_genai(self)
 
 
 def convert_contents(
