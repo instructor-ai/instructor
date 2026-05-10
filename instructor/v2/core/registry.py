@@ -356,38 +356,113 @@ class ModeRegistry:
 # Global registry instance
 mode_registry = ModeRegistry()
 
-_DEFAULT_HANDLERS_LOADED = False
-_DEFAULT_HANDLER_MODULES = (
-    "instructor.v2.providers.anthropic.handlers",
-    "instructor.v2.providers.genai.handlers",
-    "instructor.v2.providers.gemini.handlers",
-    "instructor.v2.providers.vertexai.handlers",
-    "instructor.v2.providers.openai.handlers",
-    "instructor.v2.providers.openrouter.handlers",
-    "instructor.v2.providers.perplexity.handlers",
-    "instructor.v2.providers.cohere.handlers",
-    "instructor.v2.providers.xai.handlers",
-    "instructor.v2.providers.mistral.handlers",
-    "instructor.v2.providers.writer.handlers",
-    "instructor.v2.providers.bedrock.handlers",
-    # Note: groq, fireworks, and cerebras handlers are registered via OpenAI handlers
-    # since they use OpenAI-compatible APIs
-)
+_DEFAULT_HANDLER_SPECS: dict[Provider, tuple[str, tuple[Mode, ...]]] = {
+    Provider.OPENAI: (
+        "instructor.v2.providers.openai.handlers",
+        (
+            Mode.TOOLS,
+            Mode.JSON,
+            Mode.JSON_SCHEMA,
+            Mode.MD_JSON,
+            Mode.PARALLEL_TOOLS,
+            Mode.RESPONSES_TOOLS,
+        ),
+    ),
+    Provider.ANYSCALE: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.TOGETHER: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.DATABRICKS: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.DEEPSEEK: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.OPENROUTER: (
+        "instructor.v2.providers.openrouter.handlers",
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.ANTHROPIC: (
+        "instructor.v2.providers.anthropic.handlers",
+        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.GENAI: (
+        "instructor.v2.providers.genai.handlers",
+        (Mode.TOOLS, Mode.JSON),
+    ),
+    Provider.GEMINI: (
+        "instructor.v2.providers.gemini.handlers",
+        (Mode.TOOLS, Mode.MD_JSON),
+    ),
+    Provider.COHERE: (
+        "instructor.v2.providers.cohere.handlers",
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
+    ),
+    Provider.PERPLEXITY: (
+        "instructor.v2.providers.perplexity.handlers",
+        (Mode.MD_JSON,),
+    ),
+    Provider.XAI: (
+        "instructor.v2.providers.xai.handlers",
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
+    ),
+    Provider.GROQ: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.MD_JSON),
+    ),
+    Provider.MISTRAL: (
+        "instructor.v2.providers.mistral.handlers",
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
+    ),
+    Provider.VERTEXAI: (
+        "instructor.v2.providers.vertexai.handlers",
+        (Mode.TOOLS, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
+    ),
+    Provider.FIREWORKS: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.MD_JSON),
+    ),
+    Provider.BEDROCK: (
+        "instructor.v2.providers.bedrock.handlers",
+        (Mode.TOOLS, Mode.MD_JSON),
+    ),
+    Provider.CEREBRAS: (
+        "instructor.v2.providers.openai.handlers",
+        (Mode.TOOLS, Mode.MD_JSON),
+    ),
+    Provider.WRITER: (
+        "instructor.v2.providers.writer.handlers",
+        (Mode.TOOLS, Mode.MD_JSON),
+    ),
+}
 
 
-def _load_default_handlers() -> None:
-    """Load built-in handler modules to register modes."""
-    global _DEFAULT_HANDLERS_LOADED
-    if _DEFAULT_HANDLERS_LOADED:
-        return
-    for module_path in _DEFAULT_HANDLER_MODULES:
-        try:
-            __import__(module_path, fromlist=["__name__"])
-        except Exception:
-            # Handlers should be importable without SDKs.
-            # Skip if an unexpected import error occurs.
-            continue
-    _DEFAULT_HANDLERS_LOADED = True
+def _lazy_handler_loader(
+    module_path: str, provider: Provider, mode: Mode
+) -> ModeHandlers:
+    __import__(module_path, fromlist=["__name__"])
+    return mode_registry._handlers[(provider, mode)]
 
 
-_load_default_handlers()
+def _register_default_lazy_handlers() -> None:
+    """Register built-in handlers without importing provider modules."""
+    for provider, (module_path, modes) in _DEFAULT_HANDLER_SPECS.items():
+        for mode in modes:
+            if mode_registry.is_registered(provider, mode):
+                continue
+            mode_registry.register_lazy(
+                provider,
+                mode,
+                lambda mp=module_path, p=provider, m=mode: _lazy_handler_loader(
+                    mp, p, m
+                ),
+            )
+
+
+_register_default_lazy_handlers()
