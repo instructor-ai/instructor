@@ -21,8 +21,8 @@ from instructor.core.exceptions import ConfigurationError, ResponseParsingError
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.partial import PartialBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.partial import PartialBase
 
 
 def _detect_client_version(kwargs: dict[str, Any]) -> str:

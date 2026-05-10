@@ -30,10 +30,10 @@ from instructor.core.exceptions import (
     IncompleteOutputException,
     ResponseParsingError,
 )
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.parallel import ParallelBase, ParallelModel, get_types_array
-from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.parallel import ParallelBase, ParallelModel, get_types_array
+from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
@@ -567,7 +567,7 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
 
         if is_parallel:
             # Handle parallel model
-            from instructor.dsl.parallel import handle_parallel_model
+            from instructor.v2.dsl.parallel import handle_parallel_model
 
             new_kwargs["tools"] = handle_parallel_model(cast(Any, response_model))
             new_kwargs["tool_choice"] = "auto"
@@ -939,7 +939,7 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
                 "stream=True is not supported when using PARALLEL_TOOLS mode"
             )
 
-        from instructor.dsl.parallel import handle_parallel_model
+        from instructor.v2.dsl.parallel import handle_parallel_model
 
         new_kwargs["tools"] = handle_parallel_model(cast(Any, response_model))
         new_kwargs["tool_choice"] = "auto"

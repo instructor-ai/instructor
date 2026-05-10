@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, Any, cast, overload
 from pydantic import BaseModel
 
 from instructor import AsyncInstructor, Instructor, Mode, Provider
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.response_model import prepare_response_model
 
 # Ensure handlers are registered (decorators auto-register on import)

@@ -19,10 +19,10 @@ import vertexai.generative_models as gm  # type: ignore[import-not-found]
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.parallel import ParallelBase, get_types_array
-from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.parallel import ParallelBase, get_types_array
+from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.providers.gemini.utils import (
     handle_vertexai_json,
     handle_vertexai_parallel_tools,

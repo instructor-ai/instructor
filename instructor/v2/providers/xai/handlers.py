@@ -36,10 +36,10 @@ else:
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.parallel import ParallelBase
-from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.parallel import ParallelBase
+from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
     extract_json_from_stream,

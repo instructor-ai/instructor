@@ -25,9 +25,9 @@ from instructor.core.exceptions import (
     IncompleteOutputException,
     InstructorRetryException,
 )
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.response_list import ListResponse
-from instructor.dsl.simple_type import AdapterBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.response_list import ListResponse
+from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.messages import extract_messages
 from instructor.v2.core.usage import update_total_usage
 from instructor.v2.core.exceptions import RegistryValidationMixin

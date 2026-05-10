@@ -20,7 +20,7 @@ def is_typed_dict(cls: Any) -> bool:
 
 
 def is_simple_type(typehint: type[T]) -> bool:
-    from instructor.dsl.simple_type import is_simple_type as _is_simple_type
+    from instructor.v2.dsl.simple_type import is_simple_type as _is_simple_type
 
     return _is_simple_type(typehint)
 
@@ -46,7 +46,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         if inner is not None and _is_model_type(inner):
             origin = list
         else:
-            from instructor.dsl.simple_type import ModelAdapter
+            from instructor.v2.dsl.simple_type import ModelAdapter
 
             response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
             origin = get_origin(response_model)
@@ -64,7 +64,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
 
     origin = get_origin(response_model)
     if origin in {Iterable, list}:
-        from instructor.dsl.iterable import IterableModel
+        from instructor.v2.dsl.iterable import IterableModel
 
         args = get_args(response_model)
         if not args or args[0] is None:
@@ -90,7 +90,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         response_model = IterableModel(cast(type[BaseModel], iterable_element_class))
 
     if is_simple_type(response_model):
-        from instructor.dsl.simple_type import ModelAdapter
+        from instructor.v2.dsl.simple_type import ModelAdapter
 
         response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
 

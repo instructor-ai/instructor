@@ -32,10 +32,10 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.core.exceptions import IncompleteOutputException
-from instructor.dsl.iterable import IterableBase
-from instructor.dsl.parallel import ParallelBase, get_types_array
-from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.parallel import ParallelBase, get_types_array
+from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
 from instructor.v2.core.json import (
     extract_json_from_codeblock,

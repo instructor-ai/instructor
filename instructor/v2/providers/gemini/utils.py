@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Union
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
-from instructor.dsl.partial import Partial, PartialBase
+from instructor.v2.dsl.partial import Partial, PartialBase
 from instructor.core.exceptions import ConfigurationError
 from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.messages import get_message_content
@@ -844,7 +844,7 @@ def handle_vertexai_parallel_tools(
 ) -> tuple[Any, dict[str, Any]]:
     from typing import get_args
 
-    from instructor.dsl.parallel import VertexAIParallelModel
+    from instructor.v2.dsl.parallel import VertexAIParallelModel
     from instructor.v2.providers.vertexai.handlers import vertexai_process_response
 
     if new_kwargs.get("stream", False):
