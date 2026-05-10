@@ -330,7 +330,7 @@ def from_xai(
                 resp = await chat.sample()  # type: ignore[misc]
                 if not resp.tool_calls:  # type: ignore[attr-defined]
                     # Try to extract from text content
-                    from instructor.processing.function_calls import (
+                    from instructor.v2.core.function_calls import (
                         _validate_model_from_json,
                     )
                     from instructor.v2.core.json import extract_json_from_codeblock
@@ -359,7 +359,7 @@ def from_xai(
                     )
 
                 args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
-                from instructor.processing.function_calls import (
+                from instructor.v2.core.function_calls import (
                     _validate_model_from_json,
                 )
 
@@ -371,7 +371,7 @@ def from_xai(
         else:
             # MD_JSON mode - use sample() and extract from text
             resp = await chat.sample()  # type: ignore[misc]
-            from instructor.processing.function_calls import _validate_model_from_json
+            from instructor.v2.core.function_calls import _validate_model_from_json
             from instructor.v2.core.json import extract_json_from_codeblock
 
             text_content = ""
@@ -471,7 +471,7 @@ def from_xai(
                 resp = chat.sample()  # type: ignore[misc]
                 if not resp.tool_calls:  # type: ignore[attr-defined]
                     # Try to extract from text content
-                    from instructor.processing.function_calls import (
+                    from instructor.v2.core.function_calls import (
                         _validate_model_from_json,
                     )
                     from instructor.v2.core.json import extract_json_from_codeblock
@@ -500,7 +500,7 @@ def from_xai(
                     )
 
                 args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
-                from instructor.processing.function_calls import (
+                from instructor.v2.core.function_calls import (
                     _validate_model_from_json,
                 )
 
@@ -512,7 +512,7 @@ def from_xai(
         else:
             # MD_JSON mode - use sample() and extract from text
             resp = chat.sample()  # type: ignore[misc]
-            from instructor.processing.function_calls import _validate_model_from_json
+            from instructor.v2.core.function_calls import _validate_model_from_json
             from instructor.v2.core.json import extract_json_from_codeblock
 
             text_content = ""

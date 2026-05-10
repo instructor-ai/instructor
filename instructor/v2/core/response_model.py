@@ -94,7 +94,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
 
         response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
 
-    from instructor.processing.function_calls import (
+    from instructor.v2.core.function_calls import (
         ResponseSchema,
         openai_schema,
         response_schema,
