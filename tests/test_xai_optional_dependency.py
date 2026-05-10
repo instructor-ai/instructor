@@ -25,7 +25,7 @@ def test_from_provider_xai_requires_optional_extra(monkeypatch):
 def test_direct_from_xai_has_clear_error_when_sdk_missing(monkeypatch):
     """Test that from_xai() raises ConfigurationError when xai_sdk is missing."""
     from instructor.core.exceptions import ConfigurationError
-    import instructor.providers.xai.client as xai_client
+    import instructor.v2.providers.xai.client as xai_client
 
     # Simulate xai_sdk being absent by setting the module-level sentinels to None
     monkeypatch.setattr(xai_client, "SyncClient", None)

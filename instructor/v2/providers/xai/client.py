@@ -234,10 +234,12 @@ def from_xai(
 
     # Validate client type
     if SyncClient is None or AsyncClient is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.core.exceptions import ConfigurationError
 
-        raise ClientError(
-            "xai_sdk is not installed. Install it with: pip install xai-sdk"
+        raise ConfigurationError(
+            'The xai-sdk package is required to use the xAI provider. '
+            'Install it with `uv pip install "instructor[xai]"` '
+            '(or `pip install "instructor[xai]"`).'
         )
 
     if not isinstance(client, (SyncClient, AsyncClient)):

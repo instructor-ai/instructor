@@ -59,7 +59,7 @@ class TestBedrockCallerNoneReask:
 
     def test_reask_does_not_include_null_caller(self):
         """Assistant content dicts must not contain 'caller': None after reask."""
-        from instructor.providers.anthropic.utils import reask_anthropic_tools
+        from instructor.v2.providers.anthropic.handlers import AnthropicToolsHandler
 
         kwargs = {
             "messages": [{"role": "user", "content": "extract something"}],
@@ -67,7 +67,7 @@ class TestBedrockCallerNoneReask:
         response = _build_bedrock_message()
         exception = _make_validation_error()
 
-        result = reask_anthropic_tools(kwargs, response, exception)
+        result = AnthropicToolsHandler().handle_reask(kwargs, response, exception)
 
         # Find the assistant turn that was appended
         assistant_msgs = [m for m in result["messages"] if m.get("role") == "assistant"]
@@ -80,7 +80,7 @@ class TestBedrockCallerNoneReask:
 
     def test_reask_tool_use_id_is_preserved(self):
         """The tool_use_id in the follow-up user message must match the block id."""
-        from instructor.providers.anthropic.utils import reask_anthropic_tools
+        from instructor.v2.providers.anthropic.handlers import AnthropicToolsHandler
 
         kwargs = {
             "messages": [{"role": "user", "content": "extract something"}],
@@ -88,7 +88,7 @@ class TestBedrockCallerNoneReask:
         response = _build_bedrock_message()
         exception = _make_validation_error()
 
-        result = reask_anthropic_tools(kwargs, response, exception)
+        result = AnthropicToolsHandler().handle_reask(kwargs, response, exception)
 
         user_msgs = [m for m in result["messages"] if m.get("role") == "user"]
         # Last user message is the tool_result reask
