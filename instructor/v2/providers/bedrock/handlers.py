@@ -305,6 +305,18 @@ def _prepare_bedrock_converse_kwargs_internal(
                     )
             else:
                 if "content" in current_message_for_api:
+                    if isinstance(content, list):
+                        for part in content:
+                            if (
+                                isinstance(part, dict)
+                                and part.get("type") == "image_url"
+                            ):
+                                image_url = (part.get("image_url") or {}).get("url", "")
+                                if image_url.startswith(("http://", "https://")):
+                                    raise ValueError(
+                                        "Unsupported image_url scheme for Bedrock. "
+                                        "Use data:image/...;base64,... or pass Bedrock-native image bytes."
+                                    )
                     current_message_for_api["content"] = _to_bedrock_content_items(
                         content
                     )
