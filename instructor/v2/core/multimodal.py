@@ -232,87 +232,19 @@ class Image(BaseModel):
         return data
 
     def to_anthropic(self) -> dict[str, Any]:
-        if (
-            isinstance(self.source, str)
-            and self.source.startswith(("http://", "https://"))
-            and not self.data
-        ):
-            self.data = self.url_to_base64(self.source)
+        from instructor.v2.providers.anthropic.multimodal import image_to_anthropic
 
-        return {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": self.media_type,
-                "data": self.data,
-            },
-        }
+        return image_to_anthropic(self)
 
     def to_openai(self, mode: Mode) -> dict[str, Any]:
-        image_type = (
-            "input_image"
-            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
-            else "image_url"
-        )
-        if (
-            isinstance(self.source, str)
-            and self.source.startswith(("http://", "https://"))
-            and not self.is_base64(self.source)
-        ):
-            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
-                return {"type": "input_image", "image_url": self.source}
-            else:
-                return {"type": image_type, "image_url": {"url": self.source}}
-        elif self.data or self.is_base64(str(self.source)):
-            data = self.data or str(self.source).split(",", 1)[1]
-            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
-                return {
-                    "type": "input_image",
-                    "image_url": f"data:{self.media_type};base64,{data}",
-                }
-            else:
-                return {
-                    "type": image_type,
-                    "image_url": {"url": f"data:{self.media_type};base64,{data}"},
-                }
-        else:
-            raise ValueError("Image data is missing for base64 encoding.")
+        from instructor.v2.providers.openai.multimodal import image_to_openai
+
+        return image_to_openai(self, mode)
 
     def to_genai(self):
-        """
-        Convert the Image instance to Google GenAI's API format.
-        """
-        try:
-            from google.genai import types
-        except ImportError as err:
-            raise ImportError(
-                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
-            ) from err
+        from instructor.v2.providers.genai.multimodal import image_to_genai
 
-        # Google Cloud Storage
-        if isinstance(self.source, str) and self.source.startswith("gs://"):
-            return types.Part.from_bytes(
-                data=self.data,  # type: ignore
-                mime_type=self.media_type,
-            )
-
-        # URL
-        if isinstance(self.source, str) and self.source.startswith(
-            ("http://", "https://")
-        ):
-            return types.Part.from_bytes(
-                data=requests.get(self.source).content,
-                mime_type=self.media_type,
-            )
-
-        if self.data or self.is_base64(str(self.source)):
-            data = self.data or str(self.source).split(",", 1)[1]
-            return types.Part.from_bytes(
-                data=base64.b64decode(data), mime_type=self.media_type
-            )  # type: ignore
-
-        else:
-            raise ValueError("Image data is missing for base64 encoding.")
+        return image_to_genai(self)
 
 
 class Audio(BaseModel):
@@ -446,33 +378,17 @@ class Audio(BaseModel):
             ) from e
 
     def to_openai(self, mode: Mode) -> dict[str, Any]:
-        """Convert the Audio instance to OpenAI's API format."""
-        if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
-            raise ValueError("OpenAI Responses doesn't support audio")
+        from instructor.v2.providers.openai.multimodal import audio_to_openai
 
-        return {
-            "type": "input_audio",
-            "input_audio": {"data": self.data, "format": "wav"},
-        }
+        return audio_to_openai(self, mode)
 
     def to_anthropic(self) -> dict[str, Any]:
         raise NotImplementedError("Anthropic is not supported yet")
 
     def to_genai(self):
-        """
-        Convert the Audio instance to Google GenAI's API format.
-        """
-        try:
-            from google.genai import types
-        except ImportError as err:
-            raise ImportError(
-                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
-            ) from err
+        from instructor.v2.providers.genai.multimodal import audio_to_genai
 
-        return types.Part.from_bytes(
-            data=base64.b64decode(self.data),  # type: ignore
-            mime_type=self.media_type,
-        )
+        return audio_to_genai(self)
 
 
 class ImageWithCacheControl(Image):
@@ -665,130 +581,24 @@ class PDF(BaseModel):
         return cls(source=url, media_type=media_type, data=None)
 
     def to_mistral(self) -> dict[str, Any]:
-        if (
-            isinstance(self.source, str)
-            and self.source.startswith(("http://", "https://"))
-            and not self.data
-        ):
-            return {
-                "type": "document_url",
-                "document_url": self.source,
-            }
-        raise ValueError("Mistral only supports document URLs for now")
+        from instructor.v2.providers.mistral.multimodal import pdf_to_mistral
+
+        return pdf_to_mistral(self)
 
     def to_openai(self, mode: Mode) -> dict[str, Any]:
-        """Convert to OpenAI's document format."""
-        input_file_type = (
-            "input_file"
-            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
-            else "file"
-        )
+        from instructor.v2.providers.openai.multimodal import pdf_to_openai
 
-        if (
-            isinstance(self.source, str)
-            and self.source.startswith(("http://", "https://"))
-            and not self.data
-        ):
-            # Fetch the file from URL and convert to base64
-            data = requests.get(self.source)
-            data = base64.b64encode(data.content).decode("utf-8")
-            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
-                return {
-                    "type": input_file_type,
-                    "filename": self.source,
-                    "file_data": f"data:{self.media_type};base64,{data}",
-                }
-            else:
-                return {
-                    "type": input_file_type,
-                    "file": {
-                        "filename": self.source,
-                        "file_data": f"data:{self.media_type};base64,{data}",
-                    },
-                }
-        elif self.data or self.is_base64(str(self.source)):
-            data = self.data or str(self.source).split(",", 1)[1]
-            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
-                return {
-                    "type": input_file_type,
-                    "filename": (
-                        self.source
-                        if isinstance(self.source, str)
-                        else str(self.source)
-                    ),
-                    "file_data": f"data:{self.media_type};base64,{data}",
-                }
-            else:
-                return {
-                    "type": input_file_type,
-                    "file": {
-                        "filename": (
-                            self.source
-                            if isinstance(self.source, str)
-                            else str(self.source)
-                        ),
-                        "file_data": f"data:{self.media_type};base64,{data}",
-                    },
-                }
-        else:
-            raise ValueError("PDF data is missing for base64 encoding.")
+        return pdf_to_openai(self, mode)
 
     def to_anthropic(self) -> dict[str, Any]:
-        """Convert to Anthropic's document format."""
-        if (
-            isinstance(self.source, str)
-            and self.source.startswith(("http://", "https://"))
-            and not self.data
-        ):
-            return {
-                "type": "document",
-                "source": {
-                    "type": "url",
-                    "url": self.source,
-                },
-            }
-        else:
-            if not self.data:
-                self.data = requests.get(str(self.source)).content  # type: ignore
-                self.data = base64.b64encode(self.data).decode("utf-8")  # type: ignore
+        from instructor.v2.providers.anthropic.multimodal import pdf_to_anthropic
 
-            return {
-                "type": "document",
-                "source": {
-                    "type": "base64",
-                    "media_type": self.media_type,
-                    "data": self.data,
-                },
-            }
+        return pdf_to_anthropic(self)
 
     def to_genai(self):
-        try:
-            from google.genai import types
-        except ImportError as err:
-            raise ImportError(
-                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
-            ) from err
+        from instructor.v2.providers.genai.multimodal import pdf_to_genai
 
-        if (
-            isinstance(self.source, str)
-            and self.source.startswith(("http://", "https://"))
-            and not self.data
-        ):
-            # Fetch the file from URL and convert to base64
-            data = requests.get(self.source).content
-            data = base64.b64encode(data).decode("utf-8")
-            return types.Part.from_bytes(
-                data=base64.b64decode(data),
-                mime_type=self.media_type,
-            )
-
-        if self.data:
-            return types.Part.from_bytes(
-                data=base64.b64decode(self.data),
-                mime_type=self.media_type,
-            )
-
-        raise ValueError("Unsupported PDF format")
+        return pdf_to_genai(self)
 
     def to_bedrock(self, name: str | None = None) -> dict[str, Any]:
         """Convert to Bedrock's document format."""
