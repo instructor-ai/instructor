@@ -5,6 +5,7 @@ Creates Instructor instances using v2 hierarchical registry system.
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Any, overload
 
 import openai
@@ -14,6 +15,16 @@ from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.openai import handlers  # noqa: F401
+
+
+def map_chat_completion_to_response(messages, client, *args, **kwargs) -> Any:
+    return client.responses.create(*args, input=messages, **kwargs)
+
+
+async def async_map_chat_completion_to_response(
+    messages, client, *args, **kwargs
+) -> Any:
+    return await client.responses.create(*args, input=messages, **kwargs)
 
 
 def _from_openai_compat(
@@ -49,7 +60,14 @@ def _from_openai_compat(
             f"Got: {type(client).__name__}"
         )
 
-    create = client.chat.completions.create
+    if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+        create = (
+            partial(map_chat_completion_to_response, client=client)
+            if isinstance(client, openai.OpenAI)
+            else partial(async_map_chat_completion_to_response, client=client)
+        )
+    else:
+        create = client.chat.completions.create
     patched_create = patch_v2(
         func=create,
         provider=provider,
