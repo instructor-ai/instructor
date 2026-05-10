@@ -26,6 +26,9 @@ The v2 architecture uses a hierarchical registry system for managing provider mo
   shared orchestration should only dispatch into them.
 - Shared multimodal models keep the public compatibility methods, but provider
   wire-format encoders live with provider modules.
+- Shared routing still owns provider detection, compatibility-mode normalization,
+  and registry bootstrap tables; those are orchestration surfaces rather than
+  provider implementations.
 - Public modules under `instructor/core`, `instructor/processing`,
   `instructor/dsl`, and `instructor/validation` are compatibility facades over
   v2-owned implementations.
