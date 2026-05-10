@@ -324,7 +324,7 @@ def from_provider(
         try:
             import os
             import openai
-            from instructor import from_databricks
+            from instructor import from_openai
 
             api_key = (
                 api_key
@@ -382,7 +382,7 @@ def from_provider(
                     api_key=api_key, base_url=base_url, **openai_client_kwargs
                 )
             )
-            result = from_databricks(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.TOOLS,

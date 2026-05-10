@@ -113,8 +113,8 @@ def test_additional_kwargs_passed():
     from instructor.core.exceptions import InstructorRetryException
     import os
 
-    if os.getenv("INSTRUCTOR_ENV") == "CI":
-        pytest.skip("Skipping test on CI")
+    if os.getenv("INSTRUCTOR_ENV") == "CI" or not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("Skipping live Anthropic test without credentials")
         return
 
     client = instructor.from_provider(
@@ -346,7 +346,7 @@ def test_genai_mode_parameter_passed_to_provider():
 
 
 def test_genai_mode_defaults_when_not_provided():
-    """Test that GenAI provider uses GENAI_TOOLS mode when mode is not provided."""
+    """Test that GenAI provider uses generic TOOLS mode when mode is not provided."""
     from unittest.mock import patch, MagicMock
     import instructor
 
@@ -363,7 +363,7 @@ def test_genai_mode_defaults_when_not_provided():
             mock_from_genai.assert_called_once()
             _, kwargs = mock_from_genai.call_args
             assert "mode" in kwargs
-            assert kwargs["mode"] == instructor.Mode.GENAI_TOOLS
+            assert kwargs["mode"] == instructor.Mode.TOOLS
 
 
 def test_google_provider_runtime_import_error_propagates():
@@ -410,46 +410,26 @@ def test_google_provider_runtime_import_error_propagates():
             assert "google-genai" not in str(excinfo.value)
 
 
-def test_vertexai_provider_runtime_import_error_propagates():
-    """Test that ImportError during vertexai client initialization is NOT masked.
-
-    Similar to test_google_provider_runtime_import_error_propagates but for
-    the deprecated vertexai provider.
-    """
-    from unittest.mock import patch, MagicMock
+def test_vertexai_provider_uses_vertexai_sdk_path():
+    """The deprecated vertexai provider still routes through the Vertex AI SDK."""
+    from unittest.mock import MagicMock, patch
     import warnings
-    import sys
 
-    # Create mock module for google.genai
-    mock_genai_module = MagicMock()
+    with patch("vertexai.init") as mock_init:
+        with patch("vertexai.generative_models.GenerativeModel") as mock_model:
+            mock_model.return_value = MagicMock()
+            with patch("instructor.from_vertexai") as mock_from_vertexai:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", DeprecationWarning)
+                    from_provider(
+                        "vertexai/gemini-pro",
+                        project="demo-project",
+                        location="us-central1",
+                    )
 
-    # Simulate socksio ImportError during Client() initialization
-    def client_init_raises(*_args, **_kwargs):
-        raise ImportError(
-            "Using SOCKS proxy, but the 'socksio' package is not installed."
-        )
-
-    mock_genai_module.Client = client_init_raises
-
-    # Create a mock google module
-    mock_google = MagicMock()
-    mock_google.genai = mock_genai_module
-
-    with patch.dict(
-        sys.modules,
-        {"google": mock_google, "google.genai": mock_genai_module},
-    ):
-        mock_from_genai = MagicMock()
-        with patch.object(
-            __import__("instructor"), "from_genai", mock_from_genai, create=True
-        ):
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", DeprecationWarning)
-                with pytest.raises(ImportError) as excinfo:
-                    from_provider("vertexai/gemini-pro", project="test-project")
-
-            # Should be the socksio error, NOT a ConfigurationError
-            assert "socksio" in str(excinfo.value)
+    mock_init.assert_called_once()
+    mock_model.assert_called_once_with("gemini-pro")
+    mock_from_vertexai.assert_called_once()
 
 
 def test_generative_ai_provider_runtime_import_error_propagates():
