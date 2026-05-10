@@ -47,22 +47,32 @@ class Response:
     ):
         self.client = client
 
+    @staticmethod
+    def _normalize_messages(
+        messages: str | list[ChatCompletionMessageParam] | None,
+        kwargs: dict[str, Any],
+    ) -> str | list[ChatCompletionMessageParam]:
+        if messages is None:
+            if "input" not in kwargs:
+                raise TypeError("Either 'messages' or 'input' must be provided")
+            messages = kwargs.pop("input")
+        elif "input" in kwargs:
+            raise TypeError("Pass only one of 'messages' or 'input'")
+
+        if isinstance(messages, str):
+            return [{"role": "user", "content": messages}]
+        return messages
+
     def create(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
         response_model: type[T] | None = None,
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return self.client.create(
             response_model=response_model,
@@ -75,18 +85,12 @@ class Response:
 
     def create_with_completion(
         self,
-        messages: str | list[ChatCompletionMessageParam],
-        response_model: type[T],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] | None = None,
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> tuple[T, Any]:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return self.client.create_with_completion(
             messages=messages,
@@ -97,18 +101,12 @@ class Response:
 
     def create_iterable(
         self,
-        messages: str | list[ChatCompletionMessageParam],
-        response_model: type[T],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] | None = None,
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> Generator[T, None, None]:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return self.client.create_iterable(
             messages=messages,
@@ -119,18 +117,12 @@ class Response:
 
     def create_partial(
         self,
-        messages: str | list[ChatCompletionMessageParam],
-        response_model: type[T],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] | None = None,
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> Generator[T, None, None]:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return self.client.create_partial(
             messages=messages,
@@ -146,20 +138,14 @@ class AsyncResponse(Response):
 
     async def create(
         self,
-        messages: str | list[ChatCompletionMessageParam],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
         response_model: type[T] | None = None,
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return await self.client.create(
             response_model=response_model,
@@ -172,18 +158,12 @@ class AsyncResponse(Response):
 
     async def create_with_completion(
         self,
-        messages: str | list[ChatCompletionMessageParam],
-        response_model: type[T],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] | None = None,
         max_retries: int | AsyncRetrying = 3,
         **kwargs,
     ) -> tuple[T, Any]:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return await self.client.create_with_completion(
             messages=messages,
@@ -194,18 +174,12 @@ class AsyncResponse(Response):
 
     async def create_iterable(
         self,
-        messages: str | list[ChatCompletionMessageParam],
-        response_model: type[T],
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] | None = None,
         max_retries: int | AsyncRetrying = 3,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
-        if isinstance(messages, str):
-            messages = [
-                {
-                    "role": "user",
-                    "content": messages,
-                }
-            ]
+        messages = self._normalize_messages(messages, kwargs)
 
         return self.client.create_iterable(
             messages=messages,

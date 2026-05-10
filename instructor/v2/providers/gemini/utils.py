@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from functools import lru_cache
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Union
 
@@ -17,6 +18,34 @@ from instructor.v2.core.messages import get_message_content
 
 if TYPE_CHECKING:
     from google.genai import types
+
+_OPENAI_TO_GEMINI_MAP = {
+    "max_tokens": "max_output_tokens",
+    "temperature": "temperature",
+    "n": "candidate_count",
+    "top_p": "top_p",
+    "stop": "stop_sequences",
+}
+
+
+@lru_cache(maxsize=1)
+def _default_safety_thresholds() -> dict[Any, Any] | None:
+    try:
+        from google.genai.types import HarmBlockThreshold, HarmCategory  # type: ignore
+    except ImportError:
+        try:
+            from google.generativeai.types import (  # type: ignore
+                HarmBlockThreshold,
+                HarmCategory,
+            )
+        except ImportError:
+            return None
+
+    return {
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    }
 
 
 def _get_model_schema(response_model: Any) -> dict[str, Any]:
@@ -275,18 +304,10 @@ def update_genai_kwargs(
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     result = kwargs.copy()
 
-    OPENAI_TO_GEMINI_MAP = {
-        "max_tokens": "max_output_tokens",
-        "temperature": "temperature",
-        "n": "candidate_count",
-        "top_p": "top_p",
-        "stop": "stop_sequences",
-    }
-
     if "generation_config" in result:
         gen_config = result["generation_config"]
 
-        for openai_key, gemini_key in OPENAI_TO_GEMINI_MAP.items():
+        for openai_key, gemini_key in _OPENAI_TO_GEMINI_MAP.items():
             if openai_key in gen_config:
                 val = gen_config.pop(openai_key)
                 if val is not None:
@@ -295,28 +316,15 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     if "messages" in result:
         result["contents"] = transform_to_gemini_prompt(result.pop("messages"))
 
-    try:
-        from google.genai.types import HarmBlockThreshold, HarmCategory  # type: ignore
-    except ImportError:
-        try:
-            from google.generativeai.types import (  # type: ignore
-                HarmBlockThreshold,
-                HarmCategory,
-            )
-        except ImportError:
-            result.setdefault("safety_settings", {})
-            return result
+    default_safety_thresholds = _default_safety_thresholds()
+    if default_safety_thresholds is None:
+        result.setdefault("safety_settings", {})
+        return result
 
     safety_settings = result.get("safety_settings", {})
     result["safety_settings"] = safety_settings
 
-    DEFAULT_SAFETY_THRESHOLDS = {
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-    }
-
-    for category, threshold in DEFAULT_SAFETY_THRESHOLDS.items():
+    for category, threshold in default_safety_thresholds.items():
         current = safety_settings.get(category)
         if current is None or current > threshold:
             safety_settings[category] = threshold
