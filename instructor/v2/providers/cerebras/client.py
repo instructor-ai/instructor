@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, overload
 
-from instructor import AsyncInstructor, Instructor, Mode, Provider
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)

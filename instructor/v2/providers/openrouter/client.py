@@ -6,7 +6,8 @@ from typing import Any, overload
 
 import openai
 
-from instructor import AsyncInstructor, Instructor, Mode
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.providers.openai.client import _from_openai_compat
 

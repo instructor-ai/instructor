@@ -456,7 +456,7 @@ class AsyncValidationError(ValueError, InstructorError):
 
     Examples:
         ```python
-        from instructor.validation import async_field_validator
+        from instructor.v2.validation import async_field_validator
 
         class Model(BaseModel):
             urls: list[str]

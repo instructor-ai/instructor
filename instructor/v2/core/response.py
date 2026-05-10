@@ -15,8 +15,8 @@ Key Components:
 
 Example:
     ```python
-    from instructor.processing.response import process_response
-    from ..mode import Mode
+    from instructor.v2.core.response import process_response
+    from instructor.v2.core.mode import Mode
     from pydantic import BaseModel
 
     class User(BaseModel):
@@ -448,12 +448,11 @@ def handle_reask_kwargs(
     provider: Provider = Provider.OPENAI,
     failed_attempts: list[Any] | None = None,
 ) -> dict[str, Any]:
-    """Handle validation errors by reformatting the request for retry (reask).
+    """Compatibility dispatcher for provider-specific reask formatting.
 
-    This function serves as the central dispatcher for handling validation failures
-    across all supported LLM providers. When a response fails validation, it prepares
-    a new request that includes detailed error information and retry context, allowing
-    the LLM to understand what went wrong and generate a corrected response.
+    The retry loop itself lives in :mod:`instructor.v2.core.retry` and dispatches
+    directly through the registry. This helper preserves the historical public API for
+    callers that need to format one reask payload directly.
 
     The reask process involves:
     1. Analyzing the validation error and failed response
@@ -543,10 +542,7 @@ def handle_reask_kwargs(
         ```
 
     Note:
-        This function is called internally by retry_sync() and retry_async()
-        when max_retries > 1. It ensures each retry includes progressively
-        more context about previous failures, helping the LLM learn from
-        mistakes and avoid repeating the same errors.
+        Provider-specific formatting still lives on each registered mode handler.
     """
     # Create a shallow copy of kwargs to avoid modifying the original
     kwargs_copy = kwargs.copy()

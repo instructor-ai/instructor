@@ -22,11 +22,65 @@ from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.providers.gemini.utils import (
     handle_gemini_json,
     handle_gemini_tools,
-    reask_gemini_json,
-    reask_gemini_tools,
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+
+
+def reask_gemini_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a Gemini tool reask payload after validation failure."""
+    from google.ai import generativelanguage as glm  # type: ignore
+
+    reask_msgs = [
+        {
+            "role": "model",
+            "parts": [
+                glm.FunctionCall(
+                    name=response.parts[0].function_call.name,
+                    args=response.parts[0].function_call.args,
+                )
+            ],
+        },
+        {
+            "role": "function",
+            "parts": [
+                glm.Part(
+                    function_response=glm.FunctionResponse(
+                        name=response.parts[0].function_call.name,
+                        response={"error": f"Validation Error(s) found:\n{exception}"},
+                    )
+                ),
+            ],
+        },
+        {
+            "role": "user",
+            "parts": ["Recall the function arguments correctly and fix the errors"],
+        },
+    ]
+    kwargs["contents"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_gemini_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a Gemini JSON reask payload after validation failure."""
+    kwargs["contents"].append(
+        {
+            "role": "user",
+            "parts": [
+                "Correct the following JSON response, based on the errors given below:\n\n"
+                f"JSON:\n{response.text}\n\nExceptions:\n{exception}"
+            ],
+        }
+    )
+    return kwargs
 
 
 class GeminiHandlerBase(ModeHandler):

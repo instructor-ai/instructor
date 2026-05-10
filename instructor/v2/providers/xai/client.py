@@ -13,7 +13,9 @@ from typing import TYPE_CHECKING, Any, cast, overload
 
 from pydantic import BaseModel
 
-from instructor import AsyncInstructor, Instructor, Mode, Provider
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import get_types_array
 from instructor.v2.dsl.partial import PartialBase

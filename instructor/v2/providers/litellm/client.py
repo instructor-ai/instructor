@@ -6,7 +6,9 @@ import inspect
 from collections.abc import Awaitable, Callable
 from typing import Any, overload
 
-from instructor import AsyncInstructor, Instructor, Mode, Provider
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.v2.core.patch import patch_v2
 
 

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Literal, TYPE_CHECKING, overload
 
-from instructor import AsyncInstructor, Instructor, Mode
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.patch import patch_v2
 

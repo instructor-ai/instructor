@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import Any, Union, Literal, overload
 from instructor.v2.core.client import AsyncInstructor, Instructor
-import instructor
 from instructor import __version__
+from instructor.v2.core.mode import Mode
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
 import warnings
@@ -79,7 +79,7 @@ def from_provider(
     model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
     cache: BaseCache | None = None,
-    mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
+    mode: Union[Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
 ) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
     """Create an Instructor client from a model string.
@@ -160,7 +160,7 @@ def from_provider(
         try:
             import openai
             import httpx
-            from instructor import from_openai
+            from instructor.v2.providers.openai.client import from_openai
             from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
             from collections.abc import Mapping
             from typing import cast
@@ -225,7 +225,7 @@ def from_provider(
             result = from_openai(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -254,7 +254,7 @@ def from_provider(
         try:
             import os
             from openai import AzureOpenAI, AsyncAzureOpenAI
-            from instructor import from_openai
+            from instructor.v2.providers.openai.client import from_openai
 
             # Get required Azure OpenAI configuration from environment
             api_key = api_key or os.environ.get("AZURE_OPENAI_API_KEY")
@@ -295,7 +295,7 @@ def from_provider(
             result = from_openai(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -324,7 +324,7 @@ def from_provider(
         try:
             import os
             import openai
-            from instructor import from_openai
+            from instructor.v2.providers.openai.client import from_openai
 
             api_key = (
                 api_key
@@ -385,7 +385,7 @@ def from_provider(
             result = from_openai(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -412,7 +412,7 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
-            from instructor import from_anthropic
+            from instructor.v2.providers.anthropic.client import from_anthropic
 
             if from_anthropic is None:
                 from instructor.v2.core.errors import ConfigurationError
@@ -440,7 +440,7 @@ def from_provider(
             result = from_anthropic(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -469,7 +469,7 @@ def from_provider(
         # Import google-genai package - catch ImportError only for actual imports
         try:
             import google.genai as genai
-            from instructor import from_genai
+            from instructor.v2.providers.genai.client import from_genai
         except ImportError as e:
             from instructor.v2.core.errors import ConfigurationError
 
@@ -509,7 +509,7 @@ def from_provider(
             model_param = kwargs.pop("model", model_name)
             result = from_genai(
                 client,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 use_async=async_client,
                 model=model_param,
                 **kwargs,
@@ -532,7 +532,7 @@ def from_provider(
     elif provider == "mistral":
         try:
             from mistralai import Mistral
-            from instructor import from_mistral
+            from instructor.v2.providers.mistral.client import from_mistral
             import os
 
             api_key = api_key or os.environ.get("MISTRAL_API_KEY")
@@ -576,7 +576,7 @@ def from_provider(
     elif provider == "cohere":
         try:
             import cohere
-            from instructor import from_cohere
+            from instructor.v2.providers.cohere.client import from_cohere
 
             client = (
                 cohere.AsyncClientV2(api_key=api_key)
@@ -586,7 +586,7 @@ def from_provider(
             # Use Mode.TOOLS as default for Cohere
             result = from_cohere(
                 client,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 model=model_name,
                 **kwargs,
             )
@@ -615,7 +615,7 @@ def from_provider(
     elif provider == "perplexity":
         try:
             import openai
-            from instructor import from_perplexity
+            from instructor.v2.providers.perplexity.client import from_perplexity
             import os
 
             api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
@@ -660,7 +660,7 @@ def from_provider(
     elif provider == "groq":
         try:
             import groq
-            from instructor import from_groq
+            from instructor.v2.providers.groq.client import from_groq
 
             client = (
                 groq.AsyncGroq(api_key=api_key)
@@ -693,7 +693,7 @@ def from_provider(
     elif provider == "writer":
         try:
             from writerai import AsyncWriter, Writer
-            from instructor import from_writer
+            from instructor.v2.providers.writer.client import from_writer
 
             client = (
                 AsyncWriter(api_key=api_key)
@@ -727,7 +727,7 @@ def from_provider(
         try:
             import os
             import boto3
-            from instructor import from_bedrock
+            from instructor.v2.providers.bedrock.client import from_bedrock
 
             # Get AWS configuration from environment or kwargs
             if "region" in kwargs:
@@ -764,9 +764,9 @@ def from_provider(
                 if model_name and (
                     "anthropic" in model_name.lower() or "claude" in model_name.lower()
                 ):
-                    default_mode = instructor.Mode.TOOLS
+                    default_mode = Mode.TOOLS
                 else:
-                    default_mode = instructor.Mode.MD_JSON
+                    default_mode = Mode.MD_JSON
             else:
                 default_mode = mode
 
@@ -801,7 +801,7 @@ def from_provider(
     elif provider == "cerebras":
         try:
             from cerebras.cloud.sdk import AsyncCerebras, Cerebras
-            from instructor import from_cerebras
+            from instructor.v2.providers.cerebras.client import from_cerebras
 
             client = (
                 AsyncCerebras(api_key=api_key)
@@ -834,7 +834,7 @@ def from_provider(
     elif provider == "fireworks":
         try:
             from fireworks.client import AsyncFireworks, Fireworks
-            from instructor import from_fireworks
+            from instructor.v2.providers.fireworks.client import from_fireworks
 
             client = (
                 AsyncFireworks(api_key=api_key)
@@ -875,7 +875,7 @@ def from_provider(
         try:
             import vertexai
             import vertexai.generative_models as gm
-            from instructor import from_vertexai
+            from instructor.v2.providers.vertexai.client import from_vertexai
         except ImportError as e:
             from instructor.v2.core.errors import ConfigurationError
 
@@ -907,7 +907,7 @@ def from_provider(
             result = from_vertexai(
                 client,
                 use_async=async_client,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -935,7 +935,7 @@ def from_provider(
         # Import google-genai package - catch ImportError only for actual imports
         try:
             from google import genai
-            from instructor import from_genai
+            from instructor.v2.providers.genai.client import from_genai
         except ImportError as e:
             from instructor.v2.core.errors import ConfigurationError
 
@@ -956,14 +956,14 @@ def from_provider(
                     client,
                     use_async=True,
                     model=model_name,
-                    mode=mode if mode else instructor.Mode.TOOLS,
+                    mode=mode if mode else Mode.TOOLS,
                     **kwargs,
                 )
             else:
                 result = from_genai(
                     client,
                     model=model_name,
-                    mode=mode if mode else instructor.Mode.TOOLS,
+                    mode=mode if mode else Mode.TOOLS,
                     **kwargs,
                 )
             logger.info(
@@ -984,7 +984,7 @@ def from_provider(
     elif provider == "ollama":
         try:
             import openai
-            from instructor import from_openai
+            from instructor.v2.providers.openai.client import from_openai
 
             # Get base_url from kwargs or use default
             base_url = kwargs.pop("base_url", "http://localhost:11434/v1")
@@ -1020,7 +1020,7 @@ def from_provider(
             )
 
             default_mode = (
-                instructor.Mode.TOOLS if supports_tools else instructor.Mode.JSON
+                Mode.TOOLS if supports_tools else Mode.JSON
             )
 
             result = from_openai(
@@ -1054,7 +1054,7 @@ def from_provider(
     elif provider == "deepseek":
         try:
             import openai
-            from instructor import from_deepseek
+            from instructor.v2.providers.openai.client import from_deepseek
             import os
 
             # Get API key from kwargs or environment
@@ -1080,7 +1080,7 @@ def from_provider(
             result = from_deepseek(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -1109,7 +1109,7 @@ def from_provider(
         try:
             from xai_sdk.sync.client import Client as SyncClient
             from xai_sdk.aio.client import Client as AsyncClient
-            from instructor import from_xai
+            from instructor.v2.providers.xai.client import from_xai
 
             if from_xai is None:
                 from instructor.v2.core.errors import ConfigurationError
@@ -1127,7 +1127,7 @@ def from_provider(
             # Use Mode.TOOLS instead of Mode.XAI_TOOLS (v2 uses generic modes)
             result = from_xai(
                 client,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 model=model_name,
                 **kwargs,
             )
@@ -1157,7 +1157,7 @@ def from_provider(
     elif provider == "openrouter":
         try:
             import openai
-            from instructor import from_openrouter
+            from instructor.v2.providers.openrouter.client import from_openrouter
             import os
 
             # Get API key from kwargs or environment
@@ -1183,7 +1183,7 @@ def from_provider(
             result = from_openrouter(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(
@@ -1211,12 +1211,12 @@ def from_provider(
     elif provider == "litellm":
         try:
             from litellm import completion, acompletion
-            from instructor import from_litellm
+            from instructor.v2.providers.litellm.client import from_litellm
 
             completion_func = acompletion if async_client else completion
             result = from_litellm(
                 completion_func,
-                mode=mode if mode else instructor.Mode.TOOLS,
+                mode=mode if mode else Mode.TOOLS,
                 **kwargs,
             )
             logger.info(

@@ -27,8 +27,6 @@ from instructor.v2.providers.gemini.utils import (
     handle_vertexai_json,
     handle_vertexai_parallel_tools,
     handle_vertexai_tools,
-    reask_vertexai_json,
-    reask_vertexai_tools,
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -83,6 +81,44 @@ def vertexai_function_response_parser(
             )
         ]
     )
+
+
+def reask_vertexai_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a VertexAI tool reask payload after validation failure."""
+    kwargs = kwargs.copy()
+    reask_msgs = [
+        response.candidates[0].content,
+        vertexai_function_response_parser(response, exception),
+    ]
+    kwargs["contents"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_vertexai_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a VertexAI JSON reask payload after validation failure."""
+    kwargs = kwargs.copy()
+    reask_msgs = [
+        response.candidates[0].content,
+        vertexai_message_parser(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Errors found:\n{exception}\nRecall the function correctly, "
+                    f"fix the errors found in the following attempt:\n{response.text}"
+                ),
+            }
+        ),
+    ]
+    kwargs["contents"].extend(reask_msgs)
+    return kwargs
 
 
 def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:

@@ -6,17 +6,107 @@ from typing import Any, cast
 
 from pydantic import BaseModel
 
-from ....dsl.iterable import IterableBase
-from ....dsl.parallel import ParallelBase
-from ....dsl.partial import Partial, PartialBase
-from ....dsl.simple_type import AdapterBase
-from ...core.multimodal import extract_genai_multimodal_content
-from ...providers.gemini import utils as gemini_utils
-from ...core.response_model import prepare_response_model
-from ...core.decorators import register_mode_handler
-from ...core.handler import ModeHandler
-from ....mode import Mode
-from ....utils.providers import Provider
+from instructor.v2.core.decorators import register_mode_handler
+from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.multimodal import extract_genai_multimodal_content
+from instructor.v2.core.providers import Provider
+from instructor.v2.core.response_model import prepare_response_model
+from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.parallel import ParallelBase
+from instructor.v2.dsl.partial import Partial, PartialBase
+from instructor.v2.dsl.simple_type import AdapterBase
+from instructor.v2.providers.gemini import utils as gemini_utils
+
+
+def reask_genai_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a GenAI tool reask payload after validation failure."""
+    from google.genai import types
+
+    kwargs = kwargs.copy()
+    existing_contents = kwargs.get("contents")
+    if isinstance(existing_contents, list):
+        kwargs["contents"] = existing_contents.copy()
+    elif existing_contents is None:
+        kwargs["contents"] = []
+    else:
+        kwargs["contents"] = list(existing_contents)
+
+    model_content = None
+    function_call_content = None
+    function_call = None
+
+    candidates = getattr(response, "candidates", None) if response is not None else None
+    if isinstance(candidates, list):
+        for candidate in candidates:
+            content = getattr(candidate, "content", None)
+            if content is None:
+                continue
+            if model_content is None:
+                model_content = content
+            parts = getattr(content, "parts", None) or []
+            for part in parts:
+                function_call = getattr(part, "function_call", None)
+                if function_call is not None:
+                    function_call_content = content
+                    break
+            if function_call is not None:
+                break
+
+    error_msg = (
+        f"Validation Error found:\n{exception}\n"
+        "Recall the function correctly, fix the errors"
+    )
+    if function_call is None:
+        if model_content is not None:
+            kwargs["contents"].append(model_content)
+        kwargs["contents"].append(
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=error_msg)],
+            )
+        )
+        return kwargs
+
+    function_response_part = types.Part.from_function_response(
+        name=function_call.name,
+        response={"error": error_msg},
+    )
+    kwargs["contents"].append(function_call_content)
+    kwargs["contents"].append(
+        types.Content(role="tool", parts=[function_response_part])
+    )
+    return kwargs
+
+
+def reask_genai_structured_outputs(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a GenAI structured-output reask payload after validation failure."""
+    from google.genai import types
+
+    kwargs = kwargs.copy()
+    genai_response = (
+        response.text
+        if response and hasattr(response, "text")
+        else "You must generate a response to the user's request that is consistent with the response model"
+    )
+    kwargs["contents"].append(
+        types.ModelContent(
+            parts=[
+                types.Part.from_text(
+                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{genai_response}"
+                ),
+            ]
+        ),
+    )
+    return kwargs
 
 
 class GenAIHandlerBase(ModeHandler):
@@ -294,7 +384,7 @@ class GenAIToolsHandler(GenAIHandlerBase):
         exception: Exception,
         failed_attempts: list[Any] | None = None,  # noqa: ARG002
     ) -> dict[str, Any]:
-        return gemini_utils.reask_genai_tools(
+        return reask_genai_tools(
             kwargs.copy(),
             response,
             exception,
@@ -367,7 +457,7 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
         exception: Exception,
         failed_attempts: list[Any] | None = None,  # noqa: ARG002
     ) -> dict[str, Any]:
-        return gemini_utils.reask_genai_structured_outputs(
+        return reask_genai_structured_outputs(
             kwargs.copy(),
             response,
             exception,

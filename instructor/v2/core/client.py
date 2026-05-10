@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import openai
-import instructor
+from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from openai.types.chat import ChatCompletionMessageParam
 from typing import (
@@ -194,7 +194,7 @@ class Instructor:
 
     client: Any | None
     create_fn: Callable[..., Any]
-    mode: instructor.Mode
+    mode: Mode
     default_model: str | None = None
     provider: Provider
     hooks: Hooks
@@ -203,7 +203,7 @@ class Instructor:
         self,
         client: Any | None,
         create: Callable[..., Any],
-        mode: instructor.Mode = instructor.Mode.TOOLS,
+        mode: Mode = Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
         **kwargs: Any,
@@ -211,16 +211,16 @@ class Instructor:
         self.client = client
         self.create_fn = create
         self.mode = mode
-        if mode == instructor.Mode.FUNCTIONS:
-            instructor.Mode.warn_mode_functions_deprecation()
+        if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
 
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
 
         if mode in {
-            instructor.Mode.RESPONSES_TOOLS,
-            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+            Mode.RESPONSES_TOOLS,
+            Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }:
             assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
             self.responses = Response(client=self)
@@ -403,7 +403,7 @@ class Instructor:
         if hooks is not None:
             combined_hooks = self.hooks + hooks
 
-        response_model = instructor.Partial[response_model]  # type: ignore
+        response_model = Partial[response_model]  # type: ignore
         return self.create_fn(
             messages=messages,
             response_model=response_model,
@@ -543,7 +543,7 @@ class AsyncInstructor(Instructor):
 
     client: Any | None
     create_fn: Callable[..., Any]
-    mode: instructor.Mode
+    mode: Mode
     default_model: str | None = None
     provider: Provider
     hooks: Hooks
@@ -552,7 +552,7 @@ class AsyncInstructor(Instructor):
         self,
         client: Any | None,
         create: Callable[..., Any],
-        mode: instructor.Mode = instructor.Mode.TOOLS,
+        mode: Mode = Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
         **kwargs: Any,
@@ -565,8 +565,8 @@ class AsyncInstructor(Instructor):
         self.hooks = hooks or Hooks()
 
         if mode in {
-            instructor.Mode.RESPONSES_TOOLS,
-            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+            Mode.RESPONSES_TOOLS,
+            Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }:
             assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
             self.responses = AsyncResponse(client=self)
@@ -595,9 +595,9 @@ class AsyncInstructor(Instructor):
             and get_args(response_model)[0] is not None
             and self.mode
             not in {
-                instructor.Mode.PARALLEL_TOOLS,
-                instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
-                instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
+                Mode.PARALLEL_TOOLS,
+                Mode.VERTEXAI_PARALLEL_TOOLS,
+                Mode.ANTHROPIC_PARALLEL_TOOLS,
             }
         ):
             return self.create_iterable(
@@ -639,7 +639,7 @@ class AsyncInstructor(Instructor):
             combined_hooks = self.hooks + hooks
 
         async for item in await self.create_fn(
-            response_model=instructor.Partial[response_model],  # type: ignore
+            response_model=Partial[response_model],  # type: ignore
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -710,7 +710,7 @@ class AsyncInstructor(Instructor):
 @overload
 def from_openai(
     client: openai.OpenAI,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: Mode = Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor:
     pass
@@ -719,7 +719,7 @@ def from_openai(
 @overload
 def from_openai(
     client: openai.AsyncOpenAI,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: Mode = Mode.TOOLS,
     **kwargs: Any,
 ) -> AsyncInstructor:
     pass
@@ -727,7 +727,7 @@ def from_openai(
 
 def from_openai(
     client: openai.OpenAI | openai.AsyncOpenAI,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: Mode = Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """Compatibility wrapper for the v2 OpenAI factory."""
@@ -739,7 +739,7 @@ def from_openai(
 @overload
 def from_litellm(
     completion: Callable[..., Awaitable[Any]],
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: Mode = Mode.TOOLS,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -747,14 +747,14 @@ def from_litellm(
 @overload
 def from_litellm(
     completion: Callable[..., Any],
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: Mode = Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 def from_litellm(
     completion: Callable[..., Any] | Callable[..., Awaitable[Any]],
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: Mode = Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """Compatibility wrapper for the v2 LiteLLM factory."""
