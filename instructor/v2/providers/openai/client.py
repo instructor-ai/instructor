@@ -36,7 +36,11 @@ def _from_openai_compat(
 ) -> Instructor | AsyncInstructor:
     from instructor.v2.core.registry import mode_registry, normalize_mode
 
-    normalized_mode = normalize_mode(provider, mode)
+    normalized_mode = (
+        Mode.RESPONSES_TOOLS
+        if mode == Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS
+        else normalize_mode(provider, mode)
+    )
     if not mode_registry.is_registered(provider, normalized_mode):
         from instructor.v2.core.errors import ModeError
 

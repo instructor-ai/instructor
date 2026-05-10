@@ -6,9 +6,12 @@ Simplified patching logic that uses the v2 mode registry for handler dispatch.
 from __future__ import annotations
 
 import logging
+import warnings
+from collections.abc import Awaitable
 from functools import wraps
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
+from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
@@ -28,6 +31,29 @@ if TYPE_CHECKING:
 logger = logging.getLogger("instructor.v2")
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
+T_Retval = TypeVar("T_Retval")
+
+
+class InstructorChatCompletionCreate(Protocol):
+    def __call__(
+        self,
+        response_model: type[T_Model] | None = None,
+        context: dict[str, Any] | None = None,
+        max_retries: int | Retrying = 1,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T_Model: ...
+
+
+class AsyncInstructorChatCompletionCreate(Protocol):
+    async def __call__(
+        self,
+        response_model: type[T_Model] | None = None,
+        context: dict[str, Any] | None = None,
+        max_retries: int | AsyncRetrying = 1,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T_Model: ...
 
 
 def patch_v2(
@@ -61,6 +87,76 @@ def patch_v2(
         return _create_async_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]
     else:
         return _create_sync_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]
+
+
+@overload
+def patch(
+    client: OpenAI,
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+) -> OpenAI: ...
+
+
+@overload
+def patch(
+    client: AsyncOpenAI,
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+) -> AsyncOpenAI: ...
+
+
+@overload
+def patch(
+    create: Callable[..., T_Retval],
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+) -> InstructorChatCompletionCreate: ...
+
+
+@overload
+def patch(
+    create: Awaitable[T_Retval],
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+) -> InstructorChatCompletionCreate: ...
+
+
+def patch(  # type: ignore
+    client: OpenAI | AsyncOpenAI | None = None,
+    create: Callable[..., T_Retval] | None = None,
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+) -> OpenAI | AsyncOpenAI:
+    """Patch chat-completion create methods with v2 registry handlers."""
+    logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
+
+    if create is not None:
+        func = create
+    elif client is not None:
+        func = client.chat.completions.create
+    else:
+        raise ValueError("Either client or create must be provided")
+
+    new_create = patch_v2(func=func, provider=provider, mode=mode)
+
+    if client is not None:
+        client.chat.completions.create = new_create  # type: ignore[attr-defined]
+        return client
+    return new_create  # type: ignore[return-value]
+
+
+def apatch(
+    client: AsyncOpenAI,
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+) -> AsyncOpenAI:
+    """Deprecated alias for :func:`patch`."""
+    warnings.warn(
+        "apatch is deprecated, use patch instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return patch(client, mode=mode, provider=provider)
 
 
 def _create_sync_wrapper(

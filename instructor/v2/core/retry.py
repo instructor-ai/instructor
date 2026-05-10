@@ -243,6 +243,62 @@ def retry_sync_v2(
     )
 
 
+def retry_sync(
+    func: Callable[..., Any],
+    response_model: type[T_Model] | None,
+    args: Any,
+    kwargs: Any,
+    context: dict[str, Any] | None = None,
+    max_retries: int | Retrying = 1,
+    strict: bool | None = None,
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+    hooks: Hooks | None = None,
+) -> T_Model | None:
+    """Compatibility wrapper for the public retry API."""
+    strict_value = True if strict is None else strict
+    return retry_sync_v2(
+        func=func,
+        response_model=response_model,
+        provider=provider,
+        mode=mode,
+        context=context,
+        max_retries=max_retries,
+        args=tuple(args) if isinstance(args, tuple) else args,
+        kwargs=dict(kwargs),
+        strict=strict_value,
+        hooks=hooks,
+    )
+
+
+async def retry_async(
+    func: Callable[..., Any],
+    response_model: type[T_Model] | None,
+    args: Any,
+    kwargs: Any,
+    context: dict[str, Any] | None = None,
+    max_retries: int | AsyncRetrying = 1,
+    strict: bool | None = None,
+    mode: Mode = Mode.TOOLS,
+    provider: Provider = Provider.OPENAI,
+    hooks: Hooks | None = None,
+) -> T_Model | None:
+    """Compatibility wrapper for the public retry API."""
+    strict_value = True if strict is None else strict
+    return await retry_async_v2(
+        func=func,
+        response_model=response_model,
+        provider=provider,
+        mode=mode,
+        context=context,
+        max_retries=max_retries,
+        args=tuple(args) if isinstance(args, tuple) else args,
+        kwargs=dict(kwargs),
+        strict=strict_value,
+        hooks=hooks,
+    )
+
+
 async def retry_async_v2(
     func: Callable[..., Awaitable[Any]],
     response_model: type[T_Model] | None,
