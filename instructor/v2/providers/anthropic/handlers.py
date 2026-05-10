@@ -434,7 +434,9 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
         assistant_content = []
         tool_use_id = None
         for content in response.content:
-            assistant_content.append(content.model_dump())  # type: ignore[attr-defined]
+            assistant_content.append(
+                content.model_dump(exclude_none=True)  # type: ignore[attr-defined]
+            )
             if content.type == "tool_use":
                 tool_use_id = content.id
 
