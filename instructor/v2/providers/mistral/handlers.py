@@ -36,13 +36,13 @@ from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase, get_types_array
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase
-from instructor.processing.schema import generate_openai_schema
 from instructor.processing.multimodal import convert_messages as convert_messages_v1
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
     extract_json_from_stream,
     extract_json_from_stream_async,
 )
+from instructor.v2.core.schema import generate_openai_schema
 from instructor.utils.core import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
