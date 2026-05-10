@@ -19,6 +19,7 @@ from pydantic import ValidationError
 from instructor import Mode, Provider
 from instructor.processing.function_calls import ResponseSchema
 from instructor.v2.core.registry import mode_registry
+from tests.v2.provider_matrix import PROVIDER_HANDLER_MODES
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
@@ -35,11 +36,11 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
     Provider.PERPLEXITY: _PROJECT_ROOT
     / "instructor/v2/providers/perplexity/handlers.py",
     Provider.XAI: _PROJECT_ROOT / "instructor/v2/providers/xai/handlers.py",
-    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/groq/handlers.py",
+    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.MISTRAL: _PROJECT_ROOT / "instructor/v2/providers/mistral/handlers.py",
-    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/fireworks/handlers.py",
+    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.BEDROCK: _PROJECT_ROOT / "instructor/v2/providers/bedrock/handlers.py",
-    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/cerebras/handlers.py",
+    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.WRITER: _PROJECT_ROOT / "instructor/v2/providers/writer/handlers.py",
     Provider.OPENROUTER: _PROJECT_ROOT
     / "instructor/v2/providers/openrouter/handlers.py",
@@ -51,7 +52,9 @@ def _ensure_handlers_loaded(provider: Provider) -> None:
     if provider in _HANDLERS_LOADED:
         return
     provider_modes = PROVIDER_HANDLER_MODES.get(provider, [])
-    if any(mode_registry.is_registered(provider, mode) for mode in provider_modes):
+    if provider_modes and all(
+        mode_registry.is_registered(provider, mode) for mode in provider_modes
+    ):
         _HANDLERS_LOADED.add(provider)
         return
     handler_path = _HANDLER_MODULE_PATHS.get(provider)
@@ -84,65 +87,6 @@ class User(ResponseSchema):
 
     name: str
     age: int
-
-
-PROVIDER_HANDLER_MODES: dict[Provider, list[Mode]] = {
-    Provider.OPENAI: [
-        Mode.TOOLS,
-        Mode.JSON_SCHEMA,
-        Mode.MD_JSON,
-        Mode.PARALLEL_TOOLS,
-        Mode.RESPONSES_TOOLS,
-    ],
-    Provider.ANYSCALE: [
-        Mode.TOOLS,
-        Mode.JSON_SCHEMA,
-        Mode.MD_JSON,
-        Mode.PARALLEL_TOOLS,
-    ],
-    Provider.TOGETHER: [
-        Mode.TOOLS,
-        Mode.JSON_SCHEMA,
-        Mode.MD_JSON,
-        Mode.PARALLEL_TOOLS,
-    ],
-    Provider.DATABRICKS: [
-        Mode.TOOLS,
-        Mode.JSON_SCHEMA,
-        Mode.MD_JSON,
-        Mode.PARALLEL_TOOLS,
-    ],
-    Provider.DEEPSEEK: [
-        Mode.TOOLS,
-        Mode.JSON_SCHEMA,
-        Mode.MD_JSON,
-        Mode.PARALLEL_TOOLS,
-    ],
-    Provider.OPENROUTER: [
-        Mode.TOOLS,
-        Mode.JSON_SCHEMA,
-        Mode.MD_JSON,
-        Mode.PARALLEL_TOOLS,
-    ],
-    Provider.ANTHROPIC: [
-        Mode.TOOLS,
-        Mode.JSON,
-        Mode.JSON_SCHEMA,
-        Mode.PARALLEL_TOOLS,
-    ],
-    Provider.GENAI: [Mode.TOOLS, Mode.JSON],
-    Provider.GEMINI: [Mode.TOOLS, Mode.MD_JSON],
-    Provider.COHERE: [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    Provider.PERPLEXITY: [Mode.MD_JSON],
-    Provider.XAI: [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    Provider.GROQ: [Mode.TOOLS, Mode.MD_JSON],
-    Provider.MISTRAL: [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    Provider.FIREWORKS: [Mode.TOOLS, Mode.MD_JSON],
-    Provider.BEDROCK: [Mode.TOOLS, Mode.MD_JSON],
-    Provider.CEREBRAS: [Mode.TOOLS, Mode.MD_JSON],
-    Provider.WRITER: [Mode.TOOLS, Mode.MD_JSON],
-    Provider.VERTEXAI: [Mode.TOOLS, Mode.MD_JSON, Mode.PARALLEL_TOOLS],
-}
 
 
 PARSE_SCENARIOS: dict[Provider, dict[Mode, str]] = {
@@ -199,6 +143,7 @@ PARSE_SCENARIOS: dict[Provider, dict[Mode, str]] = {
     },
     Provider.GROQ: {
         Mode.TOOLS: "tool_call",
+        Mode.JSON_SCHEMA: "text",
         Mode.MD_JSON: "markdown",
     },
     Provider.MISTRAL: {
@@ -208,6 +153,7 @@ PARSE_SCENARIOS: dict[Provider, dict[Mode, str]] = {
     },
     Provider.FIREWORKS: {
         Mode.TOOLS: "tool_call",
+        Mode.JSON_SCHEMA: "text",
         Mode.MD_JSON: "markdown",
     },
     Provider.BEDROCK: {
@@ -216,10 +162,12 @@ PARSE_SCENARIOS: dict[Provider, dict[Mode, str]] = {
     },
     Provider.CEREBRAS: {
         Mode.TOOLS: "tool_call",
+        Mode.JSON_SCHEMA: "text",
         Mode.MD_JSON: "markdown",
     },
     Provider.WRITER: {
         Mode.TOOLS: "tool_call",
+        Mode.JSON_SCHEMA: "text",
         Mode.MD_JSON: "markdown",
     },
     Provider.VERTEXAI: {

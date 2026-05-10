@@ -65,4 +65,4 @@ class TestGroqClientWithSDK:
         client = groq.Groq(api_key="fake-key")
 
         with pytest.raises(ModeError):
-            from_groq(client, mode=Mode.JSON_SCHEMA)
+            from_groq(client, mode=Mode.RESPONSES_TOOLS)

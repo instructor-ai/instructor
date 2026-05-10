@@ -18,6 +18,7 @@ import instructor
 from instructor.core.exceptions import InstructorRetryException
 from instructor import Mode
 from instructor.v2 import Provider, mode_registry
+from tests.v2.provider_matrix import legacy_config_dicts
 
 # Ensure handlers are loaded by dynamically importing them
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -27,11 +28,11 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
     Provider.GENAI: _PROJECT_ROOT / "instructor/v2/providers/genai/handlers.py",
     Provider.COHERE: _PROJECT_ROOT / "instructor/v2/providers/cohere/handlers.py",
     Provider.XAI: _PROJECT_ROOT / "instructor/v2/providers/xai/handlers.py",
-    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/groq/handlers.py",
+    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.MISTRAL: _PROJECT_ROOT / "instructor/v2/providers/mistral/handlers.py",
-    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/fireworks/handlers.py",
+    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.BEDROCK: _PROJECT_ROOT / "instructor/v2/providers/bedrock/handlers.py",
-    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/cerebras/handlers.py",
+    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.WRITER: _PROJECT_ROOT / "instructor/v2/providers/writer/handlers.py",
 }
 _HANDLERS_LOADED: set[Provider] = set()
@@ -81,84 +82,16 @@ class GoogleSearch(BaseModel):
     query: str
 
 
-# Provider-specific configurations
+_PROVIDER_CLIENT_CONFIGS = legacy_config_dicts()
 PROVIDER_CONFIGS = {
-    Provider.OPENAI: {
-        "provider_string": "openai/gpt-4o-mini",
-        "modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "basic_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    },
-    Provider.ANTHROPIC: {
-        "provider_string": "anthropic/claude-sonnet-4-6-20250627",
-        "modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "basic_modes": [Mode.TOOLS, Mode.JSON_SCHEMA],
-        "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA],
-    },
-    Provider.GENAI: {
-        "provider_string": "google/gemini-2.0-flash",
-        "modes": [Mode.TOOLS, Mode.JSON],
-        "basic_modes": [Mode.TOOLS, Mode.JSON],
-        "async_modes": [Mode.TOOLS, Mode.JSON],
-    },
-    Provider.COHERE: {
-        "provider_string": "cohere/command-a-03-2025",
-        "modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    },
-    Provider.XAI: {
-        "provider_string": "xai/grok-3-mini",
-        "modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    },
-    Provider.GROQ: {
-        "provider_string": "groq/llama-3.3-70b-versatile",
-        "modes": [Mode.TOOLS, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.MD_JSON],
-    },
-    Provider.MISTRAL: {
-        "provider_string": "mistral/ministral-8b-latest",
-        "modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-    },
-    Provider.FIREWORKS: {
-        "provider_string": "fireworks/accounts/fireworks/models/llama-v3p3-70b-instruct",
-        "modes": [Mode.TOOLS, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.MD_JSON],
-    },
-    Provider.BEDROCK: {
-        "provider_string": "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
-        "modes": [Mode.TOOLS, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.MD_JSON],
-    },
-    Provider.CEREBRAS: {
-        "provider_string": "cerebras/llama3.1-70b",
-        "modes": [Mode.TOOLS, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.MD_JSON],
-    },
-    Provider.WRITER: {
-        "provider_string": "writer/palmyra-x-004",
-        "modes": [Mode.TOOLS, Mode.MD_JSON],
-        "basic_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "async_modes": [Mode.TOOLS, Mode.MD_JSON],
-    },
+    provider: {
+        "provider_string": config["provider_string"],
+        "modes": config["supported_modes"],
+        "basic_modes": config["basic_modes"],
+        "async_modes": config["async_modes"],
+    }
+    for provider, config in _PROVIDER_CLIENT_CONFIGS.items()
+    if config["provider_string"] is not None and config["basic_modes"]
 }
 
 

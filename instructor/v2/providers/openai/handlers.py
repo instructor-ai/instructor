@@ -65,6 +65,7 @@ OPENAI_PARALLEL_TOOL_PROVIDERS = [
     Provider.DATABRICKS,
     Provider.DEEPSEEK,
     Provider.OPENROUTER,
+    Provider.CEREBRAS,
 ]
 
 OPENAI_JSON_SCHEMA_PROVIDERS = [
@@ -73,6 +74,9 @@ OPENAI_JSON_SCHEMA_PROVIDERS = [
     Provider.TOGETHER,
     Provider.DATABRICKS,
     Provider.DEEPSEEK,
+    Provider.GROQ,
+    Provider.FIREWORKS,
+    Provider.CEREBRAS,
 ]
 
 
@@ -602,7 +606,7 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool = False,  # noqa: ARG002
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse tool call response."""

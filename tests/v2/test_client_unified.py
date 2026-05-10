@@ -14,6 +14,7 @@ import pytest
 
 from instructor import Mode, Provider
 from instructor.v2.core.registry import mode_registry, normalize_mode
+from tests.v2.provider_matrix import legacy_config_dicts
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
@@ -31,10 +32,10 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
     Provider.PERPLEXITY: _PROJECT_ROOT
     / "instructor/v2/providers/perplexity/handlers.py",
     Provider.XAI: _PROJECT_ROOT / "instructor/v2/providers/xai/handlers.py",
-    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/groq/handlers.py",
+    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.MISTRAL: _PROJECT_ROOT / "instructor/v2/providers/mistral/handlers.py",
-    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/fireworks/handlers.py",
-    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/cerebras/handlers.py",
+    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
+    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.WRITER: _PROJECT_ROOT / "instructor/v2/providers/writer/handlers.py",
     Provider.BEDROCK: _PROJECT_ROOT / "instructor/v2/providers/bedrock/handlers.py",
     Provider.VERTEXAI: _PROJECT_ROOT / "instructor/v2/providers/vertexai/handlers.py",
@@ -48,7 +49,9 @@ def _ensure_handlers_loaded(provider: Provider) -> None:
     provider_modes = PROVIDER_CLIENT_CONFIGS.get(provider, {}).get(
         "supported_modes", []
     )
-    if any(mode_registry.is_registered(provider, mode) for mode in provider_modes):
+    if provider_modes and all(
+        mode_registry.is_registered(provider, mode) for mode in provider_modes
+    ):
         _HANDLERS_LOADED.add(provider)
         return
     handler_path = _HANDLER_MODULE_PATHS.get(provider)
@@ -65,277 +68,7 @@ def _ensure_handlers_loaded(provider: Provider) -> None:
     _HANDLERS_LOADED.add(provider)
 
 
-# Provider-specific configurations for client tests
-PROVIDER_CLIENT_CONFIGS: dict[Provider, dict[str, Any]] = {
-    Provider.OPENAI: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "unsupported_modes": [],
-        "legacy_modes": {
-            Mode.FUNCTIONS: Mode.TOOLS,
-            Mode.TOOLS_STRICT: Mode.TOOLS,
-            Mode.JSON_O1: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_openai",
-        "sdk_module": "openai",
-    },
-    Provider.ANYSCALE: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "unsupported_modes": [Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.FUNCTIONS: Mode.TOOLS,
-            Mode.TOOLS_STRICT: Mode.TOOLS,
-            Mode.JSON_O1: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_anyscale",
-        "sdk_module": "openai",
-    },
-    Provider.TOGETHER: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "unsupported_modes": [Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.FUNCTIONS: Mode.TOOLS,
-            Mode.TOOLS_STRICT: Mode.TOOLS,
-            Mode.JSON_O1: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_together",
-        "sdk_module": "openai",
-    },
-    Provider.DATABRICKS: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "unsupported_modes": [Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.FUNCTIONS: Mode.TOOLS,
-            Mode.TOOLS_STRICT: Mode.TOOLS,
-            Mode.JSON_O1: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_databricks",
-        "sdk_module": "openai",
-    },
-    Provider.DEEPSEEK: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "unsupported_modes": [Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.FUNCTIONS: Mode.TOOLS,
-            Mode.TOOLS_STRICT: Mode.TOOLS,
-            Mode.JSON_O1: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_deepseek",
-        "sdk_module": "openai",
-    },
-    Provider.ANTHROPIC: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON,
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "unsupported_modes": [Mode.MD_JSON],
-        "legacy_modes": {
-            Mode.ANTHROPIC_TOOLS: Mode.TOOLS,
-            Mode.ANTHROPIC_JSON: Mode.MD_JSON,
-            Mode.ANTHROPIC_PARALLEL_TOOLS: Mode.PARALLEL_TOOLS,
-        },
-        "from_function": "from_anthropic",
-        "sdk_module": "anthropic",
-    },
-    Provider.GENAI: {
-        "supported_modes": [Mode.TOOLS, Mode.JSON],
-        "unsupported_modes": [Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS],
-        "legacy_modes": {
-            Mode.GENAI_TOOLS: Mode.TOOLS,
-            Mode.GENAI_JSON: Mode.JSON,
-            Mode.GENAI_STRUCTURED_OUTPUTS: Mode.JSON,
-        },
-        "from_function": "from_genai",
-        "sdk_module": "google.genai",
-    },
-    Provider.GEMINI: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON,
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.GEMINI_TOOLS: Mode.TOOLS,
-            Mode.GEMINI_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_gemini",
-        "sdk_module": "google.generativeai",
-    },
-    Provider.COHERE: {
-        "supported_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "unsupported_modes": [Mode.PARALLEL_TOOLS, Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.COHERE_TOOLS: Mode.TOOLS,
-            Mode.COHERE_JSON_SCHEMA: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_cohere",
-        "sdk_module": "cohere",
-    },
-    Provider.OPENROUTER: {
-        "supported_modes": [
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-        ],
-        "unsupported_modes": [Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.FUNCTIONS: Mode.TOOLS,
-            Mode.TOOLS_STRICT: Mode.TOOLS,
-            Mode.JSON_O1: Mode.JSON_SCHEMA,
-            Mode.OPENROUTER_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_openrouter",
-        "sdk_module": "openai",
-    },
-    Provider.PERPLEXITY: {
-        "supported_modes": [Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON,
-            Mode.TOOLS,
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.PERPLEXITY_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_perplexity",
-        "sdk_module": "openai",
-    },
-    Provider.XAI: {
-        "supported_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "unsupported_modes": [Mode.PARALLEL_TOOLS, Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.XAI_TOOLS: Mode.TOOLS,
-            Mode.XAI_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_xai",
-        "sdk_module": "xai_sdk",
-    },
-    Provider.GROQ: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {},
-        "from_function": "from_groq",
-        "sdk_module": "groq",
-    },
-    Provider.MISTRAL: {
-        "supported_modes": [Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON],
-        "unsupported_modes": [Mode.PARALLEL_TOOLS, Mode.RESPONSES_TOOLS],
-        "legacy_modes": {
-            Mode.MISTRAL_TOOLS: Mode.TOOLS,
-            Mode.MISTRAL_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
-        },
-        "from_function": "from_mistral",
-        "sdk_module": "mistralai",
-    },
-    Provider.FIREWORKS: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.FIREWORKS_TOOLS: Mode.TOOLS,
-            Mode.FIREWORKS_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_fireworks",
-        "sdk_module": "fireworks",
-    },
-    Provider.CEREBRAS: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.CEREBRAS_TOOLS: Mode.TOOLS,
-            Mode.CEREBRAS_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_cerebras",
-        "sdk_module": "cerebras.cloud.sdk",
-        "missing_sdk_message": "cerebras is not installed",
-    },
-    Provider.WRITER: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.WRITER_TOOLS: Mode.TOOLS,
-            Mode.WRITER_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_writer",
-        "sdk_module": "writerai",
-    },
-    Provider.BEDROCK: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON],
-        "unsupported_modes": [
-            Mode.JSON_SCHEMA,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.BEDROCK_TOOLS: Mode.TOOLS,
-            Mode.BEDROCK_JSON: Mode.MD_JSON,
-        },
-        "from_function": "from_bedrock",
-        "sdk_module": "botocore",
-    },
-    Provider.VERTEXAI: {
-        "supported_modes": [Mode.TOOLS, Mode.MD_JSON, Mode.PARALLEL_TOOLS],
-        "unsupported_modes": [
-            Mode.JSON,
-            Mode.JSON_SCHEMA,
-            Mode.RESPONSES_TOOLS,
-        ],
-        "legacy_modes": {
-            Mode.VERTEXAI_TOOLS: Mode.TOOLS,
-            Mode.VERTEXAI_JSON: Mode.MD_JSON,
-            Mode.VERTEXAI_PARALLEL_TOOLS: Mode.PARALLEL_TOOLS,
-        },
-        "from_function": "from_vertexai",
-        "sdk_module": "vertexai",
-    },
-}
+PROVIDER_CLIENT_CONFIGS: dict[Provider, dict[str, Any]] = legacy_config_dicts()
 
 
 def _dependency_missing(module: str) -> bool:

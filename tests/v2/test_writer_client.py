@@ -80,11 +80,11 @@ class TestWriterModeRegistry:
 
         assert mode_registry.is_registered(Provider.WRITER, Mode.MD_JSON)
 
-    def test_json_schema_not_registered(self):
-        """Test JSON_SCHEMA mode is NOT registered for Writer."""
+    def test_json_schema_registered(self):
+        """Test JSON_SCHEMA mode is registered for Writer."""
         from instructor.v2.core.registry import mode_registry
 
-        assert not mode_registry.is_registered(Provider.WRITER, Mode.JSON_SCHEMA)
+        assert mode_registry.is_registered(Provider.WRITER, Mode.JSON_SCHEMA)
 
     def test_get_modes_for_writer(self):
         """Test getting all modes for Writer provider."""
@@ -94,7 +94,7 @@ class TestWriterModeRegistry:
 
         assert Mode.TOOLS in modes
         assert Mode.MD_JSON in modes
-        assert Mode.JSON_SCHEMA not in modes
+        assert Mode.JSON_SCHEMA in modes
 
     def test_writer_in_providers_for_tools(self):
         """Test Writer is listed as provider for TOOLS mode."""
@@ -113,11 +113,11 @@ class TestWriterModeRegistry:
 class TestWriterClientErrors:
     """Tests for error handling in Writer client."""
 
-    def test_json_schema_not_supported(self):
-        """Test JSON_SCHEMA mode is not supported by Writer."""
+    def test_json_schema_supported(self):
+        """Test JSON_SCHEMA mode is supported by Writer."""
         from instructor.v2.core.registry import mode_registry
 
-        assert not mode_registry.is_registered(Provider.WRITER, Mode.JSON_SCHEMA)
+        assert mode_registry.is_registered(Provider.WRITER, Mode.JSON_SCHEMA)
 
     def test_parallel_tools_not_supported(self):
         """Test PARALLEL_TOOLS is not supported by Writer."""
@@ -150,11 +150,13 @@ class TestWriterImports:
     def test_handlers_importable(self):
         """Test Writer handlers are importable."""
         from instructor.v2.providers.writer.handlers import (
+            WriterJSONSchemaHandler,
             WriterMDJSONHandler,
             WriterToolsHandler,
         )
 
         assert WriterToolsHandler is not None
+        assert WriterJSONSchemaHandler is not None
         assert WriterMDJSONHandler is not None
 
 
@@ -211,4 +213,4 @@ class TestWriterClientWithSDK:
         client = Writer(api_key="fake-key")
 
         with pytest.raises(ModeError):
-            from_writer(client, mode=Mode.JSON_SCHEMA)
+            from_writer(client, mode=Mode.RESPONSES_TOOLS)

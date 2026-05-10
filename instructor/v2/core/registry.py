@@ -410,11 +410,11 @@ _DEFAULT_HANDLER_SPECS: dict[Provider, tuple[str, tuple[Mode, ...]]] = {
     ),
     Provider.XAI: (
         "instructor.v2.providers.xai.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
     ),
     Provider.GROQ: (
         "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.MD_JSON),
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
     ),
     Provider.MISTRAL: (
         "instructor.v2.providers.mistral.handlers",
@@ -426,7 +426,7 @@ _DEFAULT_HANDLER_SPECS: dict[Provider, tuple[str, tuple[Mode, ...]]] = {
     ),
     Provider.FIREWORKS: (
         "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.MD_JSON),
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
     ),
     Provider.BEDROCK: (
         "instructor.v2.providers.bedrock.handlers",
@@ -434,11 +434,11 @@ _DEFAULT_HANDLER_SPECS: dict[Provider, tuple[str, tuple[Mode, ...]]] = {
     ),
     Provider.CEREBRAS: (
         "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.MD_JSON),
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
     ),
     Provider.WRITER: (
         "instructor.v2.providers.writer.handlers",
-        (Mode.TOOLS, Mode.MD_JSON),
+        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
     ),
 }
 

@@ -65,4 +65,4 @@ class TestFireworksClientWithSDK:
         client = Fireworks(api_key="fake-key")
 
         with pytest.raises(ModeError):
-            from_fireworks(client, mode=Mode.JSON_SCHEMA)
+            from_fireworks(client, mode=Mode.RESPONSES_TOOLS)

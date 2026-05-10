@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 from instructor import AsyncInstructor, Instructor, Mode, Provider
 from instructor.v2.dsl.iterable import IterableBase
+from instructor.v2.dsl.parallel import get_types_array
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.response_model import prepare_response_model
@@ -270,7 +271,7 @@ def from_xai(
 
         prepared_model = response_model
         if response_model is not None and (
-            mode in {Mode.TOOLS, Mode.MD_JSON} or is_stream
+            mode in {Mode.TOOLS, Mode.PARALLEL_TOOLS, Mode.MD_JSON} or is_stream
         ):
             prepared_model = prepare_response_model(response_model)
             if mode == Mode.MD_JSON:
@@ -368,6 +369,31 @@ def from_xai(
                     model_for_validation, args, None, strict
                 )
                 return _finalize_parsed_response(parsed, resp)
+        elif mode == Mode.PARALLEL_TOOLS:
+            for model_type in get_types_array(response_model):  # type: ignore[arg-type]
+                tool_obj = xchat.tool(
+                    name=_get_model_name(model_type),
+                    description=model_type.__doc__ or "",
+                    parameters=_get_model_schema(model_type),
+                )
+                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            resp = await chat.sample()  # type: ignore[misc]
+            type_registry = {
+                model_type.__name__: model_type
+                for model_type in get_types_array(response_model)  # type: ignore[arg-type]
+            }
+            from instructor.v2.core.function_calls import _validate_model_from_json
+
+            return iter(
+                _validate_model_from_json(
+                    type_registry[tool_call.function.name],
+                    tool_call.function.arguments,
+                    None,
+                    strict,
+                )
+                for tool_call in resp.tool_calls
+                if tool_call.function.name in type_registry
+            )
         else:
             # MD_JSON mode - use sample() and extract from text
             resp = await chat.sample()  # type: ignore[misc]
@@ -411,7 +437,7 @@ def from_xai(
 
         prepared_model = response_model
         if response_model is not None and (
-            mode in {Mode.TOOLS, Mode.MD_JSON} or is_stream
+            mode in {Mode.TOOLS, Mode.PARALLEL_TOOLS, Mode.MD_JSON} or is_stream
         ):
             prepared_model = prepare_response_model(response_model)
             if mode == Mode.MD_JSON:
@@ -509,6 +535,31 @@ def from_xai(
                     model_for_validation, args, None, strict
                 )
                 return _finalize_parsed_response(parsed, resp)
+        elif mode == Mode.PARALLEL_TOOLS:
+            for model_type in get_types_array(response_model):  # type: ignore[arg-type]
+                tool_obj = xchat.tool(
+                    name=_get_model_name(model_type),
+                    description=model_type.__doc__ or "",
+                    parameters=_get_model_schema(model_type),
+                )
+                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            resp = chat.sample()  # type: ignore[misc]
+            type_registry = {
+                model_type.__name__: model_type
+                for model_type in get_types_array(response_model)  # type: ignore[arg-type]
+            }
+            from instructor.v2.core.function_calls import _validate_model_from_json
+
+            return iter(
+                _validate_model_from_json(
+                    type_registry[tool_call.function.name],
+                    tool_call.function.arguments,
+                    None,
+                    strict,
+                )
+                for tool_call in resp.tool_calls
+                if tool_call.function.name in type_registry
+            )
         else:
             # MD_JSON mode - use sample() and extract from text
             resp = chat.sample()  # type: ignore[misc]

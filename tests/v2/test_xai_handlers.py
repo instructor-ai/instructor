@@ -119,41 +119,35 @@ class TestXAIToolsHandler:
         assert isinstance(result, Answer)
         assert result.answer == 42.0
 
-    def test_parse_response_fallback_to_text(self, handler):
-        """Test parsing falls back to text content when no tool calls."""
-        response = MockResponse(text='{"answer": 5.0}')
+    @pytest.mark.parametrize(
+        ("response", "expected"),
+        [
+            pytest.param(MockResponse(text='{"answer": 5.0}'), 5.0, id="text"),
+            pytest.param(MockResponse(content='{"answer": 6.0}'), 6.0, id="content"),
+            pytest.param(
+                MockResponse(content=['{"answer": 7.0}']),
+                7.0,
+                id="content-list",
+            ),
+            pytest.param(
+                MockResponse(text='```json\n{"answer": 8.0}\n```'),
+                8.0,
+                id="markdown",
+            ),
+        ],
+    )
+    def test_parse_response_from_supported_content_shapes(
+        self,
+        handler,
+        response: MockResponse,
+        expected: float,
+    ):
+        """Test tools parsing from xAI's supported fallback content shapes."""
 
         result = handler.response_parser(response, Answer)
 
         assert isinstance(result, Answer)
-        assert result.answer == 5.0
-
-    def test_parse_response_from_content_string(self, handler):
-        """Test parsing from content when it's a string."""
-        response = MockResponse(content='{"answer": 6.0}')
-
-        result = handler.response_parser(response, Answer)
-
-        assert isinstance(result, Answer)
-        assert result.answer == 6.0
-
-    def test_parse_response_from_content_list(self, handler):
-        """Test parsing from content when it's a list."""
-        response = MockResponse(content=['{"answer": 7.0}'])
-
-        result = handler.response_parser(response, Answer)
-
-        assert isinstance(result, Answer)
-        assert result.answer == 7.0
-
-    def test_parse_response_from_markdown_codeblock(self, handler):
-        """Test parsing JSON from markdown code block."""
-        response = MockResponse(text='```json\n{"answer": 8.0}\n```')
-
-        result = handler.response_parser(response, Answer)
-
-        assert isinstance(result, Answer)
-        assert result.answer == 8.0
+        assert result.answer == expected
 
     def test_parse_response_raises_on_no_content(self, handler):
         """Test parsing raises error when no content available."""
@@ -233,23 +227,25 @@ class TestXAIJSONSchemaHandler:
         assert result.answer == 10.0
         assert hasattr(result, "_raw_response")
 
-    def test_parse_response_from_text(self, handler):
-        """Test parsing response from text content."""
-        response = MockResponse(text='{"answer": 11.0}')
+    @pytest.mark.parametrize(
+        ("response", "expected"),
+        [
+            pytest.param(MockResponse(text='{"answer": 11.0}'), 11.0, id="text"),
+            pytest.param(MockResponse(content='{"answer": 12.0}'), 12.0, id="content"),
+        ],
+    )
+    def test_parse_response_from_supported_content_shapes(
+        self,
+        handler,
+        response: MockResponse,
+        expected: float,
+    ):
+        """Test schema parsing from xAI's supported content shapes."""
 
         result = handler.response_parser(response, Answer)
 
         assert isinstance(result, Answer)
-        assert result.answer == 11.0
-
-    def test_parse_response_from_content(self, handler):
-        """Test parsing response from content attribute."""
-        response = MockResponse(content='{"answer": 12.0}')
-
-        result = handler.response_parser(response, Answer)
-
-        assert isinstance(result, Answer)
-        assert result.answer == 12.0
+        assert result.answer == expected
 
     def test_parse_response_raises_on_no_content(self, handler):
         """Test parsing raises error when no content available."""
@@ -325,32 +321,34 @@ class TestXAIMDJSONHandler:
         assert "You are helpful." in system_msg["content"]
         assert "json_schema" in system_msg["content"]
 
-    def test_parse_response_from_markdown_codeblock(self, handler):
-        """Test parsing JSON from markdown code block."""
-        response = MockResponse(text='```json\n{"answer": 13.0}\n```')
+    @pytest.mark.parametrize(
+        ("response", "expected"),
+        [
+            pytest.param(
+                MockResponse(text='```json\n{"answer": 13.0}\n```'),
+                13.0,
+                id="markdown",
+            ),
+            pytest.param(MockResponse(text='{"answer": 14.0}'), 14.0, id="text"),
+            pytest.param(
+                MockResponse(content=['{"answer": 15.0}']),
+                15.0,
+                id="content-list",
+            ),
+        ],
+    )
+    def test_parse_response_from_supported_content_shapes(
+        self,
+        handler,
+        response: MockResponse,
+        expected: float,
+    ):
+        """Test markdown parsing from xAI's supported content shapes."""
 
         result = handler.response_parser(response, Answer)
 
         assert isinstance(result, Answer)
-        assert result.answer == 13.0
-
-    def test_parse_response_from_plain_json(self, handler):
-        """Test parsing plain JSON (no code block)."""
-        response = MockResponse(text='{"answer": 14.0}')
-
-        result = handler.response_parser(response, Answer)
-
-        assert isinstance(result, Answer)
-        assert result.answer == 14.0
-
-    def test_parse_response_from_content_list(self, handler):
-        """Test parsing from content list."""
-        response = MockResponse(content=['{"answer": 15.0}'])
-
-        result = handler.response_parser(response, Answer)
-
-        assert isinstance(result, Answer)
-        assert result.answer == 15.0
+        assert result.answer == expected
 
     def test_parse_response_raises_on_no_content(self, handler):
         """Test parsing raises error when no content available."""

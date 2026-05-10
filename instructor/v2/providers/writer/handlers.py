@@ -1,6 +1,6 @@
 """Writer v2 mode handlers.
 
-Writer supports TOOLS and MD_JSON modes. The API is similar to OpenAI but uses
+Writer supports TOOLS, JSON_SCHEMA, and MD_JSON modes. The API is similar to OpenAI but uses
 `client.chat.chat` instead of `client.chat.completions.create`.
 
 The handlers reuse some patterns from OpenAI but have Writer-specific
@@ -17,12 +17,12 @@ from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.errors import ConfigurationError, IncompleteOutputException
+from instructor.v2.core.errors import IncompleteOutputException
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
-from instructor.v2.core.handler import ModeHandler
+from instructor.v2.providers.openai.handlers import OpenAIHandlerBase
 
 
 def _extract_reask_message(response: Any) -> dict[str, Any]:
@@ -113,8 +113,12 @@ def handle_writer_json(
     return response_model, new_kwargs
 
 
+class WriterHandlerBase(OpenAIHandlerBase):
+    """Shared Writer helpers for OpenAI-compatible streaming responses."""
+
+
 @register_mode_handler(Provider.WRITER, Mode.TOOLS)
-class WriterToolsHandler(ModeHandler):
+class WriterToolsHandler(WriterHandlerBase):
     """Handler for Writer TOOLS mode.
 
     Writer uses OpenAI-compatible tool calling format. Tools are defined
@@ -135,6 +139,7 @@ class WriterToolsHandler(ModeHandler):
         from instructor.v2.core.response_model import prepare_response_model
 
         response_model = prepare_response_model(response_model)
+        self._register_streaming_from_kwargs(response_model, kwargs)
 
         new_kwargs = kwargs.copy()
         schema = generate_openai_schema(response_model)
@@ -159,13 +164,18 @@ class WriterToolsHandler(ModeHandler):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool = False,  # noqa: ARG002
         is_async: bool = False,  # noqa: ARG002
     ) -> BaseModel:
         """Parse tool call response from Writer."""
-        if stream:
-            raise ConfigurationError(
-                "Streaming is not supported for Writer in TOOLS mode."
+        if isinstance(response_model, type) and self._consume_streaming_flag(
+            response_model
+        ):
+            return self._parse_streaming_response(
+                response_model,
+                response,
+                validation_context,
+                strict,
             )
         # Check for truncated output
         if hasattr(response, "choices") and response.choices:
@@ -184,7 +194,7 @@ class WriterToolsHandler(ModeHandler):
 
 
 @register_mode_handler(Provider.WRITER, Mode.MD_JSON)
-class WriterMDJSONHandler(ModeHandler):
+class WriterMDJSONHandler(WriterHandlerBase):
     """Handler for Writer MD_JSON mode.
 
     Extracts JSON from markdown code blocks in the response text.
@@ -203,6 +213,7 @@ class WriterMDJSONHandler(ModeHandler):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        self._register_streaming_from_kwargs(response_model, new_kwargs)
         schema = response_model.model_json_schema()
 
         message = dedent(
@@ -259,13 +270,18 @@ class WriterMDJSONHandler(ModeHandler):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool = False,  # noqa: ARG002
         is_async: bool = False,  # noqa: ARG002
     ) -> BaseModel:
         """Parse JSON from markdown code block in response."""
-        if stream:
-            raise ConfigurationError(
-                "Streaming is not supported for Writer in MD_JSON mode."
+        if isinstance(response_model, type) and self._consume_streaming_flag(
+            response_model
+        ):
+            return self._parse_streaming_response(
+                response_model,
+                response,
+                validation_context,
+                strict,
             )
         text = response.choices[0].message.content or ""
         json_str = extract_json_from_codeblock(text)
@@ -277,7 +293,63 @@ class WriterMDJSONHandler(ModeHandler):
         )
 
 
+@register_mode_handler(Provider.WRITER, Mode.JSON_SCHEMA)
+class WriterJSONSchemaHandler(WriterHandlerBase):
+    """Handler for Writer native JSON schema mode."""
+
+    mode = Mode.JSON_SCHEMA
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        """Prepare request with Writer's native JSON schema response format."""
+        if response_model is None:
+            return None, kwargs
+
+        new_kwargs = kwargs.copy()
+        self._register_streaming_from_kwargs(response_model, new_kwargs)
+        return handle_writer_json(response_model, new_kwargs)
+
+    def handle_reask(
+        self,
+        kwargs: dict[str, Any],
+        response: Any,
+        exception: Exception,
+    ) -> dict[str, Any]:
+        """Handle reask for Writer JSON schema mode."""
+        return reask_writer_json(kwargs, response, exception)
+
+    def parse_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool = False,  # noqa: ARG002
+        is_async: bool = False,  # noqa: ARG002
+    ) -> BaseModel:
+        """Parse Writer native JSON schema responses."""
+        if isinstance(response_model, type) and self._consume_streaming_flag(
+            response_model
+        ):
+            return self._parse_streaming_response(
+                response_model,
+                response,
+                validation_context,
+                strict,
+            )
+        text = response.choices[0].message.content or ""
+        return response_model.model_validate_json(
+            text,
+            context=validation_context,
+            strict=strict,
+        )
+
+
 __all__ = [
     "WriterToolsHandler",
+    "WriterJSONSchemaHandler",
     "WriterMDJSONHandler",
 ]

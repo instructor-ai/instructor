@@ -80,11 +80,11 @@ class TestCerebrasModeRegistry:
 
         assert mode_registry.is_registered(Provider.CEREBRAS, Mode.MD_JSON)
 
-    def test_json_schema_not_registered(self):
-        """Test JSON_SCHEMA mode is NOT registered for Cerebras."""
+    def test_json_schema_registered(self):
+        """Test JSON_SCHEMA mode is registered for Cerebras."""
         from instructor.v2.core.registry import mode_registry
 
-        assert not mode_registry.is_registered(Provider.CEREBRAS, Mode.JSON_SCHEMA)
+        assert mode_registry.is_registered(Provider.CEREBRAS, Mode.JSON_SCHEMA)
 
     def test_get_modes_for_cerebras(self):
         """Test getting all modes for Cerebras provider."""
@@ -94,7 +94,8 @@ class TestCerebrasModeRegistry:
 
         assert Mode.TOOLS in modes
         assert Mode.MD_JSON in modes
-        assert Mode.JSON_SCHEMA not in modes
+        assert Mode.JSON_SCHEMA in modes
+        assert Mode.PARALLEL_TOOLS in modes
 
     def test_cerebras_in_providers_for_tools(self):
         """Test Cerebras is listed as provider for TOOLS mode."""
@@ -113,17 +114,17 @@ class TestCerebrasModeRegistry:
 class TestCerebrasClientErrors:
     """Tests for error handling in Cerebras client."""
 
-    def test_json_schema_not_supported(self):
-        """Test JSON_SCHEMA mode is not supported by Cerebras."""
+    def test_json_schema_supported(self):
+        """Test JSON_SCHEMA mode is supported by Cerebras."""
         from instructor.v2.core.registry import mode_registry
 
-        assert not mode_registry.is_registered(Provider.CEREBRAS, Mode.JSON_SCHEMA)
+        assert mode_registry.is_registered(Provider.CEREBRAS, Mode.JSON_SCHEMA)
 
-    def test_parallel_tools_not_supported(self):
-        """Test PARALLEL_TOOLS is not supported by Cerebras."""
+    def test_parallel_tools_supported(self):
+        """Test PARALLEL_TOOLS is supported by Cerebras."""
         from instructor.v2.core.registry import mode_registry
 
-        assert not mode_registry.is_registered(Provider.CEREBRAS, Mode.PARALLEL_TOOLS)
+        assert mode_registry.is_registered(Provider.CEREBRAS, Mode.PARALLEL_TOOLS)
 
     def test_responses_tools_not_supported(self):
         """Test RESPONSES_TOOLS is not supported by Cerebras."""
@@ -231,4 +232,4 @@ class TestCerebrasClientWithSDK:
         client = Cerebras(api_key="fake-key")
 
         with pytest.raises(ModeError):
-            from_cerebras(client, mode=Mode.JSON_SCHEMA)
+            from_cerebras(client, mode=Mode.RESPONSES_TOOLS)

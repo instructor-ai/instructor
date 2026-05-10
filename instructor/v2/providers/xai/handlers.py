@@ -37,7 +37,7 @@ else:
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.dsl.iterable import IterableBase
-from instructor.v2.dsl.parallel import ParallelBase
+from instructor.v2.dsl.parallel import ParallelBase, ParallelModel, get_types_array, handle_parallel_model
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.json import (
@@ -499,6 +499,71 @@ class XAIToolsHandler(XAIHandlerBase):
         )
 
 
+@register_mode_handler(Provider.XAI, Mode.PARALLEL_TOOLS)
+class XAIParallelToolsHandler(XAIHandlerBase):
+    """Handler for xAI parallel tool calling."""
+
+    mode = Mode.PARALLEL_TOOLS
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        """Prepare request for parallel tool calling."""
+        if response_model is None:
+            return None, kwargs
+
+        new_kwargs = kwargs.copy()
+        if new_kwargs.get("stream", False):
+            from instructor.v2.core.errors import ConfigurationError
+
+            raise ConfigurationError(
+                "stream=True is not supported when using PARALLEL_TOOLS mode"
+            )
+
+        new_kwargs["_xai_tools"] = handle_parallel_model(response_model)  # type: ignore[arg-type]
+        return ParallelModel(response_model), new_kwargs  # type: ignore[return-value,arg-type]
+
+    def handle_reask(
+        self,
+        kwargs: dict[str, Any],
+        response: Any,
+        exception: Exception,
+    ) -> dict[str, Any]:
+        """Handle reask for parallel tools mode."""
+        return reask_xai_tools(kwargs, response, exception)
+
+    def parse_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool = False,  # noqa: ARG002
+        is_async: bool = False,  # noqa: ARG002
+    ) -> Any:
+        """Parse parallel tool calls from xAI."""
+        the_types = get_types_array(response_model)  # type: ignore[arg-type]
+        type_registry = {model.__name__: model for model in the_types}
+
+        results = []
+        for tool_call in getattr(response, "tool_calls", []) or []:
+            name = tool_call.function.name
+            args = tool_call.function.arguments
+            if isinstance(args, dict):
+                args = json.dumps(args)
+            if name in type_registry:
+                results.append(
+                    type_registry[name].model_validate_json(
+                        args,
+                        context=validation_context,
+                        strict=strict,
+                    )
+                )
+        return iter(results)
+
+
 @register_mode_handler(Provider.XAI, Mode.JSON_SCHEMA)
 class XAIJSONSchemaHandler(XAIHandlerBase):
     """Handler for xAI JSON_SCHEMA mode.
@@ -728,6 +793,7 @@ __all__ = [
     "reask_xai_json",
     "reask_xai_tools",
     "XAIToolsHandler",
+    "XAIParallelToolsHandler",
     "XAIJSONSchemaHandler",
     "XAIMDJSONHandler",
 ]

@@ -50,7 +50,7 @@ def from_writer(
 ) -> Instructor | AsyncInstructor:
     """Create an Instructor instance from a Writer client using v2 registry.
 
-    Writer uses the writerai SDK and supports TOOLS and MD_JSON modes.
+    Writer uses the writerai SDK and supports TOOLS, JSON_SCHEMA, and MD_JSON modes.
     The API uses `client.chat.chat` for completions.
 
     Args:
