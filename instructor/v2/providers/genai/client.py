@@ -4,10 +4,10 @@ from typing import Any, Literal, overload
 
 from google.genai import Client
 
-from ....core.client import AsyncInstructor, Instructor
-from ....core.exceptions import ClientError
-from ....mode import Mode
-from ....utils.providers import Provider
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.errors import ClientError
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from ...core.patch import patch_v2
 from ...core.registry import mode_registry, normalize_mode
 
