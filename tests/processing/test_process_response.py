@@ -1,6 +1,7 @@
 from typing_extensions import TypedDict
 from pydantic import BaseModel
 from instructor.processing.response import handle_response_model
+from instructor.v2.core.response import _redact_kwargs
 from instructor.v2.providers.bedrock.handlers import (
     _prepare_bedrock_converse_kwargs_internal,
 )
@@ -19,6 +20,28 @@ def test_typed_dict_conversion() -> None:
 
     _, pydantic_user_tool_definition = handle_response_model(User)
     assert user_tool_definition == pydantic_user_tool_definition
+
+
+def test_redact_kwargs_hides_nested_sensitive_fields() -> None:
+    kwargs = {
+        "api_key": "top-level",
+        "headers": {
+            "Authorization": "Bearer secret",
+            "x-api-key": "nested secret",
+            "safe": "visible",
+        },
+        "messages": [{"token": "inner secret", "content": "hello"}],
+    }
+
+    assert _redact_kwargs(kwargs) == {
+        "api_key": "[redacted]",
+        "headers": {
+            "Authorization": "[redacted]",
+            "x-api-key": "[redacted]",
+            "safe": "visible",
+        },
+        "messages": [{"token": "[redacted]", "content": "hello"}],
+    }
 
 
 def test_openai_to_bedrock_conversion() -> None:
