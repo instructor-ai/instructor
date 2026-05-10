@@ -17,19 +17,9 @@ def process_message(
 ) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
     if provider == Provider.GENAI:
-        from google.genai import types
+        from instructor.v2.providers.genai.templating import process_message as process_genai_message
 
-        return types.Content(
-            role=message.role,
-            parts=[
-                (
-                    types.Part.from_text(text=apply_template(part.text, context))
-                    if isinstance(getattr(part, "text", None), str)
-                    else part
-                )
-                for part in message.parts
-            ],
-        )
+        return process_genai_message(message, context, apply_template)
 
     # VertexAI Support
     if (
@@ -38,48 +28,33 @@ def process_message(
         and len(message.parts) > 0
         and not isinstance(message.parts[0], str)
     ):
-        import vertexai.generative_models as gm
+        from instructor.v2.providers.vertexai.templating import process_message as process_vertexai_message
 
-        return gm.Content(
-            role=message.role,
-            parts=[
-                (
-                    gm.Part.from_text(apply_template(part.text, context))
-                    if isinstance(getattr(part, "text", None), str)
-                    else part
-                )
-                for part in message.parts
-            ],
-        )
+        return process_vertexai_message(message, context, apply_template)
 
     # OpenAI format
     if isinstance(message.get("content"), str):
-        message["content"] = apply_template(message["content"], context)
-        return message
+        from instructor.v2.providers.openai.templating import process_message as process_openai_message
+
+        return process_openai_message(message, context, apply_template)
 
     # Anthropic format
     if isinstance(message.get("content"), list):
-        for part in message["content"]:
-            if (
-                isinstance(part, dict)
-                and part.get("type") == "text"
-                and isinstance(part.get("text"), str)
-            ):
-                part["text"] = apply_template(part["text"], context)
-        return message
+        from instructor.v2.providers.anthropic.templating import process_message as process_anthropic_message
+
+        return process_anthropic_message(message, context, apply_template)
 
     # Gemini Support
     if isinstance(message.get("parts"), list):
-        message["parts"] = [
-            apply_template(part, context) if isinstance(part, str) else part
-            for part in message["parts"]
-        ]
-        return message
+        from instructor.v2.providers.gemini.templating import process_message as process_gemini_message
+
+        return process_gemini_message(message, context, apply_template)
 
     # Cohere format
     if isinstance(message.get("message"), str):
-        message["message"] = apply_template(message["message"], context)
-        return message
+        from instructor.v2.providers.cohere.templating import process_message as process_cohere_message
+
+        return process_cohere_message(message, context, apply_template)
 
     return message
 

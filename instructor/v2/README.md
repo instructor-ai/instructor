@@ -22,6 +22,8 @@ The v2 architecture uses a hierarchical registry system for managing provider mo
 - `ResponseSchema.openai_schema`, `.anthropic_schema`, and `.gemini_schema`
   are compatibility shims too. Provider wire-format builders live with their
   provider packages; shared schema exports only forward to them.
+- Provider-specific templating and usage setup belong with provider modules;
+  shared orchestration should only dispatch into them.
 - Public modules under `instructor/core`, `instructor/processing`,
   `instructor/dsl`, and `instructor/validation` are compatibility facades over
   v2-owned implementations.

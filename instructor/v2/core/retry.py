@@ -72,14 +72,9 @@ def _initialize_usage(mode: Mode) -> Any:
         prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     )
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
-        from anthropic.types import Usage as AnthropicUsage
+        from instructor.v2.providers.anthropic.usage import initialize_usage
 
-        total_usage = AnthropicUsage(
-            input_tokens=0,
-            output_tokens=0,
-            cache_read_input_tokens=0,
-            cache_creation_input_tokens=0,
-        )
+        total_usage = initialize_usage()
     return total_usage
 
 
