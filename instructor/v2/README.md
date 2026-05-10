@@ -303,9 +303,9 @@ This guide walks through migrating a provider from v1 to v2 architecture.
 
 **V1 Architecture**:
 
-- Registry lookup from v1 entry points for request, response, and reask
-- Legacy mode enums still accepted (v1 only) and normalized in the registry
-- Thin adapters in v1 call handler methods
+- Registry lookup from compatibility entry points for request, response, and reask
+- Legacy mode enums are still accepted and normalized in the registry
+- Thin public adapters call v2 handler methods
 
 **V2 Architecture**:
 
@@ -321,17 +321,16 @@ This guide walks through migrating a provider from v1 to v2 architecture.
 Before migrating, understand your current v1 provider:
 
 1. **Locate provider files**:
-   - `instructor/core/client.py` - V1 factory functions like `from_openai()` / `from_litellm()`
-   - `instructor/auto_client.py` - `from_provider()` routing (v2-first, v1 fallback)
-   - `instructor/core/patch.py` - V1 patching helpers used by the factories
-   - `instructor/core/retry.py` - V1 retry + reask orchestration
-   - `instructor/client.py` / `instructor/patch.py` - Backwards-compatible re-exports (thin wrappers)
+   - `instructor/v2/providers/<provider>/client.py` - provider factories
+   - `instructor/v2/providers/<provider>/handlers.py` - request, response, and reask behavior
+   - `instructor/auto_client.py` - unified `from_provider()` routing
+   - `instructor/core/client.py` - shared client wrapper plus compatibility exports
+   - `instructor/core/patch.py` / `instructor/core/retry.py` - compatibility facades over v2 internals
+   - `instructor/client.py` / `instructor/patch.py` - deprecated public shims
 
-   **Current V1 footprint (migration tracking)**: V1 logic still lives in
-   `instructor/core/*` (client, patch, retry), with routing in
-   `instructor/auto_client.py` and deprecated shims in `instructor/client.py`
-   and `instructor/patch.py`. These modules are the remaining V1 surface area
-   to migrate or deprecate as providers move to v2.
+   **Current migration footprint**: provider-specific runtime behavior belongs in
+   `instructor/v2/providers/*`. The remaining non-v2 modules are shared public
+   wrappers or compatibility facades, not parallel provider implementations.
 
 2. **Identify key components**:
    - What modes does your provider support?
@@ -707,7 +706,7 @@ class SimpleToolsHandler(ModeHandler):
 **V2**: Import and adapt existing utilities:
 
 ```python
-from instructor.providers.cohere import utils as cohere_utils
+from instructor.v2.providers.cohere import handlers as cohere_handlers
 
 @register_mode_handler(Provider.COHERE, Mode.JSON)
 class CohereJSONHandler(ModeHandler):
