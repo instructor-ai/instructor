@@ -15,6 +15,8 @@ import warnings
 from collections.abc import AsyncGenerator, Callable, Generator, Iterable
 from copy import deepcopy
 from functools import cache
+from functools import reduce
+from operator import or_
 from typing import (  # noqa: UP035
     Any,
     Generic,
@@ -100,9 +102,15 @@ def process_potential_object(potential_object, partial_mode, partial_model, **kw
     root_complete = tracker.is_root_complete()
     has_data = bool(parsed) if isinstance(parsed, dict) else True
 
+    validation_kwargs = {
+        key: value
+        for key, value in kwargs.items()
+        if key in {"context", "strict", "extra", "from_attributes", "by_alias", "by_name"}
+    }
+
     if root_complete and has_data and original_model is not None:
         # Root object is complete with data - validate against original model
-        return original_model.model_validate(parsed, **kwargs)
+        return original_model.model_validate(parsed, **validation_kwargs)
     else:
         # Object is incomplete or empty - build instance using model_construct (no validation)
         model_for_construct = (
@@ -176,8 +184,10 @@ def _build_partial_object(
                 result[field_name] = _build_partial_object(
                     {}, field_type, tracker, "", **kwargs
                 )
-            else:
+            elif field_info.is_required():
                 result[field_name] = None
+            else:
+                result[field_name] = field_info.get_default(call_default_factory=True)
 
     return model.model_construct(**result)
 
@@ -274,9 +284,12 @@ def _make_field_optional(
         )
 
         # Reconstruct the generic type with modified arguments
-        tmp_field.annotation = (
-            Optional[generic_base[modified_args]] if generic_base else None
-        )
+        if generic_base is types.UnionType:
+            tmp_field.annotation = Optional[reduce(or_, modified_args)]  # type: ignore[valid-type]
+        else:
+            tmp_field.annotation = (
+                Optional[generic_base[modified_args]] if generic_base else None
+            )
         tmp_field.default = None
         tmp_field.default_factory = None
     # If the field is a BaseModel, then recursively convert it's
@@ -648,9 +661,12 @@ class Partial(Generic[T_Model]):
                 modified_args = tuple(_process_generic_arg(arg) for arg in generic_args)
 
                 # Reconstruct the generic type with modified arguments
-                tmp_field.annotation = (
-                    generic_base[modified_args] if generic_base else None
-                )
+                if generic_base is types.UnionType:
+                    tmp_field.annotation = reduce(or_, modified_args)
+                else:
+                    tmp_field.annotation = (
+                        generic_base[modified_args] if generic_base else None
+                    )
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):

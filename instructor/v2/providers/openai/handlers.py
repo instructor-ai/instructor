@@ -442,19 +442,26 @@ class OpenAIHandlerBase(ModeHandler):
         if strict is not None:
             parse_kwargs["strict"] = strict
 
+        streaming_kwargs = dict(parse_kwargs)
+        try:
+            if "mode" in inspect.signature(
+                response_model.from_streaming_response  # type: ignore[attr-defined]
+            ).parameters:
+                streaming_kwargs["mode"] = self.mode
+        except (TypeError, ValueError):
+            pass
+
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
             return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
                 response,
-                mode=self.mode,
                 stream_extractor=self.extract_streaming_json_async,
-                **parse_kwargs,
+                **streaming_kwargs,
             )
 
         generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
             response,
-            mode=self.mode,
             stream_extractor=self.extract_streaming_json,
-            **parse_kwargs,
+            **streaming_kwargs,
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
             return generator

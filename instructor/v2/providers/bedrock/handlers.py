@@ -10,6 +10,7 @@ from textwrap import dedent
 from typing import Any, cast
 
 from pydantic import BaseModel
+import requests
 
 from instructor.mode import Mode
 from instructor.utils.providers import Provider
@@ -161,6 +162,13 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
             mime = guessed or "image/jpeg"
         fmt = _normalize_bedrock_image_format(mime)
         return {"image": {"format": fmt, "source": {"bytes": base64.b64decode(b64)}}}
+
+    if image_url.startswith("https://"):
+        response = requests.get(image_url, timeout=30)
+        response.raise_for_status()
+        mime = response.headers.get("Content-Type") or mimetypes.guess_type(image_url)[0]
+        fmt = _normalize_bedrock_image_format(mime or "")
+        return {"image": {"format": fmt, "source": {"bytes": response.content}}}
 
     raise ValueError(
         "Unsupported image_url scheme for Bedrock. "
