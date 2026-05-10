@@ -19,11 +19,6 @@ from instructor.v2.core.errors import (
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider, normalize_mode_for_provider, provider_from_mode
 from instructor.v2.core.utils import classproperty
-from .schema import (
-    generate_openai_schema,
-    generate_anthropic_schema,
-    generate_gemini_schema,
-)
 
 
 T = TypeVar("T")
@@ -121,16 +116,20 @@ class ResponseSchema(BaseModel):
         Returns:
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
+        from instructor.v2.providers.openai.schema import generate_openai_schema
+
         return generate_openai_schema(cls)
 
     @classproperty
     def anthropic_schema(cls) -> dict[str, Any]:
-        # Generate the Anthropic schema based on the OpenAI schema to avoid redundant schema generation
+        from instructor.v2.providers.anthropic.schema import generate_anthropic_schema
+
         return generate_anthropic_schema(cls)
 
     @classproperty
     def gemini_schema(cls) -> Any:
-        # This is kept for backward compatibility but deprecated
+        from instructor.v2.providers.gemini.schema import generate_gemini_schema
+
         return generate_gemini_schema(cls)
 
     @classmethod

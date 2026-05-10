@@ -19,7 +19,7 @@ from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import IncompleteOutputException
 from instructor.v2.core.json import extract_json_from_codeblock
-from instructor.v2.core.schema import generate_openai_schema
+from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.providers.openai.handlers import OpenAIHandlerBase

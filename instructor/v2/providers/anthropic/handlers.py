@@ -35,7 +35,7 @@ from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
 from instructor.v2.core.json import extract_json_from_codeblock
-from instructor.v2.core.schema import generate_anthropic_schema
+from instructor.v2.providers.anthropic.schema import generate_anthropic_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 

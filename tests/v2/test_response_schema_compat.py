@@ -14,6 +14,46 @@ class Answer(ResponseSchema):
     answer: float
 
 
+def test_schema_properties_delegate_to_provider_modules(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, type[Answer]]] = []
+
+    def fake_openai_schema(model: type[Answer]) -> dict[str, str]:
+        calls.append(("openai", model))
+        return {"provider": "openai"}
+
+    def fake_anthropic_schema(model: type[Answer]) -> dict[str, str]:
+        calls.append(("anthropic", model))
+        return {"provider": "anthropic"}
+
+    def fake_gemini_schema(model: type[Answer]) -> dict[str, str]:
+        calls.append(("gemini", model))
+        return {"provider": "gemini"}
+
+    monkeypatch.setattr(
+        "instructor.v2.providers.openai.schema.generate_openai_schema",
+        fake_openai_schema,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.anthropic.schema.generate_anthropic_schema",
+        fake_anthropic_schema,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.schema.generate_gemini_schema",
+        fake_gemini_schema,
+    )
+
+    assert Answer.openai_schema == {"provider": "openai"}
+    assert Answer.anthropic_schema == {"provider": "anthropic"}
+    assert Answer.gemini_schema == {"provider": "gemini"}
+    assert calls == [
+        ("openai", Answer),
+        ("anthropic", Answer),
+        ("gemini", Answer),
+    ]
+
+
 @pytest.mark.parametrize(
     ("method_name", "mode", "provider"),
     [

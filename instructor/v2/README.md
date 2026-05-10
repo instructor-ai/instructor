@@ -19,6 +19,9 @@ The v2 architecture uses a hierarchical registry system for managing provider mo
 - Shared core modules should contain provider-agnostic primitives only.
 - `ResponseSchema.parse_*` helpers are deprecated compatibility shims that
   delegate into the registry; they are not homes for new provider behavior.
+- `ResponseSchema.openai_schema`, `.anthropic_schema`, and `.gemini_schema`
+  are compatibility shims too. Provider wire-format builders live with their
+  provider packages; shared schema exports only forward to them.
 - Public modules under `instructor/core`, `instructor/processing`,
   `instructor/dsl`, and `instructor/validation` are compatibility facades over
   v2-owned implementations.
@@ -344,6 +347,9 @@ Before migrating, understand your current v1 provider:
    **Current migration footprint**: provider-specific runtime behavior belongs in
    `instructor/v2/providers/*`. The remaining non-v2 modules are shared public
    wrappers or compatibility facades, not parallel provider implementations.
+   Provider-shaped schema builders follow the same rule: live implementations
+   stay with the matching provider package, while shared exports remain
+   forwarding compatibility APIs.
 
 2. **Identify key components**:
    - What modes does your provider support?

@@ -10,6 +10,12 @@ from instructor.processing.schema import (
     generate_gemini_schema,
 )
 from instructor.processing.function_calls import ResponseSchema, OpenAISchema
+from instructor.v2.providers.anthropic.schema import (
+    generate_anthropic_schema as generate_provider_anthropic_schema,
+)
+from instructor.v2.providers.openai.schema import (
+    generate_openai_schema as generate_provider_openai_schema,
+)
 
 
 class TestModel(BaseModel):
@@ -62,6 +68,13 @@ def test_generate_openai_schema_matches_class_method():
     assert "required" in standalone_schema["parameters"]
 
 
+def test_generate_openai_schema_compatibility_wrapper_delegates_to_provider():
+    """Shared helper keeps the old API while reusing provider-local logic."""
+    assert generate_openai_schema(TestModelOldStyle) is generate_provider_openai_schema(
+        TestModelOldStyle
+    )
+
+
 def test_generate_anthropic_schema_matches_class_method():
     """Test that generate_anthropic_schema produces identical output to the class method."""
     standalone_schema = generate_anthropic_schema(TestModelOldStyle)
@@ -73,6 +86,13 @@ def test_generate_anthropic_schema_matches_class_method():
     assert "name" in standalone_schema
     assert "description" in standalone_schema
     assert "input_schema" in standalone_schema
+
+
+def test_generate_anthropic_schema_compatibility_wrapper_delegates_to_provider():
+    """Shared helper keeps the old API while reusing provider-local logic."""
+    assert generate_anthropic_schema(
+        TestModelOldStyle
+    ) is generate_provider_anthropic_schema(TestModelOldStyle)
 
 
 @pytest.mark.skipif(
