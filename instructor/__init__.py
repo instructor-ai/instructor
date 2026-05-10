@@ -43,6 +43,7 @@ __all__ = [
     "llm_validator",
     "openai_moderation",
     "hooks",
+    "v2",
 ]
 
 _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
@@ -59,6 +60,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "patch": (".core.patch", "patch"),
     "apatch": (".core.patch", "apatch"),
     "hooks": (".core.hooks", None),
+    "v2": (".v2", None),
     "Image": (".processing.multimodal", "Image"),
     "Audio": (".processing.multimodal", "Audio"),
     "CitationMixin": (".dsl", "CitationMixin"),
