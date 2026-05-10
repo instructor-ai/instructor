@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from instructor.mode import Mode
 from instructor.utils.providers import Provider
 from instructor.core.exceptions import ConfigurationError, ResponseParsingError
-from instructor.processing.function_calls import extract_json_from_codeblock
+from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 from instructor.dsl.iterable import IterableBase

@@ -40,8 +40,11 @@ from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase
-from instructor.processing.function_calls import extract_json_from_codeblock
-from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
+from instructor.v2.core.json import (
+    extract_json_from_codeblock,
+    extract_json_from_stream,
+    extract_json_from_stream_async,
+)
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 

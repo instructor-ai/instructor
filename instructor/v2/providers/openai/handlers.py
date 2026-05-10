@@ -34,11 +34,14 @@ from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase, ParallelModel, get_types_array
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase
-from instructor.processing.function_calls import extract_json_from_codeblock
 from instructor.processing.schema import generate_openai_schema
-from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 from instructor.processing.multimodal import convert_messages as convert_messages_v1
 from instructor.utils.core import dump_message, merge_consecutive_messages
+from instructor.v2.core.json import (
+    extract_json_from_codeblock,
+    extract_json_from_stream,
+    extract_json_from_stream_async,
+)
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
@@ -204,7 +207,16 @@ def reask_md_json(
         )
         return kwargs
 
-    reask_msgs = [dump_message(response.choices[0].message)]
+    message = response.choices[0].message
+    try:
+        assistant_message = dump_message(message)
+    except (AttributeError, KeyError, TypeError):
+        assistant_message = {
+            "role": getattr(message, "role", "assistant"),
+            "content": getattr(message, "content", "") or "",
+        }
+
+    reask_msgs = [assistant_message]
     reask_msgs.append(
         {
             "role": "user",
@@ -433,12 +445,14 @@ class OpenAIHandlerBase(ModeHandler):
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
             return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
                 response,
+                mode=self.mode,
                 stream_extractor=self.extract_streaming_json_async,
                 **parse_kwargs,
             )
 
         generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
             response,
+            mode=self.mode,
             stream_extractor=self.extract_streaming_json,
             **parse_kwargs,
         )

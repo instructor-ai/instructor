@@ -333,7 +333,7 @@ def from_xai(
                     from instructor.processing.function_calls import (
                         _validate_model_from_json,
                     )
-                    from instructor.utils import extract_json_from_codeblock
+                    from instructor.v2.core.json import extract_json_from_codeblock
 
                     text_content: str = ""
                     if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
@@ -372,7 +372,7 @@ def from_xai(
             # MD_JSON mode - use sample() and extract from text
             resp = await chat.sample()  # type: ignore[misc]
             from instructor.processing.function_calls import _validate_model_from_json
-            from instructor.utils import extract_json_from_codeblock
+            from instructor.v2.core.json import extract_json_from_codeblock
 
             text_content = ""
             if hasattr(resp, "text") and resp.text:
@@ -474,7 +474,7 @@ def from_xai(
                     from instructor.processing.function_calls import (
                         _validate_model_from_json,
                     )
-                    from instructor.utils import extract_json_from_codeblock
+                    from instructor.v2.core.json import extract_json_from_codeblock
 
                     text_content: str = ""
                     if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
@@ -513,7 +513,7 @@ def from_xai(
             # MD_JSON mode - use sample() and extract from text
             resp = chat.sample()  # type: ignore[misc]
             from instructor.processing.function_calls import _validate_model_from_json
-            from instructor.utils import extract_json_from_codeblock
+            from instructor.v2.core.json import extract_json_from_codeblock
 
             text_content = ""
             if hasattr(resp, "text") and resp.text:

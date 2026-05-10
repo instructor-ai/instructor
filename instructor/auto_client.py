@@ -160,7 +160,7 @@ def from_provider(
         try:
             import openai
             import httpx
-            from instructor.v2 import from_openai
+            from instructor import from_openai
             from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
             from collections.abc import Mapping
             from typing import cast
@@ -324,7 +324,7 @@ def from_provider(
         try:
             import os
             import openai
-            from instructor.v2 import from_databricks
+            from instructor import from_databricks
 
             api_key = (
                 api_key
@@ -412,7 +412,7 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
-            from instructor.v2 import from_anthropic
+            from instructor import from_anthropic
 
             if from_anthropic is None:
                 from .core.exceptions import ConfigurationError
@@ -469,7 +469,7 @@ def from_provider(
         # Import google-genai package - catch ImportError only for actual imports
         try:
             import google.genai as genai
-            from instructor.v2 import from_genai
+            from instructor import from_genai
         except ImportError as e:
             from .core.exceptions import ConfigurationError
 
@@ -532,7 +532,7 @@ def from_provider(
     elif provider == "mistral":
         try:
             from mistralai import Mistral
-            from instructor.v2 import from_mistral
+            from instructor import from_mistral
             import os
 
             api_key = api_key or os.environ.get("MISTRAL_API_KEY")
@@ -576,7 +576,7 @@ def from_provider(
     elif provider == "cohere":
         try:
             import cohere
-            from instructor.v2 import from_cohere
+            from instructor import from_cohere
 
             client = (
                 cohere.AsyncClientV2(api_key=api_key)
@@ -615,7 +615,7 @@ def from_provider(
     elif provider == "perplexity":
         try:
             import openai
-            from instructor.v2 import from_perplexity
+            from instructor import from_perplexity
             import os
 
             api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
@@ -660,7 +660,7 @@ def from_provider(
     elif provider == "groq":
         try:
             import groq
-            from instructor.v2 import from_groq
+            from instructor import from_groq
 
             client = (
                 groq.AsyncGroq(api_key=api_key)
@@ -693,7 +693,7 @@ def from_provider(
     elif provider == "writer":
         try:
             from writerai import AsyncWriter, Writer
-            from instructor.v2 import from_writer
+            from instructor import from_writer
 
             client = (
                 AsyncWriter(api_key=api_key)
@@ -727,7 +727,7 @@ def from_provider(
         try:
             import os
             import boto3
-            from instructor.v2 import from_bedrock
+            from instructor import from_bedrock
 
             # Get AWS configuration from environment or kwargs
             if "region" in kwargs:
@@ -801,7 +801,7 @@ def from_provider(
     elif provider == "cerebras":
         try:
             from cerebras.cloud.sdk import AsyncCerebras, Cerebras
-            from instructor.v2 import from_cerebras
+            from instructor import from_cerebras
 
             client = (
                 AsyncCerebras(api_key=api_key)
@@ -834,7 +834,7 @@ def from_provider(
     elif provider == "fireworks":
         try:
             from fireworks.client import AsyncFireworks, Fireworks
-            from instructor.v2 import from_fireworks
+            from instructor import from_fireworks
 
             client = (
                 AsyncFireworks(api_key=api_key)
@@ -875,7 +875,7 @@ def from_provider(
         try:
             import vertexai
             import vertexai.generative_models as gm
-            from instructor.v2 import from_vertexai
+            from instructor import from_vertexai
         except ImportError as e:
             from .core.exceptions import ConfigurationError
 
@@ -935,7 +935,7 @@ def from_provider(
         # Import google-genai package - catch ImportError only for actual imports
         try:
             from google import genai
-            from instructor.v2 import from_genai
+            from instructor import from_genai
         except ImportError as e:
             from .core.exceptions import ConfigurationError
 
@@ -1054,7 +1054,7 @@ def from_provider(
     elif provider == "deepseek":
         try:
             import openai
-            from instructor.v2 import from_deepseek
+            from instructor import from_deepseek
             import os
 
             # Get API key from kwargs or environment
@@ -1109,7 +1109,7 @@ def from_provider(
         try:
             from xai_sdk.sync.client import Client as SyncClient
             from xai_sdk.aio.client import Client as AsyncClient
-            from instructor.v2 import from_xai
+            from instructor import from_xai
 
             if from_xai is None:
                 from .core.exceptions import ConfigurationError
@@ -1157,7 +1157,7 @@ def from_provider(
     elif provider == "openrouter":
         try:
             import openai
-            from instructor.v2 import from_openrouter
+            from instructor import from_openrouter
             import os
 
             # Get API key from kwargs or environment

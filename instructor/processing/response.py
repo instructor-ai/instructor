@@ -136,6 +136,25 @@ async def process_response_async(
 
     provider = provider_from_mode(mode, provider)
     mode = normalize_mode_for_provider(mode, provider)
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, IterableBase)
+        and not stream
+        and not hasattr(response, "choices")
+        and hasattr(response_model, "from_response")
+    ):
+        model = response_model.from_response(  # type: ignore[attr-defined]
+            response,
+            validation_context=validation_context,
+            strict=strict,
+            mode=mode,
+        )
+        return ListResponse.from_list(
+            [task for task in model.tasks],
+            raw_response=response,
+        )
+
     _ensure_registry_loaded()
     handlers = mode_registry.get_handlers(provider, mode)
     handler_obj = getattr(handlers.response_parser, "__self__", None)
@@ -255,6 +274,25 @@ def process_response(
 
     provider = provider_from_mode(mode, provider)
     mode = normalize_mode_for_provider(mode, provider)
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, IterableBase)
+        and not stream
+        and not hasattr(response, "choices")
+        and hasattr(response_model, "from_response")
+    ):
+        model = response_model.from_response(  # type: ignore[attr-defined]
+            response,
+            validation_context=validation_context,
+            strict=strict,
+            mode=mode,
+        )
+        return ListResponse.from_list(
+            [task for task in model.tasks],
+            raw_response=response,
+        )
+
     _ensure_registry_loaded()
     handlers = mode_registry.get_handlers(provider, mode)
     handler_obj = getattr(handlers.response_parser, "__self__", None)
