@@ -216,7 +216,7 @@ def from_anyscale(
 
     # Client-based: existing behavior
     return _from_openai_compat(
-        client=model_or_client,
+        model_or_client,
         provider=Provider.ANYSCALE,
         mode=mode,
         model=model,
@@ -289,7 +289,7 @@ def from_together(
 
     # Client-based: existing behavior
     return _from_openai_compat(
-        client=model_or_client,
+        model_or_client,
         provider=Provider.TOGETHER,
         mode=mode,
         model=model,
@@ -362,7 +362,7 @@ def from_databricks(
 
     # Client-based: existing behavior
     return _from_openai_compat(
-        client=model_or_client,
+        model_or_client,
         provider=Provider.DATABRICKS,
         mode=mode,
         model=model,
@@ -435,7 +435,7 @@ def from_deepseek(
 
     # Client-based: existing behavior
     return _from_openai_compat(
-        client=model_or_client,
+        model_or_client,
         provider=Provider.DEEPSEEK,
         mode=mode,
         model=model,

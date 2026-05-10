@@ -23,14 +23,8 @@ from instructor.v2.core.protocols import (
 
 
 def normalize_mode(_provider: Provider, mode: Mode) -> Mode:
-    """Return the requested mode for v2 registry lookup.
-
-    Provider-specific legacy modes are normalized to generic modes with
-    deprecation warnings.
-    """
-    from instructor.utils.providers import normalize_mode_for_provider
-
-    return normalize_mode_for_provider(mode, _provider)
+    """Return the requested v2 mode unchanged."""
+    return mode
 
 
 @dataclass

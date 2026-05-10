@@ -39,17 +39,17 @@ def register_mode_handler(
     def decorator(handler_class: type) -> type:
         """Register the handler class."""
         providers = list(provider) if isinstance(provider, Iterable) else [provider]
-        for target_provider in providers:
-            # Instantiate the handler, passing mode if __init__ accepts it
-            try:
-                handler = handler_class(mode=mode)
-            except TypeError:
-                # Handler doesn't accept mode parameter, use default instantiation
-                handler = handler_class()
-                # Set mode attribute if handler has it
-                if hasattr(handler, "mode"):
-                    handler.mode = mode
 
+        # Shared handler classes registered for multiple compatible providers should
+        # remain the same object across those providers.
+        try:
+            handler = handler_class(mode=mode)
+        except TypeError:
+            handler = handler_class()
+            if hasattr(handler, "mode"):
+                handler.mode = mode
+
+        for target_provider in providers:
             mode_registry.register(
                 mode=mode,
                 provider=target_provider,
