@@ -7,6 +7,8 @@ from typing import Any
 
 import requests
 
+from instructor.v2.core.multimodal import Audio, Image, PDF, autodetect_media
+
 
 def _types() -> Any:
     try:
@@ -106,3 +108,32 @@ def uploaded_pdf_to_genai(pdf: Any) -> Any:
     ):
         return types.Part.from_uri(file_uri=pdf.source, mime_type=pdf.media_type)
     return pdf_to_genai(pdf)
+
+
+def extract_multimodal_content(
+    contents: list[Any],
+    autodetect_images: bool = True,
+) -> list[Any]:
+    """Convert typed Google GenAI contents, auto-detecting media when needed."""
+    types = _types()
+    result: list[Any] = []
+    for content in contents:
+        if isinstance(content, types.File):
+            result.append(content)
+            continue
+        if not isinstance(content, types.Content):
+            raise ValueError(
+                f"Unsupported content type: {type(content)}. This should only be used for the Google types"
+            )
+        converted_contents: list[Any] = []
+        if not content.parts:
+            raise ValueError("Content parts are empty")
+        for content_part in content.parts:
+            if content_part.text and autodetect_images:
+                converted_item = autodetect_media(content_part.text)
+                if isinstance(converted_item, (Image, Audio, PDF)):
+                    converted_contents.append(converted_item.to_genai())
+                    continue
+            converted_contents.append(content_part)
+        result.append(types.Content(parts=converted_contents, role=content.role))
+    return result

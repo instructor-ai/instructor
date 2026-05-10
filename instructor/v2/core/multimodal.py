@@ -858,43 +858,7 @@ def extract_genai_multimodal_content(
     contents: list[Any],
     autodetect_images: bool = True,
 ):
-    """
-    Convert Typed Contents to the appropriate format for Google GenAI.
-    """
-    from google.genai import types
+    """Compatibility wrapper for the GenAI-owned multimodal converter."""
+    from instructor.v2.providers.genai.multimodal import extract_multimodal_content
 
-    result: list[Union[types.Content, types.File]] = []  # noqa: UP007
-    for content in contents:
-        # Check for Files
-        if isinstance(content, types.File):
-            result.append(content)
-            continue
-
-        # We only want to do the conversion for the Image type
-        if not isinstance(content, types.Content):
-            raise ValueError(
-                f"Unsupported content type: {type(content)}. This should only be used for the Google types"
-            )
-        # Cast to list of Parts
-        content = cast(types.Content, content)
-        converted_contents: list[types.Part] = []
-
-        if not content.parts:
-            raise ValueError("Content parts are empty")
-
-        # Now we need to support a few cases
-        for content_part in content.parts:
-            if content_part.text and autodetect_images:
-                converted_item = autodetect_media(content_part.text)
-
-                if isinstance(converted_item, (Image, Audio, PDF)):
-                    converted_contents.append(converted_item.to_genai())
-                    continue
-
-                converted_contents.append(content_part)
-            else:
-                converted_contents.append(content_part)
-
-        result.append(types.Content(parts=converted_contents, role=content.role))
-
-    return result
+    return extract_multimodal_content(contents, autodetect_images)

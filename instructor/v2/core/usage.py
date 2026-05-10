@@ -56,29 +56,11 @@ def update_total_usage(
         return response
 
     try:
-        from anthropic.types import Usage as AnthropicUsage
+        from instructor.v2.providers.anthropic.usage import (
+            update_total_usage as update_anthropic_total_usage,
+        )
 
-        if isinstance(response_usage, AnthropicUsage) and isinstance(
-            total_usage, AnthropicUsage
-        ):
-            if not total_usage.cache_creation_input_tokens:
-                total_usage.cache_creation_input_tokens = 0
-            if not total_usage.cache_read_input_tokens:
-                total_usage.cache_read_input_tokens = 0
-            total_usage.input_tokens += response_usage.input_tokens or 0
-            total_usage.output_tokens += response_usage.output_tokens or 0
-            total_usage.cache_creation_input_tokens += (
-                response_usage.cache_creation_input_tokens or 0
-            )
-            total_usage.cache_read_input_tokens += (
-                response_usage.cache_read_input_tokens or 0
-            )
-            response_usage.input_tokens = total_usage.input_tokens
-            response_usage.output_tokens = total_usage.output_tokens
-            response_usage.cache_creation_input_tokens = (
-                total_usage.cache_creation_input_tokens
-            )
-            response_usage.cache_read_input_tokens = total_usage.cache_read_input_tokens
+        if update_anthropic_total_usage(response_usage, total_usage):
             return response
     except ImportError:
         pass

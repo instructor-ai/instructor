@@ -15,6 +15,7 @@ from instructor.v2.core.multimodal import (
     PDF,
     PDFWithCacheControl,
     PDFWithGenaiFile,
+    extract_genai_multimodal_content,
 )
 
 
@@ -84,6 +85,31 @@ def test_initialize_usage_dispatches_anthropic_to_provider_module(
 
     assert retry._initialize_usage(Mode.ANTHROPIC_TOOLS) is sentinel
     assert calls == ["anthropic"]
+
+
+def test_update_total_usage_dispatches_anthropic_to_provider_module(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from instructor.v2.core import usage
+
+    class Response:
+        usage = object()
+
+    response = Response()
+    total_usage = object()
+    calls: list[tuple[Any, Any]] = []
+
+    def fake_update_total_usage(response_usage: Any, running_total: Any) -> bool:
+        calls.append((response_usage, running_total))
+        return True
+
+    monkeypatch.setattr(
+        "instructor.v2.providers.anthropic.usage.update_total_usage",
+        fake_update_total_usage,
+    )
+
+    assert usage.update_total_usage(response, total_usage) is response
+    assert calls == [(response.usage, total_usage)]
 
 
 @pytest.mark.parametrize(
@@ -164,3 +190,25 @@ def test_multimodal_methods_delegate_to_provider_modules(
 
     assert getattr(instance, method_name)(*args) is sentinel
     assert calls == [(instance, *args)]
+
+
+def test_genai_multimodal_extractor_delegates_to_provider_module(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sentinel = [object()]
+    calls: list[tuple[list[Any], bool]] = []
+
+    def fake_extract_multimodal_content(
+        contents: list[Any], autodetect_images: bool = True
+    ) -> list[Any]:
+        calls.append((contents, autodetect_images))
+        return sentinel
+
+    monkeypatch.setattr(
+        "instructor.v2.providers.genai.multimodal.extract_multimodal_content",
+        fake_extract_multimodal_content,
+    )
+
+    contents = [object()]
+    assert extract_genai_multimodal_content(contents, False) is sentinel
+    assert calls == [(contents, False)]
