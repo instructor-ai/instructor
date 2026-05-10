@@ -23,7 +23,7 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.core.exceptions import ConfigurationError, IncompleteOutputException
+from instructor.v2.core.errors import ConfigurationError, IncompleteOutputException
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import (
     ParallelBase,
@@ -725,7 +725,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
         strict: bool | None,
     ) -> BaseModel:
         from anthropic.types import Message
-        from instructor.core.exceptions import ResponseParsingError
+        from instructor.v2.core.errors import ResponseParsingError
 
         if hasattr(response, "choices"):
             completion = response.choices[0]
@@ -785,7 +785,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
         self._register_streaming_from_kwargs(response_model, kwargs)
 
         if response_model is None:
-            from instructor.core.exceptions import ConfigurationError
+            from instructor.v2.core.errors import ConfigurationError
 
             raise ConfigurationError(
                 "Mode.JSON_SCHEMA (Anthropic structured outputs) requires a `response_model`."
@@ -900,7 +900,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
         strict: bool | None,
     ) -> BaseModel:
         from anthropic.types import Message
-        from instructor.core.exceptions import ResponseParsingError
+        from instructor.v2.core.errors import ResponseParsingError
 
         if not isinstance(response, Message):
             raise ResponseParsingError(

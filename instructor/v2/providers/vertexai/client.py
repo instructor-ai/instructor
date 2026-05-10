@@ -48,7 +48,7 @@ def from_vertexai(
 
     normalized_mode = normalize_mode(Provider.VERTEXAI, mode)
     if not mode_registry.is_registered(Provider.VERTEXAI, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.VERTEXAI)
         raise ModeError(
@@ -58,14 +58,14 @@ def from_vertexai(
         )
 
     if gm is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "vertexai is not installed. Install it with: pip install google-cloud-aiplatform"
         )
 
     if not isinstance(client, gm.GenerativeModel):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "Client must be an instance of vertexai.generative_models.GenerativeModel. "

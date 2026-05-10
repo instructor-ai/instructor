@@ -102,7 +102,7 @@ def from_mistral(
 
     # Check if mistralai is installed
     if Mistral is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "mistralai is not installed. Install it with: pip install mistralai"
@@ -113,7 +113,7 @@ def from_mistral(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.MISTRAL, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.MISTRAL)
         raise ModeError(
@@ -127,7 +127,7 @@ def from_mistral(
 
     # Validate client type
     if not isinstance(client, Mistral):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of mistralai.Mistral. "

@@ -38,7 +38,7 @@ def _from_openai_compat(
 
     normalized_mode = normalize_mode(provider, mode)
     if not mode_registry.is_registered(provider, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(provider)
         raise ModeError(
@@ -53,7 +53,7 @@ def _from_openai_compat(
     )
 
     if not isinstance(client, valid_client_types):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "

@@ -91,7 +91,7 @@ def from_anthropic(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.ANTHROPIC, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.ANTHROPIC)
         raise ModeError(
@@ -114,7 +114,7 @@ def from_anthropic(
     )
 
     if not isinstance(client, valid_client_types):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "

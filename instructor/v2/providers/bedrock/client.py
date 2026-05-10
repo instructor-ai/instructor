@@ -68,7 +68,7 @@ def from_bedrock(
     from instructor.v2.core.registry import mode_registry, normalize_mode
 
     if BaseClient is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "botocore is not installed. Install it with: pip install boto3"
@@ -77,7 +77,7 @@ def from_bedrock(
     normalized_mode = normalize_mode(Provider.BEDROCK, mode)
 
     if not mode_registry.is_registered(Provider.BEDROCK, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.BEDROCK)
         raise ModeError(
@@ -89,7 +89,7 @@ def from_bedrock(
     mode = normalized_mode
 
     if not isinstance(client, BaseClient):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of botocore.client.BaseClient. "

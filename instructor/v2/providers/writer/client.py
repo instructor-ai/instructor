@@ -81,7 +81,7 @@ def from_writer(
 
     # Check if writerai SDK is installed
     if Writer is None or AsyncWriter is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "writerai is not installed. Install it with: pip install writer-sdk"
@@ -93,7 +93,7 @@ def from_writer(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.WRITER, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.WRITER)
         raise ModeError(
@@ -112,7 +112,7 @@ def from_writer(
     )
 
     if not isinstance(client, valid_client_types):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "

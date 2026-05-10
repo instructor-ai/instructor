@@ -220,7 +220,7 @@ def from_xai(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.XAI, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.XAI)
         raise ModeError(
@@ -234,7 +234,7 @@ def from_xai(
 
     # Validate client type
     if SyncClient is None or AsyncClient is None:
-        from instructor.core.exceptions import ConfigurationError
+        from instructor.v2.core.errors import ConfigurationError
 
         raise ConfigurationError(
             'The xai-sdk package is required to use the xAI provider. '
@@ -243,7 +243,7 @@ def from_xai(
         )
 
     if not isinstance(client, (SyncClient, AsyncClient)):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of xai_sdk.sync.client.Client or "

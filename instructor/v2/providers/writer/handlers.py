@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.core.exceptions import ConfigurationError, IncompleteOutputException
+from instructor.v2.core.errors import ConfigurationError, IncompleteOutputException
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from instructor.core.exceptions import ConfigurationError
+from instructor.v2.core.errors import ConfigurationError
 
 if TYPE_CHECKING:
     from instructor.v2.core.mode import Mode

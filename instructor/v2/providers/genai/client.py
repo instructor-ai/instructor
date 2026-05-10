@@ -66,7 +66,7 @@ def from_genai(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.GENAI, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.GENAI)
         raise ModeError(

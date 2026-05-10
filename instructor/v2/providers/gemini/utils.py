@@ -11,7 +11,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from instructor.v2.dsl.partial import Partial, PartialBase
-from instructor.core.exceptions import ConfigurationError
+from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.messages import get_message_content
 

@@ -126,7 +126,7 @@ class ModeRegistry:
         Raises:
             ConfigurationError: If mode is already registered
         """
-        from instructor.core.exceptions import ConfigurationError
+        from instructor.v2.core.errors import ConfigurationError
 
         mode_key = (provider, mode)
         if mode_key in self._handlers or mode_key in self._lazy_loaders:

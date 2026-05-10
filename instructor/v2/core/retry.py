@@ -20,7 +20,7 @@ from tenacity import (
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.core.exceptions import (
+from instructor.v2.core.errors import (
     FailedAttempt,
     IncompleteOutputException,
     InstructorRetryException,
@@ -36,7 +36,7 @@ from instructor.v2.core.registry import mode_registry
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from instructor.core.hooks import Hooks
+    from instructor.v2.core.hooks import Hooks
 
 logger = logging.getLogger("instructor.v2.retry")
 

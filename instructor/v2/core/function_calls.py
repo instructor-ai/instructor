@@ -14,14 +14,14 @@ from pydantic import (
     create_model,
 )
 
-from instructor.core.exceptions import (
+from instructor.v2.core.errors import (
     IncompleteOutputException,
     ResponseParsingError,
     ConfigurationError,
 )
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider, normalize_mode_for_provider, provider_from_mode
-from instructor.utils import classproperty
+from instructor.v2.core.utils import classproperty
 from instructor.v2.core.json import extract_json_from_codeblock
 from .schema import (
     generate_openai_schema,

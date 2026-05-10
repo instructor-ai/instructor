@@ -539,7 +539,7 @@ def from_cohere(
     """
     # Validate mode is registered
     if not mode_registry.is_registered(Provider.COHERE, mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
         available_modes = mode_registry.get_modes_for_provider(Provider.COHERE)
         raise ModeError(
             mode=mode.value,

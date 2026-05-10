@@ -82,7 +82,7 @@ def from_cerebras(
 
     # Check if cerebras SDK is installed
     if Cerebras is None or AsyncCerebras is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "cerebras is not installed. Install it with: pip install cerebras-cloud-sdk"
@@ -94,7 +94,7 @@ def from_cerebras(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.CEREBRAS, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.CEREBRAS)
         raise ModeError(
@@ -113,7 +113,7 @@ def from_cerebras(
     )
 
     if not isinstance(client, valid_client_types):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "

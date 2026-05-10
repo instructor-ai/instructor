@@ -25,7 +25,7 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.core.exceptions import (
+from instructor.v2.core.errors import (
     ConfigurationError,
     IncompleteOutputException,
     ResponseParsingError,

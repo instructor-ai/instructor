@@ -81,7 +81,7 @@ def from_groq(
 
     # Check if groq is installed
     if groq is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError("groq is not installed. Install it with: pip install groq")
 
@@ -90,7 +90,7 @@ def from_groq(
 
     # Validate mode is registered (use normalized mode for check)
     if not mode_registry.is_registered(Provider.GROQ, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.GROQ)
         raise ModeError(
@@ -109,7 +109,7 @@ def from_groq(
     )
 
     if not isinstance(client, valid_client_types):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "

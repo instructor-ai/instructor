@@ -48,7 +48,7 @@ def from_gemini(
 
     normalized_mode = normalize_mode(Provider.GEMINI, mode)
     if not mode_registry.is_registered(Provider.GEMINI, normalized_mode):
-        from instructor.core.exceptions import ModeError
+        from instructor.v2.core.errors import ModeError
 
         available_modes = mode_registry.get_modes_for_provider(Provider.GEMINI)
         raise ModeError(
@@ -58,7 +58,7 @@ def from_gemini(
         )
 
     if genai is None:
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "google-generativeai is not installed. Install it with: "
@@ -66,7 +66,7 @@ def from_gemini(
         )
 
     if not isinstance(client, genai.GenerativeModel):
-        from instructor.core.exceptions import ClientError
+        from instructor.v2.core.errors import ClientError
 
         raise ClientError(
             "Client must be an instance of genai.GenerativeModel. "

@@ -13,9 +13,9 @@ from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.core.hooks import Hooks
-from instructor.templating import handle_templating
-from instructor.utils import is_async
+from instructor.v2.core.hooks import Hooks
+from instructor.v2.core.templating import handle_templating
+from instructor.v2.core.utils import is_async
 from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
 from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
