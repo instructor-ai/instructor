@@ -18,7 +18,7 @@ def reask_perplexity_json(
     exception: Exception,
 ):
     """Handle reask for Perplexity JSON mode when validation fails."""
-    from instructor.utils.core import dump_message
+    from instructor.v2.core.messages import dump_message
 
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]

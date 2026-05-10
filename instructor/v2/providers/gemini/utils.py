@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from instructor.dsl.partial import Partial, PartialBase
 from instructor.core.exceptions import ConfigurationError
 from instructor.processing.multimodal import Audio, Image, PDF
-from instructor.utils.core import get_message_content
+from instructor.v2.core.messages import get_message_content
 
 if TYPE_CHECKING:
     from google.genai import types

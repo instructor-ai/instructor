@@ -43,7 +43,7 @@ from instructor.v2.core.json import (
     extract_json_from_stream_async,
 )
 from instructor.v2.core.schema import generate_openai_schema
-from instructor.utils.core import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
