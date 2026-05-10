@@ -2,8 +2,8 @@
 
 from collections.abc import Iterable
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.v2.core.registry import mode_registry
 
 

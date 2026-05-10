@@ -15,8 +15,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.core.exceptions import ConfigurationError, ResponseParsingError
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.decorators import register_mode_handler

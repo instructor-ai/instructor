@@ -9,8 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.v2.core.protocols import (
     AsyncStreamExtractor,
     MessageConverter,

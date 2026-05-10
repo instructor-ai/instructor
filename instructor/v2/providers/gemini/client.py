@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Literal, TYPE_CHECKING, overload
 
 from instructor import AsyncInstructor, Instructor, Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.providers import Provider
 from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered.

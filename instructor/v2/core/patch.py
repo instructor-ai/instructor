@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.core.hooks import Hooks
 from instructor.templating import handle_templating
 from instructor.utils import is_async

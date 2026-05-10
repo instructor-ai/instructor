@@ -20,7 +20,7 @@ import requests
 from pydantic import BaseModel, Field
 
 from instructor.core.exceptions import MultimodalError
-from instructor.mode import Mode
+from instructor.v2.core.mode import Mode
 
 F = TypeVar("F", bound=Callable[..., Any])
 K = TypeVar("K", bound=Hashable)

@@ -23,8 +23,8 @@ from pydantic import BaseModel
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from openai.types.chat import ChatCompletion
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.core.exceptions import (
     ConfigurationError,
     IncompleteOutputException,

@@ -7,7 +7,7 @@ from typing import Any, overload
 import openai
 
 from instructor import AsyncInstructor, Instructor, Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.providers import Provider
 from instructor.v2.providers.openai.client import _from_openai_compat
 
 # Ensure handlers are registered.

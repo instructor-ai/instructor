@@ -19,8 +19,8 @@ from instructor.core.exceptions import (
     ResponseParsingError,
     ConfigurationError,
 )
-from instructor.mode import Mode
-from instructor.utils.providers import Provider, normalize_mode_for_provider, provider_from_mode
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider, normalize_mode_for_provider, provider_from_mode
 from instructor.utils import classproperty
 from instructor.v2.core.json import extract_json_from_codeblock
 from .schema import (

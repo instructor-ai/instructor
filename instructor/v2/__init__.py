@@ -14,8 +14,8 @@ Usage:
 import importlib
 import importlib.util
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 from instructor.v2.core.protocols import ReaskHandler, RequestHandler, ResponseParser
@@ -25,6 +25,10 @@ from instructor.v2.core.registry import (
     mode_registry,
     normalize_mode,
 )
+
+# Keep the provider package reachable for public monkeypatch/import paths such
+# as ``instructor.v2.providers.genai.client``.
+providers = importlib.import_module("instructor.v2.providers")
 
 
 def _lazy_import(module_path: str, func_name: str):

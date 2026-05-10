@@ -17,8 +17,8 @@ import jsonref
 from vertexai.preview.generative_models import ToolConfig  # type: ignore[import-not-found]
 import vertexai.generative_models as gm  # type: ignore[import-not-found]
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase, get_types_array
 from instructor.dsl.partial import PartialBase

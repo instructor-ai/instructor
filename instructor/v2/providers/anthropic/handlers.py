@@ -21,8 +21,8 @@ from typing import Annotated
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from anthropic.types import Message
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.core.exceptions import ConfigurationError, IncompleteOutputException
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import (

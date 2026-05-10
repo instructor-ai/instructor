@@ -34,8 +34,8 @@ else:
     except ImportError:
         xchat = None
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase
 from instructor.dsl.partial import PartialBase

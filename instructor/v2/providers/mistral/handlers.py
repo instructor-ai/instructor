@@ -29,8 +29,8 @@ from pydantic import BaseModel
 if TYPE_CHECKING:  # pragma: no cover - typing only
     pass
 
-from instructor.mode import Mode
-from instructor.utils.providers import Provider
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from instructor.core.exceptions import IncompleteOutputException
 from instructor.dsl.iterable import IterableBase
 from instructor.dsl.parallel import ParallelBase, get_types_array
