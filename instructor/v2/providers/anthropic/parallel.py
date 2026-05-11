@@ -20,14 +20,14 @@ def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
     return [openai_schema(model).anthropic_schema for model in get_types_array(typehint)]
 
 
-class AnthropicParallelBase(ParallelBase):
+class AnthropicParallelBase(ParallelBase[T]):
     def from_response(
         self,
         response: Any,
         mode: Mode,  # noqa: ARG002
         validation_context: Any | None = None,
         strict: bool | None = None,
-    ) -> Generator[BaseModel, None, None]:
+    ) -> Generator[T, None, None]:
         if not response or not hasattr(response, "content"):
             return
 
@@ -42,5 +42,5 @@ class AnthropicParallelBase(ParallelBase):
                     )
 
 
-def AnthropicParallelModel(typehint: type[Iterable[T]]) -> AnthropicParallelBase:
+def AnthropicParallelModel(typehint: type[Iterable[T]]) -> AnthropicParallelBase[T]:
     return AnthropicParallelBase(*get_types_array(typehint))

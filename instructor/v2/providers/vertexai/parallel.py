@@ -14,14 +14,14 @@ from instructor.v2.dsl.parallel import ParallelBase, get_types_array
 T = TypeVar("T", bound=BaseModel)
 
 
-class VertexAIParallelBase(ParallelBase):
+class VertexAIParallelBase(ParallelBase[T]):
     def from_response(
         self,
         response: Any,
         mode: Mode,  # noqa: ARG002
         validation_context: Any | None = None,
         strict: bool | None = None,
-    ) -> Generator[BaseModel, None, None]:
+    ) -> Generator[T, None, None]:
         if not response or not response.candidates:
             return
 
@@ -39,5 +39,5 @@ class VertexAIParallelBase(ParallelBase):
                         )
 
 
-def VertexAIParallelModel(typehint: type[Iterable[T]]) -> VertexAIParallelBase:
+def VertexAIParallelModel(typehint: type[Iterable[T]]) -> VertexAIParallelBase[T]:
     return VertexAIParallelBase(*get_types_array(typehint))

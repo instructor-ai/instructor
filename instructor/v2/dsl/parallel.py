@@ -1,12 +1,12 @@
 import sys
 from typing import (
     Any,
+    Generic,
     Optional,
     TypeVar,
     Union,
     get_args,
     get_origin,
-    TYPE_CHECKING,
 )
 from collections.abc import Generator
 from pydantic import BaseModel
@@ -14,21 +14,15 @@ from collections.abc import Iterable
 
 from instructor.v2.core.mode import Mode
 
-if TYPE_CHECKING:
-    from instructor.v2.core.function_calls import ResponseSchema
-
-    T = TypeVar("T", bound=ResponseSchema)
-else:
-    # At runtime, we'll bind to BaseModel instead to avoid circular import
-    T = TypeVar("T", bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
-class ParallelBase:
-    def __init__(self, *models: type[BaseModel]):
+class ParallelBase(Generic[T]):
+    def __init__(self, *models: type[T]):
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
-        self.registry = {
+        self.registry: dict[str, type[T]] = {
             model.__name__ if hasattr(model, "__name__") else str(model): model
             for model in models
         }
@@ -39,7 +33,7 @@ class ParallelBase:
         mode: Mode,  # noqa: ARG002
         validation_context: Optional[Any] = None,
         strict: Optional[bool] = None,
-    ) -> Generator[BaseModel, None, None]:
+    ) -> Generator[T, None, None]:
         #! We expect this from the ResponseSchema class, We should address
         #! this with a protocol or an abstract class... @jxnlco
         for tool_call in response.choices[0].message.tool_calls:
@@ -97,19 +91,19 @@ def handle_anthropic_parallel_model(
     return handle_parallel_model(typehint)
 
 
-def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
+def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase[T]:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])
 
 
-def VertexAIParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
+def VertexAIParallelModel(typehint: type[Iterable[T]]) -> ParallelBase[T]:
     """Compatibility shim for the VertexAI-owned parallel model."""
     from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel as factory
 
     return factory(typehint)
 
 
-def AnthropicParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
+def AnthropicParallelModel(typehint: type[Iterable[T]]) -> ParallelBase[T]:
     """Compatibility shim for the Anthropic-owned parallel model."""
     from instructor.v2.providers.anthropic.parallel import AnthropicParallelModel as factory
 

@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import inspect
 import json
 import logging
 import warnings
 from functools import wraps
-from typing import Any, Optional, TypeVar, cast
+from typing import Any, TypeVar, cast
 from typing_extensions import Self
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -81,8 +83,8 @@ def _extract_text_content(completion: Any) -> str:
 def _validate_model_from_json(
     cls: type[Any],
     json_str: str,
-    validation_context: Optional[dict[str, Any]] = None,
-    strict: Optional[bool] = None,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
 ) -> Any:
     """Validate model from JSON string with appropriate error handling."""
     try:
@@ -145,8 +147,8 @@ class ResponseSchema(BaseModel):
     def from_response(
         cls: type[Self],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
         mode: Mode = Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
     ) -> Self:
@@ -187,9 +189,9 @@ class ResponseSchema(BaseModel):
         *,
         mode: Mode,
         provider: Provider,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
-        warning: Optional[str] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        warning: str | None = None,
     ) -> Self:
         if warning:
             warnings.warn(warning, DeprecationWarning, stacklevel=2)
@@ -205,8 +207,8 @@ class ResponseSchema(BaseModel):
     def parse_genai_structured_outputs(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy GenAI structured parser (deprecated)."""
         return cls._parse_with_registry(
@@ -225,8 +227,8 @@ class ResponseSchema(BaseModel):
     def parse_genai_tools(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy GenAI tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -245,8 +247,8 @@ class ResponseSchema(BaseModel):
     def parse_cohere_json_schema(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ):
         """Legacy Cohere JSON schema parser (deprecated)."""
         return cls._parse_with_registry(
@@ -265,8 +267,8 @@ class ResponseSchema(BaseModel):
     def parse_anthropic_tools(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Anthropic tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -286,8 +288,8 @@ class ResponseSchema(BaseModel):
     def parse_anthropic_json(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Anthropic JSON parser (deprecated)."""
         return cls._parse_with_registry(
@@ -307,8 +309,8 @@ class ResponseSchema(BaseModel):
     def parse_bedrock_json(
         cls: type[ResponseSchema],
         completion: Any,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Bedrock JSON parser (deprecated)."""
         return cls._parse_with_registry(
@@ -327,8 +329,8 @@ class ResponseSchema(BaseModel):
     def parse_bedrock_tools(
         cls: type[ResponseSchema],
         completion: Any,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Bedrock tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -347,8 +349,8 @@ class ResponseSchema(BaseModel):
     def parse_gemini_json(
         cls: type[ResponseSchema],
         completion: Any,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Gemini JSON parser (deprecated)."""
         return cls._parse_with_registry(
@@ -367,8 +369,8 @@ class ResponseSchema(BaseModel):
     def parse_gemini_tools(
         cls: type[ResponseSchema],
         completion: Any,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Gemini tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -387,7 +389,7 @@ class ResponseSchema(BaseModel):
     def parse_vertexai_tools(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
+        validation_context: dict[str, Any] | None = None,
     ) -> BaseModel:
         """Legacy VertexAI tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -406,8 +408,8 @@ class ResponseSchema(BaseModel):
     def parse_vertexai_json(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy VertexAI JSON parser (deprecated)."""
         return cls._parse_with_registry(
@@ -426,8 +428,8 @@ class ResponseSchema(BaseModel):
     def parse_cohere_tools(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Cohere tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -446,8 +448,8 @@ class ResponseSchema(BaseModel):
     def parse_writer_tools(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Writer tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -466,8 +468,8 @@ class ResponseSchema(BaseModel):
     def parse_writer_json(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Writer JSON parser (deprecated)."""
         return cls._parse_with_registry(
@@ -486,8 +488,8 @@ class ResponseSchema(BaseModel):
     def parse_functions(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy OpenAI FUNCTIONS parser (deprecated)."""
         return cls._parse_with_registry(
@@ -506,8 +508,8 @@ class ResponseSchema(BaseModel):
     def parse_responses_tools(
         cls: type[ResponseSchema],
         completion: Any,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy OpenAI Responses Tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -526,8 +528,8 @@ class ResponseSchema(BaseModel):
     def parse_tools(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy OpenAI tools parser (deprecated)."""
         return cls._parse_with_registry(
@@ -546,8 +548,8 @@ class ResponseSchema(BaseModel):
     def parse_mistral_structured_outputs(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy Mistral structured-output parser (deprecated)."""
         return cls._parse_with_registry(
@@ -566,8 +568,8 @@ class ResponseSchema(BaseModel):
     def parse_json(
         cls: type[ResponseSchema],
         completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> BaseModel:
         """Legacy JSON parser (deprecated)."""
         return cls._parse_with_registry(
