@@ -127,6 +127,15 @@ class Mode(enum.Enum):
         }
 
     @classmethod
+    def parallel_modes(cls) -> set["Mode"]:
+        """Return canonical and compatibility aliases for parallel tool modes."""
+        return {
+            cls.PARALLEL_TOOLS,
+            cls.ANTHROPIC_PARALLEL_TOOLS,
+            cls.VERTEXAI_PARALLEL_TOOLS,
+        }
+
+    @classmethod
     def warn_mode_functions_deprecation(cls):
         """
         Warn about FUNCTIONS mode deprecation.

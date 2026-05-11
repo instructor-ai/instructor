@@ -593,12 +593,7 @@ class AsyncInstructor(Instructor):
             get_origin(response_model) in {Iterable}
             and get_args(response_model)
             and get_args(response_model)[0] is not None
-            and self.mode
-            not in {
-                Mode.PARALLEL_TOOLS,
-                Mode.VERTEXAI_PARALLEL_TOOLS,
-                Mode.ANTHROPIC_PARALLEL_TOOLS,
-            }
+            and self.mode not in Mode.parallel_modes()
         ):
             return self.create_iterable(
                 messages=messages,
