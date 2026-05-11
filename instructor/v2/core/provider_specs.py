@@ -13,6 +13,7 @@ from instructor.v2.core.providers import Provider
 @dataclass(frozen=True)
 class ProviderSpec:
     provider: Provider
+    canonical_provider: Provider
     aliases: tuple[str, ...]
     handler_module: str | None
     supported_modes: tuple[Mode, ...]
@@ -31,6 +32,7 @@ def _spec(
     provider: Provider,
     *,
     aliases: tuple[str, ...],
+    canonical_provider: Provider | None = None,
     handler_module: str | None,
     supported_modes: tuple[Mode, ...],
     unsupported_modes: tuple[Mode, ...],
@@ -45,6 +47,7 @@ def _spec(
 ) -> ProviderSpec:
     return ProviderSpec(
         provider=provider,
+        canonical_provider=canonical_provider or provider,
         aliases=aliases,
         handler_module=handler_module,
         supported_modes=supported_modes,
@@ -236,6 +239,7 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
         Provider.GENERATIVE_AI: _spec(
             Provider.GENERATIVE_AI,
             aliases=("generative-ai",),
+            canonical_provider=Provider.GENAI,
             handler_module=None,
             supported_modes=(),
             unsupported_modes=(),
@@ -437,6 +441,7 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
         Provider.AZURE_OPENAI: _spec(
             Provider.AZURE_OPENAI,
             aliases=("azure_openai",),
+            canonical_provider=Provider.OPENAI,
             handler_module=None,
             supported_modes=(),
             unsupported_modes=(),
@@ -448,6 +453,7 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
         Provider.OLLAMA: _spec(
             Provider.OLLAMA,
             aliases=("ollama",),
+            canonical_provider=Provider.OPENAI,
             handler_module=None,
             supported_modes=(),
             unsupported_modes=(),
