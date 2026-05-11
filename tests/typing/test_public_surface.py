@@ -3,7 +3,9 @@ from __future__ import annotations
 # mypy: disable-error-code=unused-coroutine
 
 from collections.abc import AsyncGenerator, Coroutine, Generator
-from typing import TYPE_CHECKING, Any, assert_type
+from typing import TYPE_CHECKING, Any
+
+from typing_extensions import assert_type
 
 import openai
 from pydantic import BaseModel

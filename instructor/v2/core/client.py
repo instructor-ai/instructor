@@ -10,6 +10,7 @@ from typing import (
     overload,
     Literal,
     Any,
+    cast,
     get_origin,
     get_args,
 )
@@ -903,9 +904,22 @@ def from_litellm(
     """Compatibility wrapper for the v2 LiteLLM factory."""
     from instructor.v2.providers.litellm.client import from_litellm as from_litellm_v2
 
+    if async_client is True:
+        return from_litellm_v2(
+            completion=cast(Callable[..., Awaitable[Any]], completion),
+            mode=mode,
+            async_client=True,
+            **kwargs,
+        )
+    if async_client is False:
+        return from_litellm_v2(
+            completion=cast(Callable[..., object], completion),
+            mode=mode,
+            async_client=False,
+            **kwargs,
+        )
     return from_litellm_v2(
-        completion=completion,
+        completion=cast(Callable[..., object], completion),
         mode=mode,
-        async_client=async_client,
         **kwargs,
     )
