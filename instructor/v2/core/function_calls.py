@@ -1,10 +1,10 @@
-# type: ignore
 import inspect
 import json
 import logging
 import warnings
 from functools import wraps
 from typing import Any, Optional, TypeVar, cast
+from typing_extensions import Self
 from openai.types.chat import ChatCompletion
 from pydantic import (
     BaseModel,
@@ -62,7 +62,16 @@ def _extract_text_content(completion: Any) -> str:
     # Bedrock format
     if isinstance(completion, dict) and "output" in completion:
         try:
-            return completion.get("output").get("message").get("content")[0].get("text")
+            output = completion.get("output")
+            if not isinstance(output, dict):
+                return ""
+            message = output.get("message")
+            if not isinstance(message, dict):
+                return ""
+            content = message.get("content")
+            if not isinstance(content, list):
+                return ""
+            return content[0].get("text")
         except (AttributeError, IndexError):
             pass
 
@@ -134,13 +143,13 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def from_response(
-        cls,
+        cls: type[Self],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
-    ) -> BaseModel:
+    ) -> Self:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -173,7 +182,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def _parse_with_registry(
-        cls: type[BaseModel],
+        cls: type[Self],
         completion: Any,
         *,
         mode: Mode,
@@ -181,7 +190,7 @@ class ResponseSchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
         warning: Optional[str] = None,
-    ) -> BaseModel:
+    ) -> Self:
         if warning:
             warnings.warn(warning, DeprecationWarning, stacklevel=2)
         return cls.from_response(
@@ -194,7 +203,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_genai_structured_outputs(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -214,7 +223,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_genai_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -234,7 +243,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_cohere_json_schema(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -254,7 +263,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_anthropic_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -275,7 +284,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_anthropic_json(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -296,7 +305,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_bedrock_json(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -316,7 +325,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_bedrock_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -336,7 +345,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_gemini_json(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -356,7 +365,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_gemini_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -376,7 +385,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_vertexai_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
     ) -> BaseModel:
@@ -395,7 +404,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_vertexai_json(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -415,7 +424,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_cohere_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -435,7 +444,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_writer_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -455,7 +464,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_writer_json(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -475,7 +484,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_functions(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -495,7 +504,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_responses_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -515,7 +524,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_tools(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -535,7 +544,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_mistral_structured_outputs(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -555,7 +564,7 @@ class ResponseSchema(BaseModel):
 
     @classmethod
     def parse_json(
-        cls: type[BaseModel],
+        cls: type[ResponseSchema],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
@@ -574,7 +583,7 @@ class ResponseSchema(BaseModel):
         )
 
 
-def response_schema(cls: type[BaseModel]) -> ResponseSchema:
+def response_schema(cls: type[Model]) -> type[Model]:
     """Wrap a Pydantic model class to add ResponseSchema behavior."""
     if not inspect.isclass(cls) or not issubclass(cls, BaseModel):
         got = cls.__name__ if inspect.isclass(cls) else type(cls).__name__
@@ -583,14 +592,17 @@ def response_schema(cls: type[BaseModel]) -> ResponseSchema:
         )
 
     # Create the wrapped model
-    schema = wraps(cls, updated=())(
-        create_model(
-            cls.__name__ if hasattr(cls, "__name__") else str(cls),
-            __base__=(cls, ResponseSchema),
-        )
+    schema = cast(
+        type[BaseModel],
+        wraps(cls, updated=())(
+            create_model(
+                cls.__name__ if hasattr(cls, "__name__") else str(cls),
+                __base__=(cls, ResponseSchema),
+            )
+        ),
     )
 
-    return cast(ResponseSchema, schema)
+    return cast(type[Model], schema)
 
 
 # Backward compatibility aliases

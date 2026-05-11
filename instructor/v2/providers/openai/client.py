@@ -6,7 +6,7 @@ Creates Instructor instances using v2 hierarchical registry system.
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, overload
+from typing import Any, Literal, overload
 
 import openai
 
@@ -161,18 +161,36 @@ def from_openai(
 def from_anyscale(
     model: str,
     mode: Mode = Mode.TOOLS,
-    async_client: bool = False,
+    async_client: Literal[False] = False,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_anyscale(
-    client: openai.OpenAI | openai.AsyncOpenAI,
+    model: str,
+    mode: Mode = Mode.TOOLS,
+    async_client: Literal[True] = True,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_anyscale(
+    client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
+
+
+@overload
+def from_anyscale(
+    client: openai.AsyncOpenAI,
+    mode: Mode = Mode.TOOLS,
+    model: str | None = None,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
 
 
 def from_anyscale(
@@ -234,18 +252,36 @@ def from_anyscale(
 def from_together(
     model: str,
     mode: Mode = Mode.TOOLS,
-    async_client: bool = False,
+    async_client: Literal[False] = False,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_together(
-    client: openai.OpenAI | openai.AsyncOpenAI,
+    model: str,
+    mode: Mode = Mode.TOOLS,
+    async_client: Literal[True] = True,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_together(
+    client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
+
+
+@overload
+def from_together(
+    client: openai.AsyncOpenAI,
+    mode: Mode = Mode.TOOLS,
+    model: str | None = None,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
 
 
 def from_together(
@@ -307,18 +343,36 @@ def from_together(
 def from_databricks(
     model: str,
     mode: Mode = Mode.TOOLS,
-    async_client: bool = False,
+    async_client: Literal[False] = False,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_databricks(
-    client: openai.OpenAI | openai.AsyncOpenAI,
+    model: str,
+    mode: Mode = Mode.TOOLS,
+    async_client: Literal[True] = True,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_databricks(
+    client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
+
+
+@overload
+def from_databricks(
+    client: openai.AsyncOpenAI,
+    mode: Mode = Mode.TOOLS,
+    model: str | None = None,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
 
 
 def from_databricks(
@@ -380,18 +434,36 @@ def from_databricks(
 def from_deepseek(
     model: str,
     mode: Mode = Mode.TOOLS,
-    async_client: bool = False,
+    async_client: Literal[False] = False,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_deepseek(
-    client: openai.OpenAI | openai.AsyncOpenAI,
+    model: str,
+    mode: Mode = Mode.TOOLS,
+    async_client: Literal[True] = True,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_deepseek(
+    client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor: ...
+) -> Instructor: ...
+
+
+@overload
+def from_deepseek(
+    client: openai.AsyncOpenAI,
+    mode: Mode = Mode.TOOLS,
+    model: str | None = None,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
 
 
 def from_deepseek(

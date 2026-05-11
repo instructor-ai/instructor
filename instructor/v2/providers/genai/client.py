@@ -30,7 +30,7 @@ def from_genai(
     client: Client,
     mode: Mode = Mode.TOOLS,
     *,
-    use_async: Literal[False],
+    use_async: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 

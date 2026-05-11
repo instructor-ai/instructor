@@ -8,7 +8,6 @@ from typing import (
     TypeVar,
     Callable,
     overload,
-    Union,
     Literal,
     Any,
     get_origin,
@@ -20,12 +19,11 @@ from tenacity import (
 )
 from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
 from typing_extensions import Self
-from pydantic import BaseModel
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.core.hooks import Hooks, HookName
 
 
-T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
+T = TypeVar("T")
 
 
 def _ensure_registry_loaded() -> None:
@@ -62,6 +60,28 @@ class Response:
         if isinstance(messages, str):
             return [{"role": "user", "content": messages}]
         return messages
+
+    @overload
+    def create(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | Retrying = 3,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> T: ...
+
+    @overload
+    def create(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | Retrying = 3,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Any: ...
 
     def create(
         self,
@@ -135,6 +155,28 @@ class Response:
 class AsyncResponse(Response):
     def __init__(self, client: AsyncInstructor):
         self.client = client
+
+    @overload
+    async def create(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | AsyncRetrying = 3,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> T: ...
+
+    @overload
+    async def create(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | AsyncRetrying = 3,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Any: ...
 
     async def create(
         self,
