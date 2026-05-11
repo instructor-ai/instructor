@@ -151,7 +151,7 @@ class TestJSONExtractionEdgeCases:
         {
           "name": "Test", // This is a comment
           "description": "Testing with comments"
-          /* 
+          /*
              Multi-line comment
           */
         }

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal, overload
-
-from google.genai import Client
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.errors import ClientError
@@ -13,6 +11,14 @@ from ...core.registry import mode_registry, normalize_mode
 
 # Ensure handlers are registered (decorators auto-register on import)
 from . import handlers  # noqa: F401
+
+if TYPE_CHECKING:
+    from google.genai import Client
+else:
+    try:
+        from google.genai import Client
+    except ImportError:
+        Client = None  # type: ignore[assignment]
 
 
 @overload
@@ -55,6 +61,10 @@ def from_genai(
         model: Default model name to inject into requests if not provided
         **kwargs: Additional kwargs passed to Instructor constructor
     """
+    if Client is None:
+        raise ClientError(
+            "google-genai is not installed. Install it with: pip install google-genai"
+        )
 
     if not isinstance(client, Client):
         raise ClientError(

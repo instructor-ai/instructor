@@ -18,7 +18,7 @@ def test_extract_json_from_codeblock():
     ```json
     {
         "key": "value"
-    }    
+    }
     ```
     """
     result = extract_json_from_codeblock(example)
@@ -33,7 +33,7 @@ def test_extract_json_from_codeblock_no_end():
     {
         "key": "value",
         "another_key": [{"key": {"key": "value"}}]
-    }  
+    }
     """
     result = extract_json_from_codeblock(example)
     assert json.loads(result) == {
@@ -59,8 +59,8 @@ def test_extract_json_from_codeblock_no_start():
 
 
 def test_stream_json():
-    text = """here is the json for you! 
-    
+    text = """here is the json for you!
+
     ```json
     , here
     {
@@ -91,8 +91,8 @@ def test_stream_json():
 
 @pytest.mark.asyncio
 async def test_stream_json_async():
-    text = """here is the json for you! 
-    
+    text = """here is the json for you!
+
     ```json
     , here
     {

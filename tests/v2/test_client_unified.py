@@ -79,6 +79,17 @@ def _dependency_missing(module: str) -> bool:
         return True
 
 
+def _is_expected_missing_dependency(provider: Provider, exc: ImportError) -> bool:
+    """Return True when an import failed because the provider SDK is unavailable."""
+    sdk_module = PROVIDER_CLIENT_CONFIGS[provider]["sdk_module"]
+    expected_root = str(sdk_module).split(".")[0]
+    missing_name = getattr(exc, "name", None)
+    if missing_name:
+        return missing_name.split(".")[0] == expected_root
+
+    return f"No module named '{expected_root}'" in str(exc)
+
+
 def _get_provider_params():
     """Generate provider parameters for parametrized tests."""
     return [
@@ -227,17 +238,17 @@ def test_from_function_importable(provider: Provider) -> None:
 @pytest.mark.parametrize("provider", _get_provider_params())
 def test_handlers_importable(provider: Provider) -> None:
     """Test that handlers are importable."""
-    # This is a basic smoke test - handlers should be importable
-    # Actual handler classes vary by provider, so we just check the module exists
-    handler_module_path = f"instructor.v2.providers.{provider.value}.handlers"
+    handler_path = _HANDLER_MODULE_PATHS.get(provider)
+    assert handler_path is not None and handler_path.exists(), (
+        f"Missing handler module path for {provider.value}"
+    )
 
-    try:
-        module = __import__(handler_module_path, fromlist=[])
-        assert module is not None
-    except ImportError:
-        # Some providers may not have handlers if SDK is missing
-        # This is okay - the registry tests will catch actual issues
-        pass
+    _ensure_handlers_loaded(provider)
+
+    assert any(
+        mode_registry.is_registered(provider, mode)
+        for mode in PROVIDER_CLIENT_CONFIGS[provider]["supported_modes"]
+    ), f"No registered handlers found for {provider.value}"
 
 
 # ============================================================================
@@ -310,9 +321,10 @@ def test_from_function_raises_without_sdk(provider: Provider) -> None:
         )
         with pytest.raises(ClientError, match=expected_message):
             from_function_obj("not a client")  # type: ignore[call-arg]
-    except ImportError:
-        # Module structure may vary - this is okay
-        pass
+    except (ImportError, ModuleNotFoundError) as exc:
+        if _is_expected_missing_dependency(provider, exc):
+            pytest.skip(f"{sdk_module} import path is unavailable in this environment")
+        raise
 
 
 # ============================================================================

@@ -35,8 +35,6 @@ V2 changes five things:
 4. Provider capabilities are described from one manifest instead of duplicated across routing and tests.
 5. Sync, async, streaming, partials, and public return types are much easier to validate consistently.
 
-The point is not to invent a new Instructor. The point is to make the existing one more durable.
-
 ## What stays familiar
 
 The core usage model is still the one Instructor users already know:
@@ -91,7 +89,7 @@ A provider package can own:
 - multimodal encoding
 - usage handling
 
-This is the biggest architectural change. It gives each provider a clear home and keeps shared runtime modules from slowly becoming giant provider switchboards.
+This gives each provider a clear home and keeps shared runtime modules from slowly becoming giant provider switchboards.
 
 ### 2. Modes dispatch through registered handlers
 
@@ -209,7 +207,7 @@ That last point matters. The v2 test suite is being pushed toward a smaller, mor
 - one for shared provider/mode dispatch expectations
 - provider-specific files only where the behavior is actually unique
 
-The result should be broader coverage with less copy-pasted test code.
+The new parametrized suites reduce repeated provider boilerplate and centralize the shared client and handler assertions.
 
 ## A concrete mental model
 
@@ -228,7 +226,7 @@ V1 made many of those steps work implicitly. V2 keeps the user-facing simplicity
 
 ## Is this a breaking change?
 
-The goal is for v2 to be close to a free upgrade for users. That does not mean no code moved. A lot moved. But the migration is intentionally built around:
+The migration is designed to preserve the common public workflows and import paths where practical. That does not mean no code moved. A lot moved. But the migration is intentionally built around:
 
 - compatibility facades
 - normalized legacy modes
@@ -249,5 +247,3 @@ V2 is the cleanup that makes the next phase healthier:
 - less duplicated routing logic
 - more focused tests
 - lighter imports
-
-It is not a flashier API. It is a stronger foundation.

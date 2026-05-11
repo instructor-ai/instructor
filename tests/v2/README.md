@@ -143,7 +143,7 @@ uv run pytest tests/v2/test_fireworks_*.py
 The unified tests provide comprehensive coverage across all providers:
 
 - **Client Factory**: Mode normalization, registry, imports, errors
-- **Handler Registration**: Mode registration, handler methods, provider-mode mapping  
+- **Handler Registration**: Mode registration, handler methods, provider-mode mapping
 - **Handler Methods**: prepare_request, parse_response, handle_reask
 
 Provider-specific tests add coverage for:

@@ -8,9 +8,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Awaitable
-from typing import Any, cast, overload
-
-import cohere
+from typing import TYPE_CHECKING, Any, cast, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.mode import Mode
@@ -19,6 +17,14 @@ from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.cohere import handlers  # noqa: F401
+
+if TYPE_CHECKING:
+    import cohere
+else:
+    try:
+        import cohere
+    except ImportError:
+        cohere = None  # type: ignore[assignment]
 
 
 @overload
@@ -86,6 +92,13 @@ def from_cohere(
         >>> instructor_client = from_cohere(client, mode=Mode.JSON_SCHEMA)
     """
     from instructor.v2.core.registry import mode_registry, normalize_mode
+
+    if cohere is None:
+        from instructor.v2.core.errors import ClientError
+
+        raise ClientError(
+            "cohere is not installed. Install it with: pip install cohere"
+        )
 
     # Normalize provider-specific modes to generic modes
     # COHERE_TOOLS -> TOOLS, COHERE_JSON_SCHEMA -> JSON_SCHEMA

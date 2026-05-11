@@ -38,6 +38,20 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
 _HANDLERS_LOADED: set[Provider] = set()
 
 
+def _is_expected_missing_dependency(provider: Provider, exc: ImportError) -> bool:
+    """Return True when handler loading failed only because an optional SDK is absent."""
+    sdk_module = PROVIDER_CONFIGS.get(provider, {}).get("sdk_module")
+    if not sdk_module:
+        return False
+
+    expected_root = str(sdk_module).split(".")[0]
+    missing_name = getattr(exc, "name", None)
+    if missing_name:
+        return missing_name.split(".")[0] == expected_root
+
+    return f"No module named '{expected_root}'" in str(exc)
+
+
 def _ensure_handlers_loaded(provider: Provider) -> None:
     """Dynamically load handler module to ensure handlers are registered."""
     if provider in _HANDLERS_LOADED:
@@ -57,10 +71,13 @@ def _ensure_handlers_loaded(provider: Provider) -> None:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         _HANDLERS_LOADED.add(provider)
-    except Exception:
-        # Handler module may have import errors (missing dependencies)
-        # This is okay - the test will skip if handlers aren't registered
-        pass
+    except (ImportError, ModuleNotFoundError) as exc:
+        if _is_expected_missing_dependency(provider, exc):
+            pytest.skip(
+                f"{provider.value} handlers require optional dependency "
+                f"{PROVIDER_CONFIGS[provider]['sdk_module']}"
+            )
+        raise
 
 
 class Answer(BaseModel):
@@ -86,6 +103,7 @@ _PROVIDER_CLIENT_CONFIGS = legacy_config_dicts()
 PROVIDER_CONFIGS = {
     provider: {
         "provider_string": config["provider_string"],
+        "sdk_module": config["sdk_module"],
         "modes": config["supported_modes"],
         "basic_modes": config["basic_modes"],
         "async_modes": config["async_modes"],
