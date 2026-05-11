@@ -658,7 +658,7 @@ def handle_vertexai_parallel_tools(
 ) -> tuple[Any, dict[str, Any]]:
     from typing import get_args
 
-    from instructor.v2.dsl.parallel import VertexAIParallelModel
+    from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel
     from instructor.v2.providers.vertexai.handlers import vertexai_process_response
 
     if new_kwargs.get("stream", False):

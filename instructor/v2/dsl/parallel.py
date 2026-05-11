@@ -1,5 +1,4 @@
 import sys
-import json
 from typing import (
     Any,
     Optional,
@@ -51,34 +50,6 @@ class ParallelBase:
             )
 
 
-class VertexAIParallelBase(ParallelBase):
-    def from_response(
-        self,
-        response: Any,
-        mode: Mode,  # noqa: ARG002
-        validation_context: Optional[Any] = None,
-        strict: Optional[bool] = None,
-    ) -> Generator[BaseModel, None, None]:
-        if not response or not response.candidates:
-            return
-
-        for candidate in response.candidates:
-            if not candidate.content or not candidate.content.parts:
-                continue
-
-            for part in candidate.content.parts:
-                if hasattr(part, "function_call") and part.function_call is not None:
-                    name = part.function_call.name
-                    arguments = part.function_call.args
-
-                    if name in self.registry:
-                        # Convert dict to JSON string before validation
-                        json_str = json.dumps(arguments)
-                        yield self.registry[name].model_validate_json(
-                            json_str, context=validation_context, strict=strict
-                        )
-
-
 if sys.version_info >= (3, 10):
     from types import UnionType
 
@@ -120,11 +91,10 @@ def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
 def handle_anthropic_parallel_model(
     typehint: type[Iterable[T]],
 ) -> list[dict[str, Any]]:
-    # Import at runtime to avoid circular import
-    from instructor.v2.core.function_calls import openai_schema
+    """Compatibility shim for Anthropic-owned parallel schema generation."""
+    from instructor.v2.providers.anthropic.parallel import handle_parallel_model
 
-    the_types = get_types_array(typehint)
-    return [openai_schema(model).anthropic_schema for model in the_types]
+    return handle_parallel_model(typehint)
 
 
 def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
@@ -132,33 +102,15 @@ def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
     return ParallelBase(*[model for model in the_types])
 
 
-def VertexAIParallelModel(typehint: type[Iterable[T]]) -> VertexAIParallelBase:
-    the_types = get_types_array(typehint)
-    return VertexAIParallelBase(*[model for model in the_types])
+def VertexAIParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
+    """Compatibility shim for the VertexAI-owned parallel model."""
+    from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel as factory
+
+    return factory(typehint)
 
 
-class AnthropicParallelBase(ParallelBase):
-    def from_response(
-        self,
-        response: Any,
-        mode: Mode,  # noqa: ARG002
-        validation_context: Optional[Any] = None,
-        strict: Optional[bool] = None,
-    ) -> Generator[BaseModel, None, None]:
-        if not response or not hasattr(response, "content"):
-            return
+def AnthropicParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
+    """Compatibility shim for the Anthropic-owned parallel model."""
+    from instructor.v2.providers.anthropic.parallel import AnthropicParallelModel as factory
 
-        for content in response.content:
-            if getattr(content, "type", None) == "tool_use":
-                name = content.name
-                arguments = content.input
-                if name in self.registry:
-                    json_str = json.dumps(arguments)
-                    yield self.registry[name].model_validate_json(
-                        json_str, context=validation_context, strict=strict
-                    )
-
-
-def AnthropicParallelModel(typehint: type[Iterable[T]]) -> AnthropicParallelBase:
-    the_types = get_types_array(typehint)
-    return AnthropicParallelBase(*[model for model in the_types])
+    return factory(typehint)
