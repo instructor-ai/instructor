@@ -25,18 +25,18 @@ else:
 def from_gemini(
     client: genai.GenerativeModel,
     mode: Mode = Mode.MD_JSON,
-    use_async: Literal[True] = True,
+    use_async: Literal[False] = False,
     **kwargs: Any,
-) -> AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_gemini(
     client: genai.GenerativeModel,
     mode: Mode = Mode.MD_JSON,
-    use_async: Literal[False] = False,
+    use_async: Literal[True] = True,
     **kwargs: Any,
-) -> Instructor: ...
+) -> AsyncInstructor: ...
 
 
 def from_gemini(

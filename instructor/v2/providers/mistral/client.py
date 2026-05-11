@@ -34,20 +34,20 @@ else:
 def from_mistral(
     client: Mistral,
     mode: Mode = Mode.TOOLS,
-    use_async: Literal[True] = ...,
+    use_async: Literal[False] = False,
     model: str | None = None,
     **kwargs: Any,
-) -> AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_mistral(
     client: Mistral,
     mode: Mode = Mode.TOOLS,
-    use_async: Literal[False] = ...,
+    use_async: Literal[True] = True,
     model: str | None = None,
     **kwargs: Any,
-) -> Instructor: ...
+) -> AsyncInstructor: ...
 
 
 @overload
