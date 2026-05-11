@@ -5,6 +5,7 @@ from instructor import __version__
 from instructor.v2.core.mode import Mode
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
+from instructor.v2.core.provider_specs import ALIAS_TO_PROVIDER
 import warnings
 import logging
 
@@ -14,29 +15,8 @@ InstructorType = Union[Instructor, AsyncInstructor]
 logger = logging.getLogger("instructor.auto_client")
 
 
-# List of supported providers
-supported_providers = [
-    "openai",
-    "azure_openai",
-    "databricks",
-    "anthropic",
-    "google",
-    "generative-ai",
-    "vertexai",
-    "mistral",
-    "cohere",
-    "perplexity",
-    "groq",
-    "writer",
-    "bedrock",
-    "cerebras",
-    "deepseek",
-    "fireworks",
-    "ollama",
-    "openrouter",
-    "xai",
-    "litellm",
-]
+# Canonical strings and compatibility aliases accepted by from_provider().
+supported_providers = list(ALIAS_TO_PROVIDER)
 
 
 @overload

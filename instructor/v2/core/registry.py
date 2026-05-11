@@ -11,6 +11,7 @@ from typing import Callable
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
+from instructor.v2.core.provider_specs import HANDLER_SPECS
 from instructor.v2.core.protocols import (
     AsyncStreamExtractor,
     MessageConverter,
@@ -356,91 +357,7 @@ class ModeRegistry:
 # Global registry instance
 mode_registry = ModeRegistry()
 
-_DEFAULT_HANDLER_SPECS: dict[Provider, tuple[str, tuple[Mode, ...]]] = {
-    Provider.OPENAI: (
-        "instructor.v2.providers.openai.handlers",
-        (
-            Mode.TOOLS,
-            Mode.JSON,
-            Mode.JSON_SCHEMA,
-            Mode.MD_JSON,
-            Mode.PARALLEL_TOOLS,
-            Mode.RESPONSES_TOOLS,
-        ),
-    ),
-    Provider.ANYSCALE: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.TOGETHER: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.DATABRICKS: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.DEEPSEEK: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.OPENROUTER: (
-        "instructor.v2.providers.openrouter.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.ANTHROPIC: (
-        "instructor.v2.providers.anthropic.handlers",
-        (Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.GENAI: (
-        "instructor.v2.providers.genai.handlers",
-        (Mode.TOOLS, Mode.JSON),
-    ),
-    Provider.GEMINI: (
-        "instructor.v2.providers.gemini.handlers",
-        (Mode.TOOLS, Mode.MD_JSON),
-    ),
-    Provider.COHERE: (
-        "instructor.v2.providers.cohere.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
-    ),
-    Provider.PERPLEXITY: (
-        "instructor.v2.providers.perplexity.handlers",
-        (Mode.MD_JSON,),
-    ),
-    Provider.XAI: (
-        "instructor.v2.providers.xai.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.GROQ: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
-    ),
-    Provider.MISTRAL: (
-        "instructor.v2.providers.mistral.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
-    ),
-    Provider.VERTEXAI: (
-        "instructor.v2.providers.vertexai.handlers",
-        (Mode.TOOLS, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.FIREWORKS: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
-    ),
-    Provider.BEDROCK: (
-        "instructor.v2.providers.bedrock.handlers",
-        (Mode.TOOLS, Mode.MD_JSON),
-    ),
-    Provider.CEREBRAS: (
-        "instructor.v2.providers.openai.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.PARALLEL_TOOLS),
-    ),
-    Provider.WRITER: (
-        "instructor.v2.providers.writer.handlers",
-        (Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
-    ),
-}
+_DEFAULT_HANDLER_SPECS = HANDLER_SPECS
 
 
 def _lazy_handler_loader(
