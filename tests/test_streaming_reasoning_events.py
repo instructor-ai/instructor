@@ -22,6 +22,7 @@ from instructor.mode import Mode
 # Lightweight mock event classes matching openai.types.responses shapes
 # ---------------------------------------------------------------------------
 
+
 class _MockFunctionCallArgumentsDeltaEvent:
     """Mimics ResponseFunctionCallArgumentsDeltaEvent."""
 
@@ -53,6 +54,7 @@ class _MockReasoningSummaryTextDoneEvent:
 # Monkeypatch helper: replace the openai import inside extract_json
 # so our mocks are recognised by isinstance checks.
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def _patch_openai_response_types(monkeypatch: pytest.MonkeyPatch) -> None:

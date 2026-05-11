@@ -216,7 +216,7 @@ async def test_mode_async_extraction(provider: Provider, mode: Mode):
 def test_anthropic_parallel_tools_extraction():
     """Test PARALLEL_TOOLS mode extraction (Anthropic-specific)."""
     client = instructor.from_provider(
-        "anthropic/claude-sonnet-4-6-20250627",
+        "anthropic/claude-sonnet-4-6",
         mode=Mode.PARALLEL_TOOLS,
     )
     response = client.chat.completions.create(

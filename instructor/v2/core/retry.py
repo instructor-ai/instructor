@@ -55,7 +55,7 @@ def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
     return parsed
 
 
-def _initialize_usage(provider: Provider) -> Any:
+def _initialize_usage(provider: Provider | Mode) -> Any:
     from openai.types.completion_usage import (
         CompletionTokensDetails,
         CompletionUsage,
@@ -71,7 +71,13 @@ def _initialize_usage(provider: Provider) -> Any:
         ),
         prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     )
-    if provider is Provider.ANTHROPIC:
+    anthropic_modes = {
+        Mode.ANTHROPIC_TOOLS,
+        Mode.ANTHROPIC_REASONING_TOOLS,
+        Mode.ANTHROPIC_JSON,
+        Mode.ANTHROPIC_PARALLEL_TOOLS,
+    }
+    if provider is Provider.ANTHROPIC or provider in anthropic_modes:
         from instructor.v2.providers.anthropic.usage import initialize_usage
 
         total_usage = initialize_usage()

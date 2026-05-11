@@ -24,7 +24,9 @@ def image_to_genai(image: Any) -> Any:
     types = _types()
     if isinstance(image.source, str) and image.source.startswith("gs://"):
         return types.Part.from_bytes(data=image.data, mime_type=image.media_type)
-    if isinstance(image.source, str) and image.source.startswith(("http://", "https://")):
+    if isinstance(image.source, str) and image.source.startswith(
+        ("http://", "https://")
+    ):
         return types.Part.from_bytes(
             data=requests.get(image.source).content,
             mime_type=image.media_type,

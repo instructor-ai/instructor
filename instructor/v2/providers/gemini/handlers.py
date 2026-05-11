@@ -284,7 +284,9 @@ class GeminiToolsHandler(GeminiHandlerBase):
             return self._parse_streaming(
                 response_model, response, validation_context, strict
             )
-        parsed = parse_gemini_tools(response_model, response, validation_context, strict)
+        parsed = parse_gemini_tools(
+            response_model, response, validation_context, strict
+        )
         return self._finalize(response_model, response, parsed)
 
 

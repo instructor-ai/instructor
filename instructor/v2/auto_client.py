@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Any, Callable, Union, Literal, overload
+
+import importlib
+from typing import Any, Callable, Literal, Union, cast, overload
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor import __version__
 from instructor.v2.core.mode import Mode
@@ -439,7 +441,7 @@ def _build_databricks(
     try:
         import os
         import openai
-        from instructor.v2.providers.openai.client import from_openai
+        from instructor import from_openai
 
         api_key = (
             api_key
@@ -678,7 +680,8 @@ def _build_gemini(
 ) -> InstructorType:
     try:
         import os
-        import google.generativeai as genai
+
+        genai = cast(Any, importlib.import_module("google.generativeai"))
         from instructor.v2.providers.gemini.client import from_gemini
 
         api_key = api_key or os.environ.get("GOOGLE_API_KEY")

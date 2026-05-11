@@ -19,7 +19,11 @@ from instructor.v2.core.errors import (
     IncompleteOutputException,
 )
 from instructor.v2.core.mode import Mode
-from instructor.v2.core.providers import Provider, normalize_mode_for_provider, provider_from_mode
+from instructor.v2.core.providers import (
+    Provider,
+    normalize_mode_for_provider,
+    provider_from_mode,
+)
 from instructor.v2.core.utils import classproperty
 
 

@@ -243,7 +243,11 @@ def _create_sync_wrapper(
         # Store in cache after successful call
         if cache is not None and response_model is not None:
             try:
-                from instructor.cache import BaseCache, make_cache_key, store_cached_response
+                from instructor.cache import (
+                    BaseCache,
+                    make_cache_key,
+                    store_cached_response,
+                )
                 from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
 
                 if isinstance(cache, BaseCache) and isinstance(response, _BM):
@@ -348,7 +352,11 @@ def _create_async_wrapper(
         # Store in cache after successful call
         if cache is not None and response_model is not None:
             try:
-                from instructor.cache import BaseCache, make_cache_key, store_cached_response
+                from instructor.cache import (
+                    BaseCache,
+                    make_cache_key,
+                    store_cached_response,
+                )
                 from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
 
                 if isinstance(cache, BaseCache) and isinstance(response, _BM):

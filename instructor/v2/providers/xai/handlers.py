@@ -37,7 +37,12 @@ else:
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.dsl.iterable import IterableBase
-from instructor.v2.dsl.parallel import ParallelBase, ParallelModel, get_types_array, handle_parallel_model
+from instructor.v2.dsl.parallel import (
+    ParallelBase,
+    ParallelModel,
+    get_types_array,
+    handle_parallel_model,
+)
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.json import (

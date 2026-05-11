@@ -98,13 +98,17 @@ def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase[T]:
 
 def VertexAIParallelModel(typehint: type[Iterable[T]]) -> ParallelBase[T]:
     """Compatibility shim for the VertexAI-owned parallel model."""
-    from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel as factory
+    from instructor.v2.providers.vertexai.parallel import (
+        VertexAIParallelModel as factory,
+    )
 
     return factory(typehint)
 
 
 def AnthropicParallelModel(typehint: type[Iterable[T]]) -> ParallelBase[T]:
     """Compatibility shim for the Anthropic-owned parallel model."""
-    from instructor.v2.providers.anthropic.parallel import AnthropicParallelModel as factory
+    from instructor.v2.providers.anthropic.parallel import (
+        AnthropicParallelModel as factory,
+    )
 
     return factory(typehint)

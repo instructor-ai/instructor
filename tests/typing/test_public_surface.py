@@ -11,7 +11,12 @@ import openai
 from pydantic import BaseModel
 
 from instructor.v2.auto_client import from_provider
-from instructor.v2.core.client import AsyncInstructor, AsyncResponse, Instructor, Response
+from instructor.v2.core.client import (
+    AsyncInstructor,
+    AsyncResponse,
+    Instructor,
+    Response,
+)
 from instructor.v2.core.function_calls import response_schema
 from instructor.v2.core.mode import Mode
 from instructor.v2.dsl.maybe import Maybe, MaybeBase
@@ -58,15 +63,29 @@ class User(BaseModel):
     name: str
 
 
-def check_response_helpers(sync_response: Response, async_response: AsyncResponse) -> None:
+def check_response_helpers(
+    sync_response: Response, async_response: AsyncResponse
+) -> None:
     assert_type(sync_response.create(response_model=User), User)
     assert_type(sync_response.create(response_model=None), Any)
-    assert_type(sync_response.create_with_completion(response_model=User), tuple[User, Any])
-    assert_type(sync_response.create_with_completion(response_model=None), tuple[Any, Any])
-    assert_type(sync_response.create_iterable(response_model=User), Generator[User, None, None])
-    assert_type(sync_response.create_iterable(response_model=None), Generator[Any, None, None])
-    assert_type(sync_response.create_partial(response_model=User), Generator[User, None, None])
-    assert_type(sync_response.create_partial(response_model=None), Generator[Any, None, None])
+    assert_type(
+        sync_response.create_with_completion(response_model=User), tuple[User, Any]
+    )
+    assert_type(
+        sync_response.create_with_completion(response_model=None), tuple[Any, Any]
+    )
+    assert_type(
+        sync_response.create_iterable(response_model=User), Generator[User, None, None]
+    )
+    assert_type(
+        sync_response.create_iterable(response_model=None), Generator[Any, None, None]
+    )
+    assert_type(
+        sync_response.create_partial(response_model=User), Generator[User, None, None]
+    )
+    assert_type(
+        sync_response.create_partial(response_model=None), Generator[Any, None, None]
+    )
 
     create_coro = async_response.create(response_model=User)
     create_any_coro = async_response.create(response_model=None)
@@ -95,7 +114,9 @@ def check_response_helpers(sync_response: Response, async_response: AsyncRespons
     )
 
 
-def check_client_stream_helpers(sync_client: Instructor, async_client: AsyncInstructor) -> None:
+def check_client_stream_helpers(
+    sync_client: Instructor, async_client: AsyncInstructor
+) -> None:
     assert_type(
         sync_client.create_iterable(response_model=User, messages=[]),
         Generator[User, None, None],
@@ -225,4 +246,7 @@ def check_base_model_helpers() -> None:
 
 
 def check_parallel_wrapper(parallel: ParallelBase[User]) -> None:
-    assert_type(parallel.from_response(response=None, mode=Mode.TOOLS), Generator[User, None, None])
+    assert_type(
+        parallel.from_response(response=None, mode=Mode.TOOLS),
+        Generator[User, None, None],
+    )

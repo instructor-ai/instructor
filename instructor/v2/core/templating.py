@@ -17,7 +17,9 @@ def process_message(
 ) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
     if provider == Provider.GENAI:
-        from instructor.v2.providers.genai.templating import process_message as process_genai_message
+        from instructor.v2.providers.genai.templating import (
+            process_message as process_genai_message,
+        )
 
         return process_genai_message(message, context, apply_template)
 
@@ -28,31 +30,41 @@ def process_message(
         and len(message.parts) > 0
         and not isinstance(message.parts[0], str)
     ):
-        from instructor.v2.providers.vertexai.templating import process_message as process_vertexai_message
+        from instructor.v2.providers.vertexai.templating import (
+            process_message as process_vertexai_message,
+        )
 
         return process_vertexai_message(message, context, apply_template)
 
     # OpenAI format
     if isinstance(message.get("content"), str):
-        from instructor.v2.providers.openai.templating import process_message as process_openai_message
+        from instructor.v2.providers.openai.templating import (
+            process_message as process_openai_message,
+        )
 
         return process_openai_message(message, context, apply_template)
 
     # Anthropic format
     if isinstance(message.get("content"), list):
-        from instructor.v2.providers.anthropic.templating import process_message as process_anthropic_message
+        from instructor.v2.providers.anthropic.templating import (
+            process_message as process_anthropic_message,
+        )
 
         return process_anthropic_message(message, context, apply_template)
 
     # Gemini Support
     if isinstance(message.get("parts"), list):
-        from instructor.v2.providers.gemini.templating import process_message as process_gemini_message
+        from instructor.v2.providers.gemini.templating import (
+            process_message as process_gemini_message,
+        )
 
         return process_gemini_message(message, context, apply_template)
 
     # Cohere format
     if isinstance(message.get("message"), str):
-        from instructor.v2.providers.cohere.templating import process_message as process_cohere_message
+        from instructor.v2.providers.cohere.templating import (
+            process_message as process_cohere_message,
+        )
 
         return process_cohere_message(message, context, apply_template)
 

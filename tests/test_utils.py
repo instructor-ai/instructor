@@ -426,7 +426,9 @@ def test_combine_system_messages_preserve_cache_control():
 
 def test_provider_enum_covers_supported_providers():
     provider_values = {provider.value for provider in Provider}
-    missing = [provider for provider in supported_providers if provider not in provider_values]
+    missing = [
+        provider for provider in supported_providers if provider not in provider_values
+    ]
     assert not missing, f"Missing providers in Provider enum: {missing}"
 
 
@@ -434,9 +436,11 @@ def test_get_provider_matches_supported_providers():
     provider_mapping = {
         "openai": Provider.OPENAI,
         "azure_openai": Provider.AZURE_OPENAI,
+        "anyscale": Provider.ANYSCALE,
         "databricks": Provider.DATABRICKS,
         "anthropic": Provider.ANTHROPIC,
         "google": Provider.GOOGLE,
+        "gemini": Provider.GEMINI,
         "generative-ai": Provider.GENERATIVE_AI,
         "vertexai": Provider.VERTEXAI,
         "mistral": Provider.MISTRAL,
@@ -452,13 +456,16 @@ def test_get_provider_matches_supported_providers():
         "openrouter": Provider.OPENROUTER,
         "xai": Provider.XAI,
         "litellm": Provider.LITELLM,
+        "together": Provider.TOGETHER,
     }
     provider_urls = {
         "openai": "https://api.openai.com/v1",
         "azure_openai": "https://example.openai.azure.com",
+        "anyscale": "https://api.endpoints.anyscale.com/v1",
         "databricks": "https://dbc-databricks.com",
         "anthropic": "https://api.anthropic.com",
         "google": "https://generativelanguage.googleapis.com",
+        "gemini": "https://gemini.googleapis.com",
         "generative-ai": "https://generative-ai.googleapis.com",
         "vertexai": "https://vertexai.googleapis.com",
         "mistral": "https://api.mistral.ai",
@@ -474,6 +481,7 @@ def test_get_provider_matches_supported_providers():
         "openrouter": "https://openrouter.ai",
         "xai": "https://api.x.ai",
         "litellm": "https://litellm.ai",
+        "together": "https://api.together.xyz/v1",
     }
     assert set(supported_providers) == set(provider_mapping)
     assert set(provider_mapping) == set(provider_urls)

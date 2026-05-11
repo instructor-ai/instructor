@@ -109,7 +109,7 @@ class AutoCache(BaseCache):
 
 
 def _import_diskcache():  # pragma: no cover – only executed when requested
-    import importlib
+    import importlib.util
 
     if importlib.util.find_spec("diskcache") is None:
         raise ImportError(

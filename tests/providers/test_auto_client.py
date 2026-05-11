@@ -18,7 +18,7 @@ USER_EXTRACTION_PROMPT = {
 
 # --- Providers to test (from main.py) ---
 PROVIDERS = [
-    "anthropic/claude-sonnet-4-6-20250627",
+    "anthropic/claude-sonnet-4-6",
     "google/gemini-pro",
     "openai/gpt-4o-mini",
     "azure_openai/gpt-4o-mini",
@@ -144,9 +144,7 @@ def test_additional_kwargs_passed():
         pytest.skip("Skipping live Anthropic test without credentials")
         return
 
-    client = instructor.from_provider(
-        "anthropic/claude-sonnet-4-6-20250627", max_tokens=10
-    )
+    client = instructor.from_provider("anthropic/claude-sonnet-4-6", max_tokens=10)
 
     with pytest.raises(InstructorRetryException) as excinfo:
         client.chat.completions.create(

@@ -240,7 +240,7 @@ def from_xai(
         from instructor.v2.core.errors import ConfigurationError
 
         raise ConfigurationError(
-            'The xai-sdk package is required to use the xAI provider. '
+            "The xai-sdk package is required to use the xAI provider. "
             'Install it with `uv pip install "instructor[xai]"` '
             '(or `pip install "instructor[xai]"`).'
         )
@@ -465,7 +465,7 @@ def from_xai(
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(json_chunks)
                 elif issubclass(rm, PartialBase):
-                    return rm.model_from_chunks(json_chunks)
+                    return cast(Any, rm).model_from_chunks(json_chunks)
                 else:
                     raise ValueError(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
@@ -490,7 +490,7 @@ def from_xai(
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(args)
                 elif issubclass(rm, PartialBase):
-                    return rm.model_from_chunks(args)
+                    return cast(Any, rm).model_from_chunks(args)
                 else:
                     raise ValueError(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"

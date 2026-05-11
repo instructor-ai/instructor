@@ -19,6 +19,7 @@ from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
+
 def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
     """Generate Bedrock tool schema from a Pydantic model."""
     schema = response_model.model_json_schema()
@@ -166,7 +167,9 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
     if image_url.startswith("https://"):
         response = requests.get(image_url, timeout=30)
         response.raise_for_status()
-        mime = response.headers.get("Content-Type") or mimetypes.guess_type(image_url)[0]
+        mime = (
+            response.headers.get("Content-Type") or mimetypes.guess_type(image_url)[0]
+        )
         fmt = _normalize_bedrock_image_format(mime or "")
         return {"image": {"format": fmt, "source": {"bytes": response.content}}}
 

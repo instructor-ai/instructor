@@ -694,7 +694,9 @@ def handle_vertexai_tools(
 def handle_vertexai_json(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
-    from instructor.v2.providers.vertexai.handlers import vertexai_process_json_response
+    from instructor.v2.providers.vertexai.handlers import (
+        vertexai_process_json_response,
+    )
 
     if response_model is None:
         return None, new_kwargs
@@ -706,3 +708,10 @@ def handle_vertexai_json(
     new_kwargs["contents"] = contents
     new_kwargs["generation_config"] = generation_config
     return response_model, new_kwargs
+
+
+def reask_genai_tools(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    """Compatibility shim for the GenAI-owned reask helper."""
+    from instructor.v2.providers.genai.handlers import reask_genai_tools as impl
+
+    return impl(*args, **kwargs)

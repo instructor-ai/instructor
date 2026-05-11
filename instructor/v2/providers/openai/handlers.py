@@ -448,9 +448,12 @@ class OpenAIHandlerBase(ModeHandler):
 
         streaming_kwargs = dict(parse_kwargs)
         try:
-            if "mode" in inspect.signature(
-                response_model.from_streaming_response  # type: ignore[attr-defined]
-            ).parameters:
+            if (
+                "mode"
+                in inspect.signature(
+                    response_model.from_streaming_response  # type: ignore[attr-defined]
+                ).parameters
+            ):
                 streaming_kwargs["mode"] = self.mode
         except (TypeError, ValueError):
             pass
@@ -707,9 +710,11 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
     ) -> Any:
         """Parse JSON schema response."""
         # Check for streaming
-        if isinstance(response_model, type) and (
-            stream or self._consume_streaming_flag(response_model)
-        ) and issubclass(response_model, (IterableBase, PartialBase)):
+        if (
+            isinstance(response_model, type)
+            and (stream or self._consume_streaming_flag(response_model))
+            and issubclass(response_model, (IterableBase, PartialBase))
+        ):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -1077,9 +1082,11 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
     ) -> Any:
         """Parse Responses API response."""
         # Check for streaming
-        if isinstance(response_model, type) and (
-            stream or self._consume_streaming_flag(response_model)
-        ) and issubclass(response_model, (IterableBase, PartialBase)):
+        if (
+            isinstance(response_model, type)
+            and (stream or self._consume_streaming_flag(response_model))
+            and issubclass(response_model, (IterableBase, PartialBase))
+        ):
             return self._parse_streaming_response(
                 response_model,
                 response,

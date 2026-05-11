@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, TYPE_CHECKING, overload
+import importlib
+from typing import Any, Literal, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.mode import Mode
@@ -12,18 +13,15 @@ from instructor.v2.core.patch import patch_v2
 # Ensure handlers are registered.
 from instructor.v2.providers.gemini import handlers  # noqa: F401
 
-if TYPE_CHECKING:
-    import google.generativeai as genai
-else:
-    try:
-        import google.generativeai as genai
-    except ImportError:
-        genai = None
+try:
+    genai: Any = importlib.import_module("google.generativeai")
+except ImportError:
+    genai = None
 
 
 @overload
 def from_gemini(
-    client: genai.GenerativeModel,
+    client: Any,
     mode: Mode = Mode.MD_JSON,
     use_async: Literal[False] = False,
     **kwargs: Any,
@@ -32,7 +30,7 @@ def from_gemini(
 
 @overload
 def from_gemini(
-    client: genai.GenerativeModel,
+    client: Any,
     mode: Mode = Mode.MD_JSON,
     use_async: Literal[True] = True,
     **kwargs: Any,
@@ -40,7 +38,7 @@ def from_gemini(
 
 
 def from_gemini(
-    client: genai.GenerativeModel,
+    client: Any,
     mode: Mode = Mode.MD_JSON,
     use_async: bool = False,
     **kwargs: Any,
@@ -66,7 +64,8 @@ def from_gemini(
             "pip install google-generativeai"
         )
 
-    if not isinstance(client, genai.GenerativeModel):
+    generative_model_type = getattr(genai, "GenerativeModel", None)
+    if generative_model_type is None or not isinstance(client, generative_model_type):
         from instructor.v2.core.errors import ClientError
 
         raise ClientError(

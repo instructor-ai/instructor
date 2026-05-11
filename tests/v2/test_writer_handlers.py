@@ -63,9 +63,7 @@ class MockResponse:
 
 
 def test_tools_request_uses_auto_tool_choice() -> None:
-    _, kwargs = mode_registry.get_handlers(
-        Provider.WRITER, Mode.TOOLS
-    ).request_handler(
+    _, kwargs = mode_registry.get_handlers(Provider.WRITER, Mode.TOOLS).request_handler(
         Answer,
         {"messages": [{"role": "user", "content": "What is 2+2?"}]},
     )

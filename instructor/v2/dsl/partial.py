@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 import re
-import sys
 import types
 import warnings
 from collections.abc import AsyncGenerator, Callable, Generator, Iterable
@@ -37,11 +36,8 @@ from instructor.v2.dsl.json_tracker import JsonCompleteness, is_json_complete
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
-if sys.version_info >= (3, 10):
-    # types.UnionType is only available in Python 3.10 and above
-    UNION_ORIGINS = (Union, types.UnionType)
-else:
-    UNION_ORIGINS = (Union,)
+UNION_TYPE = getattr(types, "UnionType", None)
+UNION_ORIGINS = (Union, UNION_TYPE) if UNION_TYPE is not None else (Union,)
 
 # Track models currently being processed to prevent infinite recursion
 # with self-referential models (e.g., TreeNode with children: List["TreeNode"])
@@ -105,7 +101,8 @@ def process_potential_object(potential_object, partial_mode, partial_model, **kw
     validation_kwargs = {
         key: value
         for key, value in kwargs.items()
-        if key in {"context", "strict", "extra", "from_attributes", "by_alias", "by_name"}
+        if key
+        in {"context", "strict", "extra", "from_attributes", "by_alias", "by_name"}
     }
 
     if root_complete and has_data and original_model is not None:
@@ -284,7 +281,7 @@ def _make_field_optional(
         )
 
         # Reconstruct the generic type with modified arguments
-        if generic_base is types.UnionType:
+        if generic_base is UNION_TYPE:
             tmp_field.annotation = Optional[reduce(or_, modified_args)]  # type: ignore[valid-type]
         else:
             tmp_field.annotation = (
@@ -448,8 +445,7 @@ class PartialBase(Generic[T_Model]):
     @staticmethod
     def extract_json(
         completion: Iterable[Any],
-        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]]
-        | Any,
+        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]] | Any,
         on_event: Callable[..., Any] | None = None,
     ) -> Generator[str, None, None]:
         from instructor.v2.core.mode import Mode
@@ -589,7 +585,7 @@ class Partial(Generic[T_Model]):
                 modified_args = tuple(_process_generic_arg(arg) for arg in generic_args)
 
                 # Reconstruct the generic type with modified arguments
-                if generic_base is types.UnionType:
+                if generic_base is UNION_TYPE:
                     tmp_field.annotation = reduce(or_, modified_args)
                 else:
                     tmp_field.annotation = (

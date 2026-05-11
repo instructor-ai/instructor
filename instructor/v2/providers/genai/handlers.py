@@ -329,13 +329,13 @@ class GenAIHandlerBase(ModeHandler):
             )
 
         if isinstance(model, IterableBase):
-            return list(model.tasks)
+            return list(cast(Any, model).tasks)
 
         if isinstance(response_model, ParallelBase):
             return model
 
         if isinstance(model, AdapterBase):
-            return model.content
+            return cast(Any, model).content
 
         model._raw_response = response  # type: ignore[attr-defined]
         return model

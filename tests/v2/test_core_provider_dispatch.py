@@ -116,13 +116,17 @@ def test_update_total_usage_dispatches_anthropic_to_provider_module(
     ("instance", "method_name", "target", "args"),
     [
         (
-            Image(source="data:image/png;base64,AA==", media_type="image/png", data="AA=="),
+            Image(
+                source="data:image/png;base64,AA==", media_type="image/png", data="AA=="
+            ),
             "to_openai",
             "instructor.v2.providers.openai.multimodal.image_to_openai",
             (Mode.TOOLS,),
         ),
         (
-            Image(source="data:image/png;base64,AA==", media_type="image/png", data="AA=="),
+            Image(
+                source="data:image/png;base64,AA==", media_type="image/png", data="AA=="
+            ),
             "to_anthropic",
             "instructor.v2.providers.anthropic.multimodal.image_to_anthropic",
             (),
@@ -134,7 +138,11 @@ def test_update_total_usage_dispatches_anthropic_to_provider_module(
             (),
         ),
         (
-            PDF(source="https://example.com/file.pdf", media_type="application/pdf", data=None),
+            PDF(
+                source="https://example.com/file.pdf",
+                media_type="application/pdf",
+                data=None,
+            ),
             "to_mistral",
             "instructor.v2.providers.mistral.multimodal.pdf_to_mistral",
             (),

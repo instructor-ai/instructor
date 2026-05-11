@@ -10,7 +10,7 @@ from collections.abc import (
     Generator,
     Iterable as TypingIterable,
 )
-from typing import Any, get_origin
+from typing import Any, cast, get_origin
 
 from pydantic import BaseModel
 import jsonref
@@ -354,7 +354,8 @@ class VertexAIToolsHandler(VertexAIHandlerBase):
                 response_model, response, validation_context, strict
             )
         if isinstance(response_model, ParallelBase):
-            return response_model.from_response(  # type: ignore[attr-defined]
+            parallel_model = cast(ParallelBase[Any], response_model)
+            return parallel_model.from_response(
                 response,
                 mode=Mode.VERTEXAI_PARALLEL_TOOLS,
                 validation_context=validation_context,
@@ -403,7 +404,9 @@ class VertexAIJSONHandler(VertexAIHandlerBase):
             return self._parse_streaming(
                 response_model, response, validation_context, strict
             )
-        parsed = parse_vertexai_json(response_model, response, validation_context, strict)
+        parsed = parse_vertexai_json(
+            response_model, response, validation_context, strict
+        )
         return self._finalize(response_model, response, parsed)
 
 
@@ -441,7 +444,8 @@ class VertexAIParallelToolsHandler(VertexAIHandlerBase):
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         if isinstance(response_model, ParallelBase):
-            return response_model.from_response(  # type: ignore[attr-defined]
+            parallel_model = cast(ParallelBase[Any], response_model)
+            return parallel_model.from_response(
                 response,
                 mode=Mode.VERTEXAI_PARALLEL_TOOLS,
                 validation_context=validation_context,

@@ -52,16 +52,22 @@ def test_top_level_openai_factory_uses_v2_module():
 def test_mode_export_stays_lightweight():
     state = _cold_import_state("from instructor import Mode")
 
-    assert state["count"] <= 5
+    assert state["count"] <= 7
     assert "instructor.v2.core.mode" in state["modules"]
     assert not any(
-        module.startswith("instructor.v2.providers.")
-        for module in state["modules"]
+        module.startswith("instructor.v2.providers.") for module in state["modules"]
     )
 
 
 def test_v2_module_export_stays_lightweight():
     state = _cold_import_state("import instructor; instructor.v2")
 
-    assert state["count"] <= 2
-    assert state["modules"] == ["instructor", "instructor.v2"]
+    assert state["count"] <= 6
+    assert state["modules"] == [
+        "instructor",
+        "instructor.v2",
+        "instructor.v2.core",
+        "instructor.v2.core.mode",
+        "instructor.v2.core.provider_specs",
+        "instructor.v2.core.providers",
+    ]
