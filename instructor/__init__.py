@@ -110,12 +110,6 @@ def __getattr__(name: str) -> Any:
     return value
 
 
-def from_vertexai(*args: Any, **kwargs: Any) -> Any:
-    from .v2.providers.vertexai.client import from_vertexai as from_vertexai_v2
-
-    return from_vertexai_v2(*args, **kwargs)
-
-
 def _add_optional_export(name: str, *packages: str) -> None:
     if all(importlib.util.find_spec(package) is not None for package in packages):
         __all__.append(name)

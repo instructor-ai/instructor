@@ -9,9 +9,6 @@ from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.patch import patch_v2
 
-# Ensure handlers are registered.
-from instructor.v2.providers.vertexai import handlers  # noqa: F401
-
 if TYPE_CHECKING:
     import vertexai.generative_models as gm
 else:

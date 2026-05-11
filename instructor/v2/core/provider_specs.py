@@ -63,6 +63,40 @@ def _spec(
     )
 
 
+_OPENAI_COMPAT_SUPPORTED_MODES = (
+    Mode.TOOLS,
+    Mode.JSON,
+    Mode.JSON_SCHEMA,
+    Mode.MD_JSON,
+    Mode.PARALLEL_TOOLS,
+)
+_OPENAI_COMPAT_UNSUPPORTED_MODES = (Mode.RESPONSES_TOOLS,)
+_OPENAI_COMPAT_LEGACY_MODES = {
+    Mode.FUNCTIONS: Mode.TOOLS,
+    Mode.TOOLS_STRICT: Mode.TOOLS,
+    Mode.JSON_O1: Mode.JSON_SCHEMA,
+}
+
+
+def _openai_compat_spec(
+    provider: Provider,
+    *,
+    alias: str,
+    from_function: str,
+) -> ProviderSpec:
+    return _spec(
+        provider,
+        aliases=(alias,),
+        handler_module="instructor.v2.providers.openai.handlers",
+        supported_modes=_OPENAI_COMPAT_SUPPORTED_MODES,
+        unsupported_modes=_OPENAI_COMPAT_UNSUPPORTED_MODES,
+        legacy_modes=_OPENAI_COMPAT_LEGACY_MODES,
+        from_function=from_function,
+        client_module="instructor.v2.providers.openai.client",
+        sdk_module="openai",
+    )
+
+
 PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
     {
         Provider.OPENAI: _spec(
@@ -90,89 +124,25 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             basic_modes=(Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
             async_modes=(Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
         ),
-        Provider.ANYSCALE: _spec(
+        Provider.ANYSCALE: _openai_compat_spec(
             Provider.ANYSCALE,
-            aliases=("anyscale",),
-            handler_module="instructor.v2.providers.openai.handlers",
-            supported_modes=(
-                Mode.TOOLS,
-                Mode.JSON,
-                Mode.JSON_SCHEMA,
-                Mode.MD_JSON,
-                Mode.PARALLEL_TOOLS,
-            ),
-            unsupported_modes=(Mode.RESPONSES_TOOLS,),
-            legacy_modes={
-                Mode.FUNCTIONS: Mode.TOOLS,
-                Mode.TOOLS_STRICT: Mode.TOOLS,
-                Mode.JSON_O1: Mode.JSON_SCHEMA,
-            },
+            alias="anyscale",
             from_function="from_anyscale",
-            client_module="instructor.v2.providers.openai.client",
-            sdk_module="openai",
         ),
-        Provider.TOGETHER: _spec(
+        Provider.TOGETHER: _openai_compat_spec(
             Provider.TOGETHER,
-            aliases=("together",),
-            handler_module="instructor.v2.providers.openai.handlers",
-            supported_modes=(
-                Mode.TOOLS,
-                Mode.JSON,
-                Mode.JSON_SCHEMA,
-                Mode.MD_JSON,
-                Mode.PARALLEL_TOOLS,
-            ),
-            unsupported_modes=(Mode.RESPONSES_TOOLS,),
-            legacy_modes={
-                Mode.FUNCTIONS: Mode.TOOLS,
-                Mode.TOOLS_STRICT: Mode.TOOLS,
-                Mode.JSON_O1: Mode.JSON_SCHEMA,
-            },
+            alias="together",
             from_function="from_together",
-            client_module="instructor.v2.providers.openai.client",
-            sdk_module="openai",
         ),
-        Provider.DATABRICKS: _spec(
+        Provider.DATABRICKS: _openai_compat_spec(
             Provider.DATABRICKS,
-            aliases=("databricks",),
-            handler_module="instructor.v2.providers.openai.handlers",
-            supported_modes=(
-                Mode.TOOLS,
-                Mode.JSON,
-                Mode.JSON_SCHEMA,
-                Mode.MD_JSON,
-                Mode.PARALLEL_TOOLS,
-            ),
-            unsupported_modes=(Mode.RESPONSES_TOOLS,),
-            legacy_modes={
-                Mode.FUNCTIONS: Mode.TOOLS,
-                Mode.TOOLS_STRICT: Mode.TOOLS,
-                Mode.JSON_O1: Mode.JSON_SCHEMA,
-            },
+            alias="databricks",
             from_function="from_databricks",
-            client_module="instructor.v2.providers.openai.client",
-            sdk_module="openai",
         ),
-        Provider.DEEPSEEK: _spec(
+        Provider.DEEPSEEK: _openai_compat_spec(
             Provider.DEEPSEEK,
-            aliases=("deepseek",),
-            handler_module="instructor.v2.providers.openai.handlers",
-            supported_modes=(
-                Mode.TOOLS,
-                Mode.JSON,
-                Mode.JSON_SCHEMA,
-                Mode.MD_JSON,
-                Mode.PARALLEL_TOOLS,
-            ),
-            unsupported_modes=(Mode.RESPONSES_TOOLS,),
-            legacy_modes={
-                Mode.FUNCTIONS: Mode.TOOLS,
-                Mode.TOOLS_STRICT: Mode.TOOLS,
-                Mode.JSON_O1: Mode.JSON_SCHEMA,
-            },
+            alias="deepseek",
             from_function="from_deepseek",
-            client_module="instructor.v2.providers.openai.client",
-            sdk_module="openai",
         ),
         Provider.OPENROUTER: _spec(
             Provider.OPENROUTER,
