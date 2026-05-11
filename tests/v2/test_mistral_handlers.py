@@ -412,21 +412,21 @@ class TestMistralMDJSONHandler:
 class TestMistralModeNormalization:
     """Tests for Mistral mode handling in v2."""
 
-    def test_mistral_tools_not_registered(self):
-        """Test MISTRAL_TOOLS is not registered in v2."""
+    def test_mistral_tools_normalizes_to_tools(self):
+        """Legacy MISTRAL_TOOLS remains accepted via normalization."""
         from instructor.v2.core.registry import mode_registry, normalize_mode
 
         result = normalize_mode(Provider.MISTRAL, Mode.MISTRAL_TOOLS)
-        assert result == Mode.MISTRAL_TOOLS
-        assert not mode_registry.is_registered(Provider.MISTRAL, Mode.MISTRAL_TOOLS)
+        assert result == Mode.TOOLS
+        assert mode_registry.is_registered(Provider.MISTRAL, Mode.MISTRAL_TOOLS)
 
-    def test_mistral_structured_outputs_not_registered(self):
-        """Test MISTRAL_STRUCTURED_OUTPUTS is not registered in v2."""
+    def test_mistral_structured_outputs_normalizes_to_json_schema(self):
+        """Legacy structured outputs remains accepted via normalization."""
         from instructor.v2.core.registry import mode_registry, normalize_mode
 
         result = normalize_mode(Provider.MISTRAL, Mode.MISTRAL_STRUCTURED_OUTPUTS)
-        assert result == Mode.MISTRAL_STRUCTURED_OUTPUTS
-        assert not mode_registry.is_registered(
+        assert result == Mode.JSON_SCHEMA
+        assert mode_registry.is_registered(
             Provider.MISTRAL, Mode.MISTRAL_STRUCTURED_OUTPUTS
         )
 

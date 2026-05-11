@@ -2,9 +2,15 @@ import importlib
 import json
 import subprocess
 import sys
+from typing import TypedDict
 
 
-def _cold_import_state(code: str) -> dict[str, object]:
+class ColdImportState(TypedDict):
+    modules: list[str]
+    count: int
+
+
+def _cold_import_state(code: str) -> ColdImportState:
     probe = """
 import json
 import sys

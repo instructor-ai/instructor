@@ -68,10 +68,12 @@ def test_normalize_mode_passthrough_for_generic_modes(mode: Mode) -> None:
         (Provider.OPENROUTER, Mode.OPENROUTER_STRUCTURED_OUTPUTS),
     ],
 )
-def test_legacy_modes_are_not_normalized(provider: Provider, legacy_mode: Mode) -> None:
-    """Provider-specific legacy modes are rejected by the v2 registry."""
+def test_legacy_modes_normalize_with_warning(
+    provider: Provider, legacy_mode: Mode
+) -> None:
+    """Provider-specific legacy modes remain accepted through normalization."""
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        assert normalize_mode(provider, legacy_mode) == legacy_mode
-        assert not mode_registry.is_registered(provider, legacy_mode)
-    assert len(caught) == 0
+        assert normalize_mode(provider, legacy_mode) != legacy_mode
+        assert mode_registry.is_registered(provider, legacy_mode)
+    assert len(caught) == 1

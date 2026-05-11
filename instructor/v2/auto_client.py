@@ -176,7 +176,6 @@ def _build_openai(
     try:
         import openai
         import httpx
-        from instructor.v2.providers.openai.client import from_openai
         from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
         from collections.abc import Mapping
         from typing import cast
@@ -238,7 +237,9 @@ def _build_openai(
                 _strict_response_validation=strict_response_validation,
             )
 
-        result = from_openai(
+        import instructor
+
+        result = instructor.from_openai(
             client,
             model=model_name,
             mode=mode if mode else Mode.TOOLS,
@@ -607,7 +608,6 @@ def _build_google(
     # Import google-genai package - catch ImportError only for actual imports
     try:
         import google.genai as genai
-        from instructor.v2.providers.genai.client import from_genai
     except ImportError as e:
         from instructor.v2.core.errors import ConfigurationError
 
@@ -645,7 +645,9 @@ def _build_google(
         # Default to TOOLS for v2
         # Extract model from kwargs if present, otherwise use model_name
         model_param = kwargs.pop("model", model_name)
-        result = from_genai(
+        import instructor
+
+        result = instructor.from_genai(
             client,
             mode=mode if mode else Mode.TOOLS,
             use_async=async_client,
@@ -1145,7 +1147,6 @@ def _build_vertexai(
     try:
         import vertexai
         import vertexai.generative_models as gm
-        from instructor.v2.providers.vertexai.client import from_vertexai
     except ImportError as e:
         from instructor.v2.core.errors import ConfigurationError
 
@@ -1174,7 +1175,9 @@ def _build_vertexai(
         vertexai.init(project=project, location=location, credentials=credentials)
 
         client = gm.GenerativeModel(model_name)
-        result = from_vertexai(
+        import instructor
+
+        result = instructor.from_vertexai(
             client,
             use_async=async_client,
             mode=mode if mode else Mode.TOOLS,

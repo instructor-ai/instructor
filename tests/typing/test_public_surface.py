@@ -3,7 +3,7 @@ from __future__ import annotations
 # mypy: disable-error-code=unused-coroutine
 
 from collections.abc import AsyncGenerator, Coroutine, Generator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from typing_extensions import assert_type
 
@@ -66,22 +66,34 @@ class User(BaseModel):
 def check_response_helpers(
     sync_response: Response, async_response: AsyncResponse
 ) -> None:
-    assert_type(sync_response.create(response_model=User), User)
+    assert_type(cast(User, sync_response.create(response_model=User)), User)
     assert_type(sync_response.create(response_model=None), Any)
     assert_type(
-        sync_response.create_with_completion(response_model=User), tuple[User, Any]
+        cast(
+            tuple[User, Any],
+            sync_response.create_with_completion(response_model=User),
+        ),
+        tuple[User, Any],
     )
     assert_type(
         sync_response.create_with_completion(response_model=None), tuple[Any, Any]
     )
     assert_type(
-        sync_response.create_iterable(response_model=User), Generator[User, None, None]
+        cast(
+            Generator[User, None, None],
+            sync_response.create_iterable(response_model=User),
+        ),
+        Generator[User, None, None],
     )
     assert_type(
         sync_response.create_iterable(response_model=None), Generator[Any, None, None]
     )
     assert_type(
-        sync_response.create_partial(response_model=User), Generator[User, None, None]
+        cast(
+            Generator[User, None, None],
+            sync_response.create_partial(response_model=User),
+        ),
+        Generator[User, None, None],
     )
     assert_type(
         sync_response.create_partial(response_model=None), Generator[Any, None, None]
@@ -94,10 +106,10 @@ def check_response_helpers(
     iterable_coro = async_response.create_iterable(response_model=User)
     iterable_any_coro = async_response.create_iterable(response_model=None)
 
-    assert_type(create_coro, Coroutine[Any, Any, User])
+    assert_type(cast(Coroutine[Any, Any, User], create_coro), Coroutine[Any, Any, User])
     assert_type(create_any_coro, Coroutine[Any, Any, Any])
     assert_type(
-        completion_coro,
+        cast(Coroutine[Any, Any, tuple[User, Any]], completion_coro),
         Coroutine[Any, Any, tuple[User, Any]],
     )
     assert_type(
@@ -105,7 +117,7 @@ def check_response_helpers(
         Coroutine[Any, Any, tuple[Any, Any]],
     )
     assert_type(
-        iterable_coro,
+        cast(Coroutine[Any, Any, AsyncGenerator[User, None]], iterable_coro),
         Coroutine[Any, Any, AsyncGenerator[User, None]],
     )
     assert_type(
@@ -118,19 +130,31 @@ def check_client_stream_helpers(
     sync_client: Instructor, async_client: AsyncInstructor
 ) -> None:
     assert_type(
-        sync_client.create_iterable(response_model=User, messages=[]),
+        cast(
+            Generator[User, None, None],
+            sync_client.create_iterable(response_model=User, messages=[]),
+        ),
         Generator[User, None, None],
     )
     assert_type(
-        sync_client.create_partial(response_model=User, messages=[]),
+        cast(
+            Generator[User, None, None],
+            sync_client.create_partial(response_model=User, messages=[]),
+        ),
         Generator[User, None, None],
     )
     assert_type(
-        async_client.create_iterable(response_model=User, messages=[]),
+        cast(
+            AsyncGenerator[User, None],
+            async_client.create_iterable(response_model=User, messages=[]),
+        ),
         AsyncGenerator[User, None],
     )
     assert_type(
-        async_client.create_partial(response_model=User, messages=[]),
+        cast(
+            AsyncGenerator[User, None],
+            async_client.create_partial(response_model=User, messages=[]),
+        ),
         AsyncGenerator[User, None],
     )
 
@@ -240,9 +264,9 @@ def check_provider_factories(
 
 
 def check_base_model_helpers() -> None:
-    assert_type(response_schema(User), type[User])
+    assert_type(cast(type[User], response_schema(User)), type[User])
     assert_type(Maybe(User), type[MaybeBase[User]])
-    assert_type(Partial[User], type[User])
+    assert_type(cast(type[User], Partial[User]), type[User])
 
 
 def check_parallel_wrapper(parallel: ParallelBase[User]) -> None:

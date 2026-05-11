@@ -42,22 +42,22 @@ class TestCerebrasModeNormalization:
         assert result == Mode.MD_JSON
 
     def test_mode_normalization_cerebras_tools(self):
-        """Test CEREBRAS_TOOLS is not supported in v2."""
+        """Legacy CEREBRAS_TOOLS remains accepted via normalization."""
         from instructor.v2.core.registry import mode_registry, normalize_mode
 
         result = normalize_mode(Provider.CEREBRAS, Mode.CEREBRAS_TOOLS)
 
-        assert result == Mode.CEREBRAS_TOOLS
-        assert not mode_registry.is_registered(Provider.CEREBRAS, Mode.CEREBRAS_TOOLS)
+        assert result == Mode.TOOLS
+        assert mode_registry.is_registered(Provider.CEREBRAS, Mode.CEREBRAS_TOOLS)
 
     def test_mode_normalization_cerebras_json(self):
-        """Test CEREBRAS_JSON is not supported in v2."""
+        """Legacy CEREBRAS_JSON remains accepted via normalization."""
         from instructor.v2.core.registry import mode_registry, normalize_mode
 
         result = normalize_mode(Provider.CEREBRAS, Mode.CEREBRAS_JSON)
 
-        assert result == Mode.CEREBRAS_JSON
-        assert not mode_registry.is_registered(Provider.CEREBRAS, Mode.CEREBRAS_JSON)
+        assert result == Mode.MD_JSON
+        assert mode_registry.is_registered(Provider.CEREBRAS, Mode.CEREBRAS_JSON)
 
 
 # ============================================================================

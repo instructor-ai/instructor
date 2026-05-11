@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from instructor.v2.core.mode import Mode
+from instructor.v2.core.mode import DEPRECATED_TO_CORE, Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.provider_specs import HANDLER_SPECS
 from instructor.v2.core.protocols import (
@@ -34,8 +34,11 @@ _HANDLER_ATTRS = {
 
 
 def normalize_mode(_provider: Provider, mode: Mode) -> Mode:
-    """Return the requested v2 mode unchanged."""
-    return mode
+    """Normalize backwards-compatible provider-specific aliases to core modes."""
+    normalized = DEPRECATED_TO_CORE.get(mode, mode)
+    if normalized is not mode:
+        Mode.warn_deprecated_mode(mode)
+    return normalized
 
 
 @dataclass

@@ -196,9 +196,9 @@ def test_alias_providers_reuse_openai_handlers(provider: Provider, mode: Mode) -
 
 
 @pytest.mark.parametrize("provider", OPENAI_COMPAT_PROVIDERS)
-def test_legacy_modes_remain_unregistered(provider: Provider) -> None:
+def test_legacy_modes_remain_accepted(provider: Provider) -> None:
     spec = PROVIDER_SPECS[provider]
 
     for legacy_mode in spec.legacy_modes:
-        assert normalize_mode(provider, legacy_mode) == legacy_mode
-        assert not mode_registry.is_registered(provider, legacy_mode)
+        assert normalize_mode(provider, legacy_mode) != legacy_mode
+        assert mode_registry.is_registered(provider, legacy_mode)

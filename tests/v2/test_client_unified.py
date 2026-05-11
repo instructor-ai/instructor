@@ -192,15 +192,15 @@ def test_generic_mode_passes_through(provider: Provider, mode: Mode) -> None:
 
 
 @pytest.mark.parametrize("provider,legacy_mode", _get_provider_legacy_mode_params())
-def test_legacy_mode_not_supported(provider: Provider, legacy_mode: Mode) -> None:
-    """Test that legacy modes are not registered in v2."""
-    assert not mode_registry.is_registered(provider, legacy_mode), (
-        f"Legacy mode {legacy_mode.value} should NOT be registered for {provider.value}"
-    )
-
-    # normalize_mode is a no-op in v2 for legacy modes
+def test_legacy_mode_normalizes_to_registered_mode(
+    provider: Provider, legacy_mode: Mode
+) -> None:
+    """Legacy provider-specific modes normalize to registered v2 modes."""
     result = normalize_mode(provider, legacy_mode)
-    assert result == legacy_mode
+    assert result != legacy_mode
+    assert mode_registry.is_registered(provider, legacy_mode), (
+        f"Legacy mode {legacy_mode.value} should remain accepted for {provider.value}"
+    )
 
 
 # ============================================================================

@@ -183,13 +183,19 @@ def test_openai_provider_base_url_handling(async_client, base_url, expected_base
             mock_instructor = MagicMock()
             mock_from_openai.return_value = mock_instructor
 
-            provider_kwargs = {"api_key": "test-key"}
-            if base_url is not None:
-                provider_kwargs["base_url"] = base_url
             if async_client:
-                provider_kwargs["async_client"] = True
-
-            client = from_provider("openai/gpt-4", **provider_kwargs)
+                client = from_provider(
+                    "openai/gpt-4",
+                    api_key="test-key",
+                    base_url=base_url,
+                    async_client=True,
+                )
+            else:
+                client = from_provider(
+                    "openai/gpt-4",
+                    api_key="test-key",
+                    base_url=base_url,
+                )
 
             mock_openai_class.assert_called_once()
             _, kwargs = mock_openai_class.call_args

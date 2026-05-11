@@ -42,22 +42,22 @@ class TestWriterModeNormalization:
         assert result == Mode.MD_JSON
 
     def test_mode_normalization_writer_tools(self):
-        """Test WRITER_TOOLS is not supported in v2."""
+        """Legacy WRITER_TOOLS remains accepted via normalization."""
         from instructor.v2.core.registry import mode_registry, normalize_mode
 
         result = normalize_mode(Provider.WRITER, Mode.WRITER_TOOLS)
 
-        assert result == Mode.WRITER_TOOLS
-        assert not mode_registry.is_registered(Provider.WRITER, Mode.WRITER_TOOLS)
+        assert result == Mode.TOOLS
+        assert mode_registry.is_registered(Provider.WRITER, Mode.WRITER_TOOLS)
 
     def test_mode_normalization_writer_json(self):
-        """Test WRITER_JSON is not supported in v2."""
+        """Legacy WRITER_JSON remains accepted via normalization."""
         from instructor.v2.core.registry import mode_registry, normalize_mode
 
         result = normalize_mode(Provider.WRITER, Mode.WRITER_JSON)
 
-        assert result == Mode.WRITER_JSON
-        assert not mode_registry.is_registered(Provider.WRITER, Mode.WRITER_JSON)
+        assert result == Mode.MD_JSON
+        assert mode_registry.is_registered(Provider.WRITER, Mode.WRITER_JSON)
 
 
 # ============================================================================
