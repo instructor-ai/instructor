@@ -365,7 +365,10 @@ Before migrating, understand your current v1 provider:
 
    **Typing contract**: public factories should infer sync versus async clients
    from concrete client classes or literal flags, and response helpers should
-   preserve the caller's response-model type. Keep the executable assertions in
+   preserve the caller's response-model type. Use `create_iterable()` and
+   `create_partial()` when you want precise streaming inference; direct
+   `create(response_model=Iterable[...])` and `create(response_model=Partial[...])`
+   remain compatibility forms. Keep the executable assertions in
    `tests/typing/test_public_surface.py` up to date when changing public APIs.
 
 2. **Identify key components**:

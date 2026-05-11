@@ -17,7 +17,7 @@ from tenacity import (
     AsyncRetrying,
     Retrying,
 )
-from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
+from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator, Coroutine
 from typing_extensions import Self
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.core.hooks import Hooks, HookName
@@ -103,6 +103,24 @@ class Response:
             **kwargs,
         )
 
+    @overload
+    def create_with_completion(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | Retrying = 3,
+        **kwargs: Any,
+    ) -> tuple[T, Any]: ...
+
+    @overload
+    def create_with_completion(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | Retrying = 3,
+        **kwargs: Any,
+    ) -> tuple[Any, Any]: ...
+
     def create_with_completion(
         self,
         messages: str | list[ChatCompletionMessageParam] | None = None,
@@ -119,6 +137,24 @@ class Response:
             **kwargs,
         )
 
+    @overload
+    def create_iterable(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | Retrying = 3,
+        **kwargs: Any,
+    ) -> Generator[T, None, None]: ...
+
+    @overload
+    def create_iterable(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | Retrying = 3,
+        **kwargs: Any,
+    ) -> Generator[Any, None, None]: ...
+
     def create_iterable(
         self,
         messages: str | list[ChatCompletionMessageParam] | None = None,
@@ -134,6 +170,24 @@ class Response:
             max_retries=max_retries,
             **kwargs,
         )
+
+    @overload
+    def create_partial(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | Retrying = 3,
+        **kwargs: Any,
+    ) -> Generator[T, None, None]: ...
+
+    @overload
+    def create_partial(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | Retrying = 3,
+        **kwargs: Any,
+    ) -> Generator[Any, None, None]: ...
 
     def create_partial(
         self,
@@ -198,6 +252,24 @@ class AsyncResponse(Response):
             **kwargs,
         )
 
+    @overload
+    async def create_with_completion(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> tuple[T, Any]: ...
+
+    @overload
+    async def create_with_completion(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> tuple[Any, Any]: ...
+
     async def create_with_completion(
         self,
         messages: str | list[ChatCompletionMessageParam] | None = None,
@@ -213,6 +285,24 @@ class AsyncResponse(Response):
             max_retries=max_retries,
             **kwargs,
         )
+
+    @overload
+    async def create_iterable(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> AsyncGenerator[T, None]: ...
+
+    @overload
+    async def create_iterable(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> AsyncGenerator[Any, None]: ...
 
     async def create_iterable(
         self,
@@ -775,26 +865,47 @@ def from_openai(
 
 @overload
 def from_litellm(
-    completion: Callable[..., Awaitable[Any]],
+    completion: Callable[..., Coroutine[Any, Any, T]],
     mode: Mode = Mode.TOOLS,
+    *,
+    async_client: Literal[True],
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_litellm(
-    completion: Callable[..., Any],
+    completion: Callable[..., Awaitable[T]],
     mode: Mode = Mode.TOOLS,
+    *,
+    async_client: Literal[True],
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_litellm(
+    completion: Callable[..., object],
+    mode: Mode = Mode.TOOLS,
+    *,
+    async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 def from_litellm(
-    completion: Callable[..., Any] | Callable[..., Awaitable[Any]],
+    completion: Callable[..., object] | Callable[..., Awaitable[Any]],
     mode: Mode = Mode.TOOLS,
+    *,
+    async_client: bool | None = None,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """Compatibility wrapper for the v2 LiteLLM factory."""
     from instructor.v2.providers.litellm.client import from_litellm as from_litellm_v2
 
-    return from_litellm_v2(completion=completion, mode=mode, **kwargs)
+    return from_litellm_v2(
+        completion=completion,
+        mode=mode,
+        async_client=async_client,
+        **kwargs,
+    )
