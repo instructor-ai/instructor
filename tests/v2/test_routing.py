@@ -7,6 +7,18 @@ import importlib.util
 import pytest
 
 
+def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in (
+        "ALL_PROXY",
+        "all_proxy",
+        "HTTPS_PROXY",
+        "https_proxy",
+        "HTTP_PROXY",
+        "http_proxy",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+
 @pytest.mark.skip(reason="Requires Anthropic API key")
 @pytest.mark.parametrize("async_client", [False, True], ids=["sync", "async"])
 def test_from_provider_routes_to_v2(async_client: bool):
@@ -35,12 +47,16 @@ def test_from_provider_routes_to_v2(async_client: bool):
     ["Anthropic", "AsyncAnthropic"],
     ids=["sync", "async"],
 )
-def test_top_level_from_anthropic_routes_to_v2(client_class_name: str):
+def test_top_level_from_anthropic_routes_to_v2(
+    client_class_name: str, monkeypatch: pytest.MonkeyPatch
+):
     """Top-level from_anthropic should now route directly to the v2 implementation."""
     if importlib.util.find_spec("anthropic") is None:
         pytest.skip("anthropic package is not installed")
     import anthropic
     from instructor import from_anthropic
+
+    _clear_proxy_env(monkeypatch)
 
     client_class = getattr(anthropic, client_class_name)
     client = client_class()

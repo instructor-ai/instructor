@@ -43,6 +43,18 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
 _HANDLERS_LOADED: set[Provider] = set()
 
 
+def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in (
+        "ALL_PROXY",
+        "all_proxy",
+        "HTTPS_PROXY",
+        "https_proxy",
+        "HTTP_PROXY",
+        "http_proxy",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+
 def _ensure_handlers_loaded(provider: Provider) -> None:
     if provider in _HANDLERS_LOADED:
         return
@@ -447,8 +459,12 @@ def test_string_based_initialization_forwards_kwargs(provider: Provider) -> None
     "provider",
     [pytest.param(p, id=p.value) for p in _OPENAI_COMPAT_PROVIDERS],
 )
-def test_client_based_initialization_still_works(provider: Provider) -> None:
+def test_client_based_initialization_still_works(
+    provider: Provider, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that client-based initialization still works (backward compatibility)."""
+    from unittest.mock import patch
+
     config = PROVIDER_CLIENT_CONFIGS[provider]
     from_function = config["from_function"]
     sdk_module = config["sdk_module"]
@@ -470,12 +486,12 @@ def test_client_based_initialization_still_works(provider: Provider) -> None:
     except ImportError:
         pytest.skip("openai package not installed")
 
+    _clear_proxy_env(monkeypatch)
+
     # Create a mock OpenAI client
     client = openai.OpenAI(api_key="test-key")
 
     # Call with client (should use _from_openai_compat, not from_provider)
-    from unittest.mock import patch
-
     with patch(
         "instructor.v2.providers.openai.client._from_openai_compat"
     ) as mock_compat:

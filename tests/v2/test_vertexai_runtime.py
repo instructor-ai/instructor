@@ -144,10 +144,11 @@ def test_vertexai_message_parsers_and_reask_helpers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     handlers = _install_fake_vertexai(monkeypatch)
+    gm = handlers._gm()
 
     single = handlers.vertexai_message_parser({"role": "user", "content": "hello"})
     mixed = handlers.vertexai_message_parser(
-        {"role": "user", "content": ["hello", handlers.gm.Part.from_text("there")]}
+        {"role": "user", "content": ["hello", gm.Part.from_text("there")]}
     )
 
     assert single.parts[0].text == "hello"

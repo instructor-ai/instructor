@@ -14,8 +14,6 @@ from typing import Any, cast, get_origin
 
 from pydantic import BaseModel
 import jsonref
-from vertexai.preview.generative_models import ToolConfig  # type: ignore[import-not-found]
-import vertexai.generative_models as gm  # type: ignore[import-not-found]
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
@@ -31,10 +29,34 @@ from instructor.v2.providers.gemini.utils import (
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
+def _gm() -> Any:
+    try:
+        import vertexai.generative_models as gm  # type: ignore[import-not-found]
+    except ImportError as err:
+        raise ImportError(
+            "vertexai is required for VertexAI handler operations. "
+            "Install it with: pip install google-cloud-aiplatform"
+        ) from err
+    return gm
+
+
+def _tool_config_cls() -> Any:
+    try:
+        from vertexai.preview.generative_models import (  # type: ignore[import-not-found]
+            ToolConfig,
+        )
+    except ImportError as err:
+        raise ImportError(
+            "vertexai is required for VertexAI handler operations. "
+            "Install it with: pip install google-cloud-aiplatform"
+        ) from err
+    return ToolConfig
+
 
 def vertexai_message_parser(
-    message: dict[str, str | gm.Part | list[str | gm.Part]],
-) -> gm.Content:
+    message: dict[str, Any],
+) -> Any:
+    gm = _gm()
     if isinstance(message["content"], str):
         return gm.Content(
             role=message["role"],  # type: ignore
@@ -57,8 +79,8 @@ def vertexai_message_parser(
 
 
 def vertexai_message_list_parser(
-    messages: list[dict[str, str | gm.Part | list[str | gm.Part]]],
-) -> list[gm.Content]:
+    messages: list[dict[str, Any]],
+) -> list[Any]:
     return [
         vertexai_message_parser(message) if isinstance(message, dict) else message
         for message in messages
@@ -66,8 +88,9 @@ def vertexai_message_list_parser(
 
 
 def vertexai_function_response_parser(
-    response: gm.GenerationResponse, exception: Exception
-) -> gm.Content:
+    response: Any, exception: Exception
+) -> Any:
+    gm = _gm()
     return gm.Content(
         parts=[
             gm.Part.from_function_response(
@@ -168,8 +191,9 @@ def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
 
 def _create_vertexai_tool(
     models: type[BaseModel] | list[type[BaseModel]] | Any,
-) -> gm.Tool:
+) -> Any:
     """Create a tool with function declarations for model(s)."""
+    gm = _gm()
     if get_origin(models) is not None:
         model_list = list(get_types_array(models))
     else:
@@ -192,6 +216,7 @@ def vertexai_process_response(
     call_kwargs: dict[str, Any],
     model: type[BaseModel] | list[type[BaseModel]] | Any,
 ):
+    ToolConfig = _tool_config_cls()
     messages: list[dict[str, str]] = call_kwargs.pop("messages")
     contents = vertexai_message_list_parser(messages)  # type: ignore[arg-type]
 
@@ -206,6 +231,7 @@ def vertexai_process_response(
 
 
 def vertexai_process_json_response(call_kwargs: dict[str, Any], model: type[BaseModel]):
+    gm = _gm()
     messages: list[dict[str, str]] = call_kwargs.pop("messages")
     contents = vertexai_message_list_parser(messages)  # type: ignore[arg-type]
 

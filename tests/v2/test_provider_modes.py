@@ -38,6 +38,18 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
 _HANDLERS_LOADED: set[Provider] = set()
 
 
+def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in (
+        "ALL_PROXY",
+        "all_proxy",
+        "HTTPS_PROXY",
+        "https_proxy",
+        "HTTP_PROXY",
+        "http_proxy",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+
 def _is_expected_missing_dependency(provider: Provider, exc: ImportError) -> bool:
     """Return True when handler loading failed only because an optional SDK is absent."""
     sdk_module = PROVIDER_CONFIGS.get(provider, {}).get("sdk_module")
@@ -154,13 +166,22 @@ def _skip_on_provider_quota(provider: Provider, exc: Exception) -> None:
         and "RESOURCE_EXHAUSTED" in str(exc)
     ):
         pytest.skip("GenAI quota exhausted for this environment")
+    if (
+        provider == Provider.OPENAI
+        and isinstance(exc, InstructorRetryException)
+        and "Connection error" in str(exc)
+    ):
+        pytest.skip("OpenAI connectivity is unavailable in this environment")
 
 
 @pytest.mark.parametrize("provider,mode", _get_basic_mode_params())
 @pytest.mark.requires_api_key
-def test_mode_basic_extraction(provider: Provider, mode: Mode):
+def test_mode_basic_extraction(
+    provider: Provider, mode: Mode, monkeypatch: pytest.MonkeyPatch
+):
     """Test basic extraction with each mode."""
     config = PROVIDER_CONFIGS[provider]
+    _clear_proxy_env(monkeypatch)
 
     # All providers now use from_provider()
     client = instructor.from_provider(
@@ -199,9 +220,12 @@ def _get_async_mode_params():
 @pytest.mark.parametrize("provider,mode", _get_async_mode_params())
 @pytest.mark.asyncio
 @pytest.mark.requires_api_key
-async def test_mode_async_extraction(provider: Provider, mode: Mode):
+async def test_mode_async_extraction(
+    provider: Provider, mode: Mode, monkeypatch: pytest.MonkeyPatch
+):
     """Test async extraction with each mode."""
     config = PROVIDER_CONFIGS[provider]
+    _clear_proxy_env(monkeypatch)
 
     # All providers now use from_provider()
     client = instructor.from_provider(

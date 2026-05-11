@@ -74,6 +74,40 @@ def test_build_openai_compatible_requires_api_key(
         )
 
 
+def test_build_openai_does_not_mask_runtime_import_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    openai_module = ModuleType("openai")
+    httpx_module = ModuleType("httpx")
+
+    class FakeClient:
+        def __init__(self, **_kwargs: Any) -> None:
+            raise ImportError("Using SOCKS proxy, but socksio is not installed.")
+
+    openai_module.OpenAI = FakeClient  # type: ignore[attr-defined]
+    openai_module.AsyncOpenAI = FakeClient  # type: ignore[attr-defined]
+    openai_module.DEFAULT_MAX_RETRIES = 2  # type: ignore[attr-defined]
+    openai_module.NotGiven = object  # type: ignore[attr-defined]
+    openai_module.Timeout = float  # type: ignore[attr-defined]
+    openai_module.not_given = object()  # type: ignore[attr-defined]
+    httpx_module.Client = object  # type: ignore[attr-defined]
+    httpx_module.AsyncClient = object  # type: ignore[attr-defined]
+
+    monkeypatch.setitem(__import__("sys").modules, "openai", openai_module)
+    monkeypatch.setitem(__import__("sys").modules, "httpx", httpx_module)
+
+    with pytest.raises(ImportError, match="socksio"):
+        auto_client._build_openai(
+            provider="openai",
+            model_name="gpt-5",
+            async_client=False,
+            mode=Mode.TOOLS,
+            api_key="test-key",
+            kwargs={},
+            provider_info={"provider": "openai", "operation": "initialize"},
+        )
+
+
 def test_build_databricks_normalizes_base_url_and_forwards_client_kwargs(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

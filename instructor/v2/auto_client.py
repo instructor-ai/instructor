@@ -179,7 +179,19 @@ def _build_openai(
         from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
         from collections.abc import Mapping
         from typing import cast
+    except ImportError as err:
+        missing_root = (getattr(err, "name", "") or "").split(".")[0]
+        if missing_root not in {"openai", "httpx"}:
+            raise
 
+        from instructor.v2.core.errors import ConfigurationError
+
+        raise ConfigurationError(
+            "The openai package is required to use the OpenAI provider. "
+            "Install it with `pip install openai`."
+        ) from None
+
+    try:
         # Extract base_url and other OpenAI client parameters from kwargs
         base_url = kwargs.pop("base_url", None)
         organization = cast(str | None, kwargs.pop("organization", None))
@@ -250,13 +262,6 @@ def _build_openai(
             extra={**provider_info, "status": "success"},
         )
         return result
-    except ImportError:
-        from instructor.v2.core.errors import ConfigurationError
-
-        raise ConfigurationError(
-            "The openai package is required to use the OpenAI provider. "
-            "Install it with `pip install openai`."
-        ) from None
     except Exception as e:
         logger.error(
             "Error initializing %s client: %s",
