@@ -208,6 +208,7 @@ DEPRECATED_TO_CORE: dict[Mode, Mode] = {
     Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: Mode.RESPONSES_TOOLS,
     # Anthropic legacy modes
     Mode.ANTHROPIC_TOOLS: Mode.TOOLS,
+    Mode.ANTHROPIC_REASONING_TOOLS: Mode.TOOLS,
     Mode.ANTHROPIC_JSON: Mode.JSON,
     Mode.ANTHROPIC_PARALLEL_TOOLS: Mode.PARALLEL_TOOLS,
     # GenAI legacy modes

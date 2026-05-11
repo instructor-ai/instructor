@@ -40,6 +40,7 @@ def test_normalize_mode_passthrough_for_generic_modes(mode: Mode) -> None:
         (Provider.OPENAI, Mode.JSON_O1),
         (Provider.OPENAI, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS),
         (Provider.ANTHROPIC, Mode.ANTHROPIC_TOOLS),
+        (Provider.ANTHROPIC, Mode.ANTHROPIC_REASONING_TOOLS),
         (Provider.ANTHROPIC, Mode.ANTHROPIC_JSON),
         (Provider.ANTHROPIC, Mode.ANTHROPIC_PARALLEL_TOOLS),
         (Provider.GENAI, Mode.GENAI_TOOLS),

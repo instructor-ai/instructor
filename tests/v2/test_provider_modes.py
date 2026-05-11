@@ -266,9 +266,9 @@ def test_anthropic_tools_with_thinking(mode: Mode):
     assert response.answer == 10.0
 
 
-def test_anthropic_reasoning_tools_is_not_registered_in_v2():
-    """Legacy reasoning mode is not part of the v2 surface."""
-    assert not mode_registry.is_registered(
+def test_anthropic_reasoning_tools_normalizes_in_v2():
+    """Legacy reasoning mode remains accepted through Anthropic tools mode."""
+    assert mode_registry.is_registered(
         Provider.ANTHROPIC,
         Mode.ANTHROPIC_REASONING_TOOLS,
     )
