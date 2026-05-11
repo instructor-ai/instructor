@@ -78,3 +78,23 @@ def test_legacy_modes_normalize_with_warning(
         assert normalize_mode(provider, legacy_mode) != legacy_mode
         assert mode_registry.is_registered(provider, legacy_mode)
     assert len(caught) <= 1
+
+
+@pytest.mark.parametrize(
+    "provider,foreign_mode",
+    [
+        (Provider.OPENAI, Mode.ANTHROPIC_JSON),
+        (Provider.ANTHROPIC, Mode.GENAI_TOOLS),
+        (Provider.GENAI, Mode.VERTEXAI_TOOLS),
+        (Provider.COHERE, Mode.OPENROUTER_STRUCTURED_OUTPUTS),
+    ],
+)
+def test_legacy_modes_do_not_cross_provider_boundaries(
+    provider: Provider, foreign_mode: Mode
+) -> None:
+    """Provider-specific legacy modes should only work for their provider."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        assert normalize_mode(provider, foreign_mode) == foreign_mode
+        assert not mode_registry.is_registered(provider, foreign_mode)
+    assert len(caught) == 0

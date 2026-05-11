@@ -116,6 +116,7 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
                 Mode.FUNCTIONS: Mode.TOOLS,
                 Mode.TOOLS_STRICT: Mode.TOOLS,
                 Mode.JSON_O1: Mode.JSON_SCHEMA,
+                Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: Mode.RESPONSES_TOOLS,
             },
             from_function="from_openai",
             client_module="instructor.v2.providers.openai.client",
@@ -178,7 +179,8 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             unsupported_modes=(Mode.MD_JSON,),
             legacy_modes={
                 Mode.ANTHROPIC_TOOLS: Mode.TOOLS,
-                Mode.ANTHROPIC_JSON: Mode.MD_JSON,
+                Mode.ANTHROPIC_REASONING_TOOLS: Mode.TOOLS,
+                Mode.ANTHROPIC_JSON: Mode.JSON,
                 Mode.ANTHROPIC_PARALLEL_TOOLS: Mode.PARALLEL_TOOLS,
             },
             from_function="from_anthropic",

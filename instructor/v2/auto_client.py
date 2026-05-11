@@ -843,7 +843,9 @@ def _build_perplexity(
 
         api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
         if not api_key:
-            raise ValueError(
+            from instructor.v2.core.errors import ConfigurationError
+
+            raise ConfigurationError(
                 "PERPLEXITY_API_KEY is not set. "
                 "Set it with `export PERPLEXITY_API_KEY=<your-api-key>` or pass it as a kwarg api_key=<your-api-key>"
             )

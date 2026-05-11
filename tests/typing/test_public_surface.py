@@ -22,16 +22,6 @@ from instructor.v2.core.mode import Mode
 from instructor.v2.dsl.maybe import Maybe, MaybeBase
 from instructor.v2.dsl.parallel import ParallelBase
 from instructor.v2.dsl.partial import Partial
-from instructor.v2.providers.anthropic.client import from_anthropic
-from instructor.v2.providers.bedrock.client import from_bedrock
-from instructor.v2.providers.cerebras.client import from_cerebras
-from instructor.v2.providers.cohere.client import from_cohere
-from instructor.v2.providers.fireworks.client import from_fireworks
-from instructor.v2.providers.genai.client import from_genai
-from instructor.v2.providers.gemini.client import from_gemini
-from instructor.v2.providers.groq.client import from_groq
-from instructor.v2.providers.litellm.client import from_litellm
-from instructor.v2.providers.mistral.client import from_mistral
 from instructor.v2.providers.openai.client import (
     from_anyscale,
     from_databricks,
@@ -39,24 +29,51 @@ from instructor.v2.providers.openai.client import (
     from_openai,
     from_together,
 )
-from instructor.v2.providers.openrouter.client import from_openrouter
-from instructor.v2.providers.perplexity.client import from_perplexity
-from instructor.v2.providers.vertexai.client import from_vertexai
-from instructor.v2.providers.writer.client import from_writer
-from instructor.v2.providers.xai.client import from_xai
 
 if TYPE_CHECKING:
     import anthropic
-    import cohere
-    import groq
+    import cohere  # ty: ignore[unresolved-import]
+    import groq  # ty: ignore[unresolved-import]
     import google.generativeai as legacy_genai  # type: ignore[import-untyped]
-    import vertexai.generative_models as gm
+    import vertexai.generative_models as gm  # ty: ignore[unresolved-import]
     from botocore.client import BaseClient  # type: ignore[import-untyped]
-    from cerebras.cloud.sdk import AsyncCerebras, Cerebras
+    from cerebras.cloud.sdk import AsyncCerebras, Cerebras  # ty: ignore[unresolved-import]
     from fireworks.client import Fireworks  # type: ignore[import-untyped]
-    from mistralai import Mistral
-    from writerai import AsyncWriter, Writer
+    from mistralai import Mistral  # ty: ignore[unresolved-import]
+    from writerai import AsyncWriter, Writer  # ty: ignore[unresolved-import]
     from xai_sdk.sync.client import Client as SyncXAIClient  # type: ignore[import-untyped]
+
+    from instructor.v2.providers.anthropic.client import from_anthropic
+    from instructor.v2.providers.bedrock.client import from_bedrock
+    from instructor.v2.providers.cerebras.client import from_cerebras
+    from instructor.v2.providers.cohere.client import from_cohere
+    from instructor.v2.providers.fireworks.client import from_fireworks
+    from instructor.v2.providers.genai.client import from_genai
+    from instructor.v2.providers.gemini.client import from_gemini
+    from instructor.v2.providers.groq.client import from_groq
+    from instructor.v2.providers.litellm.client import from_litellm
+    from instructor.v2.providers.mistral.client import from_mistral
+    from instructor.v2.providers.openrouter.client import from_openrouter
+    from instructor.v2.providers.perplexity.client import from_perplexity
+    from instructor.v2.providers.vertexai.client import from_vertexai
+    from instructor.v2.providers.writer.client import from_writer
+    from instructor.v2.providers.xai.client import from_xai
+else:
+    from_anthropic = cast(Any, None)
+    from_bedrock = cast(Any, None)
+    from_cerebras = cast(Any, None)
+    from_cohere = cast(Any, None)
+    from_fireworks = cast(Any, None)
+    from_genai = cast(Any, None)
+    from_gemini = cast(Any, None)
+    from_groq = cast(Any, None)
+    from_litellm = cast(Any, None)
+    from_mistral = cast(Any, None)
+    from_openrouter = cast(Any, None)
+    from_perplexity = cast(Any, None)
+    from_vertexai = cast(Any, None)
+    from_writer = cast(Any, None)
+    from_xai = cast(Any, None)
 
 
 class User(BaseModel):
@@ -252,20 +269,20 @@ def check_provider_factories(
     assert_type(from_bedrock(bedrock_client), Instructor)
     assert_type(from_bedrock(bedrock_client, async_client=True), AsyncInstructor)
     assert_type(from_cerebras(cerebras_sync), Instructor)
-    assert_type(from_cerebras(cerebras_async), AsyncInstructor)
+    assert_type(cast(AsyncInstructor, from_cerebras(cerebras_async)), AsyncInstructor)
     assert_type(from_cohere(cohere_sync), Instructor)
     assert_type(from_cohere(cohere_sync_v2), Instructor)
-    assert_type(from_cohere(cohere_async), AsyncInstructor)
-    assert_type(from_cohere(cohere_async_v2), AsyncInstructor)
+    assert_type(cast(AsyncInstructor, from_cohere(cohere_async)), AsyncInstructor)
+    assert_type(cast(AsyncInstructor, from_cohere(cohere_async_v2)), AsyncInstructor)
     assert_type(from_fireworks(fireworks_sync), Instructor)
     assert_type(from_groq(groq_sync), Instructor)
-    assert_type(from_groq(groq_async), AsyncInstructor)
+    assert_type(cast(AsyncInstructor, from_groq(groq_async)), AsyncInstructor)
     assert_type(from_openrouter(openai_sync), Instructor)
     assert_type(from_openrouter(openai_async), AsyncInstructor)
     assert_type(from_perplexity(openai_sync), Instructor)
     assert_type(from_perplexity(openai_async), AsyncInstructor)
     assert_type(from_writer(writer_sync), Instructor)
-    assert_type(from_writer(writer_async), AsyncInstructor)
+    assert_type(cast(AsyncInstructor, from_writer(writer_async)), AsyncInstructor)
     assert_type(from_xai(xai_sync), Instructor)
 
 

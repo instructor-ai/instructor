@@ -5,17 +5,24 @@ Creates Instructor instances using v2 hierarchical registry system.
 
 from __future__ import annotations
 
-from typing import Any, overload
-
-import anthropic
+from typing import TYPE_CHECKING, Any, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.errors import ClientError
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.anthropic import handlers  # noqa: F401
+
+if TYPE_CHECKING:
+    import anthropic
+else:
+    try:
+        import anthropic
+    except ImportError:
+        anthropic = None
 
 
 @overload
@@ -87,6 +94,11 @@ def from_anthropic(
     """
     from instructor.v2.core.registry import mode_registry, normalize_mode
 
+    if anthropic is None:
+        raise ClientError(
+            "anthropic is not installed. Install it with: pip install anthropic"
+        )
+
     # Normalize provider-specific modes to generic modes
     # ANTHROPIC_TOOLS -> TOOLS, ANTHROPIC_JSON -> JSON, ANTHROPIC_PARALLEL_TOOLS -> PARALLEL_TOOLS
     normalized_mode = normalize_mode(Provider.ANTHROPIC, mode)
@@ -116,8 +128,6 @@ def from_anthropic(
     )
 
     if not isinstance(client, valid_client_types):
-        from instructor.v2.core.errors import ClientError
-
         raise ClientError(
             f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "
             f"Got: {type(client).__name__}"

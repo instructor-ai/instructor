@@ -71,7 +71,7 @@ def from_genai(
             f"Client must be an instance of google.genai.Client. Got: {type(client).__name__}"
         )
 
-    # Normalize mode for handler lookup (preserve original for client)
+    # Normalize mode for handler lookup and client metadata.
     normalized_mode = normalize_mode(Provider.GENAI, mode)
 
     # Validate mode is registered (use normalized mode for check)
@@ -113,7 +113,7 @@ def from_genai(
             client=client,
             create=patched,
             provider=Provider.GENAI,
-            mode=mode,  # Keep original mode for client
+            mode=normalized_mode,
             **kwargs,
         )
 
@@ -141,6 +141,6 @@ def from_genai(
         client=client,
         create=patched,
         provider=Provider.GENAI,
-        mode=mode,  # Keep original mode for client
+        mode=normalized_mode,
         **kwargs,
     )

@@ -6,13 +6,15 @@ Tests all registered modes for each provider with actual API calls to ensure com
 
 from __future__ import annotations
 
-import pytest
+import os
 from collections.abc import Iterable
 from typing import Literal, Union, cast
-from pydantic import BaseModel
 
 import importlib.util
 from pathlib import Path
+
+import pytest
+from pydantic import BaseModel
 
 import instructor
 from instructor.core.exceptions import InstructorRetryException
@@ -171,6 +173,8 @@ def _skip_on_provider_quota(provider: Provider, exc: Exception) -> None:
         and isinstance(exc, InstructorRetryException)
         and "Connection error" in str(exc)
     ):
+        if os.environ.get("CI") or os.environ.get("INSTRUCTOR_STRICT_PROVIDER_TESTS"):
+            return
         pytest.skip("OpenAI connectivity is unavailable in this environment")
 
 

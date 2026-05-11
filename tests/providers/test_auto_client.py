@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import pytest
 from instructor.auto_client import from_provider
+from instructor.core.exceptions import (
+    ClientError,
+    ConfigurationError,
+    InstructorRetryException,
+)
 from pydantic import BaseModel
 
 
@@ -46,6 +51,35 @@ def should_skip_provider(provider_string: str) -> bool:
     return False
 
 
+def should_skip_provider_exception(exc: Exception) -> bool:
+    """Return True for provider failures caused by local environment setup."""
+    if isinstance(exc, (ClientError, ConfigurationError, ImportError)):
+        return True
+    if isinstance(exc, InstructorRetryException):
+        message = str(exc).lower()
+        return any(
+            marker in message
+            for marker in (
+                "api key",
+                "authentication",
+                "connection",
+                "connect",
+                "quota",
+                "rate limit",
+                "resource_exhausted",
+            )
+        )
+    return False
+
+
+def skip_or_raise_provider_exception(provider_string: str, exc: Exception) -> None:
+    if should_skip_provider_exception(exc):
+        pytest.skip(
+            f"Provider {provider_string} not available in this environment: {exc}"
+        )
+    raise exc
+
+
 @pytest.mark.parametrize("provider_string", PROVIDERS)
 def test_user_extraction_sync(provider_string):
     """Test user extraction for each provider (sync)."""
@@ -56,6 +90,10 @@ def test_user_extraction_sync(provider_string):
 
     try:
         client = from_provider(provider_string)  # type: ignore[arg-type]
+    except Exception as e:
+        skip_or_raise_provider_exception(provider_string, e)
+
+    try:
         response = client.chat.completions.create(
             messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
             response_model=User,
@@ -64,7 +102,7 @@ def test_user_extraction_sync(provider_string):
         assert response.name.lower() == "ivan"
         assert response.age == 28
     except Exception as e:
-        pytest.skip(f"Provider {provider_string} not available or failed: {e}")
+        skip_or_raise_provider_exception(provider_string, e)
 
 
 @pytest.mark.parametrize("provider_string", PROVIDERS)
@@ -78,6 +116,10 @@ async def test_user_extraction_async(provider_string):
 
     try:
         client = from_provider(provider_string, async_client=True)  # type: ignore[arg-type]
+    except Exception as e:
+        skip_or_raise_provider_exception(provider_string, e)
+
+    try:
         response = await client.chat.completions.create(
             messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
             response_model=User,
@@ -86,7 +128,7 @@ async def test_user_extraction_async(provider_string):
         assert response.name.lower() == "ivan"
         assert response.age == 28
     except Exception as e:
-        pytest.skip(f"Provider {provider_string} not available or failed: {e}")
+        skip_or_raise_provider_exception(provider_string, e)
 
 
 def test_invalid_provider_format():
@@ -355,46 +397,60 @@ def test_databricks_provider_requires_host():
 def test_genai_mode_parameter_passed_to_provider():
     """Test that mode parameter is correctly passed to provider functions."""
     from unittest.mock import patch, MagicMock
+    from types import ModuleType
+    import sys
     import instructor
 
-    with patch("google.genai.Client") as mock_genai_class:
-        mock_client = MagicMock()
-        mock_genai_class.return_value = mock_client
+    mock_google = ModuleType("google")
+    mock_genai = ModuleType("google.genai")
+    mock_google.genai = mock_genai  # type: ignore[attr-defined]
 
-        with patch("instructor.from_genai") as mock_from_genai:
-            mock_instructor = MagicMock()
-            mock_from_genai.return_value = mock_instructor
+    with patch.dict(sys.modules, {"google": mock_google, "google.genai": mock_genai}):
+        with patch("google.genai.Client", create=True) as mock_genai_class:
+            mock_client = MagicMock()
+            mock_genai_class.return_value = mock_client
 
-            from_provider(
-                "google/gemini-pro",
-                mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
-            )
+            with patch("instructor.from_genai", create=True) as mock_from_genai:
+                mock_instructor = MagicMock()
+                mock_from_genai.return_value = mock_instructor
 
-            mock_from_genai.assert_called_once()
-            _, kwargs = mock_from_genai.call_args
-            assert "mode" in kwargs
-            assert kwargs["mode"] == instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+                from_provider(
+                    "google/gemini-pro",
+                    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+                )
+
+                mock_from_genai.assert_called_once()
+                _, kwargs = mock_from_genai.call_args
+                assert "mode" in kwargs
+                assert kwargs["mode"] == instructor.Mode.GENAI_STRUCTURED_OUTPUTS
 
 
 def test_genai_mode_defaults_when_not_provided():
     """Test that GenAI provider uses generic TOOLS mode when mode is not provided."""
     from unittest.mock import patch, MagicMock
+    from types import ModuleType
+    import sys
     import instructor
 
-    with patch("google.genai.Client") as mock_genai_class:
-        mock_client = MagicMock()
-        mock_genai_class.return_value = mock_client
+    mock_google = ModuleType("google")
+    mock_genai = ModuleType("google.genai")
+    mock_google.genai = mock_genai  # type: ignore[attr-defined]
 
-        with patch("instructor.from_genai") as mock_from_genai:
-            mock_instructor = MagicMock()
-            mock_from_genai.return_value = mock_instructor
+    with patch.dict(sys.modules, {"google": mock_google, "google.genai": mock_genai}):
+        with patch("google.genai.Client", create=True) as mock_genai_class:
+            mock_client = MagicMock()
+            mock_genai_class.return_value = mock_client
 
-            from_provider("google/gemini-pro")
+            with patch("instructor.from_genai", create=True) as mock_from_genai:
+                mock_instructor = MagicMock()
+                mock_from_genai.return_value = mock_instructor
 
-            mock_from_genai.assert_called_once()
-            _, kwargs = mock_from_genai.call_args
-            assert "mode" in kwargs
-            assert kwargs["mode"] == instructor.Mode.TOOLS
+                from_provider("google/gemini-pro")
+
+                mock_from_genai.assert_called_once()
+                _, kwargs = mock_from_genai.call_args
+                assert "mode" in kwargs
+                assert kwargs["mode"] == instructor.Mode.TOOLS
 
 
 def test_google_provider_runtime_import_error_propagates():
@@ -444,19 +500,34 @@ def test_google_provider_runtime_import_error_propagates():
 def test_vertexai_provider_uses_vertexai_sdk_path():
     """The deprecated vertexai provider still routes through the Vertex AI SDK."""
     from unittest.mock import MagicMock, patch
+    from types import ModuleType
+    import sys
     import warnings
 
-    with patch("vertexai.init") as mock_init:
-        with patch("vertexai.generative_models.GenerativeModel") as mock_model:
-            mock_model.return_value = MagicMock()
-            with patch("instructor.from_vertexai") as mock_from_vertexai:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", DeprecationWarning)
-                    from_provider(
-                        "vertexai/gemini-pro",
-                        project="demo-project",
-                        location="us-central1",
-                    )
+    mock_vertexai = ModuleType("vertexai")
+    mock_gener_models = ModuleType("vertexai.generative_models")
+    mock_vertexai.generative_models = mock_gener_models  # type: ignore[attr-defined]
+
+    with patch.dict(
+        sys.modules,
+        {
+            "vertexai": mock_vertexai,
+            "vertexai.generative_models": mock_gener_models,
+        },
+    ):
+        with patch("vertexai.init", create=True) as mock_init:
+            with patch(
+                "vertexai.generative_models.GenerativeModel", create=True
+            ) as mock_model:
+                mock_model.return_value = MagicMock()
+                with patch("instructor.from_vertexai") as mock_from_vertexai:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", DeprecationWarning)
+                        from_provider(
+                            "vertexai/gemini-pro",
+                            project="demo-project",
+                            location="us-central1",
+                        )
 
     mock_init.assert_called_once()
     mock_model.assert_called_once_with("gemini-pro")
