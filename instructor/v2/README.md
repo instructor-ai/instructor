@@ -359,7 +359,9 @@ Before migrating, understand your current v1 provider:
    wrappers or compatibility facades, not parallel provider implementations.
    Provider-shaped schema builders follow the same rule: live implementations
    stay with the matching provider package, while shared exports remain
-   forwarding compatibility APIs.
+   forwarding compatibility APIs. `from_provider()` keeps the public routing
+   entrypoint in `instructor/v2/auto_client.py`, but dispatch is table-driven and
+   every accepted alias must have an explicit builder.
 
 2. **Identify key components**:
    - What modes does your provider support?

@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 from instructor import Provider
-from instructor.v2.auto_client import supported_providers
+from instructor.v2.auto_client import _PROVIDER_BUILDERS, supported_providers
 from instructor.v2.core.provider_specs import ALIAS_TO_PROVIDER, PROVIDER_SPECS
 
 
 def test_supported_provider_aliases_come_from_manifest() -> None:
     assert set(supported_providers) == set(ALIAS_TO_PROVIDER)
+
+
+def test_supported_provider_aliases_have_auto_client_builders() -> None:
+    assert set(supported_providers) <= set(_PROVIDER_BUILDERS)
 
 
 def test_compatibility_aliases_point_to_canonical_providers() -> None:

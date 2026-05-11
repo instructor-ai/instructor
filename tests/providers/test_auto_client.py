@@ -107,6 +107,33 @@ def test_unsupported_provider():
     assert "Unsupported provider" in str(excinfo.value)
 
 
+def test_provider_dispatch_uses_registered_builder(monkeypatch):
+    """Provider dispatch delegates parsed arguments to the registered builder."""
+    import instructor.v2.auto_client as auto_client
+
+    result = object()
+    calls = []
+
+    def builder(**kwargs):
+        calls.append(kwargs)
+        return result
+
+    monkeypatch.setitem(auto_client._PROVIDER_BUILDERS, "openai", builder)
+
+    assert from_provider("openai/gpt-4", api_key="test-key", extra="value") is result
+    assert calls == [
+        {
+            "provider": "openai",
+            "model_name": "gpt-4",
+            "async_client": False,
+            "mode": None,
+            "api_key": "test-key",
+            "kwargs": {"extra": "value"},
+            "provider_info": {"provider": "openai", "operation": "initialize"},
+        }
+    ]
+
+
 def test_additional_kwargs_passed():
     """Test that additional kwargs are passed to provider."""
     import instructor

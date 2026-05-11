@@ -55,7 +55,7 @@ def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
     return parsed
 
 
-def _initialize_usage(mode: Mode) -> Any:
+def _initialize_usage(provider: Provider) -> Any:
     from openai.types.completion_usage import (
         CompletionTokensDetails,
         CompletionUsage,
@@ -71,7 +71,7 @@ def _initialize_usage(mode: Mode) -> Any:
         ),
         prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     )
-    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+    if provider is Provider.ANTHROPIC:
         from instructor.v2.providers.anthropic.usage import initialize_usage
 
         total_usage = initialize_usage()
@@ -134,7 +134,7 @@ def retry_sync_v2(
 
     failed_attempts: list[FailedAttempt] = []
     last_exception: Exception | None = None
-    total_usage = _initialize_usage(mode)
+    total_usage = _initialize_usage(provider)
 
     try:
         for attempt in max_retries_instance:
@@ -350,7 +350,7 @@ async def retry_async_v2(
 
     failed_attempts: list[FailedAttempt] = []
     last_exception: Exception | None = None
-    total_usage = _initialize_usage(mode)
+    total_usage = _initialize_usage(provider)
 
     try:
         async for attempt in max_retries_instance:
