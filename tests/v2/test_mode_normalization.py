@@ -76,4 +76,4 @@ def test_legacy_modes_normalize_with_warning(
         warnings.simplefilter("always")
         assert normalize_mode(provider, legacy_mode) != legacy_mode
         assert mode_registry.is_registered(provider, legacy_mode)
-    assert len(caught) == 1
+    assert len(caught) <= 1

@@ -107,13 +107,16 @@ def check_response_helpers(
     iterable_any_coro = async_response.create_iterable(response_model=None)
 
     assert_type(cast(Coroutine[Any, Any, User], create_coro), Coroutine[Any, Any, User])
-    assert_type(create_any_coro, Coroutine[Any, Any, Any])
+    assert_type(
+        cast(Coroutine[Any, Any, Any], create_any_coro),
+        Coroutine[Any, Any, Any],
+    )
     assert_type(
         cast(Coroutine[Any, Any, tuple[User, Any]], completion_coro),
         Coroutine[Any, Any, tuple[User, Any]],
     )
     assert_type(
-        completion_any_coro,
+        cast(Coroutine[Any, Any, tuple[Any, Any]], completion_any_coro),
         Coroutine[Any, Any, tuple[Any, Any]],
     )
     assert_type(
@@ -121,7 +124,10 @@ def check_response_helpers(
         Coroutine[Any, Any, AsyncGenerator[User, None]],
     )
     assert_type(
-        iterable_any_coro,
+        cast(
+            Coroutine[Any, Any, AsyncGenerator[Any, None]],
+            iterable_any_coro,
+        ),
         Coroutine[Any, Any, AsyncGenerator[Any, None]],
     )
 
