@@ -35,6 +35,7 @@ supported_providers = [
     "ollama",
     "openrouter",
     "xai",
+    "manifest",
     "litellm",
 ]
 
@@ -1184,6 +1185,60 @@ def from_provider(
 
             raise ConfigurationError(
                 "The openai package is required to use the OpenRouter provider. "
+                "Install it with `pip install openai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
+
+    elif provider == "manifest":
+        try:
+            import openai
+            from instructor import from_openai  # type: ignore[attr-defined]
+            import os
+
+            # Get API key from kwargs or environment
+            api_key = api_key or os.environ.get("MANIFEST_API_KEY")
+
+            if not api_key:
+                from .core.exceptions import ConfigurationError
+
+                raise ConfigurationError(
+                    "MANIFEST_API_KEY is not set. "
+                    "Set it with `export MANIFEST_API_KEY=<your-api-key>` or pass it as kwarg api_key=<your-api-key>"
+                )
+
+            # Manifest uses OpenAI-compatible API
+            base_url = kwargs.pop("base_url", "https://app.manifest.build/v1")
+
+            client = (
+                openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+                if async_client
+                else openai.OpenAI(api_key=api_key, base_url=base_url)
+            )
+
+            result = from_openai(
+                client,
+                model=model_name,
+                mode=mode if mode else instructor.Mode.TOOLS,
+                **kwargs,
+            )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
+        except ImportError:
+            from .core.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The openai package is required to use the Manifest provider. "
                 "Install it with `pip install openai`."
             ) from None
         except Exception as e:
