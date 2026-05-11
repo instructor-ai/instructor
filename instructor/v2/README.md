@@ -29,6 +29,9 @@ The v2 architecture uses a hierarchical registry system for managing provider mo
 - Shared routing still owns provider detection, compatibility-mode normalization,
   and registry bootstrap tables; those are orchestration surfaces rather than
   provider implementations.
+- Provider capabilities, public factory bindings, handler modules, and alias
+  relationships live in `core/provider_specs.py`; tests and runtime dispatch
+  should consume that manifest instead of maintaining parallel provider tables.
 - Public modules under `instructor/core`, `instructor/processing`,
   `instructor/dsl`, and `instructor/validation` are compatibility facades over
   v2-owned implementations.
