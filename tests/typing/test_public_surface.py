@@ -14,6 +14,7 @@ from instructor.v2.core.function_calls import response_schema
 from instructor.v2.core.mode import Mode
 from instructor.v2.dsl.maybe import Maybe, MaybeBase
 from instructor.v2.dsl.parallel import ParallelBase
+from instructor.v2.dsl.partial import Partial
 from instructor.v2.providers.genai.client import from_genai
 from instructor.v2.providers.gemini.client import from_gemini
 from instructor.v2.providers.mistral.client import from_mistral
@@ -56,6 +57,25 @@ def check_response_helpers(sync_response: Response, async_response: AsyncRespons
     assert_type(
         iterable_coro,
         Coroutine[Any, Any, AsyncGenerator[User, None]],
+    )
+
+
+def check_client_stream_helpers(sync_client: Instructor, async_client: AsyncInstructor) -> None:
+    assert_type(
+        sync_client.create_iterable(response_model=User, messages=[]),
+        Generator[User, None, None],
+    )
+    assert_type(
+        sync_client.create_partial(response_model=User, messages=[]),
+        Generator[User, None, None],
+    )
+    assert_type(
+        async_client.create_iterable(response_model=User, messages=[]),
+        AsyncGenerator[User, None],
+    )
+    assert_type(
+        async_client.create_partial(response_model=User, messages=[]),
+        AsyncGenerator[User, None],
     )
 
 
@@ -110,6 +130,7 @@ def check_bool_selected_factories(
 def check_base_model_helpers() -> None:
     assert_type(response_schema(User), type[User])
     assert_type(Maybe(User), type[MaybeBase[User]])
+    assert_type(Partial[User], type[User])
 
 
 def check_parallel_wrapper(parallel: ParallelBase[User]) -> None:
