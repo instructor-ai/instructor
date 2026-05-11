@@ -22,6 +22,16 @@ from instructor.v2.core.protocols import (
     TemplateHandler,
 )
 
+_HANDLER_ATTRS = {
+    "request": "request_handler",
+    "reask": "reask_handler",
+    "response": "response_parser",
+    "stream": "stream_extractor",
+    "stream_async": "stream_extractor_async",
+    "message": "message_converter",
+    "template": "template_handler",
+}
+
 
 def normalize_mode(_provider: Provider, mode: Mode) -> Mode:
     """Return the requested v2 mode unchanged."""
@@ -224,38 +234,18 @@ class ModeRegistry:
         # get_handlers already handles normalization
         handlers = self.get_handlers(provider, mode)
 
-        if handler_type == "request":
-            return handlers.request_handler
-        elif handler_type == "reask":
-            return handlers.reask_handler
-        elif handler_type == "response":
-            return handlers.response_parser
-        elif handler_type == "stream":
-            if handlers.stream_extractor is None:
-                raise KeyError(f"No stream_extractor registered for {provider}, {mode}")
-            return handlers.stream_extractor
-        elif handler_type == "stream_async":
-            if handlers.stream_extractor_async is None:
-                raise KeyError(
-                    f"No stream_extractor_async registered for {provider}, {mode}"
-                )
-            return handlers.stream_extractor_async
-        elif handler_type == "message":
-            if handlers.message_converter is None:
-                raise KeyError(
-                    f"No message_converter registered for {provider}, {mode}"
-                )
-            return handlers.message_converter
-        elif handler_type == "template":
-            if handlers.template_handler is None:
-                raise KeyError(f"No template_handler registered for {provider}, {mode}")
-            return handlers.template_handler
-        else:
+        if handler_type not in _HANDLER_ATTRS:
             raise ValueError(
                 f"Invalid handler_type: {handler_type}. "
                 "Must be 'request', 'reask', 'response', 'stream', "
                 "'stream_async', 'message', or 'template'"
             )
+
+        attr_name = _HANDLER_ATTRS[handler_type]
+        handler = getattr(handlers, attr_name)
+        if handler is None:
+            raise KeyError(f"No {attr_name} registered for {provider}, {mode}")
+        return handler
 
     def is_registered(self, provider: Provider, mode: Mode) -> bool:
         """Check if a mode is registered.
