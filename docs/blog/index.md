@@ -6,15 +6,16 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 
 ## Advanced Topics
 
-1. [Unified Provider Interface in Instructor](posts/announcing-unified-provider-interface.md)
-2. [Instructor Implements llms.txt](posts/llms-txt-adoption.md)
-3. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
-4. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
-5. [Basics of Guardrails and Validation in AI Models](posts/validation-part1.md)
-6. [Validating Citations in AI-Generated Content](posts/citations.md)
-7. [Fine-tuning and Distillation in AI Models](posts/distilation-part1.md)
-8. [Enhancing OpenAI Client Observability with LangSmith](posts/langsmith.md)
-9. [Logfire Integration with Pydantic](posts/logfire.md)
+1. [What's new in Instructor v2?](posts/whats-new-in-v2.md)
+2. [Unified Provider Interface in Instructor](posts/announcing-unified-provider-interface.md)
+3. [Instructor Implements llms.txt](posts/llms-txt-adoption.md)
+4. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
+5. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
+6. [Basics of Guardrails and Validation in AI Models](posts/validation-part1.md)
+7. [Validating Citations in AI-Generated Content](posts/citations.md)
+8. [Fine-tuning and Distillation in AI Models](posts/distilation-part1.md)
+9. [Enhancing OpenAI Client Observability with LangSmith](posts/langsmith.md)
+10. [Logfire Integration with Pydantic](posts/logfire.md)
 
 ## AI Development and Optimization
 
