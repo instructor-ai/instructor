@@ -363,6 +363,11 @@ Before migrating, understand your current v1 provider:
    entrypoint in `instructor/v2/auto_client.py`, but dispatch is table-driven and
    every accepted alias must have an explicit builder.
 
+   **Typing contract**: public factories should infer sync versus async clients
+   from concrete client classes or literal flags, and response helpers should
+   preserve the caller's response-model type. Keep the executable assertions in
+   `tests/typing/test_public_surface.py` up to date when changing public APIs.
+
 2. **Identify key components**:
    - What modes does your provider support?
    - What's the main API function being patched? (e.g., `client.chat`, `client.messages.create`)
