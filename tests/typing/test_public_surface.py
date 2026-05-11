@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, assert_type
 import openai
 from pydantic import BaseModel
 
+from instructor.v2.auto_client import from_provider
 from instructor.v2.core.client import AsyncInstructor, AsyncResponse, Instructor, Response
 from instructor.v2.core.function_calls import response_schema
 from instructor.v2.providers.genai.client import from_genai
@@ -78,6 +79,11 @@ def check_openai_compatible_factories(
     assert_type(from_deepseek("model", async_client=True), AsyncInstructor)
     assert_type(from_deepseek(sync_client), Instructor)
     assert_type(from_deepseek(async_client), AsyncInstructor)
+
+
+def check_auto_client_factory() -> None:
+    assert_type(from_provider("openai/gpt-4o-mini"), Instructor)
+    assert_type(from_provider("openai/gpt-4o-mini", async_client=True), AsyncInstructor)
 
 
 def check_genai_factory(client: Any) -> None:

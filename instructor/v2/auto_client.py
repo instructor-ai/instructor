@@ -22,24 +22,15 @@ supported_providers = list(ALIAS_TO_PROVIDER)
 @overload
 def from_provider(
     model: KnownModelName,
-    async_client: Literal[True] = True,
+    async_client: Literal[False] = False,
     cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
-) -> AsyncInstructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_provider(
     model: KnownModelName,
-    async_client: Literal[False] = False,
-    cache: BaseCache | None = None,  # noqa: ARG001
-    **kwargs: Any,
-) -> Instructor: ...
-
-
-@overload
-def from_provider(
-    model: str,
     async_client: Literal[True] = True,
     cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
@@ -53,6 +44,15 @@ def from_provider(
     cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> Instructor: ...
+
+
+@overload
+def from_provider(
+    model: str,
+    async_client: Literal[True] = True,
+    cache: BaseCache | None = None,  # noqa: ARG001
+    **kwargs: Any,
+) -> AsyncInstructor: ...
 
 
 def from_provider(
