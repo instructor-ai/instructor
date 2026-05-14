@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- **MiniMax**: First-class provider support via `from_minimax()` and `from_provider("minimax/...")`. Adds `MINIMAX_TOOLS` (tool-calling) and `MINIMAX_JSON` (system-prompt JSON) modes. `MINIMAX_JSON` automatically strips `<think>...</think>` reasoning blocks emitted by MiniMax reasoning models before JSON parsing. ([#2260](https://github.com/instructor-ai/instructor/issues/2260))
+
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 - **Retry**: `IncompleteOutputException` now propagates directly to the caller without being wrapped in `InstructorRetryException`, making `except IncompleteOutputException` catch blocks work as documented. Applies to both sync and async paths. ([#2273](https://github.com/567-labs/instructor/issues/2273))

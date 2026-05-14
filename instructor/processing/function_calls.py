@@ -240,8 +240,17 @@ class OpenAISchema(BaseModel):
             Mode.TOOLS_STRICT,
             Mode.CEREBRAS_TOOLS,
             Mode.FIREWORKS_TOOLS,
+            Mode.MINIMAX_TOOLS,
         }:
             return cls.parse_tools(completion, validation_context, strict)
+
+        if mode == Mode.MINIMAX_JSON:
+            import re
+
+            raw = _extract_text_content(completion)
+            # Reasoning models emit <think>...</think> before the JSON answer.
+            cleaned = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+            return cls._validate_model_from_json(cleaned, validation_context, strict)
 
         if mode in {
             Mode.JSON,

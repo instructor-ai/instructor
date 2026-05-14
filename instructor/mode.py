@@ -63,6 +63,10 @@ class Mode(enum.Enum):
     FIREWORKS_TOOLS = "fireworks_tools"
     FIREWORKS_JSON = "fireworks_json"
 
+    # MiniMax modes
+    MINIMAX_TOOLS = "minimax_tools"
+    MINIMAX_JSON = "minimax_json"
+
     # Other providers
     WRITER_TOOLS = "writer_tools"
     WRITER_JSON = "writer_json"
@@ -98,6 +102,7 @@ class Mode(enum.Enum):
             cls.GENAI_TOOLS,
             cls.RESPONSES_TOOLS,
             cls.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+            cls.MINIMAX_TOOLS,
         }
 
     @classmethod
@@ -120,6 +125,7 @@ class Mode(enum.Enum):
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_JSON,
+            cls.MINIMAX_JSON,
         }
 
     @classmethod

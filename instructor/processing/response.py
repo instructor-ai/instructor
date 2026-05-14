@@ -58,12 +58,15 @@ from ..mode import Mode
 from .multimodal import convert_messages
 from ..utils.core import prepare_response_model
 
-_SENSITIVE_KEYS: frozenset[str] = frozenset({"api_key", "api_secret", "authorization", "token"})
+_SENSITIVE_KEYS: frozenset[str] = frozenset(
+    {"api_key", "api_secret", "authorization", "token"}
+)
 
 
 def _redact_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Return a shallow copy of kwargs with sensitive keys replaced by '[redacted]'."""
     return {k: "[redacted]" if k in _SENSITIVE_KEYS else v for k, v in kwargs.items()}
+
 
 # Anthropic utils
 from ..providers.anthropic.utils import (
@@ -145,6 +148,14 @@ from ..providers.openai.utils import (
     reask_md_json,
     reask_responses_tools,
     reask_tools,
+)
+
+# MiniMax utils
+from ..providers.minimax.utils import (
+    handle_minimax_json,
+    handle_minimax_tools,
+    reask_minimax_json,
+    reask_minimax_tools,
 )
 
 # Perplexity utils
@@ -501,6 +512,8 @@ def handle_response_model(
         Mode.WRITER_JSON: handle_writer_json,
         Mode.BEDROCK_JSON: handle_bedrock_json,
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
+        Mode.MINIMAX_TOOLS: handle_minimax_tools,
+        Mode.MINIMAX_JSON: handle_minimax_json,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
         Mode.RESPONSES_TOOLS: handle_responses_tools,
@@ -699,6 +712,9 @@ def handle_reask_kwargs(
         # Bedrock modes
         Mode.BEDROCK_TOOLS: reask_bedrock_tools,
         Mode.BEDROCK_JSON: reask_bedrock_json,
+        # MiniMax modes
+        Mode.MINIMAX_TOOLS: reask_minimax_tools,
+        Mode.MINIMAX_JSON: reask_minimax_json,
         # Perplexity modes
         Mode.PERPLEXITY_JSON: reask_perplexity_json,
         # OpenRouter modes
