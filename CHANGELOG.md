@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+- **Validation**: `llm_validator` now sends validation rules and candidate values as JSON data and tells the validation model to treat candidate values as untrusted input, reducing prompt-injection risk from user-controlled values. Invalid values now raise `ValueError` instead of relying on `assert`.
+
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 - **Retry**: `IncompleteOutputException` now propagates directly to the caller without being wrapped in `InstructorRetryException`, making `except IncompleteOutputException` catch blocks work as documented. Applies to both sync and async paths. ([#2273](https://github.com/567-labs/instructor/issues/2273))
@@ -205,4 +208,3 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
-
