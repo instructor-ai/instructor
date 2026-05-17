@@ -37,7 +37,10 @@ if TYPE_CHECKING:
     import google.generativeai as legacy_genai  # type: ignore[import-untyped]
     import vertexai.generative_models as gm  # ty: ignore[unresolved-import]
     from botocore.client import BaseClient  # type: ignore[import-untyped]
-    from cerebras.cloud.sdk import AsyncCerebras, Cerebras  # ty: ignore[unresolved-import]
+    from cerebras.cloud.sdk import (  # ty: ignore[unresolved-import]
+        AsyncCerebras,
+        Cerebras,
+    )
     from fireworks.client import Fireworks  # type: ignore[import-untyped]
     from mistralai import Mistral  # ty: ignore[unresolved-import]
     from writerai import AsyncWriter, Writer  # ty: ignore[unresolved-import]
