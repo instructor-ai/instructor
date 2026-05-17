@@ -21,9 +21,9 @@ class RequestHandler(Protocol):
 
     def __call__(
         self,
-        response_model: type[T] | None,
+        response_model: type[T] | None,  # ty:ignore[unsupported-operator]
         kwargs: dict[str, Any],
-    ) -> tuple[type[T] | None, dict[str, Any]]:
+    ) -> tuple[type[T] | None, dict[str, Any]]:  # ty:ignore[unsupported-operator]
         """Prepare request kwargs for this mode.
 
         Args:
@@ -73,8 +73,9 @@ class ResponseParser(Protocol):
         self,
         response: Any,
         response_model: type[T],
-        validation_context: dict[str, Any] | None = None,
-        strict: bool | None = None,
+        validation_context: dict[str, Any]
+        | None = None,  # ty:ignore[unsupported-operator]
+        strict: bool | None = None,  # ty:ignore[unsupported-operator]
         stream: bool = False,
         is_async: bool = False,
     ) -> T:
@@ -129,7 +130,9 @@ class TemplateHandler(Protocol):
     """Apply template context to provider-specific message formats."""
 
     def __call__(
-        self, kwargs: dict[str, Any], context: dict[str, Any] | None
+        self,
+        kwargs: dict[str, Any],
+        context: dict[str, Any] | None,  # ty:ignore[unsupported-operator]
     ) -> dict[str, Any]:
         """Return kwargs with templates applied."""
         ...

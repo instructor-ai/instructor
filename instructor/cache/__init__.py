@@ -218,17 +218,17 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
                 # Looks like a proper completion object - use SimpleNamespace reconstruction
                 from types import SimpleNamespace
 
-                obj._raw_response = json.loads(
+                obj._raw_response = json.loads(  # ty:ignore[unresolved-attribute]
                     raw_json, object_hook=lambda d: SimpleNamespace(**d)
                 )
                 logger.debug("Restored raw response as SimpleNamespace object")
             else:
                 # Plain dict/list - keep as-is
-                obj._raw_response = raw_data
+                obj._raw_response = raw_data  # ty:ignore[unresolved-attribute]
                 logger.debug("Restored raw response as plain data structure")
         except (json.JSONDecodeError, TypeError):
             # Not valid JSON - probably string fallback
-            obj._raw_response = raw_json
+            obj._raw_response = raw_json  # ty:ignore[unresolved-attribute]
             logger.debug(
                 "Restored raw response as string (original could not be fully serialized)"
             )

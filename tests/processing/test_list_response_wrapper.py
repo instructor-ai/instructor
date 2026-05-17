@@ -22,7 +22,7 @@ class DummyIterableModel(BaseModel, IterableBase):
     @classmethod
     def from_streaming_response(  # noqa: ANN001
         cls, _completion, mode: Mode, **_kwargs
-    ) -> Generator[int, None, None]:
+    ) -> Generator[int, None, None]:  # ty:ignore[invalid-method-override]
         del mode
         yield 1
         yield 2
@@ -30,7 +30,7 @@ class DummyIterableModel(BaseModel, IterableBase):
     @classmethod
     def from_streaming_response_async(  # noqa: ANN001
         cls, _completion: AsyncGenerator[object, None], mode: Mode, **_kwargs
-    ) -> AsyncGenerator[int, None]:
+    ) -> AsyncGenerator[int, None]:  # ty:ignore[invalid-method-override]
         del mode
 
         async def gen() -> AsyncGenerator[int, None]:
@@ -81,7 +81,7 @@ async def test_process_response_async_streaming_returns_list_response_for_iterab
     raw = completion_stream()
 
     result = await process_response_async(
-        raw,  # type: ignore[arg-type]
+        raw,  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
         response_model=DummyIterableModel,
         stream=True,
         mode=Mode.TOOLS,

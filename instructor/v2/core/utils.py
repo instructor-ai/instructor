@@ -15,7 +15,7 @@ def is_async(func: Callable[..., Any]) -> bool:
     """Return whether a callable is async, following wrapped callables."""
     is_coroutine = inspect.iscoroutinefunction(func)
     while hasattr(func, "__wrapped__"):
-        func = func.__wrapped__  # type: ignore[attr-defined]
+        func = func.__wrapped__  # type: ignore[attr-defined]  # ty:ignore[invalid-assignment]
         is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
     return is_coroutine
 
@@ -33,14 +33,14 @@ class classproperty(Generic[R_co]):
 def disable_pydantic_error_url() -> None:
     """Disable URLs in Pydantic ValidationError messages."""
     if not hasattr(ValidationError, "_original_str"):
-        ValidationError._original_str = ValidationError.__str__  # type: ignore[attr-defined]
+        ValidationError._original_str = ValidationError.__str__  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
     def __str__(self: ValidationError) -> str:
-        output = ValidationError._original_str(self)  # type: ignore[attr-defined]
+        output = ValidationError._original_str(self)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
         return "\n".join(
             line
             for line in output.split("\n")
             if "https://errors.pydantic.dev" not in line
         )
 
-    ValidationError.__str__ = __str__  # type: ignore[method-assign]
+    ValidationError.__str__ = __str__  # type: ignore[method-assign]  # ty:ignore[invalid-assignment]

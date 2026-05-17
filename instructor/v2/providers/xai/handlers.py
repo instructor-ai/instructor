@@ -327,7 +327,7 @@ class XAIHandlerBase(ModeHandler):
 
                 return _iter_tasks()
 
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **parse_kwargs,
@@ -351,7 +351,7 @@ class XAIHandlerBase(ModeHandler):
 
             generator = _iter_tasks()
         else:
-            generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+            generator = response_model.from_streaming_response(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json,
                 **parse_kwargs,
@@ -528,7 +528,7 @@ class XAIParallelToolsHandler(XAIHandlerBase):
             )
 
         new_kwargs["_xai_tools"] = handle_parallel_model(response_model)  # type: ignore[arg-type]
-        return ParallelModel(response_model), new_kwargs  # type: ignore[return-value,arg-type]
+        return ParallelModel(response_model), new_kwargs  # type: ignore[return-value,arg-type]  # ty:ignore[invalid-return-type]
 
     def handle_reask(
         self,

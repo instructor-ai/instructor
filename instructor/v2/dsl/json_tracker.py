@@ -101,10 +101,16 @@ class JsonCompleteness:
                 child_path = f"{path}.{key}" if path else key
                 if i < len(keys) - 1:
                     # Has next sibling → complete
-                    self._mark_all(data[key], child_path)
+                    self._mark_all(
+                        data[key],
+                        child_path,  # ty:ignore[invalid-argument-type]
+                    )
                 else:
                     # Last sibling → recurse to check children
-                    self._check_siblings(data[key], child_path)
+                    self._check_siblings(
+                        data[key],
+                        child_path,  # ty:ignore[invalid-argument-type]
+                    )
 
         elif isinstance(data, list):
             for i, item in enumerate(data):

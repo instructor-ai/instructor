@@ -82,7 +82,7 @@ def test_iterable_not_simple():
 )
 def test_list_with_union_pipe_syntax():
     """Test that list[int | str] is correctly identified as a simple type."""
-    response_model = list[int | str]
+    response_model = list[int | str]  # ty:ignore[unsupported-operator]
     assert is_simple_type(response_model), (
         f"list[int | str] should be a simple type in Python {sys.version_info.major}.{sys.version_info.minor}. Instead it was identified as {type(response_model)} with origin {get_origin(response_model)} and args {get_args(response_model)}"
     )
@@ -103,7 +103,7 @@ def test_list_with_union_typing_syntax():
 def test_prepare_response_model_with_list_union():
     """Test that list[int | str] works correctly as a response model with prepare_response_model."""
     # This is the type used in the fizzbuzz example
-    response_model = list[int | str]
+    response_model = list[int | str]  # ty:ignore[unsupported-operator]
 
     # First check that it's correctly identified as a simple type
     assert is_simple_type(response_model), (

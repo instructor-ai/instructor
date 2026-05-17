@@ -31,7 +31,7 @@ _OPENAI_TO_GEMINI_MAP = {
 @lru_cache(maxsize=1)
 def _default_safety_thresholds() -> dict[Any, Any] | None:
     try:
-        from google.genai.types import HarmBlockThreshold, HarmCategory  # type: ignore
+        from google.genai.types import HarmBlockThreshold, HarmCategory
     except ImportError:
         try:
             from google.generativeai.types import (  # type: ignore
@@ -121,7 +121,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
         anyOf: list[dict[str, Any]] | None = None
         properties: dict[str, FunctionSchema] | None = None
 
-    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
+    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)
     schema.pop("$defs", None)
 
     def transform_schema_node(node: Any) -> Any:
@@ -563,7 +563,9 @@ def handle_genai_structured_outputs(
     }
 
     if user_cached_content is None:
-        base_config["system_instruction"] = system_message
+        base_config["system_instruction"] = (
+            system_message  # ty:ignore[invalid-assignment]
+        )
 
     generation_config = update_genai_kwargs(new_kwargs, base_config)
 

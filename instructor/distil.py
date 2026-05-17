@@ -184,8 +184,8 @@ class Instructions:
                 return self.client.chat.completions.create(
                     **openai_kwargs,
                     model=model,
-                    response_model=return_base_model,  # type: ignore - TODO figure out why `response_model` is not recognized
-                )
+                    response_model=return_base_model,
+                )  # ty:ignore[no-matching-overload]
 
             @functools.wraps(fn)
             def _distil(*args: P.args, **kwargs: P.kwargs) -> T_Retval:
@@ -203,9 +203,9 @@ class Instructions:
             return _dispatch if mode == "dispatch" else _distil
 
         if len(args) == 1 and callable(args[0]):
-            return _wrap_distil(args[0])  # type: ignore
+            return _wrap_distil(args[0])
 
-        return _wrap_distil
+        return _wrap_distil  # ty:ignore[invalid-return-type]
 
     @validate_call
     def track(
@@ -231,7 +231,9 @@ class Instructions:
         base_model = type(resp)
 
         if finetune_format == FinetuneFormat.MESSAGES:
-            openai_function_call = response_schema(base_model).openai_schema
+            openai_function_call = response_schema(
+                base_model
+            ).openai_schema  # ty:ignore[unresolved-attribute]
             openai_kwargs = self.openai_kwargs(name, fn, args, kwargs, base_model)
             openai_kwargs["messages"].append(
                 {

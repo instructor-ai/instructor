@@ -30,7 +30,7 @@ def _extract_reask_message(response: Any) -> dict[str, Any]:
     if hasattr(response, "choices") and response.choices:
         message = response.choices[0].message
         try:
-            return dump_message(message)
+            return dump_message(message)  # ty:ignore[invalid-return-type]
         except Exception:
             return {
                 "role": getattr(message, "role", "assistant"),

@@ -70,7 +70,9 @@ def mock_anthropic_message(request: Any) -> Message:
         data_content = params.get("data_content", data_content)
     return Message(
         id="test_id",
-        content=[{"type": "text", "text": data_content}],
+        content=[
+            {"type": "text", "text": data_content}
+        ],  # ty:ignore[invalid-argument-type]
         model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",
@@ -179,7 +181,7 @@ def test_complete_output_no_exception(
     test_model_instance = cast(
         Any,
         test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS),
-    )
+    )  # ty:ignore[redundant-cast]
     assert test_model_instance.data == "complete data"
 
 
@@ -205,7 +207,7 @@ def test_anthropic_no_exception(
             cast(Any, mock_anthropic_message),
             mode=instructor.Mode.ANTHROPIC_JSON,
         ),
-    )
+    )  # ty:ignore[redundant-cast]
     assert test_model_instance.data == "Claude says hi"
 
 
@@ -225,7 +227,7 @@ def test_control_characters_not_allowed_in_anthropic_json_strict_mode(
         )
 
     # https://docs.pydantic.dev/latest/errors/validation_errors/#json_invalid
-    exc = cast(ValidationError, exc_info.value)
+    exc = cast(ValidationError, exc_info.value)  # ty:ignore[redundant-cast]
     assert len(exc.errors()) == 1
     assert exc.errors()[0]["type"] == "json_invalid"
     assert "control character" in exc.errors()[0]["msg"]
@@ -246,7 +248,7 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
             mode=instructor.Mode.ANTHROPIC_JSON,
             strict=False,
         ),
-    )
+    )  # ty:ignore[redundant-cast]
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
 
@@ -328,7 +330,9 @@ def test_no_refusal_attribute(test_model: type[ResponseSchema]):
         ],
     )
 
-    resp = cast(Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS))
+    resp = cast(
+        Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    )  # ty:ignore[redundant-cast]
     assert resp.data == "test_data"
     assert resp.name == "TestModel"
 
@@ -368,6 +372,8 @@ def test_missing_refusal_attribute(test_model: type[ResponseSchema]):
         ],
     )
 
-    resp = cast(Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS))
+    resp = cast(
+        Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    )  # ty:ignore[redundant-cast]
     assert resp.data == "test_data"
     assert resp.name == "TestModel"

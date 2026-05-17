@@ -75,7 +75,7 @@ def should_skip_provider_exception(exc: Exception) -> bool:
 def skip_or_raise_provider_exception(provider_string: str, exc: Exception) -> None:
     if should_skip_provider_exception(exc):
         pytest.skip(
-            f"Provider {provider_string} not available in this environment: {exc}"
+            f"Provider {provider_string} not available in this environment: {exc}"  # ty:ignore[too-many-positional-arguments]
         )
     raise exc
 
@@ -85,7 +85,9 @@ def test_user_extraction_sync(provider_string):
     """Test user extraction for each provider (sync)."""
 
     if should_skip_provider(provider_string):
-        pytest.skip(f"Skipping provider {provider_string} on CI")
+        pytest.skip(
+            f"Skipping provider {provider_string} on CI"  # ty:ignore[too-many-positional-arguments]
+        )
         return
 
     try:
@@ -111,7 +113,9 @@ async def test_user_extraction_async(provider_string):
     """Test user extraction for each provider (async)."""
 
     if should_skip_provider(provider_string):
-        pytest.skip(f"Skipping provider {provider_string} on CI")
+        pytest.skip(
+            f"Skipping provider {provider_string} on CI"  # ty:ignore[too-many-positional-arguments]
+        )
         return
 
     try:
@@ -121,7 +125,7 @@ async def test_user_extraction_async(provider_string):
 
     try:
         response = await client.chat.completions.create(
-            messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
+            messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
             response_model=User,
         )
         assert isinstance(response, User)
@@ -183,7 +187,9 @@ def test_additional_kwargs_passed():
     import os
 
     if os.getenv("INSTRUCTOR_ENV") == "CI" or not os.getenv("ANTHROPIC_API_KEY"):
-        pytest.skip("Skipping live Anthropic test without credentials")
+        pytest.skip(
+            "Skipping live Anthropic test without credentials"  # ty:ignore[too-many-positional-arguments]
+        )
         return
 
     client = instructor.from_provider("anthropic/claude-sonnet-4-6", max_tokens=10)
@@ -403,7 +409,7 @@ def test_genai_mode_parameter_passed_to_provider():
 
     mock_google = ModuleType("google")
     mock_genai = ModuleType("google.genai")
-    mock_google.genai = mock_genai  # type: ignore[attr-defined]
+    mock_google.genai = mock_genai  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
     with patch.dict(sys.modules, {"google": mock_google, "google.genai": mock_genai}):
         with patch("google.genai.Client", create=True) as mock_genai_class:
@@ -434,7 +440,7 @@ def test_genai_mode_defaults_when_not_provided():
 
     mock_google = ModuleType("google")
     mock_genai = ModuleType("google.genai")
-    mock_google.genai = mock_genai  # type: ignore[attr-defined]
+    mock_google.genai = mock_genai  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
     with patch.dict(sys.modules, {"google": mock_google, "google.genai": mock_genai}):
         with patch("google.genai.Client", create=True) as mock_genai_class:
@@ -506,7 +512,7 @@ def test_vertexai_provider_uses_vertexai_sdk_path():
 
     mock_vertexai = ModuleType("vertexai")
     mock_gener_models = ModuleType("vertexai.generative_models")
-    mock_vertexai.generative_models = mock_gener_models  # type: ignore[attr-defined]
+    mock_vertexai.generative_models = mock_gener_models  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
     with patch.dict(
         sys.modules,

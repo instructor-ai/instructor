@@ -48,7 +48,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         else:
             from instructor.v2.dsl.simple_type import ModelAdapter
 
-            response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
+            response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type, invalid-assignment]
             origin = get_origin(response_model)
 
     if is_typed_dict(response_model):
@@ -59,8 +59,8 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
             create_model(
                 model_name,
                 **{name: (annotation, ...) for name, annotation in annotations.items()},
-            ),
-        )
+            ),  # ty:ignore[no-matching-overload]
+        )  # ty:ignore[invalid-assignment]
 
     origin = get_origin(response_model)
     if origin in {Iterable, list}:
@@ -85,14 +85,16 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
                             {},
                         ).items()
                     },
-                ),
+                ),  # ty:ignore[no-matching-overload]
             )
-        response_model = IterableModel(cast(type[BaseModel], iterable_element_class))
+        response_model = IterableModel(
+            cast(type[BaseModel], iterable_element_class)
+        )  # ty:ignore[invalid-assignment]
 
-    if is_simple_type(response_model):
+    if is_simple_type(response_model):  # ty:ignore[invalid-argument-type]
         from instructor.v2.dsl.simple_type import ModelAdapter
 
-        response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
+        response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type, invalid-assignment]
 
     from instructor.v2.core.function_calls import (
         ResponseSchema,

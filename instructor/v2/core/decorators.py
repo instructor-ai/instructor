@@ -8,7 +8,7 @@ from instructor.v2.core.registry import mode_registry
 
 
 def register_mode_handler(
-    provider: Provider | Iterable[Provider],
+    provider: Provider | Iterable[Provider],  # ty:ignore[unsupported-operator]
     mode: Mode,
 ):
     """Decorator to register a mode handler class.

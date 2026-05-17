@@ -24,7 +24,9 @@ class _AnthropicTestModel(BaseModel):
 def _build_message(data_content: str) -> Message:
     return Message(
         id="test_id",
-        content=[{"type": "text", "text": data_content}],
+        content=[
+            {"type": "text", "text": data_content}
+        ],  # ty:ignore[invalid-argument-type]
         model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",

@@ -84,7 +84,7 @@ def patch_v2(
     func_is_async = is_async(func)
 
     if func_is_async:
-        return _create_async_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]
+        return _create_async_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]  # ty:ignore[invalid-return-type]
     else:
         return _create_sync_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]
 
@@ -121,7 +121,7 @@ def patch(
 ) -> InstructorChatCompletionCreate: ...
 
 
-def patch(  # type: ignore
+def patch(
     client: OpenAI | AsyncOpenAI | None = None,
     create: Callable[..., T_Retval] | None = None,
     mode: Mode = Mode.TOOLS,
@@ -140,9 +140,9 @@ def patch(  # type: ignore
     new_create = patch_v2(func=func, provider=provider, mode=mode)
 
     if client is not None:
-        client.chat.completions.create = new_create  # type: ignore[attr-defined]
+        client.chat.completions.create = new_create  # type: ignore[attr-defined]  # ty:ignore[invalid-assignment]
         return client
-    return new_create  # type: ignore[return-value]
+    return new_create  # type: ignore[return-value]  # ty:ignore[invalid-return-type]
 
 
 def apatch(

@@ -178,18 +178,18 @@ class MistralHandlerBase(ModeHandler):
             task_parser = response_model.tasks_from_task_list_chunks  # type: ignore[attr-defined]
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 task_parser=(
-                    response_model.tasks_from_task_list_chunks_async  # type: ignore[attr-defined]
+                    response_model.tasks_from_task_list_chunks_async  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                     if task_parser is not None
                     else None
                 ),
                 **parse_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
             response,
             stream_extractor=self.extract_streaming_json,
             task_parser=task_parser,
@@ -270,7 +270,7 @@ class MistralToolsHandler(MistralHandlerBase):
 
         if is_parallel:
             # Handle parallel model - generate tools for each type
-            the_types = get_types_array(response_model)  # type: ignore[arg-type]
+            the_types = get_types_array(response_model)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
             tools = []
             for model_type in the_types:
                 schema = generate_openai_schema(model_type)
@@ -305,7 +305,7 @@ class MistralToolsHandler(MistralHandlerBase):
                         f"Validation Error found:\n{exception}\n"
                         "Recall the function correctly, fix the errors"
                     ),
-                }
+                }  # ty:ignore[invalid-argument-type]
             )
 
         kwargs["messages"].extend(reask_msgs)

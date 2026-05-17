@@ -182,7 +182,7 @@ class IncompleteOutputException(InstructorError):
         **kwargs: dict[str, Any],
     ):
         self.last_completion = last_completion
-        super().__init__(message, *args, **kwargs)
+        super().__init__(message, *args, **kwargs)  # ty:ignore[invalid-argument-type]
 
 
 class InstructorRetryException(InstructorError):

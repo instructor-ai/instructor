@@ -252,7 +252,10 @@ def test_update_total_usage_preserves_openai_usage_subclass():
     )
     response = Response(response_usage)
 
-    updated = update_total_usage(response, total_usage)
+    updated = update_total_usage(
+        response,  # ty:ignore[invalid-argument-type]
+        total_usage,
+    )
 
     assert updated is response
     assert response.usage is response_usage

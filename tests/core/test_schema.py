@@ -116,7 +116,7 @@ def test_openai_schema_supports_optional_none_310():
         Validates support of UnionType in schema generation.
         """
 
-        attr: str | None
+        attr: str | None  # ty:ignore[unsupported-operator]
 
     assert (
         openai_schema(DummyWithOptionalNone).model_json_schema()

@@ -337,7 +337,7 @@ class GenAIHandlerBase(ModeHandler):
         if isinstance(model, AdapterBase):
             return cast(Any, model).content
 
-        model._raw_response = response  # type: ignore[attr-defined]
+        model._raw_response = response  # type: ignore[attr-defined]  # ty:ignore[invalid-assignment]
         return model
 
     def handle_reask(
@@ -347,7 +347,7 @@ class GenAIHandlerBase(ModeHandler):
         response: Any,  # noqa: ARG002
         exception: Exception,  # noqa: ARG002
         failed_attempts: list[Any] | None = None,  # noqa: ARG002  # noqa: ARG002
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any]:  # ty:ignore[invalid-method-override]
         return kwargs.copy()
 
 

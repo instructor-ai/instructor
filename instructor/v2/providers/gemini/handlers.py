@@ -165,7 +165,7 @@ class GeminiHandlerBase(ModeHandler):
             try:
                 if self.mode == Mode.TOOLS:
                     resp = chunk.candidates[0].content.parts[0].function_call
-                    resp_dict = type(resp).to_dict(resp)  # type: ignore
+                    resp_dict = type(resp).to_dict(resp)
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
                 else:
@@ -187,7 +187,7 @@ class GeminiHandlerBase(ModeHandler):
             try:
                 if self.mode == Mode.TOOLS:
                     resp = chunk.candidates[0].content.parts[0].function_call
-                    resp_dict = type(resp).to_dict(resp)  # type: ignore
+                    resp_dict = type(resp).to_dict(resp)
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
                 else:
@@ -215,13 +215,13 @@ class GeminiHandlerBase(ModeHandler):
             parse_kwargs["strict"] = strict
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **parse_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
             response,
             stream_extractor=self.extract_streaming_json,
             **parse_kwargs,

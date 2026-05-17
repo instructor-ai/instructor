@@ -20,9 +20,11 @@ class ModeHandler(ABC):
     @abstractmethod
     def prepare_request(
         self,
-        response_model: type[BaseModel] | None,
+        response_model: type[BaseModel] | None,  # ty:ignore[unsupported-operator]
         kwargs: dict[str, Any],
-    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+    ) -> tuple[
+        type[BaseModel] | None, dict[str, Any]  # ty:ignore[unsupported-operator]
+    ]:
         """Prepare request kwargs for this mode.
 
         Args:
@@ -66,8 +68,9 @@ class ModeHandler(ABC):
         self,
         response: Any,
         response_model: type[BaseModel],
-        validation_context: dict[str, Any] | None = None,
-        strict: bool | None = None,
+        validation_context: dict[str, Any]
+        | None = None,  # ty:ignore[unsupported-operator]
+        strict: bool | None = None,  # ty:ignore[unsupported-operator]
         stream: bool = False,
         is_async: bool = False,
     ) -> BaseModel:

@@ -177,7 +177,7 @@ async def process_response_async(
             validation_context=validation_context,
             strict=strict,
             mode=mode,
-        )
+        )  # ty:ignore[call-non-callable]
         return ListResponse.from_list(
             [task for task in model.tasks],
             raw_response=response,
@@ -212,7 +212,7 @@ async def process_response_async(
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
         return ListResponse.from_list(  # type: ignore[return-value]
-            [task for task in model.tasks],
+            [task for task in model.tasks],  # ty:ignore[unresolved-attribute]
             raw_response=response,
         )
     if isinstance(model, list) and not isinstance(model, ListResponse):
@@ -221,15 +221,15 @@ async def process_response_async(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
+        model._raw_response = response  # ty:ignore[invalid-assignment]
         return model
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
-        return model.content
+        return model.content  # ty:ignore[unresolved-attribute]
 
     if isinstance(model, BaseModel):
-        model._raw_response = response
+        model._raw_response = response  # ty:ignore[invalid-assignment]
     return model
 
 
@@ -315,7 +315,7 @@ def process_response(
             validation_context=validation_context,
             strict=strict,
             mode=mode,
-        )
+        )  # ty:ignore[call-non-callable]
         return ListResponse.from_list(
             [task for task in model.tasks],
             raw_response=response,
@@ -350,7 +350,7 @@ def process_response(
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
         return ListResponse.from_list(  # type: ignore[return-value]
-            [task for task in model.tasks],
+            [task for task in model.tasks],  # ty:ignore[unresolved-attribute]
             raw_response=response,
         )
     if isinstance(model, list) and not isinstance(model, ListResponse):
@@ -359,15 +359,15 @@ def process_response(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
+        model._raw_response = response  # ty:ignore[invalid-assignment]
         return model
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
-        return model.content
+        return model.content  # ty:ignore[unresolved-attribute]
 
     if isinstance(model, BaseModel):
-        model._raw_response = response
+        model._raw_response = response  # ty:ignore[invalid-assignment]
     return model
 
 

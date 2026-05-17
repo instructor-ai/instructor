@@ -102,7 +102,7 @@ class Response:
             strict=strict,
             messages=messages,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
     @overload
     def create_with_completion(
@@ -136,7 +136,7 @@ class Response:
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
     @overload
     def create_iterable(
@@ -170,7 +170,7 @@ class Response:
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
     @overload
     def create_partial(
@@ -204,7 +204,7 @@ class Response:
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
 
 class AsyncResponse(Response):
@@ -241,7 +241,7 @@ class AsyncResponse(Response):
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
-    ) -> T | Any:
+    ) -> T | Any:  # ty:ignore[invalid-method-override]
         messages = self._normalize_messages(messages, kwargs)
 
         return await self.client.create(
@@ -251,7 +251,7 @@ class AsyncResponse(Response):
             strict=strict,
             messages=messages,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
     @overload
     async def create_with_completion(
@@ -277,7 +277,7 @@ class AsyncResponse(Response):
         response_model: type[T] | None = None,
         max_retries: int | AsyncRetrying = 3,
         **kwargs,
-    ) -> tuple[T, Any]:
+    ) -> tuple[T, Any]:  # ty:ignore[invalid-method-override]
         messages = self._normalize_messages(messages, kwargs)
 
         return await self.client.create_with_completion(
@@ -285,7 +285,7 @@ class AsyncResponse(Response):
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
     @overload
     async def create_iterable(
@@ -311,7 +311,7 @@ class AsyncResponse(Response):
         response_model: type[T] | None = None,
         max_retries: int | AsyncRetrying = 3,
         **kwargs,
-    ) -> AsyncGenerator[T, None]:
+    ) -> AsyncGenerator[T, None]:  # ty:ignore[invalid-method-override]
         messages = self._normalize_messages(messages, kwargs)
 
         return self.client.create_iterable(
@@ -319,7 +319,7 @@ class AsyncResponse(Response):
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
-        )
+        )  # ty:ignore[no-matching-overload]
 
 
 class Instructor:
@@ -713,7 +713,7 @@ class AsyncInstructor(Instructor):
         strict: bool = True,
         hooks: Hooks | None = None,
         **kwargs: Any,
-    ) -> T | Any:
+    ) -> T | Any:  # ty:ignore[invalid-method-override]
         kwargs = self.handle_kwargs(kwargs)
 
         # Combine client hooks with per-call hooks
@@ -757,7 +757,7 @@ class AsyncInstructor(Instructor):
         strict: bool = True,
         hooks: Hooks | None = None,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
+    ) -> AsyncGenerator[T, None]:  # ty:ignore[invalid-method-override]
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
 
@@ -786,7 +786,7 @@ class AsyncInstructor(Instructor):
         strict: bool = True,
         hooks: Hooks | None = None,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
+    ) -> AsyncGenerator[T, None]:  # ty:ignore[invalid-method-override]
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
 
@@ -796,7 +796,7 @@ class AsyncInstructor(Instructor):
             combined_hooks = self.hooks + hooks
 
         async for item in await self.create_fn(
-            response_model=Iterable[response_model],
+            response_model=Iterable[response_model],  # ty:ignore[invalid-type-form]
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -815,7 +815,7 @@ class AsyncInstructor(Instructor):
         strict: bool = True,
         hooks: Hooks | None = None,
         **kwargs: Any,
-    ) -> tuple[T, Any]:
+    ) -> tuple[T, Any]:  # ty:ignore[invalid-method-override]
         kwargs = self.handle_kwargs(kwargs)
 
         # Combine client hooks with per-call hooks
@@ -913,13 +913,15 @@ def from_litellm(
         )
     if async_client is False:
         return from_litellm_v2(
-            completion=cast(Callable[..., object], completion),
+            completion=cast(
+                Callable[..., object], completion
+            ),  # ty:ignore[redundant-cast]
             mode=mode,
             async_client=False,
             **kwargs,
         )
     return from_litellm_v2(
-        completion=cast(Callable[..., object], completion),
+        completion=cast(Callable[..., object], completion),  # ty:ignore[redundant-cast]
         mode=mode,
         **kwargs,
     )

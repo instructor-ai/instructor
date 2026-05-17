@@ -46,7 +46,7 @@ class UnionWithNested(BaseModel):
 
 
 class PEP604UnionField(BaseModel):
-    value: str | int
+    value: str | int  # ty:ignore[unsupported-operator]
 
 
 def test_partial():
@@ -68,37 +68,40 @@ def test_partial():
         "title": "PartialSamplePartial",
         "type": "object",
     }, "Wrapped model JSON schema has changed"
-    assert partial.get_partial_model().model_json_schema() == {
-        "$defs": {
-            "PartialSampleNestedPartial": {
-                "properties": {
-                    "b": {
-                        "anyOf": [{"type": "integer"}, {"type": "null"}],
-                        "default": None,
-                        "title": "B",
-                    }
+    assert (
+        partial.get_partial_model().model_json_schema()  # ty:ignore[unresolved-attribute]
+        == {
+            "$defs": {
+                "PartialSampleNestedPartial": {
+                    "properties": {
+                        "b": {
+                            "anyOf": [{"type": "integer"}, {"type": "null"}],
+                            "default": None,
+                            "title": "B",
+                        }
+                    },
+                    "title": "PartialSampleNestedPartial",
+                    "type": "object",
+                }
+            },
+            "properties": {
+                "a": {
+                    "anyOf": [{"type": "integer"}, {"type": "null"}],
+                    "default": None,
+                    "title": "A",
                 },
-                "title": "PartialSampleNestedPartial",
-                "type": "object",
-            }
-        },
-        "properties": {
-            "a": {
-                "anyOf": [{"type": "integer"}, {"type": "null"}],
-                "default": None,
-                "title": "A",
+                "b": {
+                    "anyOf": [
+                        {"$ref": "#/$defs/PartialSampleNestedPartial"},
+                        {"type": "null"},
+                    ],
+                    "default": {},
+                },
             },
-            "b": {
-                "anyOf": [
-                    {"$ref": "#/$defs/PartialSampleNestedPartial"},
-                    {"type": "null"},
-                ],
-                "default": {},
-            },
-        },
-        "title": "PartialSamplePartial",
-        "type": "object",
-    }, "Partial model JSON schema has changed"
+            "title": "PartialSamplePartial",
+            "type": "object",
+        }
+    ), "Partial model JSON schema has changed"
 
 
 partial_chunks = ["\n", "\t", " ", "\x00", '{"a": 42, "b": {"b": 1}}']
@@ -123,7 +126,9 @@ expected_async_models = [
 def test_partial_with_whitespace():
     partial = Partial[SamplePartial]
     # Get the actual models from chunks - must provide complete data for final validation
-    models = list(partial.model_from_chunks(partial_chunks))
+    models = list(
+        partial.model_from_chunks(partial_chunks)  # ty:ignore[unresolved-attribute]
+    )
     assert len(models) == len(expected_sync_models)
     for i, model in enumerate(models):
         assert model.model_dump() == expected_sync_models[i]
@@ -139,7 +144,11 @@ async def test_async_partial_with_whitespace():
             yield chunk
 
     i = 0
-    async for model in partial.model_from_chunks_async(async_generator()):
+    async for (
+        model
+    ) in partial.model_from_chunks_async(  # ty:ignore[unresolved-attribute]
+        async_generator()
+    ):
         # Expected behavior: When whitespace chunks are processed, we should always get a model
         assert model.model_dump() == expected_async_models[i]
         i += 1
@@ -209,7 +218,7 @@ async def test_summary_extraction_async():
 
 def test_union_with_nested():
     partial = Partial[UnionWithNested]
-    partial.get_partial_model().model_validate_json(
+    partial.get_partial_model().model_validate_json(  # ty:ignore[unresolved-attribute]
         '{"a": [{"b": "b"}, {"d": "d"}], "b": [{"b": "b"}], "c": {"d": "d"}, "e": [1, "a"]}'
     )
 
@@ -217,7 +226,11 @@ def test_union_with_nested():
 def test_partial_streaming_with_pep604_union_field():
     partial = Partial[PEP604UnionField]
 
-    models = list(partial.model_from_chunks(['{"value": ', "1}"]))
+    models = list(
+        partial.model_from_chunks(  # ty:ignore[unresolved-attribute]
+            ['{"value": ', "1}"]
+        )
+    )
 
     assert models[-1].model_dump() == {"value": 1}
 
@@ -237,7 +250,7 @@ def test_partial_with_default_factory():
 
     # This should not raise a validation error about both default and default_factory
     partial = Partial[ModelWithDefaultFactory]
-    partial_model = partial.get_partial_model()
+    partial_model = partial.get_partial_model()  # ty:ignore[unresolved-attribute]
 
     # Verify we can instantiate and validate
     # In Partial models, all fields are made Optional with default=None
@@ -304,7 +317,9 @@ class TestMakeFieldOptionalWorksWithPydanticV2:
             status: str
 
         PartialModel = Partial[MyModel]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # This should NOT raise ValidationError
         result = TruePartial.model_validate({})
@@ -321,7 +336,9 @@ class TestMakeFieldOptionalWorksWithPydanticV2:
             age: int
 
         PartialModel = Partial[MyModel]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Simulate streaming JSON chunks
         streaming_states = [
@@ -349,7 +366,9 @@ class TestMakeFieldOptionalWorksWithPydanticV2:
             optional_field: Optional[str]
 
         PartialModel = Partial[ComplexModel]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # All fields should validate with empty dict
         result = TruePartial.model_validate({})
@@ -379,7 +398,9 @@ class TestLiteralTypeStreaming:
             status: Literal["active", "inactive"]
 
         PartialModel = Partial[ModelWithLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # With partial_mode="trailing-strings", incomplete strings are kept
         partial_json = b'{"status": "act'
@@ -396,7 +417,9 @@ class TestLiteralTypeStreaming:
             status: Literal["active", "inactive"]
 
         PartialModel = Partial[ModelWithLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # With partial_mode="on" (enabled by PartialLiteralMixin), incomplete strings are dropped
         partial_json = b'{"status": "act'
@@ -413,7 +436,9 @@ class TestLiteralTypeStreaming:
             status: Literal["active", "inactive"]
 
         PartialModel = Partial[ModelWithLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"status": "active"})
         assert result.status == "active"
@@ -429,7 +454,9 @@ class TestLiteralTypeStreaming:
             status: Literal["active", "inactive"]
 
         PartialModel = Partial[ModelWithLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"name": "John"})
         assert result.name == "John"
@@ -445,7 +472,11 @@ class TestLiteralTypeStreaming:
 
         PartialModel = Partial[Person]
 
-        results = list(PartialModel.model_from_chunks(['{"name": "Joh']))
+        results = list(
+            PartialModel.model_from_chunks(  # ty:ignore[unresolved-attribute]
+                ['{"name": "Joh']
+            )
+        )
 
         assert len(results) == 1
         assert results[0].type == "Person"
@@ -459,7 +490,9 @@ class TestLiteralTypeStreaming:
             status: Literal["active", "inactive"]
 
         PartialModel = Partial[ModelWithLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # "xyz" is a complete string but not a valid Literal value
         with pytest.raises(ValidationError):
@@ -483,7 +516,9 @@ class TestPartialStreamingWithComplexTypes:
             status: Status
 
         PartialModel = Partial[ModelWithEnum]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Incomplete string is dropped with partial_mode="on"
         obj = from_json(b'{"status": "act', partial_mode="on")
@@ -501,7 +536,9 @@ class TestPartialStreamingWithComplexTypes:
             status: Status
 
         PartialModel = Partial[ModelWithEnum]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"status": "active"})
         assert result.status == Status.ACTIVE
@@ -513,7 +550,9 @@ class TestPartialStreamingWithComplexTypes:
             status: Optional[Literal["on", "off"]] = None
 
         PartialModel = Partial[ModelWithOptionalLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         obj = from_json(b'{"status": "o', partial_mode="on")
         result = TruePartial.model_validate(obj)
@@ -526,7 +565,9 @@ class TestPartialStreamingWithComplexTypes:
             status: Optional[Literal["on", "off"]] = None
 
         PartialModel = Partial[ModelWithOptionalLiteral]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"status": "on"})
         assert result.status == "on"
@@ -538,7 +579,9 @@ class TestPartialStreamingWithComplexTypes:
             value: Union[Literal["yes", "no"], int]
 
         PartialModel = Partial[ModelWithUnion]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Incomplete string is dropped
         obj = from_json(b'{"value": "ye', partial_mode="on")
@@ -552,7 +595,9 @@ class TestPartialStreamingWithComplexTypes:
             value: Union[Literal["yes", "no"], int]
 
         PartialModel = Partial[ModelWithUnion]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"value": "yes"})
         assert result.value == "yes"
@@ -562,10 +607,12 @@ class TestPartialStreamingWithComplexTypes:
 
     def test_partial_model_supports_pep604_union_annotations(self):
         class MyResponse(BaseModel):
-            value: str | int
+            value: str | int  # ty:ignore[unsupported-operator]
 
         PartialModel = Partial[MyResponse]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"value": "hello"})
         assert result.value == "hello"
@@ -580,7 +627,9 @@ class TestPartialStreamingWithComplexTypes:
             value: Union[Literal["a", "b"], Literal["x", "y"]]
 
         PartialModel = Partial[ModelWithUnionLiterals]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Both branches should work
         assert TruePartial.model_validate({"value": "a"}).value == "a"
@@ -595,7 +644,9 @@ class TestPartialStreamingWithComplexTypes:
             tags: list[Literal["admin", "user", "guest"]]
 
         PartialModel = Partial[ModelWithLiteralList]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Incomplete list item is dropped
         obj = from_json(b'{"tags": ["admin", "us', partial_mode="on")
@@ -609,7 +660,9 @@ class TestPartialStreamingWithComplexTypes:
             tags: list[Literal["admin", "user", "guest"]]
 
         PartialModel = Partial[ModelWithLiteralList]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         result = TruePartial.model_validate({"tags": ["admin", "user"]})
         assert result.tags == ["admin", "user"]
@@ -644,7 +697,7 @@ class TestDiscriminatedUnionPartial:
 
         PartialModel = Partial[PetContainer]
         with pytest.raises(PydanticUserError):
-            PartialModel.get_partial_model()
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
 
     def test_union_without_discriminator_works(self):
         """Union without discriminator works with Partial streaming."""
@@ -661,7 +714,9 @@ class TestDiscriminatedUnionPartial:
             pet: Union[Cat, Dog]  # No discriminator - works with Partial
 
         PartialModel = Partial[PetContainerNoDiscriminator]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Complete value works
         result = TruePartial.model_validate({"pet": {"pet_type": "cat", "meows": 5}})
@@ -675,7 +730,9 @@ class TestDiscriminatedUnionPartial:
             pet_type: Literal["cat"]
 
         PartialModel = Partial[Cat]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Incomplete string is dropped
         obj = from_json(b'{"pet_type": "ca', partial_mode="on")
@@ -715,7 +772,9 @@ class TestModelValidatorsDuringStreaming:
         # With completeness-based validation, incomplete JSON skips all validation
         # by using model_construct() instead of model_validate()
         chunks = ['{"status": "act']  # Incomplete JSON
-        results = list(PartialModel.model_from_chunks(chunks))
+        results = list(
+            PartialModel.model_from_chunks(chunks)  # ty:ignore[unresolved-attribute]
+        )
         # Incomplete JSON - no validation runs, partial value stored
         assert results[0].status == "act"
         assert results[0].priority is None
@@ -735,7 +794,9 @@ class TestModelValidatorsDuringStreaming:
                 return self
 
         PartialModel = Partial[ModelWithValidator]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Valid complete data
         result = TruePartial.model_validate({"status": "active", "priority": "high"})
@@ -772,13 +833,13 @@ class TestModelValidatorsDuringStreaming:
         # because model_construct() is used instead of model_validate()
         validator_calls.clear()
         chunks = ['{"a": "x']  # Incomplete JSON
-        list(PartialModel.model_from_chunks(chunks))
+        list(PartialModel.model_from_chunks(chunks))  # ty:ignore[unresolved-attribute]
         assert validator_calls == []
 
         # Complete JSON - validators run during model_validate
         validator_calls.clear()
         chunks = ['{"a": "x", "b": "1"}']  # Complete JSON
-        list(PartialModel.model_from_chunks(chunks))
+        list(PartialModel.model_from_chunks(chunks))  # ty:ignore[unresolved-attribute]
         assert "one" in validator_calls
         assert "two" in validator_calls
 
@@ -797,7 +858,9 @@ class TestModelValidatorsDuringStreaming:
                 return self
 
         PartialModel = Partial[ModelWithValidator]
-        TruePartial = PartialModel.get_partial_model()
+        TruePartial = (
+            PartialModel.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Without streaming context, validators run even with incomplete data
         # This is the final validation scenario
@@ -831,7 +894,11 @@ class TestFinalValidationAfterStreaming:
         chunks = ['{"name": "John"}']  # Missing 'age'
 
         with pytest.raises(ValidationError) as exc_info:
-            list(PartialModel.model_from_chunks(iter(chunks)))
+            list(
+                PartialModel.model_from_chunks(  # ty:ignore[unresolved-attribute]
+                    iter(chunks)
+                )
+            )
 
         # Should fail because 'age' is required but missing
         assert "age" in str(exc_info.value)
@@ -848,7 +915,11 @@ class TestFinalValidationAfterStreaming:
         # Simulate streaming that provides all required fields
         chunks = ['{"name": "John", "age": 30}']
 
-        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        results = list(
+            PartialModel.model_from_chunks(  # ty:ignore[unresolved-attribute]
+                iter(chunks)
+            )
+        )
         assert len(results) > 0
         final = results[-1]
         assert final.name == "John"
@@ -874,7 +945,11 @@ class TestFinalValidationAfterStreaming:
         chunks = ['{"status": "active", "priority": "low"}']
 
         with pytest.raises(ValidationError) as exc_info:
-            list(PartialModel.model_from_chunks(iter(chunks)))
+            list(
+                PartialModel.model_from_chunks(  # ty:ignore[unresolved-attribute]
+                    iter(chunks)
+                )
+            )
 
         assert "Active tasks must have high priority" in str(exc_info.value)
 
@@ -893,7 +968,9 @@ class TestFinalValidationAfterStreaming:
         chunks = ['{"name": "Jo', 'hn", "age": 25}']
 
         partial_objects = []
-        for obj in PartialModel.model_from_chunks(iter(chunks)):
+        for obj in PartialModel.model_from_chunks(  # ty:ignore[unresolved-attribute]
+            iter(chunks)
+        ):
             partial_objects.append(obj)
 
         # Should have yielded partial objects during streaming
@@ -929,7 +1006,11 @@ class TestFinalValidationAfterStreaming:
             yield '{"name": "John"}'  # Missing 'age'
 
         with pytest.raises(ValidationError) as exc_info:
-            async for _ in PartialModel.model_from_chunks_async(async_chunks()):
+            async for _ in (
+                PartialModel.model_from_chunks_async(  # ty:ignore[unresolved-attribute]
+                    async_chunks()
+                )
+            ):
                 pass
 
         assert "age" in str(exc_info.value)
@@ -949,7 +1030,9 @@ class TestRecursiveModels:
 
         # Should not raise RecursionError
         PartialTreeNode = Partial[TreeNode]
-        TruePartial = PartialTreeNode.get_partial_model()
+        TruePartial = (
+            PartialTreeNode.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Can validate partial data
         result = TruePartial.model_validate({"value": "root"})
@@ -966,7 +1049,9 @@ class TestRecursiveModels:
         TreeNode.model_rebuild()
 
         PartialTreeNode = Partial[TreeNode]
-        TruePartial = PartialTreeNode.get_partial_model()
+        TruePartial = (
+            PartialTreeNode.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Validate with nested structure
         data = {
@@ -1004,7 +1089,9 @@ class TestRecursiveModels:
         assert PartialCompany is not None
 
         # Validate partial data
-        person_partial = PartialPerson.get_partial_model()
+        person_partial = (
+            PartialPerson.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
         result = person_partial.model_validate({"name": "Alice"})
         assert result.name == "Alice"
 
@@ -1019,7 +1106,9 @@ class TestRecursiveModels:
 
         # Should not raise RecursionError
         PartialLinked = Partial[LinkedNode]
-        TruePartial = PartialLinked.get_partial_model()
+        TruePartial = (
+            PartialLinked.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         # Validate chain
         data = {"value": 1, "next": {"value": 2, "next": {"value": 3}}}
@@ -1075,7 +1164,7 @@ class TestRecursiveModels:
 
         # Should not raise RecursionError
         PartialFS = Partial[FileSystemNode]
-        TruePartial = PartialFS.get_partial_model()
+        TruePartial = PartialFS.get_partial_model()  # ty:ignore[unresolved-attribute]
 
         # Complex nested structure
         data = {
@@ -1145,7 +1234,9 @@ class TestRecursiveModels:
         Container.model_rebuild()
 
         PartialContainer = Partial[Container]
-        TruePartial = PartialContainer.get_partial_model()
+        TruePartial = (
+            PartialContainer.get_partial_model()  # ty:ignore[unresolved-attribute]
+        )
 
         data = {
             "title": "Chapter 1",

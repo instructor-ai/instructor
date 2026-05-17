@@ -142,9 +142,9 @@ class Hooks:
                         sig = inspect.signature(handler)
                         sig.bind(*args, **kwargs)
                     except TypeError:
-                        handler(*args)  # type: ignore
+                        handler(*args)
                         continue
-                handler(*args, **kwargs)  # type: ignore
+                handler(*args, **kwargs)
             except Exception:
                 error_traceback = traceback.format_exc()
                 warnings.warn(

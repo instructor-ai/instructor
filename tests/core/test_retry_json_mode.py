@@ -54,7 +54,9 @@ def test_json_decode_error_caught_by_retry():
             max_retries=2,
         )
 
-    exception = cast(InstructorRetryException, exc_info.value)
+    exception = cast(
+        InstructorRetryException, exc_info.value
+    )  # ty:ignore[redundant-cast]
     assert exception.n_attempts == 2
     assert exception.failed_attempts is not None
     assert len(exception.failed_attempts) == 2
@@ -89,7 +91,9 @@ def test_validation_error_caught_by_retry():
             max_retries=2,
         )
 
-    exception = cast(InstructorRetryException, exc_info.value)
+    exception = cast(
+        InstructorRetryException, exc_info.value
+    )  # ty:ignore[redundant-cast]
     assert exception.n_attempts == 2
     assert exception.failed_attempts is not None
     assert len(exception.failed_attempts) == 2

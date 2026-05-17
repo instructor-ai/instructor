@@ -604,7 +604,7 @@ def response_schema(cls: type[Model]) -> type[Model]:
             create_model(
                 cls.__name__ if hasattr(cls, "__name__") else str(cls),
                 __base__=(cls, ResponseSchema),
-            )
+            )  # ty:ignore[invalid-argument-type]
         ),
     )
 

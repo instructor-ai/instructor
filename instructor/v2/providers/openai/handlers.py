@@ -140,14 +140,14 @@ def reask_tools(
     for tool_call in response.choices[0].message.tool_calls:
         reask_msgs.append(
             {
-                "role": "tool",  # type: ignore
+                "role": "tool",
                 "tool_call_id": tool_call.id,
                 "name": tool_call.function.name,
                 "content": (
                     f"Validation Error found:\n{exception}\n"
                     "Recall the function correctly, fix the errors"
                 ),
-            }
+            }  # ty:ignore[invalid-argument-type]
         )
     kwargs["messages"].extend(reask_msgs)
     return kwargs
@@ -178,7 +178,7 @@ def reask_responses_tools(
         details = _format_responses_tool_call_details(tool_call)
         reask_messages.append(
             {
-                "role": "user",  # type: ignore
+                "role": "user",
                 "content": (
                     f"Validation Error found:\n{exception}\n"
                     "Recall the function correctly, fix the errors with "
@@ -451,7 +451,7 @@ class OpenAIHandlerBase(ModeHandler):
             if (
                 "mode"
                 in inspect.signature(
-                    response_model.from_streaming_response  # type: ignore[attr-defined]
+                    response_model.from_streaming_response  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 ).parameters
             ):
                 streaming_kwargs["mode"] = self.mode
@@ -459,13 +459,13 @@ class OpenAIHandlerBase(ModeHandler):
             pass
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **streaming_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
             response,
             stream_extractor=self.extract_streaming_json,
             **streaming_kwargs,
@@ -954,7 +954,7 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
         new_kwargs["tool_choice"] = "auto"
 
         # Wrap in ParallelModel for proper parsing
-        return ParallelModel(typehint=response_model), new_kwargs  # type: ignore[return-value]
+        return ParallelModel(typehint=response_model), new_kwargs  # type: ignore[return-value]  # ty:ignore[invalid-return-type]
 
     def handle_reask(
         self,

@@ -267,17 +267,17 @@ Respond with JSON only. Do not include code fences, markdown, or extra text.
                 parse_kwargs["strict"] = strict
 
             if is_async:
-                return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+                return response_model.from_streaming_response_async(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                     response,
                     stream_extractor=self.extract_streaming_json_async,
                     **parse_kwargs,
-                )
+                )  # ty:ignore[invalid-return-type]
 
-            return response_model.from_streaming_response(  # type: ignore[attr-defined]
+            return response_model.from_streaming_response(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json,
                 **parse_kwargs,
-            )
+            )  # ty:ignore[invalid-return-type]
         # Check for V1 native tool calls first
         if hasattr(response, "tool_calls") and response.tool_calls:
             tool_call = response.tool_calls[0]

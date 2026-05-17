@@ -110,7 +110,11 @@ def handle_templating(
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
         new_kwargs["chat_history"] = [
-            process_message(message, context, provider)
+            process_message(
+                message,
+                context,
+                provider,  # ty:ignore[invalid-argument-type]
+            )
             for message in new_kwargs["chat_history"]
         ]
 
@@ -128,12 +132,21 @@ def handle_templating(
 
     if "messages" in new_kwargs:
         new_kwargs["messages"] = [
-            process_message(message, context, provider) for message in messages
+            process_message(
+                message,
+                context,
+                provider,  # ty:ignore[invalid-argument-type]
+            )
+            for message in messages
         ]
 
     elif "contents" in new_kwargs:
         new_kwargs["contents"] = [
-            process_message(content, context, provider)
+            process_message(
+                content,
+                context,
+                provider,  # ty:ignore[invalid-argument-type]
+            )
             for content in new_kwargs["contents"]
         ]
 

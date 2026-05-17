@@ -25,7 +25,8 @@ class IterableBase:
         cls,
         completion: Iterable[Any],
         stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]],
-        task_parser: Callable[..., Generator[BaseModel, None, None]] | None = None,
+        task_parser: Callable[..., Generator[BaseModel, None, None]]
+        | None = None,  # ty:ignore[unsupported-operator]
         **kwargs: Any,
     ) -> Generator[BaseModel, None, None]:
         if stream_extractor is None:
@@ -41,7 +42,8 @@ class IterableBase:
         stream_extractor: Callable[
             [AsyncGenerator[Any, None]], AsyncGenerator[str, None]
         ],
-        task_parser: Callable[..., AsyncGenerator[BaseModel, None]] | None = None,
+        task_parser: Callable[..., AsyncGenerator[BaseModel, None]]
+        | None = None,  # ty:ignore[unsupported-operator]
         **kwargs: Any,
     ) -> AsyncGenerator[BaseModel, None]:
         if stream_extractor is None:

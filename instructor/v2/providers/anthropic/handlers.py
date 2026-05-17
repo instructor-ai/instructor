@@ -280,13 +280,13 @@ class AnthropicHandlerBase(ModeHandler):
             parse_kwargs["strict"] = strict
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **parse_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
             response,
             stream_extractor=self.extract_streaming_json,
             **parse_kwargs,
@@ -328,7 +328,7 @@ class AnthropicHandlerBase(ModeHandler):
             response_model
         ):
             return self._parse_streaming_response(
-                response_model,
+                response_model,  # ty:ignore[invalid-argument-type]
                 response,
                 validation_context,
                 strict,
@@ -382,7 +382,9 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
         self._register_streaming_from_kwargs(response_model, new_kwargs)
 
         if is_parallel:
-            tool_schemas = handle_anthropic_parallel_model(response_model)
+            tool_schemas = handle_anthropic_parallel_model(
+                response_model  # ty:ignore[invalid-argument-type]
+            )
             new_kwargs["tools"] = tool_schemas
         else:
             tool_descriptions = generate_anthropic_schema(response_model)
@@ -442,7 +444,7 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                 dumped_content = content.model_dump()  # type: ignore[attr-defined]
             assistant_content.append(dumped_content)
             if content.type == "tool_use":
-                tool_use_id = content.id
+                tool_use_id = content.id  # ty:ignore[unresolved-attribute]
 
         reask_msgs = [{"role": "assistant", "content": assistant_content}]
         if tool_use_id is not None:
@@ -490,7 +492,7 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
             response_model,
             validation_context,
             strict,
-            self._parse_tool_response,
+            self._parse_tool_response,  # ty:ignore[invalid-argument-type]
         )
 
     def _parse_tool_response(
@@ -599,7 +601,7 @@ class AnthropicParallelToolsHandler(AnthropicHandlerBase):
             response_model,
             validation_context,
             strict,
-            self._parse_parallel_response,
+            self._parse_parallel_response,  # ty:ignore[invalid-argument-type]
         )
 
     def _parse_parallel_response(
@@ -691,7 +693,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
         if not text_blocks:
             text_content = "No text content found in response"
         else:
-            text_content = text_blocks[-1].text
+            text_content = text_blocks[-1].text  # ty:ignore[unresolved-attribute]
         reask_msg = {
             "role": "user",
             "content": (
@@ -716,7 +718,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
             response_model,
             validation_context,
             strict,
-            self._parse_json_response,
+            self._parse_json_response,  # ty:ignore[invalid-argument-type]
         )
 
     def _parse_json_response(
@@ -866,7 +868,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
         if not text_blocks:
             text_content = "No text content found in response"
         else:
-            text_content = text_blocks[-1].text
+            text_content = text_blocks[-1].text  # ty:ignore[unresolved-attribute]
         reask_msg = {
             "role": "user",
             "content": (
@@ -891,7 +893,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
             response_model,
             validation_context,
             strict,
-            self._parse_structured_output_response,
+            self._parse_structured_output_response,  # ty:ignore[invalid-argument-type]
         )
 
     def _parse_structured_output_response(

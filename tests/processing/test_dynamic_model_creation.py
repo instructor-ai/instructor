@@ -26,7 +26,7 @@ def test_dynamic_model_creation_with_field_description():
             for property_name, property_type, description in mock_cursor
         },
         __base__=BaseModel,
-    )
+    )  # ty:ignore[no-matching-overload]
 
     schema = DynamicModel.model_json_schema()
 

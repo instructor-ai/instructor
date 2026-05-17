@@ -65,11 +65,16 @@ def test_image_to_openai():
 
 def test_convert_contents():
     contents = ["Hello", Image.from_url("http://example.com/image.jpg")]
-    converted = list(convert_contents(contents, Mode.TOOLS))
+    converted = list(
+        convert_contents(contents, Mode.TOOLS)  # ty:ignore[invalid-argument-type]
+    )
     assert len(converted) == 2
     assert converted[0] == {"type": "text", "text": "Hello"}
-    assert converted[1]["type"] == "image_url"
-    assert converted[1]["image_url"]["url"] == "http://example.com/image.jpg"
+    assert converted[1]["type"] == "image_url"  # ty:ignore[invalid-argument-type]
+    assert (
+        converted[1]["image_url"]["url"]  # ty:ignore[invalid-argument-type]
+        == "http://example.com/image.jpg"
+    )
 
 
 def test_convert_messages():
@@ -80,7 +85,9 @@ def test_convert_messages():
         },
         {"role": "assistant", "content": "Hi there!"},
     ]
-    converted = list(convert_messages(messages, Mode.TOOLS))
+    converted = list(
+        convert_messages(messages, Mode.TOOLS)  # ty:ignore[invalid-argument-type]
+    )
     assert len(converted) == 2
     assert converted[0]["role"] == "user"
     assert len(converted[0]["content"]) == 2
@@ -100,7 +107,12 @@ def test_convert_messages_anthropic():
             ],
         }
     ]
-    converted = list(convert_messages(messages, Mode.ANTHROPIC_JSON))
+    converted = list(
+        convert_messages(
+            messages,  # ty:ignore[invalid-argument-type]
+            Mode.ANTHROPIC_JSON,
+        )
+    )
     assert len(converted) == 1
     assert converted == [
         {
@@ -128,7 +140,12 @@ def test_convert_messages_gemini():
         }
     ]
     with pytest.raises(NotImplementedError):
-        list(convert_messages(messages, Mode.GEMINI_JSON))
+        list(
+            convert_messages(
+                messages,  # ty:ignore[invalid-argument-type]
+                Mode.GEMINI_JSON,
+            )
+        )
 
 
 # Additional tests
@@ -180,7 +197,9 @@ def test_convert_messages_mixed_content():
         {"role": "assistant", "content": "Hi there!"},
         {"role": "user", "content": Image.from_url("http://example.com/image.jpg")},
     ]
-    converted = list(convert_messages(messages, Mode.TOOLS))
+    converted = list(
+        convert_messages(messages, Mode.TOOLS)  # ty:ignore[invalid-argument-type]
+    )
     assert len(converted) == 3
     assert converted[0]["content"] == "Hello"
     assert converted[1]["content"] == "Hi there!"
@@ -189,7 +208,7 @@ def test_convert_messages_mixed_content():
 
 def test_convert_contents_invalid_type():
     with pytest.raises(ValueError, match="Unsupported content type"):
-        list(convert_contents([1, 2, 3], Mode.TOOLS))  # type: ignore[arg-type]
+        list(convert_contents([1, 2, 3], Mode.TOOLS))  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
 
 
 def test_convert_contents_anthropic_mode():
@@ -197,10 +216,20 @@ def test_convert_contents_anthropic_mode():
         "Hello",
         Image(source="base64data", media_type="image/png", data="fakedata"),
     ]
-    converted = list(convert_contents(contents, Mode.ANTHROPIC_JSON))
-    assert converted[1]["type"] == "image"
-    assert converted[1]["source"]["type"] == "base64"
-    assert converted[1]["source"]["media_type"] == "image/png"
+    converted = list(
+        convert_contents(
+            contents,  # ty:ignore[invalid-argument-type]
+            Mode.ANTHROPIC_JSON,
+        )
+    )
+    assert converted[1]["type"] == "image"  # ty:ignore[invalid-argument-type]
+    assert (
+        converted[1]["source"]["type"] == "base64"  # ty:ignore[invalid-argument-type]
+    )
+    assert (
+        converted[1]["source"]["media_type"]  # ty:ignore[invalid-argument-type]
+        == "image/png"
+    )
 
 
 def test_convert_contents_custom_dict():
@@ -286,11 +315,16 @@ def test_image_from_various_urls(url, request):
 
 def test_convert_contents_with_base64_image(base64_png):
     contents = ["Hello", Image.from_url(base64_png)]
-    converted = list(convert_contents(contents, Mode.TOOLS))
+    converted = list(
+        convert_contents(contents, Mode.TOOLS)  # ty:ignore[invalid-argument-type]
+    )
     assert len(converted) == 2
     assert converted[0] == {"type": "text", "text": "Hello"}
-    assert converted[1]["type"] == "image_url"
-    assert converted[1]["image_url"]["url"] == base64_png
+    assert converted[1]["type"] == "image_url"  # ty:ignore[invalid-argument-type]
+    assert (
+        converted[1]["image_url"]["url"]  # ty:ignore[invalid-argument-type]
+        == base64_png
+    )
 
 
 @pytest.mark.parametrize(
@@ -416,7 +450,11 @@ def test_convert_messages_autodetect_media():
         {"role": "user", "content": ["hello", img_uri, pdf_uri]},
     ]
 
-    out = convert_messages(messages, mode=Mode.RESPONSES_TOOLS, autodetect_images=True)
+    out = convert_messages(
+        messages,  # ty:ignore[invalid-argument-type]
+        mode=Mode.RESPONSES_TOOLS,
+        autodetect_images=True,
+    )
     assert isinstance(out, list) and len(out) == 1
 
     content = out[0]["content"]

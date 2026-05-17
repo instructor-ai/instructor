@@ -14,7 +14,10 @@ from instructor.validation.llm_validators import llm_validator
 
 
 def _make_mock_client(
-    *, is_valid: bool, reason: str | None = None, fixed_value: str | None = None
+    *,
+    is_valid: bool,
+    reason: str | None = None,  # ty:ignore[unsupported-operator]
+    fixed_value: str | None = None,  # ty:ignore[unsupported-operator]
 ):
     """Create a mock instructor client that returns a predetermined Validator response."""
     mock_client = Mock()

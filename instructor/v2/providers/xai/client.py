@@ -283,7 +283,7 @@ def from_xai(
         chat = client.chat.create(model=model, messages=x_messages, **call_kwargs)
 
         if response_model is None:
-            resp = await chat.sample()  # type: ignore[misc]
+            resp = await chat.sample()  # type: ignore[misc]  # ty:ignore[invalid-await]
             return resp
 
         if mode == Mode.JSON_SCHEMA:
@@ -294,10 +294,10 @@ def from_xai(
                         schema=json.dumps(_get_model_schema(prepared_model)),
                     )
                 )
-                json_chunks = (chunk.content async for _, chunk in chat.stream())  # type: ignore[misc]
+                json_chunks = (chunk.content async for _, chunk in chat.stream())  # type: ignore[misc]  # ty:ignore[not-iterable]
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
-                    return rm.tasks_from_chunks_async(json_chunks)  # type: ignore
+                    return rm.tasks_from_chunks_async(json_chunks)
                 elif issubclass(rm, PartialBase):
                     return rm.model_from_chunks_async(json_chunks)  # type: ignore
                 else:
@@ -305,7 +305,7 @@ def from_xai(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
-                raw, parsed = await chat.parse(response_model)  # type: ignore[misc]
+                raw, parsed = await chat.parse(response_model)  # type: ignore[misc]  # ty:ignore[invalid-await]
                 parsed._raw_response = raw  # type: ignore[attr-defined]
                 return parsed
         elif mode == Mode.TOOLS:
@@ -314,7 +314,7 @@ def from_xai(
                 description=prepared_model.__doc__ or "",
                 parameters=_get_model_schema(prepared_model),
             )
-            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
             tool_name = tool_obj.function.name  # type: ignore[attr-defined]
             chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool_name))
             if is_stream:
@@ -322,7 +322,7 @@ def from_xai(
                 args = _aiter_tool_call_arg_deltas(stream_iter)
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
-                    return rm.tasks_from_chunks_async(args)  # type: ignore
+                    return rm.tasks_from_chunks_async(args)
                 elif issubclass(rm, PartialBase):
                     return rm.model_from_chunks_async(args)  # type: ignore
                 else:
@@ -330,7 +330,7 @@ def from_xai(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
-                resp = await chat.sample()  # type: ignore[misc]
+                resp = await chat.sample()  # type: ignore[misc]  # ty:ignore[invalid-await]
                 if not resp.tool_calls:  # type: ignore[attr-defined]
                     # Try to extract from text content
                     from instructor.v2.core.function_calls import (
@@ -378,8 +378,8 @@ def from_xai(
                     description=model_type.__doc__ or "",
                     parameters=_get_model_schema(model_type),
                 )
-                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
-            resp = await chat.sample()  # type: ignore[misc]
+                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+            resp = await chat.sample()  # type: ignore[misc]  # ty:ignore[invalid-await]
             type_registry = {
                 model_type.__name__: model_type
                 for model_type in get_types_array(response_model)  # type: ignore[arg-type]
@@ -398,7 +398,7 @@ def from_xai(
             )
         else:
             # MD_JSON mode - use sample() and extract from text
-            resp = await chat.sample()  # type: ignore[misc]
+            resp = await chat.sample()  # type: ignore[misc]  # ty:ignore[invalid-await]
             from instructor.v2.core.function_calls import _validate_model_from_json
             from instructor.v2.core.json import extract_json_from_codeblock
 
@@ -460,7 +460,7 @@ def from_xai(
                         schema=json.dumps(_get_model_schema(prepared_model)),
                     )
                 )
-                json_chunks = (chunk.content for _, chunk in chat.stream())  # type: ignore[misc]
+                json_chunks = (chunk.content for _, chunk in chat.stream())  # type: ignore[misc]  # ty:ignore[not-iterable]
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(json_chunks)
@@ -471,8 +471,8 @@ def from_xai(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
-                raw, parsed = chat.parse(response_model)  # type: ignore[misc]
-                parsed._raw_response = raw  # type: ignore[attr-defined]
+                raw, parsed = chat.parse(response_model)  # type: ignore[misc]  # ty:ignore[not-iterable]
+                parsed._raw_response = raw  # type: ignore[attr-defined]  # ty:ignore[invalid-assignment]
                 return parsed
         elif mode == Mode.TOOLS:
             tool_obj = xchat.tool(
@@ -480,7 +480,7 @@ def from_xai(
                 description=prepared_model.__doc__ or "",
                 parameters=_get_model_schema(prepared_model),
             )
-            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
             tool_name = tool_obj.function.name  # type: ignore[attr-defined]
             chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool_name))
             if is_stream:
@@ -497,7 +497,7 @@ def from_xai(
                     )
             else:
                 resp = chat.sample()  # type: ignore[misc]
-                if not resp.tool_calls:  # type: ignore[attr-defined]
+                if not resp.tool_calls:  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
                     # Try to extract from text content
                     from instructor.v2.core.function_calls import (
                         _validate_model_from_json,
@@ -527,7 +527,7 @@ def from_xai(
                         f"Response: {resp}"
                     )
 
-                args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
+                args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]  # ty:ignore[unresolved-attribute]
                 from instructor.v2.core.function_calls import (
                     _validate_model_from_json,
                 )
@@ -544,7 +544,7 @@ def from_xai(
                     description=model_type.__doc__ or "",
                     parameters=_get_model_schema(model_type),
                 )
-                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
             resp = chat.sample()  # type: ignore[misc]
             type_registry = {
                 model_type.__name__: model_type
@@ -559,7 +559,7 @@ def from_xai(
                     None,
                     strict,
                 )
-                for tool_call in resp.tool_calls
+                for tool_call in resp.tool_calls  # ty:ignore[unresolved-attribute]
                 if tool_call.function.name in type_registry
             )
         else:
