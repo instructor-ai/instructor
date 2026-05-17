@@ -224,3 +224,13 @@ def test_vertexai_schema_helper_rejects_type_hints(
 
     with pytest.raises(TypeError, match="Expected concrete model class"):
         handlers._create_gemini_json_schema(list[Weather])
+
+
+def test_create_gemini_json_schema_raises_import_error_when_jsonref_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handlers = _install_fake_vertexai(monkeypatch)
+    monkeypatch.setitem(sys.modules, "jsonref", None)
+
+    with pytest.raises(ImportError, match="instructor\\[vertexai\\]"):
+        handlers._create_gemini_json_schema(Weather)

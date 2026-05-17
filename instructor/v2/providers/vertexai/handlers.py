@@ -13,7 +13,6 @@ from collections.abc import (
 from typing import Any, cast, get_origin
 
 from pydantic import BaseModel
-import jsonref
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
@@ -173,6 +172,15 @@ def parse_vertexai_json(
 
 
 def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
+    try:
+        import jsonref
+    except ImportError as e:
+        raise ImportError(
+            "jsonref is required for VertexAI tool calling. "
+            "Install it with: pip install jsonref  "
+            "or via the extras: pip install 'instructor[vertexai]'"
+        ) from e
+
     if get_origin(model) is not None:
         raise TypeError(f"Expected concrete model class, got type hint {model}")
 

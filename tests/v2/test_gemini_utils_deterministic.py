@@ -467,3 +467,12 @@ def test_handle_genai_tools_without_model_uses_message_conversion(
 
     assert model is None
     assert result["autodetect"] is True
+
+
+def test_map_to_gemini_function_schema_raises_import_error_when_jsonref_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setitem(sys.modules, "jsonref", None)
+
+    with pytest.raises(ImportError, match="instructor\\[google-genai\\]"):
+        utils.map_to_gemini_function_schema({"type": "object", "properties": {}})

@@ -107,7 +107,14 @@ def verify_no_unions(obj: dict[str, Any]) -> bool:  # noqa: ARG001
 
 
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
-    import jsonref
+    try:
+        import jsonref
+    except ImportError as e:
+        raise ImportError(
+            "jsonref is required for Gemini/GenAI tool calling. "
+            "Install it with: pip install jsonref  "
+            "or via the extras: pip install 'instructor[google-genai]'"
+        ) from e
 
     class FunctionSchema(BaseModel):
         description: str | None = None
