@@ -91,6 +91,37 @@ def test_stream_json():
     assert result == {"key": "value", "another_key": [{"key": {"key": "value"}}]}
 
 
+def test_stream_json_array_root():
+    text = """here is the json for you!
+
+    ```json
+    [
+        {"key": "value"},
+        {"key": "another value", "items": [1, 2, 3]}
+    ]
+    ```
+    """
+
+    def batch_strings(chunks, n=2):
+        batch = ""
+        for chunk in chunks:
+            for char in chunk:
+                batch += char
+                if len(batch) == n:
+                    yield batch
+                    batch = ""
+        if batch:
+            yield batch
+
+    result = json.loads(
+        "".join(list(extract_json_from_stream(batch_strings(text, n=3))))
+    )
+    assert result == [
+        {"key": "value"},
+        {"key": "another value", "items": [1, 2, 3]},
+    ]
+
+
 @pytest.mark.asyncio
 async def test_stream_json_async():
     text = """here is the json for you! 
@@ -131,6 +162,45 @@ async def test_stream_json_async():
         "key": "value",
         "another_key": [{"key": {"key": "value"}}, {"key": "value"}],
     }
+
+
+@pytest.mark.asyncio
+async def test_stream_json_array_root_async():
+    text = """here is the json for you!
+
+    ```json
+    [
+        {"key": "value"},
+        {"key": "another value", "items": [1, 2, 3]}
+    ]
+    ```
+    """
+
+    async def batch_strings_async(chunks, n=2):
+        batch = ""
+        for chunk in chunks:
+            for char in chunk:
+                batch += char
+                if len(batch) == n:
+                    yield batch
+                    batch = ""
+        if batch:
+            yield batch
+
+    result = json.loads(
+        "".join(
+            [
+                chunk
+                async for chunk in extract_json_from_stream_async(
+                    batch_strings_async(text, n=3)
+                )
+            ]
+        )
+    )
+    assert result == [
+        {"key": "value"},
+        {"key": "another value", "items": [1, 2, 3]},
+    ]
 
 
 def test_merge_consecutive_messages():

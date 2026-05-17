@@ -76,9 +76,9 @@ def extract_json_from_stream(
 
     The state machine tracks several states:
     - Whether we're inside a code block (```json ... ```)
-    - Whether we've started tracking a JSON object
+    - Whether we've started tracking a JSON object or array
     - Whether we're inside a string literal
-    - The stack of open braces to properly identify the JSON structure
+    - The stack of open braces/brackets to properly identify the JSON structure
 
     Args:
         chunks: An iterable of string chunks
@@ -127,9 +127,9 @@ def extract_json_from_stream(
                     )
 
                 # Look for the start of JSON
-                if char == "{":
+                if char in "{[":
                     json_started = True
-                    brace_stack.append("{")
+                    brace_stack.append(char)
                     buffer.append(char)
                 # Skip other characters until we find the start of JSON
                 continue
@@ -163,13 +163,20 @@ def extract_json_from_stream(
                     elif codeblock_delimiter_count > 0:
                         codeblock_delimiter_count = 0
 
-                # Track braces when not in a string
+                # Track braces/brackets when not in a string
                 if not in_string:
-                    if char == "{":
-                        brace_stack.append("{")
-                    elif char == "}" and brace_stack:
+                    if char in "{[":
+                        brace_stack.append(char)
+                    elif (
+                        char in "}]"
+                        and brace_stack
+                        and (
+                            (char == "}" and brace_stack[-1] == "{")
+                            or (char == "]" and brace_stack[-1] == "[")
+                        )
+                    ):
                         brace_stack.pop()
-                        # If we've completed a JSON object, yield its characters
+                        # If we've completed a JSON value, yield its characters
                         if not brace_stack:
                             buffer.append(char)
                             for c in buffer:
@@ -183,9 +190,9 @@ def extract_json_from_stream(
                 continue
 
             # If we're not in a codeblock and haven't started JSON, look for standalone JSON
-            if not in_codeblock and not json_started and char == "{":
+            if not in_codeblock and not json_started and char in "{[":
                 json_started = True
-                brace_stack.append("{")
+                brace_stack.append(char)
                 buffer.append(char)
 
     # Yield any remaining buffer content if we have valid JSON
@@ -205,9 +212,9 @@ async def extract_json_from_stream_async(
 
     The state machine tracks several states:
     - Whether we're inside a code block (```json ... ```)
-    - Whether we've started tracking a JSON object
+    - Whether we've started tracking a JSON object or array
     - Whether we're inside a string literal
-    - The stack of open braces to properly identify the JSON structure
+    - The stack of open braces/brackets to properly identify the JSON structure
 
     Args:
         chunks: An async generator yielding string chunks
@@ -256,9 +263,9 @@ async def extract_json_from_stream_async(
                     )
 
                 # Look for the start of JSON
-                if char == "{":
+                if char in "{[":
                     json_started = True
-                    brace_stack.append("{")
+                    brace_stack.append(char)
                     buffer.append(char)
                 # Skip other characters until we find the start of JSON
                 continue
@@ -292,13 +299,20 @@ async def extract_json_from_stream_async(
                     elif codeblock_delimiter_count > 0:
                         codeblock_delimiter_count = 0
 
-                # Track braces when not in a string
+                # Track braces/brackets when not in a string
                 if not in_string:
-                    if char == "{":
-                        brace_stack.append("{")
-                    elif char == "}" and brace_stack:
+                    if char in "{[":
+                        brace_stack.append(char)
+                    elif (
+                        char in "}]"
+                        and brace_stack
+                        and (
+                            (char == "}" and brace_stack[-1] == "{")
+                            or (char == "]" and brace_stack[-1] == "[")
+                        )
+                    ):
                         brace_stack.pop()
-                        # If we've completed a JSON object, yield its characters
+                        # If we've completed a JSON value, yield its characters
                         if not brace_stack:
                             buffer.append(char)
                             for c in buffer:
@@ -312,9 +326,9 @@ async def extract_json_from_stream_async(
                 continue
 
             # If we're not in a codeblock and haven't started JSON, look for standalone JSON
-            if not in_codeblock and not json_started and char == "{":
+            if not in_codeblock and not json_started and char in "{[":
                 json_started = True
-                brace_stack.append("{")
+                brace_stack.append(char)
                 buffer.append(char)
 
     # Yield any remaining buffer content if we have valid JSON
