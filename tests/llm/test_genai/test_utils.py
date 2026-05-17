@@ -1,4 +1,4 @@
-from instructor.providers.gemini.utils import update_genai_kwargs
+from instructor.v2.providers.gemini.utils import update_genai_kwargs
 
 
 def test_update_genai_kwargs_basic():
@@ -270,7 +270,7 @@ def test_handle_genai_structured_outputs_thinking_config_in_config():
     from google.genai import types
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+    from instructor.v2.providers.gemini.utils import handle_genai_structured_outputs
 
     class SimpleModel(BaseModel):
         text: str
@@ -303,7 +303,7 @@ def test_handle_genai_structured_outputs_thinking_config_kwarg_priority():
     from google.genai import types
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+    from instructor.v2.providers.gemini.utils import handle_genai_structured_outputs
 
     class SimpleModel(BaseModel):
         text: str
@@ -334,7 +334,7 @@ def test_handle_genai_tools_thinking_config_in_config():
     from google.genai import types
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_tools
+    from instructor.v2.providers.gemini.utils import handle_genai_tools
 
     class SimpleModel(BaseModel):
         text: str

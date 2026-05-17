@@ -2,9 +2,8 @@ from pydantic import BaseModel
 
 from openai import pydantic_function_tool
 
-from instructor.providers.openai.utils import (
-    handle_responses_tools,
-    handle_responses_tools_with_inbuilt_tools,
+from instructor.v2.providers.openai.handlers import (
+    OpenAIResponsesToolsHandler,
 )
 
 
@@ -19,8 +18,10 @@ def test_responses_tools_preserves_function_description() -> None:
         "description"
     ]
 
-    _, responses_tools_kwargs = handle_responses_tools(ResponseToolModel, {})
-    _, inbuilt_tools_kwargs = handle_responses_tools_with_inbuilt_tools(
+    _, responses_tools_kwargs = OpenAIResponsesToolsHandler().prepare_request(
+        ResponseToolModel, {}
+    )
+    _, inbuilt_tools_kwargs = OpenAIResponsesToolsHandler().prepare_request(
         ResponseToolModel, {}
     )
 

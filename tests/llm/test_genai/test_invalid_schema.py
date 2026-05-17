@@ -6,7 +6,7 @@ import instructor
 from pydantic import BaseModel
 from .util import models, modes
 from itertools import product
-from instructor.providers.gemini.utils import map_to_gemini_function_schema
+from instructor.v2.providers.gemini.utils import map_to_gemini_function_schema
 
 MODEL = os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro")
 

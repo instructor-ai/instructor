@@ -1,50 +1,28 @@
+from __future__ import annotations
+
 import importlib.util
+from importlib import import_module
+from typing import Any
 
-__version__ = "1.15.1"
-
-from .mode import Mode
-from .processing.multimodal import Image, Audio
-
-from .dsl import (
-    CitationMixin,
-    Maybe,
-    Partial,
-    IterableModel,
-)
-
-from .validation import llm_validator, openai_moderation
-from .processing.function_calls import OpenAISchema, openai_schema
-from .processing.schema import (
-    generate_openai_schema,
-    generate_anthropic_schema,
-    generate_gemini_schema,
-)
-from .core.patch import apatch, patch
-from .core.client import (
-    Instructor,
-    AsyncInstructor,
-    from_openai,
-    from_litellm,
-)
-from .core import hooks
-from .utils.providers import Provider
-from .auto_client import from_provider
-from .batch import BatchProcessor, BatchRequest, BatchJob
-from .distil import FinetuneFormat, Instructions
-
-# Backward compatibility: Re-export removed functions
-from .processing.response import handle_response_model
-from .dsl.parallel import handle_parallel_model
+__version__ = "1.15.2"
 
 __all__ = [
     "Instructor",
     "Image",
     "Audio",
     "from_openai",
+    "from_anyscale",
+    "from_together",
+    "from_databricks",
+    "from_deepseek",
+    "from_openrouter",
     "from_litellm",
+    "from_vertexai",
     "from_provider",
     "AsyncInstructor",
     "Provider",
+    "ResponseSchema",
+    "response_schema",
     "OpenAISchema",
     "CitationMixin",
     "IterableModel",
@@ -65,90 +43,87 @@ __all__ = [
     "llm_validator",
     "openai_moderation",
     "hooks",
-    "client",  # Backward compatibility
-    # Backward compatibility exports
-    "handle_response_model",
-    "handle_parallel_model",
+    "v2",
 ]
 
-# Backward compatibility: Make instructor.client available as an attribute
-# This allows code like `instructor.client.Instructor` to work
-from . import client
+_LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
+    "Instructor": (".core.client", "Instructor"),
+    "AsyncInstructor": (".core.client", "AsyncInstructor"),
+    "from_openai": (".v2.providers.openai.client", "from_openai"),
+    "from_anyscale": (".v2.providers.openai.client", "from_anyscale"),
+    "from_together": (".v2.providers.openai.client", "from_together"),
+    "from_databricks": (".v2.providers.openai.client", "from_databricks"),
+    "from_deepseek": (".v2.providers.openai.client", "from_deepseek"),
+    "from_openrouter": (".v2.providers.openrouter.client", "from_openrouter"),
+    "from_litellm": (".v2.providers.litellm.client", "from_litellm"),
+    "Mode": (".mode", "Mode"),
+    "patch": (".core.patch", "patch"),
+    "apatch": (".core.patch", "apatch"),
+    "hooks": (".core.hooks", None),
+    "v2": (".v2", None),
+    "Image": (".v2.core.multimodal", "Image"),
+    "Audio": (".v2.core.multimodal", "Audio"),
+    "CitationMixin": (".v2.dsl", "CitationMixin"),
+    "IterableModel": (".v2.dsl", "IterableModel"),
+    "Maybe": (".v2.dsl", "Maybe"),
+    "Partial": (".v2.dsl", "Partial"),
+    "ResponseSchema": (".v2.core.function_calls", "ResponseSchema"),
+    "response_schema": (".v2.core.function_calls", "response_schema"),
+    "OpenAISchema": (".v2.core.function_calls", "OpenAISchema"),
+    "openai_schema": (".v2.core.function_calls", "openai_schema"),
+    "generate_openai_schema": (".v2.core.schema", "generate_openai_schema"),
+    "generate_anthropic_schema": (".v2.core.schema", "generate_anthropic_schema"),
+    "generate_gemini_schema": (".v2.core.schema", "generate_gemini_schema"),
+    "llm_validator": (".v2.validation", "llm_validator"),
+    "openai_moderation": (".v2.validation", "openai_moderation"),
+    "Provider": (".utils.providers", "Provider"),
+    "from_provider": (".auto_client", "from_provider"),
+    "BatchProcessor": (".batch", "BatchProcessor"),
+    "BatchRequest": (".batch", "BatchRequest"),
+    "BatchJob": (".batch", "BatchJob"),
+    "FinetuneFormat": (".distil", "FinetuneFormat"),
+    "Instructions": (".distil", "Instructions"),
+    "from_anthropic": (".v2.providers.anthropic.client", "from_anthropic"),
+    "from_gemini": (".v2.providers.gemini.client", "from_gemini"),
+    "from_fireworks": (".v2.providers.fireworks.client", "from_fireworks"),
+    "from_cerebras": (".v2.providers.cerebras.client", "from_cerebras"),
+    "from_groq": (".v2.providers.groq.client", "from_groq"),
+    "from_mistral": (".v2.providers.mistral.client", "from_mistral"),
+    "from_cohere": (".v2.providers.cohere.client", "from_cohere"),
+    "from_vertexai": (".v2.providers.vertexai.client", "from_vertexai"),
+    "from_bedrock": (".v2.providers.bedrock.client", "from_bedrock"),
+    "from_writer": (".v2.providers.writer.client", "from_writer"),
+    "from_xai": (".v2.providers.xai.client", "from_xai"),
+    "from_perplexity": (".v2.providers.perplexity.client", "from_perplexity"),
+    "from_genai": (".v2.providers.genai.client", "from_genai"),
+}
 
 
-if importlib.util.find_spec("anthropic") is not None:
-    from .providers.anthropic.client import from_anthropic
+def __getattr__(name: str) -> Any:
+    if name not in __all__:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-    __all__ += ["from_anthropic"]
+    module_path, attr_name = _LAZY_IMPORTS[name]
+    module = import_module(module_path, package=__name__)
+    value = module if attr_name is None else getattr(module, attr_name)
+    globals()[name] = value
+    return value
 
-# Keep from_gemini for backward compatibility but it's deprecated
-if (
-    importlib.util.find_spec("google")
-    and importlib.util.find_spec("google.generativeai") is not None
-):
-    from .providers.gemini.client import from_gemini
 
-    __all__ += ["from_gemini"]
+def _add_optional_export(name: str, *packages: str) -> None:
+    if all(importlib.util.find_spec(package) is not None for package in packages):
+        __all__.append(name)
 
-if importlib.util.find_spec("fireworks") is not None:
-    from .providers.fireworks.client import from_fireworks
 
-    __all__ += ["from_fireworks"]
-
-if importlib.util.find_spec("cerebras") is not None:
-    from .providers.cerebras.client import from_cerebras
-
-    __all__ += ["from_cerebras"]
-
-if importlib.util.find_spec("groq") is not None:
-    from .providers.groq.client import from_groq
-
-    __all__ += ["from_groq"]
-
-if importlib.util.find_spec("mistralai") is not None:
-    from .providers.mistral.client import from_mistral
-
-    __all__ += ["from_mistral"]
-
-if importlib.util.find_spec("cohere") is not None:
-    from .providers.cohere.client import from_cohere
-
-    __all__ += ["from_cohere"]
-
-if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
-    try:
-        from .providers.vertexai.client import from_vertexai
-    except Exception:
-        # Optional dependency may be present but broken/misconfigured at import time.
-        # Avoid failing `import instructor` in that case.
-        pass
-    else:
-        __all__ += ["from_vertexai"]
-
-if importlib.util.find_spec("boto3") is not None:
-    from .providers.bedrock.client import from_bedrock
-
-    __all__ += ["from_bedrock"]
-
-if importlib.util.find_spec("writerai") is not None:
-    from .providers.writer.client import from_writer
-
-    __all__ += ["from_writer"]
-
-if importlib.util.find_spec("xai_sdk") is not None:
-    from .providers.xai.client import from_xai
-
-    __all__ += ["from_xai"]
-
-if importlib.util.find_spec("openai") is not None:
-    from .providers.perplexity.client import from_perplexity
-
-    __all__ += ["from_perplexity"]
-
-if (
-    importlib.util.find_spec("google")
-    and importlib.util.find_spec("google.genai") is not None
-):
-    from .providers.genai.client import from_genai
-
-    __all__ += ["from_genai"]
+_add_optional_export("from_anthropic", "anthropic")
+_add_optional_export("from_gemini", "google", "google.generativeai")
+_add_optional_export("from_fireworks", "fireworks")
+_add_optional_export("from_cerebras", "cerebras")
+_add_optional_export("from_groq", "groq")
+_add_optional_export("from_mistral", "mistralai")
+_add_optional_export("from_cohere", "cohere")
+_add_optional_export("from_bedrock", "boto3")
+_add_optional_export("from_writer", "writerai")
+_add_optional_export("from_xai", "xai_sdk")
+_add_optional_export("from_perplexity", "openai")
+_add_optional_export("from_genai", "google", "google.genai")

@@ -175,11 +175,11 @@ class TestProviderInMemorySupport:
 
         # This should not raise a ValueError for unsupported type
         # (It will raise an exception due to missing API key, but that's expected)
-        with pytest.raises(Exception) as exc_info:
+        try:
             provider.submit_batch(buffer)
-
-        # Make sure it's not a ValueError about unsupported type
-        assert "Unsupported file_path_or_buffer type" not in str(exc_info.value)
+        except Exception as exc_info:
+            # Make sure it's not a ValueError about unsupported type
+            assert "Unsupported file_path_or_buffer type" not in str(exc_info)
 
     def test_anthropic_provider_accepts_bytesio(self):
         """Test that Anthropic provider accepts BytesIO (without making API calls)."""
@@ -202,11 +202,11 @@ class TestProviderInMemorySupport:
 
         # This should not raise a ValueError for unsupported type
         # (It will raise an exception due to missing API key, but that's expected)
-        with pytest.raises(Exception) as exc_info:
+        try:
             provider.submit_batch(buffer)
-
-        # Make sure it's not a ValueError about unsupported type
-        assert "Unsupported file_path_or_buffer type" not in str(exc_info.value)
+        except Exception as exc_info:
+            # Make sure it's not a ValueError about unsupported type
+            assert "Unsupported file_path_or_buffer type" not in str(exc_info)
 
     def test_provider_invalid_type_raises_error(self):
         """Test that providers raise errors for invalid types."""

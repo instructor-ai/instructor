@@ -9,11 +9,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+---
+
+## [1.15.2] - 2026-05-10
+
+### Security
+- **Logging**: Redact sensitive request fields from debug logs, including nested auth headers such as `Authorization` and `x-api-key`. ([#2297](https://github.com/567-labs/instructor/pull/2297))
+
 ### Fixed
 - **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
 - **Retry**: `IncompleteOutputException` now propagates directly to the caller without being wrapped in `InstructorRetryException`, making `except IncompleteOutputException` catch blocks work as documented. Applies to both sync and async paths. ([#2273](https://github.com/567-labs/instructor/issues/2273))
-
----
+- **Anthropic/Bedrock**: Omit `None` fields from Anthropic tool-use retry payloads so Bedrock reasks no longer fail with HTTP 400 when `caller=None`. ([#2301](https://github.com/567-labs/instructor/pull/2301))
+- **Responses streaming**: Surface reasoning-summary events in `RESPONSES_TOOLS` partial streaming and await callback return values when they are awaitable. ([#2299](https://github.com/567-labs/instructor/pull/2299))
 
 ## [1.15.1] - 2026-04-03
 
@@ -205,4 +212,3 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
-

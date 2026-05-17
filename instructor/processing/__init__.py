@@ -1,6 +1,6 @@
 """Processing components for request/response handling."""
 
-from .function_calls import OpenAISchema, openai_schema
+from .function_calls import ResponseSchema, response_schema, OpenAISchema, openai_schema
 from .multimodal import convert_messages
 from .response import (
     handle_response_model,
@@ -16,6 +16,8 @@ from .schema import (
 from .validators import Validator
 
 __all__ = [
+    "ResponseSchema",
+    "response_schema",
     "OpenAISchema",
     "openai_schema",
     "convert_messages",

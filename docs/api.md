@@ -13,9 +13,9 @@ work but are deprecated and will show warnings. See the
 
 The main client classes for interacting with LLM providers.
 
-::: instructor.Instructor
+::: instructor.core.client.Instructor
 
-::: instructor.AsyncInstructor
+::: instructor.core.client.AsyncInstructor
 
 ::: instructor.core.client.Response
 
@@ -23,17 +23,15 @@ The main client classes for interacting with LLM providers.
 
 Functions to create Instructor clients from various providers.
 
-::: instructor.from_provider
+::: instructor.auto_client.from_provider
 
-::: instructor.from_openai
+::: instructor.v2.providers.openai.client.from_openai
 
-::: instructor.from_litellm
+::: instructor.v2.providers.litellm.client.from_litellm
 
 ## DSL Components
 
 Domain-specific language components for advanced patterns and data handling.
-
-::: instructor.dsl.validators
 
 ::: instructor.dsl.iterable
 
@@ -51,15 +49,15 @@ Classes and functions for defining and working with function call schemas.
 
 ::: instructor.function_calls
 
-::: instructor.OpenAISchema
+::: instructor.v2.core.function_calls.OpenAISchema
 
-::: instructor.openai_schema
+::: instructor.v2.core.function_calls.openai_schema
 
-::: instructor.generate_openai_schema
+::: instructor.v2.core.schema.generate_openai_schema
 
-::: instructor.generate_anthropic_schema
+::: instructor.v2.core.schema.generate_anthropic_schema
 
-::: instructor.generate_gemini_schema
+::: instructor.v2.core.schema.generate_gemini_schema
 
 ## Validation
 
@@ -67,9 +65,9 @@ Validation utilities for LLM outputs and async validation support.
 
 ::: instructor.validation
 
-::: instructor.llm_validator
+::: instructor.v2.validation.llm_validator
 
-::: instructor.openai_moderation
+::: instructor.v2.validation.openai_moderation
 
 ## Batch Processing
 
@@ -89,9 +87,9 @@ Tools for distillation and fine-tuning workflows.
 
 ::: instructor.distil
 
-::: instructor.FinetuneFormat
+::: instructor.distil.FinetuneFormat
 
-::: instructor.Instructions
+::: instructor.distil.Instructions
 
 ## Multimodal
 
@@ -99,17 +97,17 @@ Support for image and audio content in LLM requests.
 
 ::: instructor.processing.multimodal
 
-::: instructor.Image
+::: instructor.v2.core.multimodal.Image
 
-::: instructor.Audio
+::: instructor.v2.core.multimodal.Audio
 
 ## Mode & Provider
 
 Enumerations for modes and providers.
 
-::: instructor.Mode
+::: instructor.mode.Mode
 
-::: instructor.Provider
+::: instructor.utils.providers.Provider
 
 ## Exceptions
 
@@ -133,6 +131,4 @@ Decorators for patching LLM client methods.
 
 ::: instructor.core.patch
 
-::: instructor.patch
-
-::: instructor.apatch
+::: instructor.core.patch.apatch

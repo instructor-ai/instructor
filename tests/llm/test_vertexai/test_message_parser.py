@@ -1,6 +1,6 @@
 import pytest
 import vertexai.generative_models as gm
-from instructor.providers.vertexai.client import vertexai_message_parser
+from instructor.v2.providers.vertexai.handlers import vertexai_message_parser
 
 
 def test_vertexai_message_parser_string_content():

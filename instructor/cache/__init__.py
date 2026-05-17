@@ -30,9 +30,7 @@ from collections import OrderedDict
 from typing import Any
 import logging
 
-# The project already depends on pydantic; type checker in some
-# environments might not have its stubs – silence if missing.
-from pydantic import BaseModel  # type: ignore[import-not-found]
+from pydantic import BaseModel
 
 __all__ = [
     "BaseCache",
@@ -111,13 +109,13 @@ class AutoCache(BaseCache):
 
 
 def _import_diskcache():  # pragma: no cover – only executed when requested
-    import importlib  # type: ignore[]
+    import importlib.util
 
-    if importlib.util.find_spec("diskcache") is None:  # type: ignore[attr-defined]
+    if importlib.util.find_spec("diskcache") is None:
         raise ImportError(
             'diskcache is not installed. Install it with `pip install "instructor[diskcache]"`.'
         )
-    import diskcache  # type: ignore
+    import diskcache
 
     return diskcache
 
@@ -203,7 +201,7 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
         model_json = cached
         raw_json = None
 
-    obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
+    obj = response_model.model_validate_json(model_json)
     if raw_json is not None:
         # `_raw_response` is an internal attribute used by Instructor; it may not
         # be declared on the Pydantic model type.
@@ -222,15 +220,15 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
 
                 obj._raw_response = json.loads(
                     raw_json, object_hook=lambda d: SimpleNamespace(**d)
-                )  # type: ignore[attr-defined]
+                )
                 logger.debug("Restored raw response as SimpleNamespace object")
             else:
                 # Plain dict/list - keep as-is
-                obj._raw_response = raw_data  # type: ignore[attr-defined]
+                obj._raw_response = raw_data
                 logger.debug("Restored raw response as plain data structure")
         except (json.JSONDecodeError, TypeError):
             # Not valid JSON - probably string fallback
-            obj._raw_response = raw_json  # type: ignore[attr-defined]
+            obj._raw_response = raw_json
             logger.debug(
                 "Restored raw response as string (original could not be fully serialized)"
             )
@@ -248,7 +246,11 @@ def store_cached_response(
     if raw_resp is not None:
         try:
             # Try Pydantic model serialization first (OpenAI, Anthropic, etc.)
-            raw_json = raw_resp.model_dump_json()  # type: ignore[attr-defined]
+            raw_resp_dump = getattr(raw_resp, "model_dump_json", None)
+            if callable(raw_resp_dump):
+                raw_json = raw_resp_dump()
+            else:
+                raise AttributeError("raw_resp has no model_dump_json")
             logger.debug("Cached raw response as Pydantic JSON")
         except (AttributeError, TypeError) as e:
             # Fallback for non-Pydantic responses (custom providers, plain dicts, etc.)

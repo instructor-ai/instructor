@@ -6,7 +6,7 @@ pytest.importorskip("google.genai")
 
 from google.genai import types
 
-from instructor.providers.gemini.utils import reask_genai_tools
+from instructor.v2.providers.gemini.utils import reask_genai_tools
 
 
 def _response_with_content(content: types.Content) -> types.GenerateContentResponse:

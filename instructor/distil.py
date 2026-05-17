@@ -20,7 +20,7 @@ from openai.types.chat.chat_completion_message_param import ChatCompletionMessag
 from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
-from .processing.function_calls import openai_schema
+from .processing.function_calls import response_schema
 
 
 P = ParamSpec("P")
@@ -231,7 +231,7 @@ class Instructions:
         base_model = type(resp)
 
         if finetune_format == FinetuneFormat.MESSAGES:
-            openai_function_call = openai_schema(base_model).openai_schema
+            openai_function_call = response_schema(base_model).openai_schema
             openai_kwargs = self.openai_kwargs(name, fn, args, kwargs, base_model)
             openai_kwargs["messages"].append(
                 {
