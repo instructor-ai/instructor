@@ -5,7 +5,12 @@ from typing import Any
 
 import pytest
 from pydantic import BaseModel, ValidationError
-from tenacity import AsyncRetrying, Retrying, retry_if_exception_type, stop_after_attempt
+from tenacity import (
+    AsyncRetrying,
+    Retrying,
+    retry_if_exception_type,
+    stop_after_attempt,
+)
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import InstructorRetryException
@@ -242,6 +247,7 @@ async def test_retry_async_v2_raises_retry_exception_after_validation_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     parser_calls: list[str] = []
+
     async def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"payload": kwargs["messages"][-1]["content"]}
 

@@ -112,11 +112,14 @@ def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _install_fake_vertexai_wrappers(monkeypatch: pytest.MonkeyPatch) -> None:
     handlers_module = ModuleType("instructor.v2.providers.vertexai.handlers")
-    handlers_module.vertexai_process_response = (
-        lambda _kwargs, _model: (["content"], ["tool"], "tool-config")
+    handlers_module.vertexai_process_response = lambda _kwargs, _model: (
+        ["content"],
+        ["tool"],
+        "tool-config",
     )
-    handlers_module.vertexai_process_json_response = (
-        lambda _kwargs, _model: (["json-content"], "generation-config")
+    handlers_module.vertexai_process_json_response = lambda _kwargs, _model: (
+        ["json-content"],
+        "generation-config",
     )
 
     parallel_module = ModuleType("instructor.v2.providers.vertexai.parallel")
@@ -177,6 +180,7 @@ def test_convert_to_genai_messages_supports_strings_existing_content_and_media(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _install_fake_genai_types(monkeypatch)
+
     class FakeImage:
         def to_genai(self) -> str:
             return "image-part"
@@ -297,12 +301,14 @@ def test_handle_gemini_tools_sets_tool_config(monkeypatch: pytest.MonkeyPatch) -
 
     assert model is Answer
     assert kwargs["tools"] == [{"name": "Answer"}]
-    assert kwargs["tool_config"]["function_calling_config"]["allowed_function_names"] == [
-        "Answer"
-    ]
+    assert kwargs["tool_config"]["function_calling_config"][
+        "allowed_function_names"
+    ] == ["Answer"]
 
 
-def test_update_gemini_kwargs_applies_safety_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_update_gemini_kwargs_applies_safety_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class Category:
         def __init__(self, name: str) -> None:
             self.name = name
@@ -455,7 +461,9 @@ def test_handle_genai_tools_without_model_uses_message_conversion(
         lambda _kwargs, autodetect_images: expected | {"autodetect": autodetect_images},
     )
 
-    model, result = utils.handle_genai_tools(None, {"messages": []}, autodetect_images=True)
+    model, result = utils.handle_genai_tools(
+        None, {"messages": []}, autodetect_images=True
+    )
 
     assert model is None
     assert result["autodetect"] is True

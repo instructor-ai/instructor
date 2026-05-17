@@ -49,7 +49,9 @@ def _install_fake_vertexai(monkeypatch: pytest.MonkeyPatch) -> Any:
             self.parts = parts
 
     class FakeFunctionDeclaration:
-        def __init__(self, *, name: str, description: str | None, parameters: Any) -> None:
+        def __init__(
+            self, *, name: str, description: str | None, parameters: Any
+        ) -> None:
             self.name = name
             self.description = description
             self.parameters = parameters
@@ -156,9 +158,7 @@ def test_vertexai_message_parsers_and_reask_helpers(
     assert mixed.parts[1].text == "there"
 
     with pytest.raises(ValueError, match="Unsupported content type in list"):
-        handlers.vertexai_message_parser(
-            {"role": "user", "content": ["ok", object()]}
-        )
+        handlers.vertexai_message_parser({"role": "user", "content": ["ok", object()]})
 
     with pytest.raises(ValueError, match="Unsupported message content type"):
         handlers.vertexai_message_parser({"role": "user", "content": 123})
@@ -170,7 +170,9 @@ def test_vertexai_message_parsers_and_reask_helpers(
                 content=SimpleNamespace(
                     parts=[
                         SimpleNamespace(
-                            function_call=SimpleNamespace(name="Weather", args={"city": "Paris"})
+                            function_call=SimpleNamespace(
+                                name="Weather", args={"city": "Paris"}
+                            )
                         )
                     ]
                 )
@@ -178,8 +180,12 @@ def test_vertexai_message_parsers_and_reask_helpers(
         ],
     )
 
-    tools_kwargs = handlers.reask_vertexai_tools({"contents": []}, response, ValueError("bad"))
-    json_kwargs = handlers.reask_vertexai_json({"contents": []}, response, ValueError("bad"))
+    tools_kwargs = handlers.reask_vertexai_tools(
+        {"contents": []}, response, ValueError("bad")
+    )
+    json_kwargs = handlers.reask_vertexai_json(
+        {"contents": []}, response, ValueError("bad")
+    )
 
     assert len(tools_kwargs["contents"]) == 2
     assert tools_kwargs["contents"][1].parts[0].function_response["name"] == "Weather"
@@ -196,7 +202,10 @@ def test_vertexai_process_helpers_build_tools_and_config(
         Weather,
     )
     json_contents, generation_config = handlers.vertexai_process_json_response(
-        {"messages": [{"role": "user", "content": "hello"}], "generation_config": {"temperature": 0.1}},
+        {
+            "messages": [{"role": "user", "content": "hello"}],
+            "generation_config": {"temperature": 0.1},
+        },
         Weather,
     )
 

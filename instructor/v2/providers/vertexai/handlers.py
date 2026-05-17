@@ -29,6 +29,7 @@ from instructor.v2.providers.gemini.utils import (
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
+
 def _gm() -> Any:
     try:
         import vertexai.generative_models as gm  # type: ignore[import-not-found]
@@ -87,9 +88,7 @@ def vertexai_message_list_parser(
     ]
 
 
-def vertexai_function_response_parser(
-    response: Any, exception: Exception
-) -> Any:
+def vertexai_function_response_parser(response: Any, exception: Exception) -> Any:
     gm = _gm()
     return gm.Content(
         parts=[
