@@ -58,7 +58,7 @@ class BatchProcessor(Generic[T]):
 
             batch_requests = []
             for i, messages in enumerate(messages_list):
-                batch_request = BatchRequest[self.response_model](
+                batch_request = BatchRequest[T](
                     custom_id=f"request-{i}",
                     messages=messages,
                     response_model=self.response_model,
@@ -76,7 +76,7 @@ class BatchProcessor(Generic[T]):
             buffer = io.BytesIO()
             batch_requests = []
             for i, messages in enumerate(messages_list):
-                batch_request = BatchRequest[self.response_model](
+                batch_request = BatchRequest[T](
                     custom_id=f"request-{i}",
                     messages=messages,
                     response_model=self.response_model,

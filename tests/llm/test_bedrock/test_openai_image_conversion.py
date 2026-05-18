@@ -1,7 +1,7 @@
 from __future__ import annotations
 import base64
 import pytest
-from instructor.providers.bedrock.utils import (
+from instructor.v2.providers.bedrock.handlers import (
     _openai_image_part_to_bedrock,
     _to_bedrock_content_items,
 )

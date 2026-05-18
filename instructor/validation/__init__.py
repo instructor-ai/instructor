@@ -7,7 +7,7 @@ from .async_validators import (
     ASYNC_VALIDATOR_KEY,
     ASYNC_MODEL_VALIDATOR_KEY,
 )
-from ..core.exceptions import AsyncValidationError
+from instructor.v2.core.errors import AsyncValidationError
 from .llm_validators import Validator, llm_validator, openai_moderation
 
 __all__ = [

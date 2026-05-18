@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 
-from instructor.providers.gemini.utils import (
+from instructor.v2.providers.gemini.utils import (
     map_to_gemini_function_schema,
     verify_no_unions,
 )
