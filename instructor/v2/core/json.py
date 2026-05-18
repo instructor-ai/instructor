@@ -6,11 +6,23 @@ from collections.abc import AsyncGenerator, Generator, Iterable
 
 
 def extract_json_from_codeblock(content: str) -> str:
-    """Extract the first JSON object-like span from a text block."""
-    first_brace = content.find("{")
+    """Extract the first JSON object or array span from a text block."""
+    first_obj = content.find("{")
+    first_arr = content.find("[")
+
+    if first_obj == -1 and first_arr == -1:
+        return content
+
+    if first_obj == -1 or (first_arr != -1 and first_arr < first_obj):
+        # Array root: find the matching closing bracket
+        last_bracket = content.rfind("]")
+        if last_bracket != -1:
+            return content[first_arr : last_bracket + 1]
+
+    # Object root
     last_brace = content.rfind("}")
-    if first_brace != -1 and last_brace != -1:
-        return content[first_brace : last_brace + 1]
+    if last_brace != -1:
+        return content[first_obj : last_brace + 1]
     return content
 
 
