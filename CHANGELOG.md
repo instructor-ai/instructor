@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Hooks**: Emit documented retry metadata from `completion:error` and `completion:last_attempt` hooks in v2 retry paths.
+
 ---
 
 ## [1.15.2] - 2026-05-10

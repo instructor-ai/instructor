@@ -14,6 +14,7 @@ from tenacity import (
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import InstructorRetryException
+from instructor.v2.core.hooks import Hooks
 from instructor.v2.core.retry import (
     _finalize_parsed_response,
     _initialize_usage,
@@ -318,3 +319,197 @@ async def test_retry_async_v2_raises_retry_exception_after_validation_error(
 
     assert exc_info.value.n_attempts == 1
     assert parser_calls == ["first"]
+
+
+def test_retry_sync_v2_emits_completion_error_attempt_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+    legacy_errors: list[Exception] = []
+    completion_errors: list[dict[str, Any]] = []
+    last_attempts: list[dict[str, Any]] = []
+
+    def fake_func(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        raise RuntimeError(f"boom {calls}")
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=lambda **_kwargs: Answer(value=1),
+            reask_handler=lambda **kwargs: kwargs["kwargs"],
+        )
+
+    hooks = Hooks()
+    hooks.on("completion:error", lambda error: legacy_errors.append(error))
+
+    def on_completion_error(
+        error: Exception,
+        *,
+        attempt_number: int,
+        max_attempts: int | None,
+        is_last_attempt: bool,
+    ) -> None:
+        completion_errors.append(
+            {
+                "error": error,
+                "attempt_number": attempt_number,
+                "max_attempts": max_attempts,
+                "is_last_attempt": is_last_attempt,
+            }
+        )
+
+    def on_last_attempt(
+        error: Exception,
+        *,
+        attempt_number: int,
+        max_attempts: int | None,
+        is_last_attempt: bool,
+    ) -> None:
+        last_attempts.append(
+            {
+                "error": error,
+                "attempt_number": attempt_number,
+                "max_attempts": max_attempts,
+                "is_last_attempt": is_last_attempt,
+            }
+        )
+
+    hooks.on("completion:error", on_completion_error)
+    hooks.on("completion:last_attempt", on_last_attempt)
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        get_handlers,
+    )
+
+    with pytest.raises(InstructorRetryException):
+        retry_sync_v2(
+            func=fake_func,
+            response_model=Answer,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=Retrying(
+                stop=stop_after_attempt(2),
+                retry=retry_if_exception_type(RuntimeError),
+                reraise=True,
+            ),
+            args=(),
+            kwargs={"messages": [{"role": "user", "content": "first"}]},
+            strict=True,
+            hooks=hooks,
+        )
+
+    assert calls == 2
+    assert len(legacy_errors) == 2
+    assert [event["attempt_number"] for event in completion_errors] == [1, 2]
+    assert [event["max_attempts"] for event in completion_errors] == [2, 2]
+    assert [event["is_last_attempt"] for event in completion_errors] == [False, True]
+    assert len(last_attempts) == 1
+    assert last_attempts[0]["attempt_number"] == 2
+    assert last_attempts[0]["max_attempts"] == 2
+    assert last_attempts[0]["is_last_attempt"] is True
+
+
+@pytest.mark.asyncio
+async def test_retry_async_v2_emits_completion_error_attempt_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+    completion_errors: list[dict[str, Any]] = []
+    last_attempts: list[dict[str, Any]] = []
+
+    async def fake_func(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        raise RuntimeError(f"boom {calls}")
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=lambda **_kwargs: Answer(value=1),
+            reask_handler=lambda **kwargs: kwargs["kwargs"],
+        )
+
+    hooks = Hooks()
+
+    def on_completion_error(
+        error: Exception,
+        *,
+        attempt_number: int,
+        max_attempts: int | None,
+        is_last_attempt: bool,
+    ) -> None:
+        completion_errors.append(
+            {
+                "error": error,
+                "attempt_number": attempt_number,
+                "max_attempts": max_attempts,
+                "is_last_attempt": is_last_attempt,
+            }
+        )
+
+    def on_last_attempt(
+        error: Exception,
+        *,
+        attempt_number: int,
+        max_attempts: int | None,
+        is_last_attempt: bool,
+    ) -> None:
+        last_attempts.append(
+            {
+                "error": error,
+                "attempt_number": attempt_number,
+                "max_attempts": max_attempts,
+                "is_last_attempt": is_last_attempt,
+            }
+        )
+
+    hooks.on("completion:error", on_completion_error)
+    hooks.on("completion:last_attempt", on_last_attempt)
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        get_handlers,
+    )
+
+    with pytest.raises(InstructorRetryException):
+        await retry_async_v2(
+            func=fake_func,
+            response_model=Answer,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=AsyncRetrying(
+                stop=stop_after_attempt(2),
+                retry=retry_if_exception_type(RuntimeError),
+                reraise=True,
+            ),
+            args=(),
+            kwargs={"messages": [{"role": "user", "content": "first"}]},
+            strict=True,
+            hooks=hooks,
+        )
+
+    assert calls == 2
+    assert [event["attempt_number"] for event in completion_errors] == [1, 2]
+    assert [event["max_attempts"] for event in completion_errors] == [2, 2]
+    assert [event["is_last_attempt"] for event in completion_errors] == [False, True]
+    assert len(last_attempts) == 1
+    assert last_attempts[0]["attempt_number"] == 2
+    assert last_attempts[0]["max_attempts"] == 2
+    assert last_attempts[0]["is_last_attempt"] is True
