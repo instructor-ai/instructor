@@ -13,7 +13,16 @@ from collections.abc import (
 from typing import Any, cast, get_origin
 
 from pydantic import BaseModel
-import jsonref
+
+try:
+    import jsonref
+except ImportError as e:
+    from instructor.v2.core.errors import ConfigurationError
+
+    raise ConfigurationError(
+        "The 'jsonref' package is required for VertexAI provider support.\n"
+        "Install it with: uv pip install 'instructor[vertexai]'"
+    ) from e
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
