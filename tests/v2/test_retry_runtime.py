@@ -318,3 +318,119 @@ async def test_retry_async_v2_raises_retry_exception_after_validation_error(
 
     assert exc_info.value.n_attempts == 1
     assert parser_calls == ["first"]
+
+
+# ---------------------------------------------------------------------------
+# Regression tests: max_retries integer semantics (off-by-one)
+# ---------------------------------------------------------------------------
+
+
+def _make_retry_harness(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    fail_n_times: int,
+) -> tuple[list[int], dict[str, Any]]:
+    """Return (call_counts, kwargs_for_retry_sync_v2) for a function that fails
+    ``fail_n_times`` before succeeding.  The caller decides max_retries."""
+    call_counts: list[int] = []
+
+    def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+        call_counts.append(1)
+        return {"payload": "ok"}
+
+    parse_counts: list[int] = []
+
+    def fake_parser(**_kwargs: Any) -> Answer:
+        parse_counts.append(1)
+        if len(parse_counts) <= fail_n_times:
+            raise _validation_error()
+        return Answer(value=42)
+
+    def reask_kwargs(
+        kwargs: dict[str, Any], response: Any, exception: ValidationError
+    ) -> dict[str, Any]:
+        return kwargs
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(response_parser=fake_parser, reask_handler=reask_kwargs)
+
+    def update_usage(response: Any, total_usage: Any) -> Any:
+        return response
+
+    def initialize_usage(_provider: Provider) -> dict[str, int]:
+        return {"tokens": 0}
+
+    for attr, val in [
+        (
+            "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+            no_validate,
+        ),
+        ("instructor.v2.core.retry.mode_registry.get_handlers", get_handlers),
+        ("instructor.v2.core.retry.update_total_usage", update_usage),
+        ("instructor.v2.core.retry._initialize_usage", initialize_usage),
+    ]:
+        monkeypatch.setattr(attr, val)
+
+    call_kwargs: dict[str, Any] = dict(
+        func=fake_func,
+        response_model=Answer,
+        provider=Provider.OPENAI,
+        mode=Mode.TOOLS,
+        context=None,
+        args=(),
+        kwargs={"messages": [{"role": "user", "content": "q"}]},
+        strict=True,
+        hooks=None,
+    )
+    return call_counts, call_kwargs
+
+
+def test_max_retries_1_allows_one_retry(monkeypatch: pytest.MonkeyPatch) -> None:
+    """max_retries=1 must allow exactly one retry (two attempts total).
+
+    Before the fix, stop_after_attempt(max(1, 1)) == stop_after_attempt(1)
+    which only allows a single attempt with zero retries — so the call would
+    raise InstructorRetryException even though the user asked for one retry.
+    """
+    call_counts, call_kwargs = _make_retry_harness(monkeypatch, fail_n_times=1)
+
+    result = retry_sync_v2(**call_kwargs, max_retries=1)
+
+    assert result.value == 42, (
+        "With max_retries=1, a function that fails once should succeed on the "
+        "second attempt (first retry), but it raised instead."
+    )
+    assert len(call_counts) == 2, (
+        f"Expected 2 API calls (1 initial + 1 retry), got {len(call_counts)}. "
+        "max_retries=1 is being misinterpreted as max_attempts=1."
+    )
+
+
+def test_max_retries_0_makes_single_attempt(monkeypatch: pytest.MonkeyPatch) -> None:
+    """max_retries=0 must produce exactly one attempt with no retries."""
+    call_counts, call_kwargs = _make_retry_harness(monkeypatch, fail_n_times=1)
+
+    with pytest.raises(InstructorRetryException):
+        retry_sync_v2(**call_kwargs, max_retries=0)
+
+    assert len(call_counts) == 1, (
+        f"Expected exactly 1 API call with max_retries=0, got {len(call_counts)}."
+    )
+
+
+def test_max_retries_3_allows_three_retries(monkeypatch: pytest.MonkeyPatch) -> None:
+    """max_retries=3 must allow up to three retries (four attempts total)."""
+    call_counts, call_kwargs = _make_retry_harness(monkeypatch, fail_n_times=3)
+
+    result = retry_sync_v2(**call_kwargs, max_retries=3)
+
+    assert result.value == 42, (
+        "With max_retries=3, a function that fails 3 times should succeed on "
+        "attempt 4, but it raised instead."
+    )
+    assert len(call_counts) == 4, (
+        f"Expected 4 API calls (1 initial + 3 retries), got {len(call_counts)}."
+    )

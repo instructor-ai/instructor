@@ -126,7 +126,11 @@ def retry_sync_v2(
 
     # Setup retrying
     if isinstance(max_retries, int):
-        stop_condition = stop_after_attempt(max(max_retries, 1))
+        # max_retries is the number of *retries*, so the total number of attempts
+        # is max_retries + 1.  Using max(max_retries, 1) (i.e. treating the value
+        # as max-attempts) would silently drop a retry: max_retries=1 would only
+        # make one attempt (zero retries) instead of two.
+        stop_condition = stop_after_attempt(max_retries + 1)
         timeout = kwargs.get("timeout")
         if isinstance(timeout, (int, float)):
             stop_condition = stop_condition | stop_after_delay(timeout)
@@ -342,7 +346,11 @@ async def retry_async_v2(
 
     # Setup retrying
     if isinstance(max_retries, int):
-        stop_condition = stop_after_attempt(max(max_retries, 1))
+        # max_retries is the number of *retries*, so the total number of attempts
+        # is max_retries + 1.  Using max(max_retries, 1) (i.e. treating the value
+        # as max-attempts) would silently drop a retry: max_retries=1 would only
+        # make one attempt (zero retries) instead of two.
+        stop_condition = stop_after_attempt(max_retries + 1)
         timeout = kwargs.get("timeout")
         if isinstance(timeout, (int, float)):
             stop_condition = stop_condition | stop_after_delay(timeout)
