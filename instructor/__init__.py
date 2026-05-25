@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 from importlib import import_module
 from typing import Any
+from instructor.security import MemoryGuard, sensitive_field_guard
 
 __version__ = "1.15.2"
 
@@ -44,6 +45,8 @@ __all__ = [
     "openai_moderation",
     "hooks",
     "v2",
+    "MemoryGuard",
+    "sensitive_field_guard",
 ]
 
 _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
