@@ -74,6 +74,7 @@ class Mode(enum.Enum):
     BEDROCK_JSON = "bedrock_json"
     PERPLEXITY_JSON = "perplexity_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
+    ORCAROUTER_STRUCTURED_OUTPUTS = "orcarouter_structured_outputs"
 
     # Classification helpers
     @classmethod
@@ -97,6 +98,7 @@ class Mode(enum.Enum):
             cls.WRITER_TOOLS,
             cls.BEDROCK_TOOLS,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
+            cls.ORCAROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_TOOLS,
             cls.GENAI_TOOLS,
@@ -122,6 +124,7 @@ class Mode(enum.Enum):
             cls.BEDROCK_JSON,
             cls.PERPLEXITY_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
+            cls.ORCAROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_JSON,
         }
@@ -247,6 +250,8 @@ DEPRECATED_TO_CORE: dict[Mode, Mode] = {
     Mode.GEMINI_JSON: Mode.MD_JSON,
     # OpenRouter legacy modes
     Mode.OPENROUTER_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
+    # OrcaRouter legacy modes
+    Mode.ORCAROUTER_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
 }
 
 
