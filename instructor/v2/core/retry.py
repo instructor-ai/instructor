@@ -141,10 +141,12 @@ def retry_sync_v2(
     failed_attempts: list[FailedAttempt] = []
     last_exception: Exception | None = None
     total_usage = _initialize_usage(provider)
+    total_attempts = 0
 
     try:
         for attempt in max_retries_instance:
             with attempt:
+                total_attempts = attempt.retry_state.attempt_number
                 # Call API
                 if hooks:
                     hooks.emit_completion_arguments(**kwargs)
@@ -217,14 +219,14 @@ def retry_sync_v2(
             last_exception = e
 
         logger.error(
-            f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
+            f"Max retries exceeded. Total attempts: {total_attempts}, "
             f"Last error: {last_exception}"
         )
 
         raise InstructorRetryException(
             str(last_exception),
             last_completion=failed_attempts[-1].completion if failed_attempts else None,
-            n_attempts=len(failed_attempts),
+            n_attempts=total_attempts,
             total_usage=total_usage,
             messages=extract_messages(kwargs),
             create_kwargs=kwargs,
@@ -236,7 +238,7 @@ def retry_sync_v2(
     raise InstructorRetryException(
         str(last_exception) if last_exception else "Unknown error",
         last_completion=failed_attempts[-1].completion if failed_attempts else None,
-        n_attempts=len(failed_attempts),
+        n_attempts=total_attempts,
         total_usage=total_usage,
         messages=extract_messages(kwargs),
         create_kwargs=kwargs,
@@ -357,10 +359,12 @@ async def retry_async_v2(
     failed_attempts: list[FailedAttempt] = []
     last_exception: Exception | None = None
     total_usage = _initialize_usage(provider)
+    total_attempts = 0
 
     try:
         async for attempt in max_retries_instance:
             with attempt:
+                total_attempts = attempt.retry_state.attempt_number
                 # Call API
                 if hooks:
                     hooks.emit_completion_arguments(**kwargs)
@@ -433,14 +437,14 @@ async def retry_async_v2(
             last_exception = e
 
         logger.error(
-            f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
+            f"Max retries exceeded. Total attempts: {total_attempts}, "
             f"Last error: {last_exception}"
         )
 
         raise InstructorRetryException(
             str(last_exception),
             last_completion=failed_attempts[-1].completion if failed_attempts else None,
-            n_attempts=len(failed_attempts),
+            n_attempts=total_attempts,
             total_usage=total_usage,
             messages=extract_messages(kwargs),
             create_kwargs=kwargs,
@@ -452,7 +456,7 @@ async def retry_async_v2(
     raise InstructorRetryException(
         str(last_exception) if last_exception else "Unknown error",
         last_completion=failed_attempts[-1].completion if failed_attempts else None,
-        n_attempts=len(failed_attempts),
+        n_attempts=total_attempts,
         total_usage=total_usage,
         messages=extract_messages(kwargs),
         create_kwargs=kwargs,
