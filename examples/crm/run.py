@@ -47,7 +47,7 @@ def query_crm(query: str) -> CRMSearchQuery:
                 "role": "system",
                 "content": """
             You are a world class CRM search career generator. 
-            You will take the user query and decompose it into a set of CRM queries queries.
+            You will take the user query and decompose it into a set of CRM queries.
             """,
             },
             {"role": "user", "content": query},
