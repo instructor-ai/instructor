@@ -55,6 +55,16 @@ def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
     return parsed
 
 
+def _attempt_metadata(attempt_number: int, max_attempts: int | None) -> dict[str, Any]:
+    return {
+        "attempt_number": attempt_number,
+        "max_attempts": max_attempts,
+        "is_last_attempt": (
+            max_attempts is not None and attempt_number >= max_attempts
+        ),
+    }
+
+
 def _initialize_usage(provider: Provider | Mode) -> Any:
     from openai.types.completion_usage import (
         CompletionTokensDetails,
@@ -135,8 +145,10 @@ def retry_sync_v2(
             retry=retry_if_exception_type(ValidationError),
             reraise=True,
         )
+        max_attempts: int | None = max(max_retries, 1)
     else:
         max_retries_instance = max_retries
+        max_attempts = None
 
     failed_attempts: list[FailedAttempt] = []
     last_exception: Exception | None = None
@@ -154,10 +166,12 @@ def retry_sync_v2(
                 except IncompleteOutputException:
                     raise
                 except Exception as e:
-                    logger.error(
-                        f"API call failed on attempt "
-                        f"{attempt.retry_state.attempt_number}: {e}"
-                    )
+                    attempt_number = attempt.retry_state.attempt_number
+                    logger.error(f"API call failed on attempt {attempt_number}: {e}")
+                    if hooks:
+                        hooks.emit_completion_error(
+                            e, **_attempt_metadata(attempt_number, max_attempts)
+                        )
                     raise
 
                 if hooks:
@@ -198,6 +212,9 @@ def retry_sync_v2(
 
                     if hooks:
                         hooks.emit_parse_error(e)
+                        hooks.emit_completion_error(
+                            e, **_attempt_metadata(attempt_number, max_attempts)
+                        )
 
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
@@ -220,6 +237,17 @@ def retry_sync_v2(
             f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
             f"Last error: {last_exception}"
         )
+
+        if hooks:
+            last_attempt_number = (
+                failed_attempts[-1].attempt_number if failed_attempts else 1
+            )
+            hooks.emit_completion_last_attempt(
+                last_exception,
+                attempt_number=last_attempt_number,
+                max_attempts=max_attempts,
+                is_last_attempt=True,
+            )
 
         raise InstructorRetryException(
             str(last_exception),
@@ -351,8 +379,10 @@ async def retry_async_v2(
             retry=retry_if_exception_type(ValidationError),
             reraise=True,
         )
+        max_attempts: int | None = max(max_retries, 1)
     else:
         max_retries_instance = max_retries
+        max_attempts = None
 
     failed_attempts: list[FailedAttempt] = []
     last_exception: Exception | None = None
@@ -370,10 +400,12 @@ async def retry_async_v2(
                 except IncompleteOutputException:
                     raise
                 except Exception as e:
-                    logger.error(
-                        f"API call failed on attempt "
-                        f"{attempt.retry_state.attempt_number}: {e}"
-                    )
+                    attempt_number = attempt.retry_state.attempt_number
+                    logger.error(f"API call failed on attempt {attempt_number}: {e}")
+                    if hooks:
+                        hooks.emit_completion_error(
+                            e, **_attempt_metadata(attempt_number, max_attempts)
+                        )
                     raise
 
                 if hooks:
@@ -414,6 +446,9 @@ async def retry_async_v2(
 
                     if hooks:
                         hooks.emit_parse_error(e)
+                        hooks.emit_completion_error(
+                            e, **_attempt_metadata(attempt_number, max_attempts)
+                        )
 
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
@@ -436,6 +471,17 @@ async def retry_async_v2(
             f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
             f"Last error: {last_exception}"
         )
+
+        if hooks:
+            last_attempt_number = (
+                failed_attempts[-1].attempt_number if failed_attempts else 1
+            )
+            hooks.emit_completion_last_attempt(
+                last_exception,
+                attempt_number=last_attempt_number,
+                max_attempts=max_attempts,
+                is_last_attempt=True,
+            )
 
         raise InstructorRetryException(
             str(last_exception),
