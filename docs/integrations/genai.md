@@ -29,9 +29,7 @@ We currently have two modes for Gemini
 
     This filtering happens automatically and requires no additional configuration. For more information about Gemini's thinking feature, see the [official documentation](https://ai.google.dev/gemini-api/docs/thinking).
 
-!!! note "Backwards Compatibility"
 
-    The provider-specific modes (`Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`) are still supported but emit deprecation warnings and map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
 
 ## Installation
 
@@ -550,7 +548,7 @@ print(response)
     **As of July 11, 2025, Google GenAI does not support streaming with tool/function calling or structured outputs for regular models.** 
     
     - `Mode.TOOLS` and `Mode.JSON` do not support streaming with regular models
-    - To use streaming, you must use `Partial[YourModel]` explicitly or switch to other modes like `Mode.JSON`
+    - To use streaming, you must use `Partial[YourModel]` explicitly 
     - Alternatively, set `stream=False` to disable streaming
 
 Streaming allows you to process responses incrementally rather than waiting for the complete result. This is extremely useful for making UI changes feel instant and responsive.

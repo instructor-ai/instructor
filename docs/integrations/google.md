@@ -338,9 +338,7 @@ We provide several modes to make it easy to work with the different response mod
 1. `instructor.Mode.TOOLS` : This uses Gemini's tool calling API to return structured outputs (default)
 2. `instructor.Mode.JSON` : This uses Gemini's JSON schema mode for structured outputs
 
-!!! note "Backwards Compatibility"
 
-    Legacy provider-specific modes (for example `Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`, `Mode.TOOLS`) are deprecated. They emit warnings and map to the generic modes.
 
 !!! info "Mode Selection"
     When using `from_provider`, the appropriate mode is automatically selected based on the provider and model capabilities.
