@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+- **Hooks**: `parse:error` now passes `attempt_number` to handlers, so you can tell which retry a Pydantic validation failed on. Handlers that only accept `error` keep working unchanged.
+
 ---
 
 ## [1.15.2] - 2026-05-10

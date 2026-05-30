@@ -79,7 +79,12 @@ def test_retry_sync_v2_reasks_after_validation_error(
 ) -> None:
     calls: list[dict[str, Any]] = []
     parser_calls: list[str] = []
-    emitted: dict[str, list[Any]] = {"args": [], "responses": [], "errors": []}
+    emitted: dict[str, list[Any]] = {
+        "args": [],
+        "responses": [],
+        "errors": [],
+        "error_kwargs": [],
+    }
 
     def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
         calls.append(dict(kwargs))
@@ -104,7 +109,10 @@ def test_retry_sync_v2_reasks_after_validation_error(
     hooks = SimpleNamespace(
         emit_completion_arguments=lambda **kwargs: emitted["args"].append(kwargs),
         emit_completion_response=lambda response: emitted["responses"].append(response),
-        emit_parse_error=lambda error: emitted["errors"].append(error),
+        emit_parse_error=lambda error, **kwargs: (
+            emitted["errors"].append(error),
+            emitted["error_kwargs"].append(kwargs),
+        ),
     )
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:
@@ -165,6 +173,34 @@ def test_retry_sync_v2_reasks_after_validation_error(
     assert len(emitted["responses"]) == 2
     assert len(emitted["errors"]) == 1
     assert isinstance(emitted["errors"][0], ValidationError)
+    # parse:error now carries the retry attempt number as metadata.
+    assert emitted["error_kwargs"] == [{"attempt_number": 1}]
+
+
+def test_emit_parse_error_supports_old_and_new_style_handlers() -> None:
+    """emit_parse_error passes attempt_number to handlers that accept it, while
+    legacy handlers that only take ``error`` keep working unchanged."""
+    from instructor.v2.core.hooks import Hooks
+
+    hooks = Hooks()
+    error = _validation_error()
+
+    old_style: list[ValidationError] = []
+    new_style: list[tuple[ValidationError, int]] = []
+
+    def legacy_handler(err: ValidationError) -> None:
+        old_style.append(err)
+
+    def metadata_handler(err: ValidationError, *, attempt_number: int) -> None:
+        new_style.append((err, attempt_number))
+
+    hooks.on("parse:error", legacy_handler)
+    hooks.on("parse:error", metadata_handler)
+
+    hooks.emit_parse_error(error, attempt_number=3)
+
+    assert old_style == [error]
+    assert new_style == [(error, 3)]
 
 
 def test_retry_sync_v2_raises_instructor_retry_exception_after_exhaustion(

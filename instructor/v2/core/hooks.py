@@ -191,14 +191,17 @@ class Hooks:
         """
         self.emit(HookName.COMPLETION_LAST_ATTEMPT, error, **kwargs)
 
-    def emit_parse_error(self, error: Exception) -> None:
+    def emit_parse_error(self, error: Exception, **kwargs: Any) -> None:
         """
         Emit a parse error event.
 
         Args:
             error: The exception to pass to handlers
+            **kwargs: Optional metadata (attempt_number). Handlers that only
+                accept ``error`` keep working: ``emit`` falls back to passing
+                positional args when the handler signature can't bind kwargs.
         """
-        self.emit(HookName.PARSE_ERROR, error)
+        self.emit(HookName.PARSE_ERROR, error, **kwargs)
 
     def off(
         self,

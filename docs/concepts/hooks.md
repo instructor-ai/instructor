@@ -14,10 +14,10 @@ Hooks let you intercept and handle events during the completion and parsing proc
 | `completion:kwargs` | Arguments passed to completion | `def handler(*args, **kwargs)` |
 | `completion:response` | Raw API response received | `def handler(response)` |
 | `completion:error` | Error during a retry attempt | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
-| `parse:error` | Pydantic validation failed | `def handler(error)` |
+| `parse:error` | Pydantic validation failed | `def handler(error, *, attempt_number)` |
 | `completion:last_attempt` | Final retry attempt exhausted | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
 
-`completion:error` and `completion:last_attempt` handlers receive optional retry metadata as keyword arguments. Old-style handlers that only accept `error` continue to work — the metadata is silently dropped for backward compatibility.
+`completion:error`, `completion:last_attempt`, and `parse:error` handlers receive optional retry metadata as keyword arguments. Old-style handlers that only accept `error` continue to work — the metadata is silently dropped for backward compatibility. `parse:error` carries `attempt_number`, letting you tell whether a schema validation failed on the first attempt or a later retry.
 
 ## Registering and Removing Hooks
 

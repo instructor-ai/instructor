@@ -197,7 +197,7 @@ def retry_sync_v2(
                     last_exception = e
 
                     if hooks:
-                        hooks.emit_parse_error(e)
+                        hooks.emit_parse_error(e, attempt_number=attempt_number)
 
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
@@ -413,7 +413,7 @@ async def retry_async_v2(
                     last_exception = e
 
                     if hooks:
-                        hooks.emit_parse_error(e)
+                        hooks.emit_parse_error(e, attempt_number=attempt_number)
 
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
