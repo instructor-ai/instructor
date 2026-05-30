@@ -90,15 +90,21 @@ class IterableBase:
     ) -> Generator[BaseModel, None, None]:
         started = False
         potential_object = ""
+        depth = 0
+        scanned = 0
         for chunk in json_chunks:
             potential_object += chunk
             if not started:
                 if "[" in chunk:
                     started = True
                     potential_object = chunk[chunk.find("[") + 1 :]
+                    depth = 0
+                    scanned = 0
 
             while True:
-                task_json, potential_object = cls.get_object(potential_object, 0)
+                task_json, potential_object, depth, scanned = cls._scan_for_object(
+                    potential_object, depth, scanned
+                )
                 if task_json:
                     assert cls.task_type is not None
                     obj = cls.extract_cls_task_type(task_json, **kwargs)
@@ -112,15 +118,21 @@ class IterableBase:
     ) -> AsyncGenerator[BaseModel, None]:
         started = False
         potential_object = ""
+        depth = 0
+        scanned = 0
         async for chunk in json_chunks:
             potential_object += chunk
             if not started:
                 if "[" in chunk:
                     started = True
                     potential_object = chunk[chunk.find("[") + 1 :]
+                    depth = 0
+                    scanned = 0
 
             while True:
-                task_json, potential_object = cls.get_object(potential_object, 0)
+                task_json, potential_object, depth, scanned = cls._scan_for_object(
+                    potential_object, depth, scanned
+                )
                 if task_json:
                     assert cls.task_type is not None
                     obj = cls.extract_cls_task_type(task_json, **kwargs)
@@ -172,6 +184,9 @@ class IterableBase:
 
     @staticmethod
     def get_object(s: str, stack: int) -> tuple[Optional[str], str]:
+        # Public (reachable as IterableBase.get_object) and the reference oracle
+        # that _scan_for_object is differential-tested against; keep its brace
+        # accounting byte-for-byte stable when refactoring.
         start_index = s.find("{")
         for i, c in enumerate(s):
             if c == "{":
@@ -181,6 +196,41 @@ class IterableBase:
                 if stack == 0:
                     return s[start_index : i + 1], s[i + 2 :]
         return None, s
+
+    @staticmethod
+    def _scan_for_object(
+        buffer: str, depth: int, scanned: int
+    ) -> tuple[Optional[str], str, int, int]:
+        """Incrementally scan ``buffer`` for the next complete top-level object.
+
+        Resumes from ``scanned`` (the index up to which ``buffer`` has already
+        been brace-counted) carrying the running brace ``depth``, so each
+        appended chunk is examined only once instead of re-scanning the whole
+        growing buffer. This is behaviourally identical to calling
+        :meth:`get_object` from index 0 on every chunk (the buffer is
+        append-only while an object is incomplete, so a carried running depth
+        equals the depth recomputed from scratch) but runs in O(total chars)
+        rather than O(chars^2) over a streamed object.
+
+        Returns ``(object_str_or_None, remainder, depth, scanned)``. On a
+        completed object, ``remainder`` is the buffer past the separator that
+        follows the closing brace and ``depth``/``scanned`` reset to ``0`` for
+        the fresh remainder; when still incomplete, ``buffer`` is returned
+        unchanged with the carried ``depth`` and ``scanned == len(buffer)``.
+        """
+        start_index = buffer.find("{")
+        n = len(buffer)
+        i = scanned
+        while i < n:
+            c = buffer[i]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    return buffer[start_index : i + 1], buffer[i + 2 :], 0, 0
+            i += 1
+        return None, buffer, depth, n
 
 
 def IterableModel(

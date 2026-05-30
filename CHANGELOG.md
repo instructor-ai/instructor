@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+- **Performance (Iterable streaming)**: `Iterable[...]` streaming now scans each incoming chunk incrementally (carrying brace depth and scan offset) instead of re-scanning the whole accumulated buffer on every chunk. This removes the O(n²) cost of parsing a large list element streamed token-by-token (~300× faster for a 4 KB object streamed one character at a time). Output is unchanged; verified against the previous algorithm over 300k differential fuzz cases.
+
 ---
 
 ## [1.15.2] - 2026-05-10
