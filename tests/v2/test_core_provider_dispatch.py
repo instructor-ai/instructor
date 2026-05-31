@@ -68,6 +68,17 @@ def test_process_message_dispatches_to_provider_modules(
     assert calls == [(message, {"name": "Ada"})]
 
 
+def test_handle_templating_cohere_message_without_chat_history() -> None:
+    """handle_templating must not raise KeyError when 'chat_history' is absent."""
+    result = templating.handle_templating(
+        {"message": "Hello {{ name }}"},
+        mode=Mode.TOOLS,
+        context={"name": "World"},
+    )
+    assert result["message"] == "Hello World"
+    assert result["chat_history"] == []
+
+
 def test_initialize_usage_dispatches_anthropic_to_provider_module(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
