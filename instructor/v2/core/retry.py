@@ -125,6 +125,7 @@ def retry_sync_v2(
     handlers = mode_registry.get_handlers(provider, mode)
 
     # Setup retrying
+    max_attempts: int | None = max_retries if isinstance(max_retries, int) else None
     if isinstance(max_retries, int):
         stop_condition = stop_after_attempt(max(max_retries, 1))
         timeout = kwargs.get("timeout")
@@ -154,10 +155,18 @@ def retry_sync_v2(
                 except IncompleteOutputException:
                     raise
                 except Exception as e:
+                    attempt_number = attempt.retry_state.attempt_number
                     logger.error(
                         f"API call failed on attempt "
-                        f"{attempt.retry_state.attempt_number}: {e}"
+                        f"{attempt_number}: {e}"
                     )
+                    if hooks:
+                        hooks.emit_completion_error(
+                            e,
+                            attempt_number=attempt_number,
+                            max_attempts=max_attempts,
+                            is_last_attempt=False,
+                        )
                     raise
 
                 if hooks:
@@ -220,6 +229,14 @@ def retry_sync_v2(
             f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
             f"Last error: {last_exception}"
         )
+
+        if hooks:
+            hooks.emit_completion_last_attempt(
+                last_exception,
+                attempt_number=len(failed_attempts),
+                max_attempts=max_attempts,
+                is_last_attempt=True,
+            )
 
         raise InstructorRetryException(
             str(last_exception),
@@ -341,6 +358,7 @@ async def retry_async_v2(
     handlers = mode_registry.get_handlers(provider, mode)
 
     # Setup retrying
+    max_attempts: int | None = max_retries if isinstance(max_retries, int) else None
     if isinstance(max_retries, int):
         stop_condition = stop_after_attempt(max(max_retries, 1))
         timeout = kwargs.get("timeout")
@@ -370,10 +388,18 @@ async def retry_async_v2(
                 except IncompleteOutputException:
                     raise
                 except Exception as e:
+                    attempt_number = attempt.retry_state.attempt_number
                     logger.error(
                         f"API call failed on attempt "
-                        f"{attempt.retry_state.attempt_number}: {e}"
+                        f"{attempt_number}: {e}"
                     )
+                    if hooks:
+                        hooks.emit_completion_error(
+                            e,
+                            attempt_number=attempt_number,
+                            max_attempts=max_attempts,
+                            is_last_attempt=False,
+                        )
                     raise
 
                 if hooks:
@@ -436,6 +462,14 @@ async def retry_async_v2(
             f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
             f"Last error: {last_exception}"
         )
+
+        if hooks:
+            hooks.emit_completion_last_attempt(
+                last_exception,
+                attempt_number=len(failed_attempts),
+                max_attempts=max_attempts,
+                is_last_attempt=True,
+            )
 
         raise InstructorRetryException(
             str(last_exception),

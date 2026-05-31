@@ -34,7 +34,14 @@ class CompletionResponseHandler(Protocol):
 class CompletionErrorHandler(Protocol):
     """Protocol for completion error and last attempt handlers."""
 
-    def __call__(self, error: Exception) -> None: ...
+    def __call__(
+        self,
+        error: Exception,
+        *,
+        attempt_number: int = ...,
+        max_attempts: int | None = ...,
+        is_last_attempt: bool = ...,
+    ) -> None: ...
 
 
 class ParseErrorHandler(Protocol):

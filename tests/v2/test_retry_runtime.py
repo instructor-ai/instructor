@@ -318,3 +318,65 @@ async def test_retry_async_v2_raises_retry_exception_after_validation_error(
 
     assert exc_info.value.n_attempts == 1
     assert parser_calls == ["first"]
+
+
+def test_hooks_emit_completion_error_and_last_attempt_with_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """emit_completion_error fires per-attempt; emit_completion_last_attempt fires once on exhaustion."""
+    error_events: list[dict[str, Any]] = []
+    last_attempt_events: list[dict[str, Any]] = []
+
+    def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+        raise RuntimeError("api down")
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=lambda **_kw: Answer(value=1),
+            reask_handler=lambda kw, _r, _e: kw,
+        )
+
+    def initialize_usage(_provider: Provider) -> dict[str, int]:
+        return {"tokens": 0}
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr("instructor.v2.core.retry.mode_registry.get_handlers", get_handlers)
+    monkeypatch.setattr("instructor.v2.core.retry._initialize_usage", initialize_usage)
+
+    hooks = SimpleNamespace(
+        emit_completion_arguments=lambda **_kw: None,
+        emit_completion_error=lambda err, **meta: error_events.append({"err": err, **meta}),
+        emit_completion_last_attempt=lambda err, **meta: last_attempt_events.append(
+            {"err": err, **meta}
+        ),
+    )
+
+    with pytest.raises(InstructorRetryException):
+        retry_sync_v2(
+            func=fake_func,
+            response_model=Answer,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=2,
+            args=(),
+            kwargs={"messages": [{"role": "user", "content": "hi"}]},
+            strict=True,
+            hooks=hooks,
+        )
+
+    assert len(error_events) >= 1
+    for ev in error_events:
+        assert "attempt_number" in ev
+        assert ev["max_attempts"] == 2
+        assert ev["is_last_attempt"] is False
+
+    assert len(last_attempt_events) == 1
+    assert last_attempt_events[0]["is_last_attempt"] is True
+    assert last_attempt_events[0]["max_attempts"] == 2
