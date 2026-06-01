@@ -467,3 +467,19 @@ def test_handle_genai_tools_without_model_uses_message_conversion(
 
     assert model is None
     assert result["autodetect"] is True
+
+
+def test_handle_gemini_json_empty_or_absent_messages_does_not_raise(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+
+    # Empty messages list must not raise IndexError
+    model, kwargs = utils.handle_gemini_json(Answer, {"messages": []})
+    assert model is Answer
+    assert kwargs["generation_config"]["response_mime_type"] == "application/json"
+
+    # Missing messages key must not raise KeyError
+    model2, kwargs2 = utils.handle_gemini_json(Answer, {})
+    assert model2 is Answer
+    assert kwargs2["generation_config"]["response_mime_type"] == "application/json"
