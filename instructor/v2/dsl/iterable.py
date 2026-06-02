@@ -173,10 +173,26 @@ class IterableBase:
     @staticmethod
     def get_object(s: str, stack: int) -> tuple[Optional[str], str]:
         start_index = s.find("{")
+        in_string = False
+        escape_next = False
         for i, c in enumerate(s):
+            # Braces inside JSON string literals must not change the nesting
+            # depth, otherwise an object whose string values contain "{" or "}"
+            # is sliced mid-string and yields invalid JSON.
+            if escape_next:
+                escape_next = False
+                continue
+            if c == "\\" and in_string:
+                escape_next = True
+                continue
+            if c == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
             if c == "{":
                 stack += 1
-            if c == "}":
+            elif c == "}":
                 stack -= 1
                 if stack == 0:
                     return s[start_index : i + 1], s[i + 2 :]

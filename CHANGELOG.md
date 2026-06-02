@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Streaming (Iterable)**: `IterableBase.get_object` now ignores `{`/`}` characters that appear inside JSON string values, so `create_iterable()` / `Iterable[T]` streams no longer truncate an object mid-string and raise a `ValidationError` when a string field contains a brace (e.g. `":}"`). ([#2339](https://github.com/instructor-ai/instructor/pull/2339))
+
 ---
 
 ## [1.15.2] - 2026-05-10
