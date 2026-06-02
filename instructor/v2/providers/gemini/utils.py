@@ -107,7 +107,13 @@ def verify_no_unions(obj: dict[str, Any]) -> bool:  # noqa: ARG001
 
 
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
-    import jsonref
+    try:
+        import jsonref
+    except ImportError as err:
+        raise ConfigurationError(
+            "The 'jsonref' package is required for Gemini structured output. "
+            "Install it with: pip install 'instructor[google-genai]'"
+        ) from err
 
     class FunctionSchema(BaseModel):
         description: str | None = None
@@ -474,10 +480,13 @@ def handle_gemini_json(
         """
     )
 
-    if new_kwargs["messages"][0]["role"] != "system":
-        new_kwargs["messages"].insert(0, {"role": "system", "content": message})
+    messages = new_kwargs.get("messages") or []
+    if not messages or messages[0].get("role") != "system":
+        new_kwargs.setdefault("messages", []).insert(
+            0, {"role": "system", "content": message}
+        )
     else:
-        new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+        messages[0]["content"] += f"\n\n{message}"
 
     new_kwargs["generation_config"] = new_kwargs.get("generation_config", {}) | {
         "response_mime_type": "application/json"

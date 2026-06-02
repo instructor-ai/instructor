@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
+from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel
 
 
@@ -224,3 +225,13 @@ def test_vertexai_schema_helper_rejects_type_hints(
 
     with pytest.raises(TypeError, match="Expected concrete model class"):
         handlers._create_gemini_json_schema(list[Weather])
+
+
+def test_vertexai_schema_helper_raises_helpful_error_when_jsonref_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handlers = _install_fake_vertexai(monkeypatch)
+    monkeypatch.setitem(sys.modules, "jsonref", None)
+
+    with pytest.raises(ConfigurationError, match="instructor\\[vertexai\\]"):
+        handlers._create_gemini_json_schema(Weather)

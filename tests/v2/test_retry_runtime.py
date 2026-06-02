@@ -79,7 +79,13 @@ def test_retry_sync_v2_reasks_after_validation_error(
 ) -> None:
     calls: list[dict[str, Any]] = []
     parser_calls: list[str] = []
-    emitted: dict[str, list[Any]] = {"args": [], "responses": [], "errors": []}
+    emitted: dict[str, list[Any]] = {
+        "args": [],
+        "responses": [],
+        "errors": [],
+        "completion_errors": [],
+        "last_attempts": [],
+    }
 
     def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
         calls.append(dict(kwargs))
@@ -104,7 +110,15 @@ def test_retry_sync_v2_reasks_after_validation_error(
     hooks = SimpleNamespace(
         emit_completion_arguments=lambda **kwargs: emitted["args"].append(kwargs),
         emit_completion_response=lambda response: emitted["responses"].append(response),
-        emit_parse_error=lambda error: emitted["errors"].append(error),
+        emit_parse_error=lambda error, **kwargs: emitted["errors"].append(
+            (error, kwargs)
+        ),
+        emit_completion_error=lambda error, **kwargs: emitted[
+            "completion_errors"
+        ].append((error, kwargs)),
+        emit_completion_last_attempt=lambda error, **kwargs: emitted[
+            "last_attempts"
+        ].append((error, kwargs)),
     )
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:
@@ -164,7 +178,103 @@ def test_retry_sync_v2_reasks_after_validation_error(
     assert len(emitted["args"]) == 2
     assert len(emitted["responses"]) == 2
     assert len(emitted["errors"]) == 1
-    assert isinstance(emitted["errors"][0], ValidationError)
+    assert isinstance(emitted["errors"][0][0], ValidationError)
+    assert emitted["errors"][0][1]["attempt_number"] == 1
+    assert emitted["completion_errors"][0][1]["attempt_number"] == 1
+    assert emitted["last_attempts"] == []
+
+
+def test_retry_sync_v2_emits_last_attempt_metadata_on_exhaustion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    emitted: dict[str, list[Any]] = {"completion_errors": [], "last_attempts": []}
+
+    def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+        return {"payload": kwargs["messages"][-1]["content"]}
+
+    def always_fail_parser(**_kwargs: Any) -> Answer:
+        raise _validation_error()
+
+    def reask_kwargs(
+        kwargs: dict[str, Any], response: Any, exception: ValidationError
+    ) -> dict[str, Any]:
+        assert response["payload"] in {"first", "retry"}
+        assert isinstance(exception, ValidationError)
+        return {
+            **kwargs,
+            "messages": [*kwargs["messages"], {"role": "user", "content": "retry"}],
+        }
+
+    hooks = SimpleNamespace(
+        emit_completion_arguments=lambda **_kwargs: None,
+        emit_completion_response=lambda _response: None,
+        emit_parse_error=lambda _error, **_kwargs: None,
+        emit_completion_error=lambda error, **kwargs: emitted[
+            "completion_errors"
+        ].append((error, kwargs)),
+        emit_completion_last_attempt=lambda error, **kwargs: emitted[
+            "last_attempts"
+        ].append((error, kwargs)),
+    )
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=always_fail_parser,
+            reask_handler=reask_kwargs,
+        )
+
+    def update_usage(response: Any, total_usage: Any) -> Any:
+        assert total_usage == {"tokens": 0}
+        return response
+
+    def initialize_usage(_provider: Provider) -> dict[str, int]:
+        return {"tokens": 0}
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        get_handlers,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.update_total_usage",
+        update_usage,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry._initialize_usage",
+        initialize_usage,
+    )
+
+    with pytest.raises(InstructorRetryException):
+        retry_sync_v2(
+            func=fake_func,
+            response_model=Answer,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=2,
+            args=(),
+            kwargs={"messages": [{"role": "user", "content": "first"}]},
+            strict=True,
+            hooks=hooks,
+        )
+
+    assert [item[1]["attempt_number"] for item in emitted["completion_errors"]] == [
+        1,
+        2,
+    ]
+    assert emitted["completion_errors"][-1][1]["is_last_attempt"] is True
+    assert len(emitted["last_attempts"]) == 1
+    assert emitted["last_attempts"][0][1] == {
+        "attempt_number": 2,
+        "max_attempts": 2,
+        "is_last_attempt": True,
+    }
 
 
 def test_retry_sync_v2_raises_instructor_retry_exception_after_exhaustion(

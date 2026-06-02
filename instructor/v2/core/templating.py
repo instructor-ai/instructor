@@ -111,7 +111,7 @@ def handle_templating(
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
         new_kwargs["chat_history"] = [
             process_message(message, context, provider)
-            for message in new_kwargs["chat_history"]
+            for message in new_kwargs.get("chat_history", [])
         ]
 
         return new_kwargs

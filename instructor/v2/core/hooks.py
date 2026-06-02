@@ -34,13 +34,20 @@ class CompletionResponseHandler(Protocol):
 class CompletionErrorHandler(Protocol):
     """Protocol for completion error and last attempt handlers."""
 
-    def __call__(self, error: Exception) -> None: ...
+    def __call__(
+        self,
+        error: Exception,
+        *,
+        attempt_number: int = ...,
+        max_attempts: int | None = ...,
+        is_last_attempt: bool = ...,
+    ) -> None: ...
 
 
 class ParseErrorHandler(Protocol):
     """Protocol for parse error handlers."""
 
-    def __call__(self, error: Exception) -> None: ...
+    def __call__(self, error: Exception, **kwargs: Any) -> None: ...
 
 
 # Type alias for hook name parameter
@@ -191,14 +198,15 @@ class Hooks:
         """
         self.emit(HookName.COMPLETION_LAST_ATTEMPT, error, **kwargs)
 
-    def emit_parse_error(self, error: Exception) -> None:
+    def emit_parse_error(self, error: Exception, **kwargs: Any) -> None:
         """
         Emit a parse error event.
 
         Args:
             error: The exception to pass to handlers
+            **kwargs: Optional metadata (attempt_number, max_attempts, is_last_attempt)
         """
-        self.emit(HookName.PARSE_ERROR, error)
+        self.emit(HookName.PARSE_ERROR, error, **kwargs)
 
     def off(
         self,

@@ -290,6 +290,20 @@ def test_handle_gemini_json_adds_schema_prompt(monkeypatch: pytest.MonkeyPatch) 
     assert kwargs["generation_config"]["response_mime_type"] == "application/json"
 
 
+def test_handle_gemini_json_guards_empty_or_missing_messages(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+
+    for kwargs in ({"messages": []}, {}):
+        model, result = utils.handle_gemini_json(Answer, kwargs)
+
+        assert model is Answer
+        assert result["contents"][0]["role"] == "user"
+        assert "json_schema" in result["contents"][0]["parts"][0]
+        assert result["generation_config"]["response_mime_type"] == "application/json"
+
+
 def test_handle_gemini_tools_sets_tool_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
     monkeypatch.setattr(Answer, "gemini_schema", {"name": "Answer"}, raising=False)
@@ -304,6 +318,15 @@ def test_handle_gemini_tools_sets_tool_config(monkeypatch: pytest.MonkeyPatch) -
     assert kwargs["tool_config"]["function_calling_config"][
         "allowed_function_names"
     ] == ["Answer"]
+
+
+def test_map_to_gemini_function_schema_raises_helpful_error_when_jsonref_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setitem(sys.modules, "jsonref", None)
+
+    with pytest.raises(ConfigurationError, match="instructor\\[google-genai\\]"):
+        utils.map_to_gemini_function_schema(Answer.model_json_schema())
 
 
 def test_update_gemini_kwargs_applies_safety_defaults(

@@ -68,6 +68,17 @@ def test_process_message_dispatches_to_provider_modules(
     assert calls == [(message, {"name": "Ada"})]
 
 
+def test_handle_templating_cohere_message_without_chat_history() -> None:
+    result = templating.handle_templating(
+        {"message": "Hello {{ name }}"},
+        Mode.TOOLS,
+        provider=Provider.COHERE,
+        context={"name": "Ada"},
+    )
+
+    assert result == {"message": "Hello Ada", "chat_history": []}
+
+
 def test_initialize_usage_dispatches_anthropic_to_provider_module(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

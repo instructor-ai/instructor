@@ -173,10 +173,23 @@ class IterableBase:
     @staticmethod
     def get_object(s: str, stack: int) -> tuple[Optional[str], str]:
         start_index = s.find("{")
+        in_string = False
+        escape_next = False
         for i, c in enumerate(s):
+            if c == '"' and not escape_next:
+                in_string = not in_string
+            elif c == "\\" and in_string:
+                escape_next = True
+                continue
+            else:
+                escape_next = False
+
+            if in_string:
+                continue
+
             if c == "{":
                 stack += 1
-            if c == "}":
+            elif c == "}":
                 stack -= 1
                 if stack == 0:
                     return s[start_index : i + 1], s[i + 2 :]
