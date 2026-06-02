@@ -467,3 +467,21 @@ def test_handle_genai_tools_without_model_uses_message_conversion(
 
     assert model is None
     assert result["autodetect"] is True
+
+
+def test_handle_gemini_json_guards_empty_or_missing_messages() -> None:
+    """handle_gemini_json should not crash when 'messages' is missing or empty."""
+    # Missing "messages" key entirely
+    model, kwargs = utils.handle_gemini_json(Answer, {})
+    assert "messages" not in kwargs
+    assert isinstance(kwargs.get("contents"), list)
+
+    # Empty messages list
+    model, kwargs = utils.handle_gemini_json(
+        Answer, {"messages": []}
+    )
+    messages = kwargs.get("messages")
+    assert messages is not None
+    assert len(messages) > 0, "should have inserted a system prompt"
+    assert messages[0]["role"] == "system"
+    assert messages[0]["content"] is not None

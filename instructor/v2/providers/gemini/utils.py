@@ -474,8 +474,9 @@ def handle_gemini_json(
         """
     )
 
-    if new_kwargs["messages"][0]["role"] != "system":
-        new_kwargs["messages"].insert(0, {"role": "system", "content": message})
+    messages = new_kwargs.get("messages") or []
+    if not messages or messages[0].get("role") != "system":
+        new_kwargs.setdefault("messages", []).insert(0, {"role": "system", "content": message})
     else:
         new_kwargs["messages"][0]["content"] += f"\n\n{message}"
 
