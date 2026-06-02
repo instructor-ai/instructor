@@ -2,25 +2,47 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncGenerator, Generator, Iterable
 
 
 def extract_json_from_codeblock(content: str) -> str:
     """Extract the first JSON object- or array-like span from a text block."""
-    first_brace = content.find("{")
-    first_bracket = content.find("[")
+    for start_index, start_char in enumerate(content):
+        if start_char not in "{[":
+            continue
 
-    if first_brace == -1 and first_bracket == -1:
-        return content
+        end_stack = ["}" if start_char == "{" else "]"]
+        in_string = False
+        escape_next = False
 
-    if first_bracket != -1 and (first_brace == -1 or first_bracket < first_brace):
-        last_bracket = content.rfind("]")
-        if last_bracket != -1:
-            return content[first_bracket : last_bracket + 1]
+        for end_index in range(start_index + 1, len(content)):
+            char = content[end_index]
 
-    last_brace = content.rfind("}")
-    if first_brace != -1 and last_brace != -1:
-        return content[first_brace : last_brace + 1]
+            if char == '"' and not escape_next:
+                in_string = not in_string
+            elif char == "\\" and in_string:
+                escape_next = True
+                continue
+            else:
+                escape_next = False
+
+            if in_string:
+                continue
+
+            if char in "{[":
+                end_stack.append("}" if char == "{" else "]")
+                continue
+            if end_stack and char == end_stack[-1]:
+                end_stack.pop()
+                if not end_stack:
+                    candidate = content[start_index : end_index + 1]
+                    try:
+                        json.loads(candidate)
+                    except Exception:
+                        break
+                    return candidate
+
     return content
 
 

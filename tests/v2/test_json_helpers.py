@@ -23,6 +23,15 @@ def test_extract_json_from_codeblock_preserves_array_root() -> None:
     )
 
 
+def test_extract_json_from_codeblock_ignores_brackets_in_prose() -> None:
+    assert (
+        extract_json_from_codeblock(
+            'See [section] for details.\n```json\n{"name":"Ada"}\n```\n'
+        )
+        == '{"name":"Ada"}'
+    )
+
+
 def test_extract_json_from_stream_handles_plain_json() -> None:
     assert "".join(extract_json_from_stream(["before ", '{"a":', "1}", " after"])) == (
         '{"a":1}'

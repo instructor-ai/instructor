@@ -277,6 +277,76 @@ def test_retry_sync_v2_emits_last_attempt_metadata_on_exhaustion(
     }
 
 
+def test_retry_sync_v2_marks_api_error_as_last_attempt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+    emitted: dict[str, list[Any]] = {"completion_errors": [], "last_attempts": []}
+
+    def fake_func(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        raise RuntimeError("boom")
+
+    hooks = SimpleNamespace(
+        emit_completion_arguments=lambda **_kwargs: None,
+        emit_completion_response=lambda _response: None,
+        emit_parse_error=lambda _error, **_kwargs: None,
+        emit_completion_error=lambda error, **kwargs: emitted[
+            "completion_errors"
+        ].append((error, kwargs)),
+        emit_completion_last_attempt=lambda error, **kwargs: emitted[
+            "last_attempts"
+        ].append((error, kwargs)),
+    )
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=lambda **_kwargs: Answer(value=1),
+            reask_handler=lambda **kwargs: kwargs,
+        )
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        get_handlers,
+    )
+
+    with pytest.raises(InstructorRetryException):
+        retry_sync_v2(
+            func=fake_func,
+            response_model=Answer,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=3,
+            args=(),
+            kwargs={"messages": [{"role": "user", "content": "first"}]},
+            strict=True,
+            hooks=hooks,
+        )
+
+    assert calls == 1
+    assert len(emitted["completion_errors"]) == 1
+    assert emitted["completion_errors"][0][1] == {
+        "attempt_number": 1,
+        "max_attempts": 3,
+        "is_last_attempt": True,
+    }
+    assert len(emitted["last_attempts"]) == 1
+    assert emitted["last_attempts"][0][1] == {
+        "attempt_number": 1,
+        "max_attempts": 3,
+        "is_last_attempt": True,
+    }
+
+
 def test_retry_sync_v2_raises_instructor_retry_exception_after_exhaustion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -428,3 +498,74 @@ async def test_retry_async_v2_raises_retry_exception_after_validation_error(
 
     assert exc_info.value.n_attempts == 1
     assert parser_calls == ["first"]
+
+
+@pytest.mark.asyncio
+async def test_retry_async_v2_marks_api_error_as_last_attempt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+    emitted: dict[str, list[Any]] = {"completion_errors": [], "last_attempts": []}
+
+    async def fake_func(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        raise RuntimeError("boom")
+
+    hooks = SimpleNamespace(
+        emit_completion_arguments=lambda **_kwargs: None,
+        emit_completion_response=lambda _response: None,
+        emit_parse_error=lambda _error, **_kwargs: None,
+        emit_completion_error=lambda error, **kwargs: emitted[
+            "completion_errors"
+        ].append((error, kwargs)),
+        emit_completion_last_attempt=lambda error, **kwargs: emitted[
+            "last_attempts"
+        ].append((error, kwargs)),
+    )
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=lambda **_kwargs: Answer(value=1),
+            reask_handler=lambda **kwargs: kwargs,
+        )
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        get_handlers,
+    )
+
+    with pytest.raises(InstructorRetryException):
+        await retry_async_v2(
+            func=fake_func,
+            response_model=Answer,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=3,
+            args=(),
+            kwargs={"messages": [{"role": "user", "content": "first"}]},
+            strict=True,
+            hooks=hooks,
+        )
+
+    assert calls == 1
+    assert len(emitted["completion_errors"]) == 1
+    assert emitted["completion_errors"][0][1] == {
+        "attempt_number": 1,
+        "max_attempts": 3,
+        "is_last_attempt": True,
+    }
+    assert len(emitted["last_attempts"]) == 1
+    assert emitted["last_attempts"][0][1] == {
+        "attempt_number": 1,
+        "max_attempts": 3,
+        "is_last_attempt": True,
+    }

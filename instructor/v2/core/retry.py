@@ -182,7 +182,13 @@ def retry_sync_v2(
                             **_attempt_metadata(
                                 attempt_number=attempt_number,
                                 max_attempts=max_attempts,
-                                is_last_attempt=False,
+                                is_last_attempt=(
+                                    not isinstance(e, ValidationError)
+                                    or (
+                                        max_attempts is not None
+                                        and attempt_number >= max_attempts
+                                    )
+                                ),
                             ),
                         )
                     raise
@@ -431,7 +437,13 @@ async def retry_async_v2(
                             **_attempt_metadata(
                                 attempt_number=attempt_number,
                                 max_attempts=max_attempts,
-                                is_last_attempt=False,
+                                is_last_attempt=(
+                                    not isinstance(e, ValidationError)
+                                    or (
+                                        max_attempts is not None
+                                        and attempt_number >= max_attempts
+                                    )
+                                ),
                             ),
                         )
                     raise
