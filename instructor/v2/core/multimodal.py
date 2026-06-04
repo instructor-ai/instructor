@@ -91,6 +91,11 @@ class Image(BaseModel):
         if isinstance(source, Path):
             return cls.from_path(source)
 
+        raise ValueError(
+            f"Unsupported image source type: {type(source).__name__}. "
+            "Expected a str (URL, file path, or base64 data) or pathlib.Path."
+        )
+
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.

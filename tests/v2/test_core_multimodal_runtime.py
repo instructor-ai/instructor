@@ -165,3 +165,15 @@ def test_audio_from_path_normalizes_windows_wav_and_aac_mime_types(
 
     assert wav_audio.media_type == "audio/wav"
     assert aac_audio.media_type == "audio/aac"
+
+
+def test_image_autodetect_raises_on_unsupported_source_type() -> None:
+    # Non-str/non-Path sources (e.g. bytes) previously fell through and
+    # implicitly returned None, causing a confusing AttributeError downstream.
+    with pytest.raises(ValueError, match="Unsupported image source type"):
+        Image.autodetect(b"\xff\xd8\xff")  # type: ignore[arg-type]
+
+
+def test_image_autodetect_returns_image_for_valid_str_source() -> None:
+    image = Image.autodetect("data:image/png;base64,AA==")
+    assert isinstance(image, Image)
