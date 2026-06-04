@@ -340,7 +340,7 @@ We provide several modes to make it easy to work with the different response mod
 
 !!! note "Backwards Compatibility"
 
-    Legacy provider-specific modes (for example `Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`, `Mode.TOOLS`) are deprecated. They emit warnings and map to the generic modes.
+    Legacy provider-specific modes (for example `Mode.GENAI_TOOLS`, `Mode.GENAI_JSON`) are deprecated. They emit warnings and map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
 
 !!! info "Mode Selection"
     When using `from_provider`, the appropriate mode is automatically selected based on the provider and model capabilities.

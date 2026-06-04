@@ -31,7 +31,7 @@ We currently have two modes for Gemini
 
 !!! note "Backwards Compatibility"
 
-    The provider-specific modes (`Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`) are still supported but emit deprecation warnings and map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
+    The legacy provider-specific modes (for example `Mode.GENAI_TOOLS`, `Mode.GENAI_JSON`) are still supported but emit deprecation warnings and map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
 
 ## Installation
 
