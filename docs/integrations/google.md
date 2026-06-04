@@ -16,7 +16,15 @@ Master structured data extraction using Google's Gemini models with Instructor. 
 
 ## Google GenAI SDK
 
-Google's GenAI SDK is the recommended way to access Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. This guide shows you how to use Instructor with Google's GenAI SDK for type-safe, validated responses.
+Google's GenAI SDK (`google-genai`) is the recommended way to access Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. This guide shows you how to use Instructor with Google's GenAI SDK for type-safe, validated responses.
+
+!!! info "Choosing the right provider prefix"
+
+    Instructor supports three Google provider prefixes in `from_provider`, but only one is current:
+
+    - **`google/<model>`** (recommended): Uses the modern `google-genai` SDK. Use this for both the Gemini API and Vertex AI (add `vertexai=True` for Vertex AI).
+    - **`vertexai/<model>`** (deprecated): Uses the old Vertex AI SDK directly. Migrate to `google/<model>` with `vertexai=True`.
+    - **`gemini/<model>`** (legacy): Uses the older `google-generativeai` package. Migrate to `google/<model>`.
 
 ```bash
 pip install "instructor[google-genai]"
@@ -321,15 +329,14 @@ for user in users:
     #> name='Mike' age=28
 ```
 
-## Known Limitations (as of Nov 12, 2024)
+## Known Limitations (as of Jun 2026)
 
 Google Gemini has the following known limitations when used with Instructor:
 
-1. **Union Types**: Gemini does not support Union types (except for Optional). Use separate response models or Literal types instead.
-2. **Enum Types**: Gemini returns string values instead of properly typed Enum instances. You may need to manually convert strings to enums after extraction.
-3. **Union Streaming**: Streaming is not supported for Union types with Iterable.
+1. **Union Types**: Gemini does not officially support Union types in structured output mode. However, Optional types (e.g., `str | None`) work correctly.
+2. **Streaming**: Streaming is not supported with `Mode.TOOLS` for regular models (see the [Streaming Support](#streaming-support) section for workarounds).
 
-These limitations are specific to Google Gemini and do not affect other providers like OpenAI or Anthropic. Tests automatically skip these features for Google to prevent failures.
+These limitations are specific to Google Gemini and do not affect other providers like OpenAI or Anthropic.
 
 ## Instructor Modes
 
@@ -405,6 +412,17 @@ For Vertex AI users, the migration is similar:
 
 #### Old Way (Deprecated)
 ```python
+# Using the deprecated Vertex AI provider prefix
+import instructor
+
+client = instructor.from_provider(
+    "vertexai/gemini-2.5-flash",
+    mode=instructor.Mode.TOOLS,
+)
+```
+
+Or using the old Vertex AI SDK directly:
+```python
 import instructor
 import vertexai
 from vertexai.generative_models import GenerativeModel
@@ -419,14 +437,15 @@ client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
 ```python
 import instructor
 
-# Option 1: Using from_provider (recommended)
+# Option 1: Using from_provider with vertexai=True (recommended)
 client = instructor.from_provider(
-    "vertexai/gemini-3-flash",
-    project="your-project",
-    location="us-central1"
+    "google/gemini-3-flash",
+    vertexai=True,
+    project="your-project",  # Optional if set in environment
+    location="us-central1"   # Optional, defaults to us-central1
 )
 
-# Option 2: Using from_genai with vertexai=True (legacy/advanced)
+# Option 2: Using from_genai with Google GenAI SDK
 from google import genai
 from instructor import from_genai
 
@@ -434,7 +453,8 @@ client = from_genai(
     genai.Client(
         vertexai=True,
         project="your-project",
-        location="us-central1"
+        location="us-central1",
+        model="gemini-3-flash"
     )
 )
 ```

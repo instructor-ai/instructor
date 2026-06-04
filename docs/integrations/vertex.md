@@ -39,7 +39,8 @@ class User(BaseModel):
 
 # Using from_provider (recommended)
 client = instructor.from_provider(
-    "vertexai/gemini-3-flash",
+    "google/gemini-3-flash",
+    vertexai=True,
 )
 
 resp = client.create(
@@ -61,11 +62,7 @@ print(resp)
 ```python
 import asyncio
 import instructor
-import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 from pydantic import BaseModel
-
-vertexai.init()
 
 
 class User(BaseModel):
@@ -74,9 +71,9 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
+    "google/gemini-3-flash",
+    vertexai=True,
     async_client=True,
-    mode=instructor.Mode.TOOLS,
 )
 
 async def extract_user():
@@ -104,21 +101,19 @@ Instructor now supports streaming capabilities with Vertex AI! You can use both 
 ### Streaming Partial Responses
 
 ```python
-import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 import instructor
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
-vertexai.init()
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
-    mode=instructor.Mode.TOOLS,
+    "google/gemini-3-flash",
+    vertexai=True,
 )
 
 # Stream partial responses
@@ -140,20 +135,18 @@ for partial_user in response_stream:
 ### Streaming Iterable Collections
 
 ```python
-import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 import instructor
 from pydantic import BaseModel
 
-vertexai.init()
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
-    mode=instructor.Mode.TOOLS,
+    "google/gemini-3-flash",
+    vertexai=True,
 )
 
 # Stream iterable responses
@@ -177,22 +170,20 @@ You can also use async versions of both streaming approaches:
 
 ```python
 import asyncio
-import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 import instructor
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
-vertexai.init()
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
+    "google/gemini-3-flash",
+    vertexai=True,
     async_client=True,
-    mode=instructor.Mode.TOOLS,
 )
 
 async def stream_partial():
@@ -232,9 +223,21 @@ asyncio.run(stream_iterable())
 
 ## Migration to Google GenAI
 
-The legacy `from_vertexai` method is being deprecated in favor of the unified Google GenAI SDK. Here's how to migrate:
+The legacy `from_vertexai` method and the `vertexai/` provider prefix are deprecated in favor of the unified Google GenAI SDK with `vertexai=True`. Here's how to migrate:
 
 ### Old Way (Deprecated)
+```python
+# Using the deprecated vertexai/ provider prefix
+import instructor
+
+client = instructor.from_provider(
+    "vertexai/gemini-2.5-flash",
+    project="your-project",
+    location="us-central1"
+)
+```
+
+Or using the old Vertex AI SDK directly:
 ```python
 import instructor
 import vertexai
@@ -242,7 +245,9 @@ from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
 
-client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    vertexai=True,
     mode=instructor.Mode.TOOLS,
 )
 ```
@@ -251,9 +256,10 @@ client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
 ```python
 import instructor
 
-# Option 1: Using from_provider (simplest)
+# Option 1: Using from_provider with vertexai=True (simplest)
 client = instructor.from_provider(
-    "vertexai/gemini-3-flash",
+    "google/gemini-3-flash",
+    vertexai=True,
     project="your-project",  # Optional if set in environment
     location="us-central1"   # Optional, defaults to us-central1
 )
