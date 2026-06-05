@@ -197,6 +197,23 @@ def test_classproperty():
     assert MyClass.my_property == 1
 
 
+def test_classproperty_instance_and_subclass():
+    """Test classproperty on instances and subclasses."""
+
+    class Base:
+        @classproperty
+        def prop(cls):
+            return cls.__name__
+
+    class Derived(Base):
+        pass
+
+    assert Base.prop == "Base"
+    assert Derived.prop == "Derived"
+    assert Base().prop == "Base"
+    assert Derived().prop == "Derived"
+
+
 def test_combine_system_messages_string_string():
     existing = "Existing message"
     new = "New message"
