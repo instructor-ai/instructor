@@ -54,9 +54,9 @@ def test_json_decode_error_caught_by_retry():
         )
 
     exception = exc_info.value
-    assert exception.n_attempts == 2
+    assert exception.n_attempts == 3
     assert exception.failed_attempts is not None
-    assert len(exception.failed_attempts) == 2
+    assert len(exception.failed_attempts) == 3
 
     for attempt in exception.failed_attempts:
         assert isinstance(attempt.exception, (json.JSONDecodeError, ValidationError))
@@ -89,9 +89,9 @@ def test_validation_error_caught_by_retry():
         )
 
     exception = exc_info.value
-    assert exception.n_attempts == 2
+    assert exception.n_attempts == 3
     assert exception.failed_attempts is not None
-    assert len(exception.failed_attempts) == 2
+    assert len(exception.failed_attempts) == 3
 
     for attempt in exception.failed_attempts:
         assert isinstance(attempt.exception, ValidationError)
