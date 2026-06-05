@@ -40,7 +40,7 @@ export ANTHROPIC_API_KEY="your-anthropic-api-key"
 python run_batch_test.py create --model "anthropic/claude-3-5-sonnet-20241022"
 
 # Test Google (simulation mode)
-python run_batch_test.py create --model "google/gemini-2.0-flash-001"
+python run_batch_test.py create --model "google/gemini-3-flash"
 ```
 
 ### Supported Models
@@ -62,7 +62,7 @@ python run_batch_test.py list-models
 - `anthropic/claude-3-haiku-20240307`
 
 **Google Models:**
-- `google/gemini-2.0-flash-001`
+- `google/gemini-3-flash`
 - `google/gemini-pro`
 - `google/gemini-pro-vision`
 
@@ -149,7 +149,7 @@ instructor batch results \
 # Test all providers (requires API keys)
 python run_batch_test.py create --model "openai/gpt-4o-mini"
 python run_batch_test.py create --model "anthropic/claude-3-5-sonnet-20241022" 
-python run_batch_test.py create --model "google/gemini-2.0-flash-001"
+python run_batch_test.py create --model "google/gemini-3-flash"
 
 # Check what was created
 ls *_batch_id.txt
