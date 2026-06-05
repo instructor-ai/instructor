@@ -69,7 +69,7 @@ The function also manages dependencies by alerting users to install missing pack
 
 > Note : Ensure your API keys (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) are configured as environment variables to run this code.
 
-Here's a self-contained example demonstrating how `from_provider()` can be used to retrieve structured output from google gemini's flash model.
+Here's a self-contained example demonstrating how `from_provider()` can be used to retrieve structured output from google gemini's flash-2.0 model.
 
 ```python
 import instructor
@@ -84,7 +84,7 @@ class Person(BaseModel):
 
 
 # Connect to any provider with a single line
-client = instructor.from_provider("google/gemini-3-flash")
+client = instructor.from_provider("google/gemini-2.0-flash")
 
 # Extract structured data
 response = client.create(

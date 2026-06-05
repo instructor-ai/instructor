@@ -840,7 +840,7 @@ def list_models():
 
     typer.echo("Google:")
     typer.echo("  • google/gemini-2.5-flash")
-    typer.echo("  • google/gemini-3-flash")
+    typer.echo("  • google/gemini-2.0-flash-001")
     typer.echo("  • google/gemini-pro")
     typer.echo()
 
