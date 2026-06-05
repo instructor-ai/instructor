@@ -16,7 +16,7 @@ anyio==4.12.1
     #   openai
 attrs==26.1.0
     # via aiohttp
-certifi==2026.2.25
+certifi==2026.5.20
     # via
     #   httpcore
     #   httpx
@@ -27,7 +27,7 @@ click==8.3.1
     # via typer
 distro==1.9.0
     # via openai
-docstring-parser==0.17.0
+docstring-parser==0.18.0
     # via instructor (pyproject.toml)
 frozenlist==1.8.0
     # via
@@ -39,7 +39,7 @@ httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via openai
-idna==3.11
+idna==3.18
     # via
     #   anyio
     #   httpx
@@ -47,7 +47,7 @@ idna==3.11
     #   yarl
 jinja2==3.1.6
     # via instructor (pyproject.toml)
-jiter==0.14.0
+jiter==0.15.0
     # via
     #   instructor (pyproject.toml)
     #   openai
@@ -61,17 +61,17 @@ multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
-openai==2.31.0
+openai==2.41.0
     # via instructor (pyproject.toml)
 propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-pydantic==2.12.5
+pydantic==2.13.4
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.41.5
+pydantic-core==2.46.4
     # via
     #   instructor (pyproject.toml)
     #   pydantic
@@ -79,7 +79,7 @@ pygments==2.20.0
     # via rich
 requests==2.32.5
     # via instructor (pyproject.toml)
-rich==14.3.3
+rich==15.0.0
     # via
     #   instructor (pyproject.toml)
     #   typer
@@ -89,7 +89,7 @@ sniffio==1.3.1
     # via openai
 tenacity==9.1.2
     # via instructor (pyproject.toml)
-tqdm==4.67.3
+tqdm==4.68.1
     # via openai
 typer==0.23.2
     # via instructor (pyproject.toml)
