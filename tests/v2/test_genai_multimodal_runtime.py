@@ -295,13 +295,15 @@ def test_extract_multimodal_content_converts_detected_media(
     monkeypatch.setattr(
         multimodal,
         "autodetect_media",
-        lambda text: Image(
-            source="data:image/png;base64,QQ==",
-            media_type="image/png",
-            data="QQ==",
-        )
-        if text == "look at this"
-        else text,
+        lambda text: (
+            Image(
+                source="data:image/png;base64,QQ==",
+                media_type="image/png",
+                data="QQ==",
+            )
+            if text == "look at this"
+            else text
+        ),
     )
 
     content = FakeContent(
