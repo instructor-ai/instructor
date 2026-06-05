@@ -37,7 +37,7 @@ repos:
       - id: ty-check
         name: Run Type Check (ty)
         entry: uv
-        args: [run, --frozen, ty, check, instructor/]
+        args: [run, --frozen, ty, check, --error-on-warning, instructor/]
         language: system
         files: ^instructor/
         pass_filenames: false

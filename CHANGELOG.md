@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Tests / CI
+- **Type checking**: Upgrade to `ty` 0.0.44, enforce warning-free checks with GitHub annotations, cover V2 tests, validate supported Python versions and platforms, and strengthen installed-package public API typing tests.
+
 ---
 
 ## [1.15.2] - 2026-05-10

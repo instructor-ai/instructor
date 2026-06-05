@@ -111,7 +111,9 @@ OPENAI_COMPATIBLE_PROVIDERS = [
 def test_tools_handler_inherits_from_openai(provider: Provider) -> None:
     """Test that OpenAI-compatible providers use OpenAI handlers."""
     if Mode.TOOLS not in PROVIDER_HANDLER_MODES.get(provider, []):
-        pytest.skip(f"{provider.value} does not support TOOLS mode")
+        pytest.skip(
+            f"{provider.value} does not support TOOLS mode"  # ty: ignore[too-many-positional-arguments]
+        )
 
     from instructor.v2.core.registry import mode_registry
 
@@ -129,7 +131,9 @@ def test_tools_handler_inherits_from_openai(provider: Provider) -> None:
     else:
         # For other providers that might have separate handler classes, skip this test
         # as they may have their own implementations
-        pytest.skip(f"{provider.value} may have separate handler implementation")
+        pytest.skip(
+            f"{provider.value} may have separate handler implementation"  # ty: ignore[too-many-positional-arguments]
+        )
 
 
 @pytest.mark.parametrize(
@@ -138,7 +142,9 @@ def test_tools_handler_inherits_from_openai(provider: Provider) -> None:
 def test_md_json_handler_inherits_from_openai(provider: Provider) -> None:
     """Test that OpenAI-compatible providers use OpenAI MD_JSON handlers."""
     if Mode.MD_JSON not in PROVIDER_HANDLER_MODES.get(provider, []):
-        pytest.skip(f"{provider.value} does not support MD_JSON mode")
+        pytest.skip(
+            f"{provider.value} does not support MD_JSON mode"  # ty: ignore[too-many-positional-arguments]
+        )
 
     from instructor.v2.core.registry import mode_registry
 
@@ -156,7 +162,9 @@ def test_md_json_handler_inherits_from_openai(provider: Provider) -> None:
     else:
         # For other providers that might have separate handler classes, skip this test
         # as they may have their own implementations
-        pytest.skip(f"{provider.value} may have separate handler implementation")
+        pytest.skip(
+            f"{provider.value} may have separate handler implementation"  # ty: ignore[too-many-positional-arguments]
+        )
 
 
 # ============================================================================

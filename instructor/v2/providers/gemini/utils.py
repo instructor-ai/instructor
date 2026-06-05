@@ -6,7 +6,7 @@ import json
 import re
 from functools import lru_cache
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, cast
 
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
@@ -17,7 +17,11 @@ from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.messages import get_message_content
 
 if TYPE_CHECKING:
-    from google.genai import types
+    from google.genai.types import Content as GenAIContent
+    from google.genai.types import File as GenAIFile
+else:
+    GenAIContent = Any
+    GenAIFile = Any
 
 _OPENAI_TO_GEMINI_MAP = {
     "max_tokens": "max_output_tokens",
@@ -31,7 +35,7 @@ _OPENAI_TO_GEMINI_MAP = {
 @lru_cache(maxsize=1)
 def _default_safety_thresholds() -> dict[Any, Any] | None:
     try:
-        from google.genai.types import HarmBlockThreshold, HarmCategory  # type: ignore
+        from google.genai.types import HarmBlockThreshold, HarmCategory
     except ImportError:
         try:
             from google.generativeai.types import (  # type: ignore
@@ -66,18 +70,24 @@ def transform_to_gemini_prompt(
     if not messages_chatgpt:
         return []
 
-    system_prompts = []
+    system_prompts: list[str] = []
     for message in messages_chatgpt:
         if message.get("role") == "system":
             content = message.get("content", "")
-            if content:
+            if isinstance(content, str) and content:
                 system_prompts.append(content)
+            elif isinstance(content, list):
+                for item in content:
+                    item_dict = cast(dict[str, Any], item)
+                    text = item_dict.get("text")
+                    if item_dict.get("type") == "text" and isinstance(text, str):
+                        system_prompts.append(text)
 
     system_prompt = ""
     if system_prompts:
         system_prompt = "\n\n".join(filter(None, system_prompts))
 
-    messages_gemini = []
+    messages_gemini: list[dict[str, Any]] = []
     role_map = {
         "user": "user",
         "assistant": "model",
@@ -94,8 +104,9 @@ def transform_to_gemini_prompt(
     if system_prompt:
         if messages_gemini:
             first_message = messages_gemini[0]
-            if isinstance(first_message.get("parts"), list):
-                first_message["parts"].insert(0, f"*{system_prompt}*")
+            parts = first_message.get("parts")
+            if isinstance(parts, list):
+                parts.insert(0, f"*{system_prompt}*")
         else:
             messages_gemini.append({"role": "user", "parts": [f"*{system_prompt}*"]})
 
@@ -121,7 +132,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
         anyOf: list[dict[str, Any]] | None = None
         properties: dict[str, FunctionSchema] | None = None
 
-    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
+    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)
     schema.pop("$defs", None)
 
     def transform_schema_node(node: Any) -> Any:
@@ -363,11 +374,13 @@ def extract_genai_system_message(
 
 
 def convert_to_genai_messages(
-    messages: list[Union[str, dict[str, Any], list[dict[str, Any]]]],  # noqa: UP007
+    messages: list[
+        str | dict[str, Any] | list[dict[str, Any]] | GenAIContent | GenAIFile
+    ],
 ) -> list[Any]:
     from google.genai import types
 
-    result: list[Union[types.Content, types.File]] = []  # noqa: UP007
+    result: list[types.Content | types.File] = []
 
     for message in messages:
         if isinstance(message, str):
@@ -557,7 +570,7 @@ def handle_genai_structured_outputs(
 
     map_to_gemini_function_schema(_get_model_schema(response_model))
 
-    base_config = {
+    base_config: dict[str, Any] = {
         "response_mime_type": "application/json",
         "response_schema": response_model,
     }

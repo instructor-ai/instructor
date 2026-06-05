@@ -47,19 +47,19 @@ def _install_fake_genai(
     client_factory: type[Any] | None = None,
 ) -> None:
     types_module = ModuleType("google.genai.types")
-    types_module.Part = FakePart  # type: ignore[attr-defined]
-    types_module.Content = FakeContent  # type: ignore[attr-defined]
-    types_module.File = FakeFile  # type: ignore[attr-defined]
-    types_module.FileState = SimpleNamespace(ACTIVE="ACTIVE")  # type: ignore[attr-defined]
-    types_module.FileSource = SimpleNamespace(UPLOADED="UPLOADED")  # type: ignore[attr-defined]
+    setattr(types_module, "Part", FakePart)  # noqa: B010
+    setattr(types_module, "Content", FakeContent)  # noqa: B010
+    setattr(types_module, "File", FakeFile)  # noqa: B010
+    setattr(types_module, "FileState", SimpleNamespace(ACTIVE="ACTIVE"))  # noqa: B010
+    setattr(types_module, "FileSource", SimpleNamespace(UPLOADED="UPLOADED"))  # noqa: B010
 
     genai_module = ModuleType("google.genai")
-    genai_module.types = types_module  # type: ignore[attr-defined]
+    setattr(genai_module, "types", types_module)  # noqa: B010
     if client_factory is not None:
-        genai_module.Client = client_factory  # type: ignore[attr-defined]
+        setattr(genai_module, "Client", client_factory)  # noqa: B010
 
     google_module = ModuleType("google")
-    google_module.genai = genai_module  # type: ignore[attr-defined]
+    setattr(google_module, "genai", genai_module)  # noqa: B010
 
     monkeypatch.setitem(sys.modules, "google", google_module)
     monkeypatch.setitem(sys.modules, "google.genai", genai_module)

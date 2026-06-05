@@ -87,23 +87,27 @@ class FakeHarmCategory(Enum):
 
 def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
     types_module = ModuleType("google.genai.types")
-    types_module.Part = FakePart  # type: ignore[attr-defined]
-    types_module.Content = FakeContent  # type: ignore[attr-defined]
-    types_module.File = FakeFile  # type: ignore[attr-defined]
-    types_module.GenerateContentConfig = FakeGenerateContentConfig  # type: ignore[attr-defined]
-    types_module.FunctionDeclaration = FakeFunctionDeclaration  # type: ignore[attr-defined]
-    types_module.Tool = FakeTool  # type: ignore[attr-defined]
-    types_module.ToolConfig = FakeToolConfig  # type: ignore[attr-defined]
-    types_module.FunctionCallingConfig = FakeFunctionCallingConfig  # type: ignore[attr-defined]
-    types_module.FunctionCallingConfigMode = FakeFunctionCallingConfigMode  # type: ignore[attr-defined]
-    types_module.HarmBlockThreshold = FakeHarmBlockThreshold  # type: ignore[attr-defined]
-    types_module.HarmCategory = FakeHarmCategory  # type: ignore[attr-defined]
+    setattr(types_module, "Part", FakePart)  # noqa: B010
+    setattr(types_module, "Content", FakeContent)  # noqa: B010
+    setattr(types_module, "File", FakeFile)  # noqa: B010
+    setattr(types_module, "GenerateContentConfig", FakeGenerateContentConfig)  # noqa: B010
+    setattr(types_module, "FunctionDeclaration", FakeFunctionDeclaration)  # noqa: B010
+    setattr(types_module, "Tool", FakeTool)  # noqa: B010
+    setattr(types_module, "ToolConfig", FakeToolConfig)  # noqa: B010
+    setattr(types_module, "FunctionCallingConfig", FakeFunctionCallingConfig)  # noqa: B010
+    setattr(  # noqa: B010
+        types_module,
+        "FunctionCallingConfigMode",
+        FakeFunctionCallingConfigMode,
+    )
+    setattr(types_module, "HarmBlockThreshold", FakeHarmBlockThreshold)  # noqa: B010
+    setattr(types_module, "HarmCategory", FakeHarmCategory)  # noqa: B010
 
     genai_module = ModuleType("google.genai")
-    genai_module.types = types_module  # type: ignore[attr-defined]
+    setattr(genai_module, "types", types_module)  # noqa: B010
 
     google_module = ModuleType("google")
-    google_module.genai = genai_module  # type: ignore[attr-defined]
+    setattr(google_module, "genai", genai_module)  # noqa: B010
 
     monkeypatch.setitem(sys.modules, "google", google_module)
     monkeypatch.setitem(sys.modules, "google.genai", genai_module)
@@ -112,18 +116,23 @@ def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _install_fake_vertexai_wrappers(monkeypatch: pytest.MonkeyPatch) -> None:
     handlers_module = ModuleType("instructor.v2.providers.vertexai.handlers")
-    handlers_module.vertexai_process_response = lambda _kwargs, _model: (
-        ["content"],
-        ["tool"],
-        "tool-config",
+    setattr(  # noqa: B010
+        handlers_module,
+        "vertexai_process_response",
+        lambda _kwargs, _model: (["content"], ["tool"], "tool-config"),
     )
-    handlers_module.vertexai_process_json_response = lambda _kwargs, _model: (
-        ["json-content"],
-        "generation-config",
+    setattr(  # noqa: B010
+        handlers_module,
+        "vertexai_process_json_response",
+        lambda _kwargs, _model: (["json-content"], "generation-config"),
     )
 
     parallel_module = ModuleType("instructor.v2.providers.vertexai.parallel")
-    parallel_module.VertexAIParallelModel = lambda typehint: ("parallel", typehint)
+    setattr(  # noqa: B010
+        parallel_module,
+        "VertexAIParallelModel",
+        lambda typehint: ("parallel", typehint),
+    )
 
     monkeypatch.setitem(
         sys.modules,
@@ -151,6 +160,23 @@ def test_transform_to_gemini_prompt_merges_system_messages() -> None:
     assert result[0]["parts"][0] == "*be helpful\n\nand brief*"
     assert result[0]["parts"][1] == "hello"
     assert result[1] == {"role": "model", "parts": ["hi"]}
+
+
+def test_transform_to_gemini_prompt_preserves_multipart_system_text() -> None:
+    result = utils.transform_to_gemini_prompt(
+        [
+            {
+                "role": "system",
+                "content": [
+                    {"type": "text", "text": "be helpful"},
+                    {"type": "text", "text": "and brief"},
+                ],
+            },
+            {"role": "user", "content": "hello"},
+        ]
+    )
+
+    assert result[0]["parts"] == ["*be helpful\n\nand brief*", "hello"]
 
 
 def test_extract_genai_system_message_validates_edge_cases() -> None:
@@ -191,14 +217,13 @@ def test_convert_to_genai_messages_supports_strings_existing_content_and_media(
     existing = FakeContent(role="user", parts=[FakePart.from_text("existing")])
     uploaded = FakeFile()
 
-    result = utils.convert_to_genai_messages(
-        [
-            "hello",
-            existing,
-            uploaded,
-            {"role": "user", "content": ["one", image]},
-        ]
-    )
+    messages: list[Any] = [
+        "hello",
+        existing,
+        uploaded,
+        {"role": "user", "content": ["one", image]},
+    ]
+    result = utils.convert_to_genai_messages(messages)
 
     assert result[0].role == "user"
     assert result[0].parts[0].text == "hello"

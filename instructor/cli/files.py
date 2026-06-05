@@ -62,7 +62,7 @@ def upload(
     file_purpose = cast(Literal["fine-tune", "assistants"], purpose)
     with open(filepath, "rb") as file:
         response = client.files.create(file=file, purpose=file_purpose)
-    file_id = response["id"]  # type: ignore - types might be out of date
+    file_id = response["id"]
     with console.status(f"Monitoring upload: {file_id}...") as status:
         status.spinner_style = "dots"
         while True:

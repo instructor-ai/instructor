@@ -8,7 +8,7 @@ from instructor.v2.providers.bedrock.handlers import (
 
 
 def test_typed_dict_conversion() -> None:
-    class User(TypedDict):  # type: ignore
+    class User(TypedDict):
         name: str
         age: int
 

@@ -4,18 +4,19 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 from pydantic import ValidationError
 
 R_co = TypeVar("R_co", covariant=True)
+_validation_error_original_str: Callable[[ValidationError], str] | None = None
 
 
 def is_async(func: Callable[..., Any]) -> bool:
     """Return whether a callable is async, following wrapped callables."""
     is_coroutine = inspect.iscoroutinefunction(func)
-    while hasattr(func, "__wrapped__"):
-        func = func.__wrapped__  # type: ignore[attr-defined]
+    while callable(wrapped := getattr(func, "__wrapped__", None)):
+        func = wrapped
         is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
     return is_coroutine
 
@@ -32,15 +33,18 @@ class classproperty(Generic[R_co]):
 
 def disable_pydantic_error_url() -> None:
     """Disable URLs in Pydantic ValidationError messages."""
-    if not hasattr(ValidationError, "_original_str"):
-        ValidationError._original_str = ValidationError.__str__  # type: ignore[attr-defined]
+    global _validation_error_original_str
+    if _validation_error_original_str is None:
+        _validation_error_original_str = ValidationError.__str__
+
+    original_str = _validation_error_original_str
 
     def __str__(self: ValidationError) -> str:
-        output = ValidationError._original_str(self)  # type: ignore[attr-defined]
+        output = original_str(self)
         return "\n".join(
             line
             for line in output.split("\n")
             if "https://errors.pydantic.dev" not in line
         )
 
-    ValidationError.__str__ = __str__  # type: ignore[method-assign]
+    cast(Any, ValidationError).__str__ = __str__

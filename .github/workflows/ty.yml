@@ -24,6 +24,12 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run type check with ty
-        run: uv run ty check instructor/
+        run: uv run ty check --error-on-warning --output-format github instructor/
       - name: Run type check with ty (tests)
-        run: uv run ty check --config-file ty-tests.toml tests
+        run: uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
+      - name: Check installed-package public typing
+        run: tests/typing/check_installed_package.sh
+      - name: Check supported Python versions and platforms
+        run: |
+          uv run ty check --python-version 3.9 --python-platform all --error-on-warning --output-format github instructor/
+          uv run ty check --python-version 3.14 --python-platform all --error-on-warning --output-format github instructor/

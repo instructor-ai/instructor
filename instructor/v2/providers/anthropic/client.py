@@ -109,9 +109,9 @@ def from_anthropic(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.ANTHROPIC)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.ANTHROPIC.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     # Use normalized mode for patching

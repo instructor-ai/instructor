@@ -9,7 +9,7 @@ import logging
 import warnings
 from collections.abc import Awaitable
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
 
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
@@ -56,12 +56,30 @@ class AsyncInstructorChatCompletionCreate(Protocol):
     ) -> T_Model: ...
 
 
+@overload
+def patch_v2(
+    func: Callable[..., Awaitable[Any]],
+    provider: Provider,
+    mode: Mode,
+    default_model: str | None = None,
+) -> Callable[..., Awaitable[T_Model]]: ...
+
+
+@overload
 def patch_v2(
     func: Callable[..., Any],
     provider: Provider,
     mode: Mode,
     default_model: str | None = None,
-) -> Callable[..., T_Model]:
+) -> Callable[..., T_Model]: ...
+
+
+def patch_v2(
+    func: Callable[..., Any],
+    provider: Provider,
+    mode: Mode,
+    default_model: str | None = None,
+) -> Callable[..., Any]:
     """Patch a function to use v2 registry for structured outputs.
 
     Args:
@@ -84,9 +102,9 @@ def patch_v2(
     func_is_async = is_async(func)
 
     if func_is_async:
-        return _create_async_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]
+        return _create_async_wrapper(func, provider, mode, default_model)
     else:
-        return _create_sync_wrapper(func, provider, mode, default_model)  # type: ignore[return-value]
+        return _create_sync_wrapper(func, provider, mode, default_model)
 
 
 @overload
@@ -121,12 +139,12 @@ def patch(
 ) -> InstructorChatCompletionCreate: ...
 
 
-def patch(  # type: ignore
+def patch(
     client: OpenAI | AsyncOpenAI | None = None,
     create: Callable[..., T_Retval] | None = None,
     mode: Mode = Mode.TOOLS,
     provider: Provider = Provider.OPENAI,
-) -> OpenAI | AsyncOpenAI:
+) -> OpenAI | AsyncOpenAI | InstructorChatCompletionCreate:
     """Patch chat-completion create methods with v2 registry handlers."""
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
 
@@ -140,9 +158,9 @@ def patch(  # type: ignore
     new_create = patch_v2(func=func, provider=provider, mode=mode)
 
     if client is not None:
-        client.chat.completions.create = new_create  # type: ignore[attr-defined]
+        cast(Any, client.chat.completions).create = new_create
         return client
-    return new_create  # type: ignore[return-value]
+    return new_create
 
 
 def apatch(
@@ -220,7 +238,7 @@ def _create_sync_wrapper(
                     or new_kwargs.get("chat_history"),
                     model=new_kwargs.get("model"),
                     response_model=response_model,
-                    mode=mode.value if hasattr(mode, "value") else str(mode),
+                    mode=str(mode.value),
                 )
                 cached = load_cached_response(cache, key, response_model)
                 if cached is not None:
@@ -257,7 +275,7 @@ def _create_sync_wrapper(
                         or new_kwargs.get("chat_history"),
                         model=new_kwargs.get("model"),
                         response_model=response_model,
-                        mode=mode.value if hasattr(mode, "value") else str(mode),
+                        mode=str(mode.value),
                     )
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
@@ -329,7 +347,7 @@ def _create_async_wrapper(
                     or new_kwargs.get("chat_history"),
                     model=new_kwargs.get("model"),
                     response_model=response_model,
-                    mode=mode.value if hasattr(mode, "value") else str(mode),
+                    mode=str(mode.value),
                 )
                 cached = load_cached_response(cache, key, response_model)
                 if cached is not None:
@@ -366,7 +384,7 @@ def _create_async_wrapper(
                         or new_kwargs.get("chat_history"),
                         model=new_kwargs.get("model"),
                         response_model=response_model,
-                        mode=mode.value if hasattr(mode, "value") else str(mode),
+                        mode=str(mode.value),
                     )
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:

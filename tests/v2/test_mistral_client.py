@@ -24,7 +24,9 @@ class TestMistralClientWithSDK:
 
         # This test checks behavior when mistralai is not installed
         if importlib.util.find_spec("mistralai") is not None:
-            pytest.skip("mistralai is installed, skipping SDK-not-installed test")
+            pytest.skip(
+                "mistralai is installed, skipping SDK-not-installed test"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.mistral.client import from_mistral
         from instructor.core.exceptions import ClientError

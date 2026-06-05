@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
+from instructor import Mode
 from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel
 
 
@@ -78,22 +79,22 @@ def _install_fake_vertexai(monkeypatch: pytest.MonkeyPatch) -> Any:
             self.function_calling_config = function_calling_config
 
     gm_module = ModuleType("vertexai.generative_models")
-    gm_module.Part = FakePart  # type: ignore[attr-defined]
-    gm_module.Content = FakeContent  # type: ignore[attr-defined]
-    gm_module.FunctionDeclaration = FakeFunctionDeclaration  # type: ignore[attr-defined]
-    gm_module.Tool = FakeTool  # type: ignore[attr-defined]
-    gm_module.GenerationConfig = FakeGenerationConfig  # type: ignore[attr-defined]
-    gm_module.GenerationResponse = object  # type: ignore[attr-defined]
+    setattr(gm_module, "Part", FakePart)  # noqa: B010
+    setattr(gm_module, "Content", FakeContent)  # noqa: B010
+    setattr(gm_module, "FunctionDeclaration", FakeFunctionDeclaration)  # noqa: B010
+    setattr(gm_module, "Tool", FakeTool)  # noqa: B010
+    setattr(gm_module, "GenerationConfig", FakeGenerationConfig)  # noqa: B010
+    setattr(gm_module, "GenerationResponse", object)  # noqa: B010
 
     preview_gm_module = ModuleType("vertexai.preview.generative_models")
-    preview_gm_module.ToolConfig = FakeToolConfig  # type: ignore[attr-defined]
+    setattr(preview_gm_module, "ToolConfig", FakeToolConfig)  # noqa: B010
 
     preview_module = ModuleType("vertexai.preview")
-    preview_module.generative_models = preview_gm_module  # type: ignore[attr-defined]
+    setattr(preview_module, "generative_models", preview_gm_module)  # noqa: B010
 
     vertexai_module = ModuleType("vertexai")
-    vertexai_module.generative_models = gm_module  # type: ignore[attr-defined]
-    vertexai_module.preview = preview_module  # type: ignore[attr-defined]
+    setattr(vertexai_module, "generative_models", gm_module)  # noqa: B010
+    setattr(vertexai_module, "preview", preview_module)  # noqa: B010
 
     monkeypatch.setitem(sys.modules, "vertexai", vertexai_module)
     monkeypatch.setitem(sys.modules, "vertexai.generative_models", gm_module)
@@ -131,15 +132,22 @@ def test_vertexai_parallel_model_validates_registered_calls() -> None:
         ]
     )
 
-    parsed = list(model.from_response(response, mode=None))
+    parsed = list(model.from_response(response, mode=Mode.VERTEXAI_TOOLS))
 
     assert parsed == [Weather(city="Paris")]
 
 
 def test_vertexai_parallel_model_skips_empty_candidates() -> None:
     model = VertexAIParallelModel(Iterable[Weather])  # type: ignore[arg-type]
-    assert list(model.from_response(None, mode=None)) == []
-    assert list(model.from_response(SimpleNamespace(candidates=[]), mode=None)) == []
+    assert list(model.from_response(None, mode=Mode.VERTEXAI_TOOLS)) == []
+    assert (
+        list(
+            model.from_response(
+                SimpleNamespace(candidates=[]), mode=Mode.VERTEXAI_TOOLS
+            )
+        )
+        == []
+    )
 
 
 def test_vertexai_message_parsers_and_reask_helpers(

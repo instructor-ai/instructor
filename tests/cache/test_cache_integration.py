@@ -2,6 +2,7 @@ import types
 
 import instructor
 from instructor.cache import AutoCache
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field  # type: ignore[import-not-found]
 
 
@@ -33,7 +34,7 @@ def test_auto_cache_prevents_duplicate_provider_calls(monkeypatch):
     cache = AutoCache(maxsize=10)
     client = instructor.from_litellm(fake_completion, mode=instructor.Mode.JSON)
 
-    messages = [{"role": "user", "content": "hello"}]
+    messages: list[ChatCompletionMessageParam] = [{"role": "user", "content": "hello"}]
 
     # First call – provider should be invoked
     _ = client.create(messages=list(messages), response_model=User, cache=cache)

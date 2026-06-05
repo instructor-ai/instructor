@@ -76,7 +76,7 @@ class TestClientHelperFunctions:
 
         assert result is parsed
         assert hasattr(result, "_raw_response")
-        assert result._raw_response == raw_response  # type: ignore[attr-defined]
+        assert result._raw_response == raw_response
 
     def test_add_md_json_instructions_prepends_system_message(self):
         from instructor.v2.providers.xai.client import _add_md_json_instructions
@@ -210,7 +210,7 @@ class TestXAIClientWithSDK:
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="must be an instance"):
-            from_xai("not a client")  # type: ignore[arg-type]
+            from_xai("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_xai_with_invalid_mode(self):
         """Test from_xai raises error with invalid mode."""

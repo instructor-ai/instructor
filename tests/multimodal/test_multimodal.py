@@ -1,5 +1,11 @@
-import pytest
 from pathlib import Path
+from typing import Any, TypeAlias
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+import instructor
+from instructor.mode import Mode
 from instructor.processing.multimodal import (
     PDF,
     Audio,
@@ -8,19 +14,21 @@ from instructor.processing.multimodal import (
     convert_contents,
     convert_messages,
 )
-from instructor.mode import Mode
-from unittest.mock import patch, MagicMock
-import instructor
+
+
+ContentItem: TypeAlias = str | dict[str, Any] | Image | Audio | PDF
+MessageItem: TypeAlias = ContentItem
+Message: TypeAlias = dict[str, MessageItem | list[MessageItem]]
 
 
 @pytest.fixture
-def base64_jpeg():
+def base64_jpeg() -> str:
     # Source: https://gist.github.com/trymbill/136dfd4bfc0736fae5b959430ec57373
     return "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q=="  # noqa: E501
 
 
 @pytest.fixture
-def base64_png():
+def base64_png() -> str:
     # Source: https://gist.github.com/ondrek/7413434
     return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="  # noqa: E501
 
@@ -64,8 +72,12 @@ def test_image_to_openai():
 
 
 def test_convert_contents():
-    contents = ["Hello", Image.from_url("http://example.com/image.jpg")]
-    converted = list(convert_contents(contents, Mode.TOOLS))
+    contents: list[ContentItem] = [
+        "Hello",
+        Image.from_url("http://example.com/image.jpg"),
+    ]
+    converted = convert_contents(contents, Mode.TOOLS)
+    assert isinstance(converted, list)
     assert len(converted) == 2
     assert converted[0] == {"type": "text", "text": "Hello"}
     assert converted[1]["type"] == "image_url"
@@ -73,7 +85,7 @@ def test_convert_contents():
 
 
 def test_convert_messages():
-    messages = [
+    messages: list[Message] = [
         {
             "role": "user",
             "content": ["Hello", Image.from_url("http://example.com/image.jpg")],
@@ -91,7 +103,7 @@ def test_convert_messages():
 
 
 def test_convert_messages_anthropic():
-    messages = [
+    messages: list[Message] = [
         {
             "role": "user",
             "content": [
@@ -121,7 +133,7 @@ def test_convert_messages_anthropic():
 
 
 def test_convert_messages_gemini():
-    messages = [
+    messages: list[Message] = [
         {
             "role": "user",
             "content": ["Hello", Image.from_url("http://example.com/image.jpg")],
@@ -175,7 +187,7 @@ def test_convert_contents_single_image():
 
 
 def test_convert_messages_mixed_content():
-    messages = [
+    messages: list[Message] = [
         {"role": "user", "content": "Hello"},
         {"role": "assistant", "content": "Hi there!"},
         {"role": "user", "content": Image.from_url("http://example.com/image.jpg")},
@@ -189,15 +201,25 @@ def test_convert_messages_mixed_content():
 
 def test_convert_contents_invalid_type():
     with pytest.raises(ValueError, match="Unsupported content type"):
-        list(convert_contents([1, 2, 3], Mode.TOOLS))  # type: ignore[arg-type]
+        list(
+            convert_contents(
+                [
+                    1,
+                    2,
+                    3,
+                ],  # ty: ignore[invalid-argument-type] - deliberately invalid input
+                Mode.TOOLS,
+            )
+        )
 
 
 def test_convert_contents_anthropic_mode():
-    contents = [
+    contents: list[ContentItem] = [
         "Hello",
         Image(source="base64data", media_type="image/png", data="fakedata"),
     ]
-    converted = list(convert_contents(contents, Mode.ANTHROPIC_JSON))
+    converted = convert_contents(contents, Mode.ANTHROPIC_JSON)
+    assert isinstance(converted, list)
     assert converted[1]["type"] == "image"
     assert converted[1]["source"]["type"] == "base64"
     assert converted[1]["source"]["media_type"] == "image/png"
@@ -213,7 +235,7 @@ def test_convert_contents_custom_dict():
     assert converted == [contents]
 
 
-def test_image_from_base64_url(base64_png):
+def test_image_from_base64_url(base64_png: str):
     image = Image.from_url(base64_png)
     assert image.source == base64_png
     assert image.media_type == "image/png"
@@ -237,7 +259,7 @@ def test_image_from_url_with_unusual_extension():
     assert image.data is None
 
 
-def test_image_to_openai_with_base64_source(base64_png):
+def test_image_to_openai_with_base64_source(base64_png: str):
     base64_data = base64_png.split(",")[-1]
     image = Image(
         source=f"data:image/png;base64,{base64_data}",
@@ -249,7 +271,7 @@ def test_image_to_openai_with_base64_source(base64_png):
     assert openai_format["image_url"]["url"] == f"data:image/png;base64,{base64_data}"
 
 
-def test_image_to_anthropic_with_base64_source(base64_png):
+def test_image_to_anthropic_with_base64_source(base64_png: str):
     base64_data = base64_png.split(",")[-1]
     image = Image(
         source=f"data:image/png;base64,{base64_data}",
@@ -273,7 +295,7 @@ def test_image_to_anthropic_with_base64_source(base64_png):
         "base64_png",
     ],
 )
-def test_image_from_various_urls(url, request):
+def test_image_from_various_urls(url: str, request: pytest.FixtureRequest):
     if url.startswith("base64"):
         url = request.getfixturevalue(url)
     image = Image.from_url(url)
@@ -284,9 +306,10 @@ def test_image_from_various_urls(url, request):
         assert image.data is None
 
 
-def test_convert_contents_with_base64_image(base64_png):
-    contents = ["Hello", Image.from_url(base64_png)]
-    converted = list(convert_contents(contents, Mode.TOOLS))
+def test_convert_contents_with_base64_image(base64_png: str):
+    contents: list[ContentItem] = ["Hello", Image.from_url(base64_png)]
+    converted = convert_contents(contents, Mode.TOOLS)
+    assert isinstance(converted, list)
     assert len(converted) == 2
     assert converted[0] == {"type": "text", "text": "Hello"}
     assert converted[1]["type"] == "image_url"
@@ -323,7 +346,12 @@ def test_convert_contents_with_base64_image(base64_png):
         ("/path/to/image.webp", "file", "image/webp"),
     ],
 )
-def test_image_autodetect(input_data, expected_type, expected_media_type, request):
+def test_image_autodetect(
+    input_data: str,
+    expected_type: str,
+    expected_media_type: str,
+    request: pytest.FixtureRequest,
+):
     with (
         patch("pathlib.Path.is_file", return_value=True),
         patch("pathlib.Path.stat", return_value=MagicMock(st_size=1000)),
@@ -362,21 +390,21 @@ def test_image_autodetect_invalid_input():
     assert Image.autodetect_safely("hello") == "hello"
 
 
-def test_image_autodetect_empty_file(tmp_path):
+def test_image_autodetect_empty_file(tmp_path: Path):
     empty_file = tmp_path / "empty.jpg"
     empty_file.touch()
     with pytest.raises(ValueError, match="Image file is empty"):
         Image.autodetect(empty_file)
 
 
-def test_raw_base64_autodetect_jpeg(base64_jpeg):
+def test_raw_base64_autodetect_jpeg(base64_jpeg: str):
     raw_base_64 = base64_jpeg.split(",")[-1]
     image = Image.autodetect(raw_base_64)
     assert image.media_type == "image/jpeg"
     assert image.source == image.data == raw_base_64
 
 
-def test_raw_base64_autodetect_png(base64_png):
+def test_raw_base64_autodetect_png(base64_png: str):
     raw_base_64 = base64_png.split(",")[-1]
     image = Image.autodetect(raw_base_64)
     assert image.media_type == "image/png"
@@ -412,7 +440,7 @@ def test_convert_messages_autodetect_media():
     )
     pdf_uri = "data:application/pdf;base64,JVBERi0xLjQK"
 
-    messages = [
+    messages: list[Message] = [
         {"role": "user", "content": ["hello", img_uri, pdf_uri]},
     ]
 

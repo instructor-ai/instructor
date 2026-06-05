@@ -101,7 +101,7 @@ def handle_templating(
     if not context:
         return kwargs
 
-    if provider is None:
+    if not isinstance(provider, Provider):
         provider = provider_from_mode(mode, Provider.OPENAI)
 
     new_kwargs = kwargs.copy()

@@ -13,6 +13,8 @@ from typing import (
     TypedDict,
     Literal,
     Union,
+    cast,
+    overload,
 )
 from typing_extensions import ParamSpec, NotRequired
 from openai.types.chat.chat_completion import ChatCompletion
@@ -20,7 +22,7 @@ from openai.types.chat.chat_completion_message_param import ChatCompletionMessag
 from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
-from .processing.function_calls import response_schema
+from .processing.function_calls import ResponseSchema, response_schema
 
 
 P = ParamSpec("P")
@@ -129,6 +131,30 @@ class Instructions:
         for handler in log_handlers or []:
             self.logger.addHandler(handler)
 
+    @overload
+    def distil(
+        self,
+        fn: Callable[P, T_Retval],
+        /,
+        *,
+        name: Optional[str] = None,
+        mode: Literal["distil", "dispatch"] = "distil",
+        model: str = "gpt-3.5-turbo",
+        fine_tune_format: Optional[FinetuneFormat] = None,
+    ) -> Callable[P, Union[T_Retval, ChatCompletion]]: ...
+
+    @overload
+    def distil(
+        self,
+        *,
+        name: Optional[str] = None,
+        mode: Literal["distil", "dispatch"] = "distil",
+        model: str = "gpt-3.5-turbo",
+        fine_tune_format: Optional[FinetuneFormat] = None,
+    ) -> Callable[
+        [Callable[P, T_Retval]], Callable[P, Union[T_Retval, ChatCompletion]]
+    ]: ...
+
     def distil(
         self,
         *args: Any,
@@ -136,10 +162,7 @@ class Instructions:
         mode: Literal["distil", "dispatch"] = "distil",
         model: str = "gpt-3.5-turbo",
         fine_tune_format: Optional[FinetuneFormat] = None,
-    ) -> Union[
-        Callable[P, Union[T_Retval, ChatCompletion]],
-        Callable[[Callable[P, T_Retval]], Callable[P, Union[T_Retval, ChatCompletion]]],
-    ]:
+    ) -> Callable[..., Any]:
         """
         Decorator to track the function call and response, supports distillation and dispatch modes.
 
@@ -173,7 +196,9 @@ class Instructions:
             return_base_model = inspect.signature(fn).return_annotation
 
             @functools.wraps(fn)
-            def _dispatch(*args: P.args, **kwargs: P.kwargs) -> ChatCompletion:
+            def _dispatch(
+                *args: P.args, **kwargs: P.kwargs
+            ) -> Union[T_Retval, ChatCompletion]:
                 openai_kwargs = self.openai_kwargs(
                     name=name if name else fn.__name__,  # type: ignore
                     fn=fn,
@@ -181,10 +206,14 @@ class Instructions:
                     kwargs=kwargs,
                     base_model=return_base_model,
                 )
-                return self.client.chat.completions.create(
+                create = cast(
+                    Callable[..., Union[T_Retval, ChatCompletion]],
+                    self.client.chat.completions.create,
+                )
+                return create(
                     **openai_kwargs,
                     model=model,
-                    response_model=return_base_model,  # type: ignore - TODO figure out why `response_model` is not recognized
+                    response_model=return_base_model,
                 )
 
             @functools.wraps(fn)
@@ -203,7 +232,7 @@ class Instructions:
             return _dispatch if mode == "dispatch" else _distil
 
         if len(args) == 1 and callable(args[0]):
-            return _wrap_distil(args[0])  # type: ignore
+            return _wrap_distil(cast(Callable[..., T_Retval], args[0]))
 
         return _wrap_distil
 
@@ -231,7 +260,8 @@ class Instructions:
         base_model = type(resp)
 
         if finetune_format == FinetuneFormat.MESSAGES:
-            openai_function_call = response_schema(base_model).openai_schema
+            schema_model = cast(type[ResponseSchema], response_schema(base_model))
+            openai_function_call = schema_model.openai_schema
             openai_kwargs = self.openai_kwargs(name, fn, args, kwargs, base_model)
             openai_kwargs["messages"].append(
                 {

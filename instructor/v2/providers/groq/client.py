@@ -96,9 +96,9 @@ def from_groq(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.GROQ)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.GROQ.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     # Use normalized mode for patching

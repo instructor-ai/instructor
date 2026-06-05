@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -96,7 +96,7 @@ def test_update_total_usage_dispatches_anthropic_to_provider_module(
         usage = object()
 
     response = Response()
-    total_usage = object()
+    total_usage = cast(Any, object())
     calls: list[tuple[Any, Any]] = []
 
     def fake_update_total_usage(response_usage: Any, running_total: Any) -> bool:

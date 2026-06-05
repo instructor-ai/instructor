@@ -54,7 +54,7 @@ dev = [
     "python-dotenv>=1.0.1",
     "pytest-xdist>=3.8.0",
     "pre-commit>=4.2.0",
-    "ty>=0.0.1a23",
+    "ty==0.0.44",
     "anthropic==0.93.0",
     "xmltodict>=0.13,<1.1",
 ]

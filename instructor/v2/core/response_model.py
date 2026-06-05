@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Iterable
-from typing import Any, TypeVar, Union, cast, get_args, get_origin
+from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel, create_model
 
 T = TypeVar("T")
+
+_create_dynamic_model = cast(Callable[..., type[BaseModel]], create_model)
 
 
 def is_typed_dict(cls: Any) -> bool:
@@ -30,9 +32,10 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     if response_model is None:
         return None
 
-    origin = get_origin(response_model)
-    if origin is list and is_simple_type(response_model):
-        args = get_args(response_model)
+    working_model: Any = response_model
+    origin = get_origin(working_model)
+    if origin is list and is_simple_type(working_model):
+        args = get_args(working_model)
         inner = args[0] if args else None
 
         def _is_model_type(candidate: Any) -> bool:
@@ -48,51 +51,45 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         else:
             from instructor.v2.dsl.simple_type import ModelAdapter
 
-            response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
-            origin = get_origin(response_model)
+            working_model = ModelAdapter.__class_getitem__(working_model)
+            origin = get_origin(working_model)
 
-    if is_typed_dict(response_model):
-        model_name = getattr(response_model, "__name__", "TypedDictModel")
-        annotations = getattr(response_model, "__annotations__", {})
-        response_model = cast(
-            type[BaseModel],
-            create_model(
-                model_name,
-                **{name: (annotation, ...) for name, annotation in annotations.items()},
-            ),
+    if is_typed_dict(working_model):
+        model_name = getattr(working_model, "__name__", "TypedDictModel")
+        annotations = getattr(working_model, "__annotations__", {})
+        working_model = _create_dynamic_model(
+            model_name,
+            **{name: (annotation, ...) for name, annotation in annotations.items()},
         )
 
-    origin = get_origin(response_model)
+    origin = get_origin(working_model)
     if origin in {Iterable, list}:
         from instructor.v2.dsl.iterable import IterableModel
 
-        args = get_args(response_model)
+        args = get_args(working_model)
         if not args or args[0] is None:
             raise ValueError(
                 "response_model must be parameterized, e.g. list[User] or Iterable[User]"
             )
         iterable_element_class = args[0]
         if is_typed_dict(iterable_element_class):
-            iterable_element_class = cast(
-                type[BaseModel],
-                create_model(
-                    getattr(iterable_element_class, "__name__", "TypedDictModel"),
-                    **{
-                        name: (annotation, ...)
-                        for name, annotation in getattr(
-                            iterable_element_class,
-                            "__annotations__",
-                            {},
-                        ).items()
-                    },
-                ),
+            iterable_element_class = _create_dynamic_model(
+                getattr(iterable_element_class, "__name__", "TypedDictModel"),
+                **{
+                    name: (annotation, ...)
+                    for name, annotation in getattr(
+                        iterable_element_class,
+                        "__annotations__",
+                        {},
+                    ).items()
+                },
             )
-        response_model = IterableModel(cast(type[BaseModel], iterable_element_class))
+        working_model = IterableModel(cast(type[BaseModel], iterable_element_class))
 
-    if is_simple_type(response_model):
+    if is_simple_type(working_model):
         from instructor.v2.dsl.simple_type import ModelAdapter
 
-        response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
+        working_model = ModelAdapter.__class_getitem__(working_model)
 
     from instructor.v2.core.function_calls import (
         ResponseSchema,
@@ -100,11 +97,9 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         response_schema,
     )
 
-    if inspect.isclass(response_model) and not issubclass(
-        response_model, ResponseSchema
-    ):
-        response_model = response_schema(response_model)  # type: ignore
-    elif not inspect.isclass(response_model):
-        response_model = openai_schema(response_model)  # type: ignore
+    if inspect.isclass(working_model) and not issubclass(working_model, ResponseSchema):
+        working_model = response_schema(working_model)
+    elif not inspect.isclass(working_model):
+        working_model = openai_schema(working_model)
 
-    return response_model
+    return cast(type[T], working_model)

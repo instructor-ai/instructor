@@ -14,6 +14,7 @@ from tenacity import (
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import InstructorRetryException
+from instructor.v2.core.hooks import Hooks
 from instructor.v2.core.retry import (
     _finalize_parsed_response,
     _initialize_usage,
@@ -43,7 +44,7 @@ def test_finalize_parsed_response_wraps_plain_list_and_sets_raw_response() -> No
 
     assert isinstance(finalized, ListResponse)
     assert list(finalized) == parsed
-    assert finalized._raw_response is response  # type: ignore[attr-defined]
+    assert finalized._raw_response is response
 
 
 def test_initialize_usage_returns_openai_usage_shape() -> None:
@@ -101,11 +102,13 @@ def test_retry_sync_v2_reasks_after_validation_error(
             "messages": [*kwargs["messages"], {"role": "user", "content": "second"}],
         }
 
-    hooks = SimpleNamespace(
-        emit_completion_arguments=lambda **kwargs: emitted["args"].append(kwargs),
-        emit_completion_response=lambda response: emitted["responses"].append(response),
-        emit_parse_error=lambda error: emitted["errors"].append(error),
+    hooks = Hooks()
+    hooks.on("completion:kwargs", lambda **kwargs: emitted["args"].append(kwargs))
+    hooks.on(
+        "completion:response",
+        lambda response: emitted["responses"].append(response),
     )
+    hooks.on("parse:error", lambda error: emitted["errors"].append(error))
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:
         return None
@@ -238,6 +241,7 @@ def test_retry_sync_v2_raises_instructor_retry_exception_after_exhaustion(
     error = exc_info.value
     assert error.n_attempts == 1
     assert error.last_completion == {"payload": "first"}
+    assert error.create_kwargs is not None
     assert error.create_kwargs["messages"][-1]["content"] == "first"
     assert len(error.failed_attempts or []) == 1
 
