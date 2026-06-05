@@ -16,11 +16,14 @@ from typing import (
 from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
+
 import requests
 from pydantic import BaseModel, Field
 
 from instructor.v2.core.errors import MultimodalError
 from instructor.v2.core.mode import Mode
+
+mimetypes.add_type("image/webp", ".webp")
 
 F = TypeVar("F", bound=Callable[..., Any])
 K = TypeVar("K", bound=Hashable)
@@ -90,6 +93,8 @@ class Image(BaseModel):
 
         if isinstance(source, Path):
             return cls.from_path(source)
+
+        raise ValueError(f"Unsupported image source type: {type(source).__name__}")
 
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
@@ -279,6 +284,8 @@ class Audio(BaseModel):
 
         if isinstance(source, Path):
             return cls.from_path(source)
+
+        raise ValueError(f"Unsupported audio source type: {type(source).__name__}")
 
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[Audio, str]:  # noqa: UP007
@@ -470,6 +477,8 @@ class PDF(BaseModel):
             return cls.from_raw_base64(source)
         elif isinstance(source, Path):
             return cls.from_path(source)
+
+        raise ValueError(f"Unsupported PDF source type: {type(source).__name__}")
 
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[PDF, str]:  # noqa: UP007

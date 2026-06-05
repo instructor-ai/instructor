@@ -176,13 +176,13 @@ class IterableBase:
         in_string = False
         escape_next = False
         for i, c in enumerate(s):
-            if c == '"' and not escape_next:
-                in_string = not in_string
+            if escape_next:
+                escape_next = False
             elif c == "\\" and in_string:
                 escape_next = True
                 continue
-            else:
-                escape_next = False
+            elif c == '"':
+                in_string = not in_string
 
             if in_string:
                 continue

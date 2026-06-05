@@ -27,6 +27,16 @@ def test_iterable_get_object_handles_escaped_quotes_before_brace() -> None:
     assert rest == '{"bio": "next"}'
 
 
+def test_iterable_get_object_handles_even_backslashes_before_quote() -> None:
+    obj, rest = IterableBase.get_object(
+        r'{"bio": "ends \\"},{"bio": "next"}',
+        0,
+    )
+
+    assert obj == r'{"bio": "ends \\"}'
+    assert rest == '{"bio": "next"}'
+
+
 def test_iterable_tasks_from_chunks_handles_braces_inside_strings() -> None:
     chunks = [
         '{"tasks": [',

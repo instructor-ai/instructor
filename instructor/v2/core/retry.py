@@ -6,6 +6,7 @@ instead of v1's process_response.
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING, Any, TypeVar
 
@@ -21,9 +22,11 @@ from tenacity import (
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import (
+    AsyncValidationError,
     FailedAttempt,
     IncompleteOutputException,
     InstructorRetryException,
+    ResponseParsingError,
 )
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.response_list import ListResponse
@@ -41,10 +44,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger("instructor.v2.retry")
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
+_RETRYABLE_PARSE_ERRORS = (
+    ValidationError,
+    json.JSONDecodeError,
+    AsyncValidationError,
+    ResponseParsingError,
+)
 
 
 def _max_attempts(max_retries: int | Retrying | AsyncRetrying) -> int | None:
-    return max(max_retries, 1) if isinstance(max_retries, int) else None
+    return max(max_retries, 0) + 1 if isinstance(max_retries, int) else None
 
 
 def _attempt_metadata(
@@ -121,7 +130,7 @@ def retry_sync_v2(
         provider: Provider enum
         mode: Mode enum
         context: Validation context
-        max_retries: Max retry attempts or Retrying instance
+        max_retries: Maximum retries after the initial attempt, or Retrying instance
         args: Positional args for func
         kwargs: Keyword args for func
         strict: Strict validation mode
@@ -143,13 +152,13 @@ def retry_sync_v2(
 
     # Setup retrying
     if isinstance(max_retries, int):
-        stop_condition = stop_after_attempt(max(max_retries, 1))
+        stop_condition = stop_after_attempt(max(max_retries, 0) + 1)
         timeout = kwargs.get("timeout")
         if isinstance(timeout, (int, float)):
             stop_condition = stop_condition | stop_after_delay(timeout)
         max_retries_instance = Retrying(
             stop=stop_condition,
-            retry=retry_if_exception_type(ValidationError),
+            retry=retry_if_exception_type(_RETRYABLE_PARSE_ERRORS),
             reraise=True,
         )
     else:
@@ -217,7 +226,7 @@ def retry_sync_v2(
 
                 except IncompleteOutputException:
                     raise
-                except ValidationError as e:
+                except _RETRYABLE_PARSE_ERRORS as e:
                     logger.debug(f"Validation error on attempt {attempt_number}: {e}")
                     failed_attempts.append(
                         FailedAttempt(
@@ -237,15 +246,6 @@ def retry_sync_v2(
                                 is_last_attempt=max_attempts == attempt_number,
                             ),
                         )
-                        hooks.emit_completion_error(
-                            e,
-                            **_attempt_metadata(
-                                attempt_number=attempt_number,
-                                max_attempts=max_attempts,
-                                is_last_attempt=max_attempts == attempt_number,
-                            ),
-                        )
-
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
                         kwargs=kwargs,
@@ -260,11 +260,10 @@ def retry_sync_v2(
         raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred
-        if last_exception is None:
-            last_exception = e
+        last_exception = e
 
         logger.error(
-            f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
+            f"Max retries exceeded. Total attempts: {last_attempt_number}, "
             f"Last error: {last_exception}"
         )
         if hooks:
@@ -280,7 +279,7 @@ def retry_sync_v2(
         raise InstructorRetryException(
             str(last_exception),
             last_completion=failed_attempts[-1].completion if failed_attempts else None,
-            n_attempts=len(failed_attempts),
+            n_attempts=last_attempt_number,
             total_usage=total_usage,
             messages=extract_messages(kwargs),
             create_kwargs=kwargs,
@@ -292,7 +291,7 @@ def retry_sync_v2(
     raise InstructorRetryException(
         str(last_exception) if last_exception else "Unknown error",
         last_completion=failed_attempts[-1].completion if failed_attempts else None,
-        n_attempts=len(failed_attempts),
+        n_attempts=last_attempt_number,
         total_usage=total_usage,
         messages=extract_messages(kwargs),
         create_kwargs=kwargs,
@@ -376,7 +375,7 @@ async def retry_async_v2(
         provider: Provider enum
         mode: Mode enum
         context: Validation context
-        max_retries: Max retry attempts or AsyncRetrying instance
+        max_retries: Maximum retries after the initial attempt, or AsyncRetrying instance
         args: Positional args for func
         kwargs: Keyword args for func
         strict: Strict validation mode
@@ -398,13 +397,13 @@ async def retry_async_v2(
 
     # Setup retrying
     if isinstance(max_retries, int):
-        stop_condition = stop_after_attempt(max(max_retries, 1))
+        stop_condition = stop_after_attempt(max(max_retries, 0) + 1)
         timeout = kwargs.get("timeout")
         if isinstance(timeout, (int, float)):
             stop_condition = stop_condition | stop_after_delay(timeout)
         max_retries_instance = AsyncRetrying(
             stop=stop_condition,
-            retry=retry_if_exception_type(ValidationError),
+            retry=retry_if_exception_type(_RETRYABLE_PARSE_ERRORS),
             reraise=True,
         )
     else:
@@ -472,7 +471,7 @@ async def retry_async_v2(
 
                 except IncompleteOutputException:
                     raise
-                except ValidationError as e:
+                except _RETRYABLE_PARSE_ERRORS as e:
                     logger.debug(f"Validation error on attempt {attempt_number}: {e}")
                     failed_attempts.append(
                         FailedAttempt(
@@ -492,15 +491,6 @@ async def retry_async_v2(
                                 is_last_attempt=max_attempts == attempt_number,
                             ),
                         )
-                        hooks.emit_completion_error(
-                            e,
-                            **_attempt_metadata(
-                                attempt_number=attempt_number,
-                                max_attempts=max_attempts,
-                                is_last_attempt=max_attempts == attempt_number,
-                            ),
-                        )
-
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
                         kwargs=kwargs,
@@ -515,11 +505,10 @@ async def retry_async_v2(
         raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred
-        if last_exception is None:
-            last_exception = e
+        last_exception = e
 
         logger.error(
-            f"Max retries exceeded. Total attempts: {len(failed_attempts)}, "
+            f"Max retries exceeded. Total attempts: {last_attempt_number}, "
             f"Last error: {last_exception}"
         )
         if hooks:
@@ -535,7 +524,7 @@ async def retry_async_v2(
         raise InstructorRetryException(
             str(last_exception),
             last_completion=failed_attempts[-1].completion if failed_attempts else None,
-            n_attempts=len(failed_attempts),
+            n_attempts=last_attempt_number,
             total_usage=total_usage,
             messages=extract_messages(kwargs),
             create_kwargs=kwargs,
@@ -547,7 +536,7 @@ async def retry_async_v2(
     raise InstructorRetryException(
         str(last_exception) if last_exception else "Unknown error",
         last_completion=failed_attempts[-1].completion if failed_attempts else None,
-        n_attempts=len(failed_attempts),
+        n_attempts=last_attempt_number,
         total_usage=total_usage,
         messages=extract_messages(kwargs),
         create_kwargs=kwargs,

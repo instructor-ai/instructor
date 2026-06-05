@@ -44,6 +44,29 @@ def test_convert_contents_rejects_unknown_object() -> None:
         convert_contents([object()], Mode.TOOLS)  # type: ignore[list-item]
 
 
+@pytest.mark.parametrize(
+    ("media_type", "autodetect"),
+    [
+        ("image", Image.autodetect),
+        ("audio", Audio.autodetect),
+        ("PDF", PDF.autodetect),
+    ],
+)
+def test_autodetect_rejects_unsupported_source_types(
+    media_type: str, autodetect: Any
+) -> None:
+    with pytest.raises(
+        ValueError, match=rf"Unsupported {media_type} source type: bytes"
+    ):
+        autodetect(b"not a string or path")
+
+
+def test_webp_mime_type_is_registered() -> None:
+    import mimetypes
+
+    assert mimetypes.guess_type("image.webp")[0] == "image/webp"
+
+
 def test_autodetect_media_uses_mime_type_shortcut(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

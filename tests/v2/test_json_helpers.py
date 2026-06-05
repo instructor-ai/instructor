@@ -32,6 +32,12 @@ def test_extract_json_from_codeblock_ignores_brackets_in_prose() -> None:
     )
 
 
+def test_extract_json_from_codeblock_handles_even_backslashes_before_quote() -> None:
+    content = 'prefix {"path":"C:\\\\","name":"Ada"} suffix'
+
+    assert extract_json_from_codeblock(content) == '{"path":"C:\\\\","name":"Ada"}'
+
+
 def test_extract_json_from_stream_handles_plain_json() -> None:
     assert "".join(extract_json_from_stream(["before ", '{"a":', "1}", " after"])) == (
         '{"a":1}'
@@ -61,6 +67,14 @@ def test_extract_json_from_stream_handles_fenced_array_root() -> None:
     )
 
 
+def test_extract_json_from_stream_handles_even_backslashes_before_quote() -> None:
+    chunks = ['prefix {"path":"C:', '\\\\","name":"Ada"} suffix']
+
+    assert "".join(extract_json_from_stream(chunks)) == (
+        '{"path":"C:\\\\","name":"Ada"}'
+    )
+
+
 @pytest.mark.asyncio
 async def test_extract_json_from_stream_async_handles_fenced_json() -> None:
     async def chunks():
@@ -81,4 +95,16 @@ async def test_extract_json_from_stream_async_handles_array_root() -> None:
     assert (
         "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
         == '[{"a":1}]'
+    )
+
+
+@pytest.mark.asyncio
+async def test_extract_json_from_stream_async_handles_even_backslashes() -> None:
+    async def chunks():
+        for chunk in ['prefix {"path":"C:', '\\\\","name":"Ada"} suffix']:
+            yield chunk
+
+    assert (
+        "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
+        == '{"path":"C:\\\\","name":"Ada"}'
     )

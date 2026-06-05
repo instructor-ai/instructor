@@ -19,13 +19,12 @@ def extract_json_from_codeblock(content: str) -> str:
         for end_index in range(start_index + 1, len(content)):
             char = content[end_index]
 
-            if char == '"' and not escape_next:
-                in_string = not in_string
+            if escape_next:
+                escape_next = False
             elif char == "\\" and in_string:
                 escape_next = True
-                continue
-            else:
-                escape_next = False
+            elif char == '"':
+                in_string = not in_string
 
             if in_string:
                 continue
@@ -86,14 +85,14 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                 continue
 
             if json_started:
-                if char == '"' and not escape_next:
-                    in_string = not in_string
+                if escape_next:
+                    escape_next = False
                 elif char == "\\" and in_string:
                     escape_next = True
                     buffer.append(char)
                     continue
-                else:
-                    escape_next = False
+                elif char == '"':
+                    in_string = not in_string
 
                 if in_codeblock and not in_string:
                     if char == "`":
@@ -174,14 +173,14 @@ async def extract_json_from_stream_async(
                 continue
 
             if json_started:
-                if char == '"' and not escape_next:
-                    in_string = not in_string
+                if escape_next:
+                    escape_next = False
                 elif char == "\\" and in_string:
                     escape_next = True
                     buffer.append(char)
                     continue
-                else:
-                    escape_next = False
+                elif char == '"':
+                    in_string = not in_string
 
                 if in_codeblock and not in_string:
                     if char == "`":
