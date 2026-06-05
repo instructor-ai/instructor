@@ -362,6 +362,15 @@ def test_image_autodetect_invalid_input():
     assert Image.autodetect_safely("hello") == "hello"
 
 
+def test_image_autodetect_unsupported_type():
+    with pytest.raises(ValueError, match="Unsupported source type"):
+        Image.autodetect(b"not a string or path")
+    with pytest.raises(ValueError, match="Unsupported source type"):
+        Audio.autodetect(b"not a string or path")
+    with pytest.raises(ValueError, match="Unsupported source type"):
+        PDF.autodetect(b"not a string or path")
+
+
 def test_image_autodetect_empty_file(tmp_path):
     empty_file = tmp_path / "empty.jpg"
     empty_file.touch()
