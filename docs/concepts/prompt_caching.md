@@ -9,6 +9,7 @@ description: Explore how prompt caching optimizes performance for API calls in O
 - [Cost Optimization](../examples/batch_job_oai.md) - Reduce API costs
 - [Performance Optimization](../examples/sqlmodel.md#performance-optimization) - Performance best practices
 - [Anthropic Integration](../integrations/anthropic.md) - Anthropic prompt caching support
+- [Entroly](https://github.com/juyterman1000/entroly) - Local proxy that automatically aligns context prefixes for cache hits and compresses input tokens by 70-95%
 
 # Prompt Caching
 
