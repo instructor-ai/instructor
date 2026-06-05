@@ -136,11 +136,11 @@ def reask_tools(
         )
         return kwargs
 
-    reask_msgs = [dump_message(response.choices[0].message)]
+    reask_msgs: list[Any] = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
         reask_msgs.append(
             {
-                "role": "tool",  # type: ignore
+                "role": "tool",
                 "tool_call_id": tool_call.id,
                 "name": tool_call.function.name,
                 "content": (
@@ -178,7 +178,7 @@ def reask_responses_tools(
         details = _format_responses_tool_call_details(tool_call)
         reask_messages.append(
             {
-                "role": "user",  # type: ignore
+                "role": "user",
                 "content": (
                     f"Validation Error found:\n{exception}\n"
                     "Recall the function correctly, fix the errors with "
@@ -446,26 +446,25 @@ class OpenAIHandlerBase(ModeHandler):
         if strict is not None:
             parse_kwargs["strict"] = strict
 
+        streaming_model = cast(Any, response_model)
         streaming_kwargs = dict(parse_kwargs)
         try:
             if (
                 "mode"
-                in inspect.signature(
-                    response_model.from_streaming_response  # type: ignore[attr-defined]
-                ).parameters
+                in inspect.signature(streaming_model.from_streaming_response).parameters
             ):
                 streaming_kwargs["mode"] = self.mode
         except (TypeError, ValueError):
             pass
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **streaming_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = streaming_model.from_streaming_response(
             response,
             stream_extractor=self.extract_streaming_json,
             **streaming_kwargs,
@@ -550,9 +549,9 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
 
     def prepare_request(
         self,
-        response_model: type[BaseModel] | None,
+        response_model: Any,
         kwargs: dict[str, Any],
-    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+    ) -> tuple[Any, dict[str, Any]]:
         """Prepare request with tool definitions."""
         new_kwargs = kwargs.copy()
 
@@ -954,7 +953,8 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
         new_kwargs["tool_choice"] = "auto"
 
         # Wrap in ParallelModel for proper parsing
-        return ParallelModel(typehint=response_model), new_kwargs  # type: ignore[return-value]
+        parallel_model = ParallelModel(typehint=response_model)
+        return cast(type[BaseModel], parallel_model), new_kwargs
 
     def handle_reask(
         self,

@@ -1,6 +1,6 @@
 from typing import Any, TypeVar, cast
 import pytest
-from anthropic.types import Message, Usage
+from anthropic.types import Message, TextBlock, Usage
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from openai.types.chat.chat_completion_message import FunctionCall as OpenAIFunctionCall
@@ -18,13 +18,14 @@ from instructor.utils import disable_pydantic_error_url
 T = TypeVar("T")
 
 
-@pytest.fixture  # type: ignore[misc]
-def test_model() -> type[ResponseSchema]:
-    class TestModel(ResponseSchema):  # type: ignore[misc]
-        name: str = "TestModel"
-        data: str
+class _FunctionCallTestModel(ResponseSchema):  # type: ignore[misc]
+    name: str = "TestModel"
+    data: str
 
-    return TestModel
+
+@pytest.fixture  # type: ignore[misc]
+def test_model() -> type[_FunctionCallTestModel]:
+    return _FunctionCallTestModel
 
 
 @pytest.fixture  # type: ignore[misc]
@@ -70,7 +71,7 @@ def mock_anthropic_message(request: Any) -> Message:
         data_content = params.get("data_content", data_content)
     return Message(
         id="test_id",
-        content=[{"type": "text", "text": data_content}],
+        content=[TextBlock(type="text", text=data_content)],
         model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",
@@ -109,7 +110,7 @@ def test_response_schema_raises_error() -> None:
         match="response_model must be a subclass of pydantic.BaseModel",
     ):
 
-        @response_schema
+        @response_schema  # ty: ignore[invalid-argument-type]
         class Dummy:
             pass
 
@@ -139,7 +140,7 @@ def test_openai_schema_alias_raises_error() -> None:
         match="response_model must be a subclass of pydantic.BaseModel",
     ):
 
-        @openai_schema
+        @openai_schema  # ty: ignore[invalid-argument-type]
         class Dummy:
             pass
 
@@ -167,44 +168,39 @@ def test_openai_schema_backward_compat() -> None:
     indirect=True,
 )  # type: ignore[misc]
 def test_incomplete_output_exception(
-    test_model: type[ResponseSchema], mock_completion: ChatCompletion
+    test_model: type[_FunctionCallTestModel], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
         test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
 
 
 def test_complete_output_no_exception(
-    test_model: type[ResponseSchema], mock_completion: ChatCompletion
+    test_model: type[_FunctionCallTestModel], mock_completion: ChatCompletion
 ) -> None:
-    test_model_instance = cast(
-        Any,
-        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS),
+    test_model_instance = test_model.from_response(
+        mock_completion, mode=instructor.Mode.FUNCTIONS
     )
     assert test_model_instance.data == "complete data"
 
 
-@pytest.mark.asyncio  # type: ignore[misc]
 @pytest.mark.parametrize(
     "mock_completion",
     [{"finish_reason": "length", "data_content": '{\n"data": "incomplete dat"\n}'}],
     indirect=True,
 )  # type: ignore[misc]
 def test_incomplete_output_exception_raise(
-    test_model: type[ResponseSchema], mock_completion: ChatCompletion
+    test_model: type[_FunctionCallTestModel], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
         test_model.from_response(mock_completion, mode=instructor.Mode.TOOLS)
 
 
 def test_anthropic_no_exception(
-    test_model: type[ResponseSchema], mock_anthropic_message: Message
+    test_model: type[_FunctionCallTestModel], mock_anthropic_message: Message
 ) -> None:
-    test_model_instance = cast(
-        Any,
-        test_model.from_response(
-            cast(Any, mock_anthropic_message),
-            mode=instructor.Mode.ANTHROPIC_JSON,
-        ),
+    test_model_instance = test_model.from_response(
+        cast(Any, mock_anthropic_message),
+        mode=instructor.Mode.ANTHROPIC_JSON,
     )
     assert test_model_instance.data == "Claude says hi"
 
@@ -215,7 +211,7 @@ def test_anthropic_no_exception(
     indirect=True,
 )  # type: ignore[misc]
 def test_control_characters_not_allowed_in_anthropic_json_strict_mode(
-    test_model: type[ResponseSchema], mock_anthropic_message: Message
+    test_model: type[_FunctionCallTestModel], mock_anthropic_message: Message
 ) -> None:
     with pytest.raises(ValidationError) as exc_info:
         test_model.from_response(
@@ -225,7 +221,7 @@ def test_control_characters_not_allowed_in_anthropic_json_strict_mode(
         )
 
     # https://docs.pydantic.dev/latest/errors/validation_errors/#json_invalid
-    exc = cast(ValidationError, exc_info.value)
+    exc = exc_info.value
     assert len(exc.errors()) == 1
     assert exc.errors()[0]["type"] == "json_invalid"
     assert "control character" in exc.errors()[0]["msg"]
@@ -237,15 +233,12 @@ def test_control_characters_not_allowed_in_anthropic_json_strict_mode(
     indirect=True,
 )  # type: ignore[misc]
 def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
-    test_model: type[ResponseSchema], mock_anthropic_message: Message
+    test_model: type[_FunctionCallTestModel], mock_anthropic_message: Message
 ) -> None:
-    test_model_instance = cast(
-        Any,
-        test_model.from_response(
-            cast(Any, mock_anthropic_message),
-            mode=instructor.Mode.ANTHROPIC_JSON,
-            strict=False,
-        ),
+    test_model_instance = test_model.from_response(
+        cast(Any, mock_anthropic_message),
+        mode=instructor.Mode.ANTHROPIC_JSON,
+        strict=False,
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
@@ -254,9 +247,14 @@ def test_pylance_url_config() -> None:
     import sys
 
     if sys.version_info >= (3, 11):
-        pytest.skip(
-            "This test seems to fail on 3.11 but passes on 3.10 and 3.9. I suspect it's due to the ordering of tests - https://github.com/pydantic/pydantic-core/blob/e3eff5cb8a6dae8914e3831b00c690d9dee4b740/python/pydantic_core/_pydantic_core.pyi#L820C9-L829C12"
+        reason = (
+            "This test seems to fail on 3.11 but passes on 3.10 and 3.9. I "
+            "suspect it's due to the ordering of tests - "
+            "https://github.com/pydantic/pydantic-core/blob/"
+            "e3eff5cb8a6dae8914e3831b00c690d9dee4b740/python/pydantic_core/"
+            "_pydantic_core.pyi#L820C9-L829C12"
         )
+        pytest.skip(reason)  # ty: ignore[too-many-positional-arguments]
 
     class Model(BaseModel):
         list_of_ints: list[int]
@@ -266,12 +264,12 @@ def test_pylance_url_config() -> None:
     data = dict(list_of_ints=["1", 2, "bad"], a_float="Not a float")
 
     with pytest.raises(ValidationError) as exc_info:
-        Model(**data)  # type: ignore
+        Model(**data)
 
     assert "https://errors.pydantic.dev" not in str(exc_info.value)
 
 
-def test_refusal_attribute(test_model: type[ResponseSchema]):
+def test_refusal_attribute(test_model: type[_FunctionCallTestModel]):
     completion = ChatCompletion(
         id="test_id",
         created=1234567890,
@@ -298,7 +296,7 @@ def test_refusal_attribute(test_model: type[ResponseSchema]):
         assert "Unable to generate a response due to test_refusal" in str(e)
 
 
-def test_no_refusal_attribute(test_model: type[ResponseSchema]):
+def test_no_refusal_attribute(test_model: type[_FunctionCallTestModel]):
     completion = ChatCompletion(
         id="test_id",
         created=1234567890,
@@ -328,12 +326,12 @@ def test_no_refusal_attribute(test_model: type[ResponseSchema]):
         ],
     )
 
-    resp = cast(Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS))
+    resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
     assert resp.data == "test_data"
     assert resp.name == "TestModel"
 
 
-def test_missing_refusal_attribute(test_model: type[ResponseSchema]):
+def test_missing_refusal_attribute(test_model: type[_FunctionCallTestModel]):
     message_without_refusal_attribute = ChatCompletionMessage(
         content="test_content",
         refusal="test_refusal",
@@ -368,6 +366,6 @@ def test_missing_refusal_attribute(test_model: type[ResponseSchema]):
         ],
     )
 
-    resp = cast(Any, test_model.from_response(completion, mode=instructor.Mode.TOOLS))
+    resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
     assert resp.data == "test_data"
     assert resp.name == "TestModel"

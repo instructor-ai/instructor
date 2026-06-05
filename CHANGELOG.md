@@ -10,7 +10,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
-- **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, multimodal autodetection, and the Google GenAI default model.
+- **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
+
+### Tests / CI
+- **Type checking**: Upgrade to `ty` 0.0.44, enforce warning-free checks with GitHub annotations, cover V2 tests, validate supported Python versions and platforms, and strengthen installed-package public API typing tests.
 
 ---
 

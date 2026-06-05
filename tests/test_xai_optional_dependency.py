@@ -33,7 +33,9 @@ def test_direct_from_xai_has_clear_error_when_sdk_missing(monkeypatch):
     monkeypatch.setattr(xai_client, "xchat", None)
 
     with pytest.raises(ClientError) as excinfo:
-        xai_client.from_xai(object())  # type: ignore[arg-type]
+        xai_client.from_xai(
+            object()
+        )  # ty: ignore[no-matching-overload] - deliberately invalid client
 
     msg = str(excinfo.value)
     assert "instructor[xai]" in msg

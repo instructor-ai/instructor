@@ -1,6 +1,6 @@
 """Isolated tests for Anthropic JSON parsing helpers."""
 
-from anthropic.types import Message, Usage
+from anthropic.types import Message, TextBlock, Usage
 import pytest
 from pydantic import BaseModel, ValidationError
 from typing import cast
@@ -24,7 +24,7 @@ class _AnthropicTestModel(BaseModel):
 def _build_message(data_content: str) -> Message:
     return Message(
         id="test_id",
-        content=[{"type": "text", "text": data_content}],
+        content=[TextBlock(type="text", text=data_content)],
         model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",

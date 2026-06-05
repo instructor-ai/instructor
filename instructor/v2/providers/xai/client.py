@@ -227,9 +227,9 @@ def from_xai(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.XAI)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.XAI.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     # Use normalized mode
@@ -280,7 +280,9 @@ def from_xai(
                 messages = _add_md_json_instructions(messages, prepared_model)
 
         x_messages = _convert_messages(messages)
-        chat = client.chat.create(model=model, messages=x_messages, **call_kwargs)
+        chat = cast(
+            Any, client.chat.create(model=model, messages=x_messages, **call_kwargs)
+        )
 
         if response_model is None:
             resp = await chat.sample()  # type: ignore[misc]
@@ -297,7 +299,7 @@ def from_xai(
                 json_chunks = (chunk.content async for _, chunk in chat.stream())  # type: ignore[misc]
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
-                    return rm.tasks_from_chunks_async(json_chunks)  # type: ignore
+                    return rm.tasks_from_chunks_async(json_chunks)
                 elif issubclass(rm, PartialBase):
                     return rm.model_from_chunks_async(json_chunks)  # type: ignore
                 else:
@@ -306,7 +308,7 @@ def from_xai(
                     )
             else:
                 raw, parsed = await chat.parse(response_model)  # type: ignore[misc]
-                parsed._raw_response = raw  # type: ignore[attr-defined]
+                parsed._raw_response = raw
                 return parsed
         elif mode == Mode.TOOLS:
             tool_obj = xchat.tool(
@@ -314,7 +316,7 @@ def from_xai(
                 description=prepared_model.__doc__ or "",
                 parameters=_get_model_schema(prepared_model),
             )
-            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            chat.proto.tools.append(cast(Any, tool_obj))
             tool_name = tool_obj.function.name  # type: ignore[attr-defined]
             chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool_name))
             if is_stream:
@@ -322,7 +324,7 @@ def from_xai(
                 args = _aiter_tool_call_arg_deltas(stream_iter)
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
-                    return rm.tasks_from_chunks_async(args)  # type: ignore
+                    return rm.tasks_from_chunks_async(args)
                 elif issubclass(rm, PartialBase):
                     return rm.model_from_chunks_async(args)  # type: ignore
                 else:
@@ -378,7 +380,7 @@ def from_xai(
                     description=model_type.__doc__ or "",
                     parameters=_get_model_schema(model_type),
                 )
-                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+                chat.proto.tools.append(cast(Any, tool_obj))
             resp = await chat.sample()  # type: ignore[misc]
             type_registry = {
                 model_type.__name__: model_type
@@ -446,7 +448,9 @@ def from_xai(
                 messages = _add_md_json_instructions(messages, prepared_model)
 
         x_messages = _convert_messages(messages)
-        chat = client.chat.create(model=model, messages=x_messages, **call_kwargs)
+        chat = cast(
+            Any, client.chat.create(model=model, messages=x_messages, **call_kwargs)
+        )
 
         if response_model is None:
             resp = chat.sample()  # type: ignore[misc]
@@ -472,7 +476,7 @@ def from_xai(
                     )
             else:
                 raw, parsed = chat.parse(response_model)  # type: ignore[misc]
-                parsed._raw_response = raw  # type: ignore[attr-defined]
+                parsed._raw_response = raw
                 return parsed
         elif mode == Mode.TOOLS:
             tool_obj = xchat.tool(
@@ -480,7 +484,7 @@ def from_xai(
                 description=prepared_model.__doc__ or "",
                 parameters=_get_model_schema(prepared_model),
             )
-            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            chat.proto.tools.append(cast(Any, tool_obj))
             tool_name = tool_obj.function.name  # type: ignore[attr-defined]
             chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool_name))
             if is_stream:
@@ -544,7 +548,7 @@ def from_xai(
                     description=model_type.__doc__ or "",
                     parameters=_get_model_schema(model_type),
                 )
-                chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+                chat.proto.tools.append(cast(Any, tool_obj))
             resp = chat.sample()  # type: ignore[misc]
             type_registry = {
                 model_type.__name__: model_type

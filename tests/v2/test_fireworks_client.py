@@ -33,29 +33,35 @@ class TestFireworksClientWithSDK:
     def test_from_fireworks_raises_without_sdk(self, fireworks_available):
         """Test from_fireworks raises error when fireworks not installed."""
         if fireworks_available:
-            pytest.skip("fireworks is installed")
+            pytest.skip(
+                "fireworks is installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.fireworks.client import from_fireworks
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="fireworks is not installed"):
-            from_fireworks("not a client")  # type: ignore[arg-type]
+            from_fireworks("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_fireworks_with_invalid_client(self, fireworks_available):
         """Test from_fireworks raises error with invalid client."""
         if not fireworks_available:
-            pytest.skip("fireworks not installed")
+            pytest.skip(
+                "fireworks not installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.fireworks.client import from_fireworks
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="must be an instance"):
-            from_fireworks("not a client")  # type: ignore[arg-type]
+            from_fireworks("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_fireworks_with_invalid_mode(self, fireworks_available):
         """Test from_fireworks raises error with invalid mode."""
         if not fireworks_available:
-            pytest.skip("fireworks not installed")
+            pytest.skip(
+                "fireworks not installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from fireworks.client import Fireworks
 

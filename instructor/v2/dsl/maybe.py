@@ -57,7 +57,7 @@ def Maybe(model: type[T]) -> type[MaybeBase[T]]:
         f"Maybe{model.__name__}",
         __base__=MaybeBase,
         result=(
-            Optional[model],
+            Optional.__getitem__(model),
             Field(
                 default=None,
                 description="Correctly extracted result from the model, if any, otherwise None",

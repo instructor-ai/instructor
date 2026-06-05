@@ -15,6 +15,7 @@ from tenacity import (
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import InstructorRetryException, ResponseParsingError
+from instructor.v2.core.hooks import Hooks
 from instructor.v2.core.retry import (
     _finalize_parsed_response,
     _initialize_usage,
@@ -44,7 +45,7 @@ def test_finalize_parsed_response_wraps_plain_list_and_sets_raw_response() -> No
 
     assert isinstance(finalized, ListResponse)
     assert list(finalized) == parsed
-    assert finalized._raw_response is response  # type: ignore[attr-defined]
+    assert finalized._raw_response is response
 
 
 def test_initialize_usage_returns_openai_usage_shape() -> None:
@@ -108,18 +109,23 @@ def test_retry_sync_v2_reasks_after_validation_error(
             "messages": [*kwargs["messages"], {"role": "user", "content": "second"}],
         }
 
-    hooks = SimpleNamespace(
-        emit_completion_arguments=lambda **kwargs: emitted["args"].append(kwargs),
-        emit_completion_response=lambda response: emitted["responses"].append(response),
-        emit_parse_error=lambda error, **kwargs: emitted["errors"].append(
-            (error, kwargs)
-        ),
-        emit_completion_error=lambda error, **kwargs: emitted[
-            "completion_errors"
-        ].append((error, kwargs)),
-        emit_completion_last_attempt=lambda error, **kwargs: emitted[
-            "last_attempts"
-        ].append((error, kwargs)),
+    hooks = Hooks()
+    hooks.on("completion:kwargs", lambda **kwargs: emitted["args"].append(kwargs))
+    hooks.on(
+        "completion:response",
+        lambda response: emitted["responses"].append(response),
+    )
+    hooks.on(
+        "parse:error",
+        lambda error, **kwargs: emitted["errors"].append((error, kwargs)),
+    )
+    hooks.on(
+        "completion:error",
+        lambda error, **kwargs: emitted["completion_errors"].append((error, kwargs)),
+    )
+    hooks.on(
+        "completion:last_attempt",
+        lambda error, **kwargs: emitted["last_attempts"].append((error, kwargs)),
     )
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:
@@ -206,16 +212,14 @@ def test_retry_sync_v2_emits_last_attempt_metadata_on_exhaustion(
             "messages": [*kwargs["messages"], {"role": "user", "content": "retry"}],
         }
 
-    hooks = SimpleNamespace(
-        emit_completion_arguments=lambda **_kwargs: None,
-        emit_completion_response=lambda _response: None,
-        emit_parse_error=lambda _error, **_kwargs: None,
-        emit_completion_error=lambda error, **kwargs: emitted[
-            "completion_errors"
-        ].append((error, kwargs)),
-        emit_completion_last_attempt=lambda error, **kwargs: emitted[
-            "last_attempts"
-        ].append((error, kwargs)),
+    hooks = Hooks()
+    hooks.on(
+        "completion:error",
+        lambda error, **kwargs: emitted["completion_errors"].append((error, kwargs)),
+    )
+    hooks.on(
+        "completion:last_attempt",
+        lambda error, **kwargs: emitted["last_attempts"].append((error, kwargs)),
     )
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:
@@ -285,16 +289,14 @@ def test_retry_sync_v2_marks_api_error_as_last_attempt(
         calls += 1
         raise RuntimeError("boom")
 
-    hooks = SimpleNamespace(
-        emit_completion_arguments=lambda **_kwargs: None,
-        emit_completion_response=lambda _response: None,
-        emit_parse_error=lambda _error, **_kwargs: None,
-        emit_completion_error=lambda error, **kwargs: emitted[
-            "completion_errors"
-        ].append((error, kwargs)),
-        emit_completion_last_attempt=lambda error, **kwargs: emitted[
-            "last_attempts"
-        ].append((error, kwargs)),
+    hooks = Hooks()
+    hooks.on(
+        "completion:error",
+        lambda error, **kwargs: emitted["completion_errors"].append((error, kwargs)),
+    )
+    hooks.on(
+        "completion:last_attempt",
+        lambda error, **kwargs: emitted["last_attempts"].append((error, kwargs)),
     )
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:
@@ -560,6 +562,7 @@ def test_retry_sync_v2_raises_instructor_retry_exception_after_exhaustion(
     error = exc_info.value
     assert error.n_attempts == 2
     assert error.last_completion == {"payload": "retry"}
+    assert error.create_kwargs is not None
     assert error.create_kwargs["messages"][-1]["content"] == "retry"
     assert len(error.failed_attempts or []) == 2
 
@@ -655,16 +658,14 @@ async def test_retry_async_v2_marks_api_error_as_last_attempt(
         calls += 1
         raise RuntimeError("boom")
 
-    hooks = SimpleNamespace(
-        emit_completion_arguments=lambda **_kwargs: None,
-        emit_completion_response=lambda _response: None,
-        emit_parse_error=lambda _error, **_kwargs: None,
-        emit_completion_error=lambda error, **kwargs: emitted[
-            "completion_errors"
-        ].append((error, kwargs)),
-        emit_completion_last_attempt=lambda error, **kwargs: emitted[
-            "last_attempts"
-        ].append((error, kwargs)),
+    hooks = Hooks()
+    hooks.on(
+        "completion:error",
+        lambda error, **kwargs: emitted["completion_errors"].append((error, kwargs)),
+    )
+    hooks.on(
+        "completion:last_attempt",
+        lambda error, **kwargs: emitted["last_attempts"].append((error, kwargs)),
     )
 
     def no_validate(_provider: Provider, _mode: Mode) -> None:

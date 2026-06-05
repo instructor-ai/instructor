@@ -21,7 +21,7 @@ from collections.abc import (
     Iterable as TypingIterable,
 )
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, get_origin
+from typing import TYPE_CHECKING, Any, cast, get_origin
 from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
@@ -169,27 +169,28 @@ class MistralHandlerBase(ModeHandler):
         if strict is not None:
             parse_kwargs["strict"] = strict
 
+        streaming_model = cast(Any, response_model)
         task_parser = None
         if (
             self.mode == Mode.TOOLS
             and inspect.isclass(response_model)
             and issubclass(response_model, IterableBase)
         ):
-            task_parser = response_model.tasks_from_task_list_chunks  # type: ignore[attr-defined]
+            task_parser = streaming_model.tasks_from_task_list_chunks
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 task_parser=(
-                    response_model.tasks_from_task_list_chunks_async  # type: ignore[attr-defined]
+                    streaming_model.tasks_from_task_list_chunks_async
                     if task_parser is not None
                     else None
                 ),
                 **parse_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = streaming_model.from_streaming_response(
             response,
             stream_extractor=self.extract_streaming_json,
             task_parser=task_parser,
@@ -270,7 +271,7 @@ class MistralToolsHandler(MistralHandlerBase):
 
         if is_parallel:
             # Handle parallel model - generate tools for each type
-            the_types = get_types_array(response_model)  # type: ignore[arg-type]
+            the_types = get_types_array(cast(Any, response_model))
             tools = []
             for model_type in the_types:
                 schema = generate_openai_schema(model_type)
@@ -293,7 +294,7 @@ class MistralToolsHandler(MistralHandlerBase):
     ) -> dict[str, Any]:
         """Handle reask for tools mode."""
         kwargs = kwargs.copy()
-        reask_msgs = [dump_message(response.choices[0].message)]
+        reask_msgs: list[Any] = [dump_message(response.choices[0].message)]
 
         for tool_call in response.choices[0].message.tool_calls:
             reask_msgs.append(

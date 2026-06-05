@@ -21,7 +21,7 @@ from collections.abc import (
     Generator,
     Iterable as TypingIterable,
 )
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
@@ -327,7 +327,8 @@ class XAIHandlerBase(ModeHandler):
 
                 return _iter_tasks()
 
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            streaming_model = cast(Any, response_model)
+            return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **parse_kwargs,
@@ -351,7 +352,8 @@ class XAIHandlerBase(ModeHandler):
 
             generator = _iter_tasks()
         else:
-            generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+            streaming_model = cast(Any, response_model)
+            generator = streaming_model.from_streaming_response(
                 response,
                 stream_extractor=self.extract_streaming_json,
                 **parse_kwargs,
@@ -528,7 +530,8 @@ class XAIParallelToolsHandler(XAIHandlerBase):
             )
 
         new_kwargs["_xai_tools"] = handle_parallel_model(response_model)  # type: ignore[arg-type]
-        return ParallelModel(response_model), new_kwargs  # type: ignore[return-value,arg-type]
+        parallel_model = ParallelModel(cast(Any, response_model))
+        return cast(type[BaseModel], parallel_model), new_kwargs
 
     def handle_reask(
         self,

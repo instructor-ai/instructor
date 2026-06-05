@@ -13,7 +13,6 @@ from pydantic import BaseModel, ValidationError
 import instructor
 from instructor.core.exceptions import InstructorRetryException
 from instructor.mode import Mode
-from typing import cast
 
 
 class User(BaseModel):
@@ -47,14 +46,14 @@ def test_json_decode_error_caught_by_retry():
     client = instructor.patch(mock_client, mode=Mode.JSON)
 
     with pytest.raises(InstructorRetryException) as exc_info:
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
             max_retries=2,
         )
 
-    exception = cast(InstructorRetryException, exc_info.value)
+    exception = exc_info.value
     assert exception.n_attempts == 2
     assert exception.failed_attempts is not None
     assert len(exception.failed_attempts) == 2
@@ -82,14 +81,14 @@ def test_validation_error_caught_by_retry():
     client = instructor.patch(mock_client, mode=Mode.JSON)
 
     with pytest.raises(InstructorRetryException) as exc_info:
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
             max_retries=2,
         )
 
-    exception = cast(InstructorRetryException, exc_info.value)
+    exception = exc_info.value
     assert exception.n_attempts == 2
     assert exception.failed_attempts is not None
     assert len(exception.failed_attempts) == 2

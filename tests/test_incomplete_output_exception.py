@@ -45,7 +45,7 @@ def test_incomplete_output_exception_is_catchable_sync():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
@@ -63,7 +63,7 @@ def test_incomplete_output_not_wrapped_in_instructor_retry_exception_sync():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
@@ -87,7 +87,7 @@ def test_incomplete_output_exception_with_max_retries_zero():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
@@ -109,7 +109,7 @@ async def test_incomplete_output_exception_is_catchable_async():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        await client.chat.completions.create(
+        await client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],

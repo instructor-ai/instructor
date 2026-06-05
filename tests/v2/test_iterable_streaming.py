@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 from pydantic import BaseModel
 
 from instructor.v2.dsl.iterable import IterableBase, IterableModel
@@ -45,7 +47,8 @@ def test_iterable_tasks_from_chunks_handles_braces_inside_strings() -> None:
         "]}",
     ]
 
-    users = list(IterableModel(User).tasks_from_chunks(chunks))
+    iterable_model = cast(Any, IterableModel(User))
+    users = list(iterable_model.tasks_from_chunks(chunks))
 
     assert users == [
         User(name="Alice", bio="happy :}"),

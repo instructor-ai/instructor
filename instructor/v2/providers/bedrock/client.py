@@ -83,9 +83,9 @@ def from_bedrock(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.BEDROCK)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.BEDROCK.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     mode = normalized_mode

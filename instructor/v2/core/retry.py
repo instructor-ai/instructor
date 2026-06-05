@@ -222,7 +222,7 @@ def retry_sync_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)  # type: ignore
+                    return _finalize_parsed_response(parsed, response)
 
                 except IncompleteOutputException:
                     raise
@@ -467,7 +467,7 @@ async def retry_async_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)  # type: ignore
+                    return _finalize_parsed_response(parsed, response)
 
                 except IncompleteOutputException:
                     raise

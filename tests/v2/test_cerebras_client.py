@@ -31,29 +31,35 @@ class TestCerebrasClientWithSDK:
     def test_from_cerebras_raises_without_sdk(self, cerebras_available):
         """Test from_cerebras raises error when cerebras not installed."""
         if cerebras_available:
-            pytest.skip("cerebras is installed")
+            pytest.skip(
+                "cerebras is installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.cerebras.client import from_cerebras
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="cerebras is not installed"):
-            from_cerebras("not a client")  # type: ignore[arg-type]
+            from_cerebras("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_cerebras_with_invalid_client(self, cerebras_available):
         """Test from_cerebras raises error with invalid client."""
         if not cerebras_available:
-            pytest.skip("cerebras not installed")
+            pytest.skip(
+                "cerebras not installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.cerebras.client import from_cerebras
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="must be an instance"):
-            from_cerebras("not a client")  # type: ignore[arg-type]
+            from_cerebras("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_cerebras_with_invalid_mode(self, cerebras_available):
         """Test from_cerebras raises error with invalid mode."""
         if not cerebras_available:
-            pytest.skip("cerebras not installed")
+            pytest.skip(
+                "cerebras not installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from cerebras.cloud.sdk import Cerebras
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
-from typing import Literal, Union, cast
+from typing import Literal, Union
 
 import importlib.util
 from pathlib import Path
@@ -88,7 +88,7 @@ def _ensure_handlers_loaded(provider: Provider) -> None:
     except (ImportError, ModuleNotFoundError) as exc:
         if _is_expected_missing_dependency(provider, exc):
             pytest.skip(
-                f"{provider.value} handlers require optional dependency "
+                f"{provider.value} handlers require optional dependency "  # ty: ignore[too-many-positional-arguments]
                 f"{PROVIDER_CONFIGS[provider]['sdk_module']}"
             )
         raise
@@ -143,7 +143,9 @@ def test_mode_is_registered(provider: Provider, mode: Mode):
 
     # Skip if handler module doesn't exist or isn't registered
     if not mode_registry.is_registered(provider, mode):
-        pytest.skip(f"Mode {mode.value} not registered for {provider.value}")
+        # fmt: off
+        pytest.skip(f"Mode {mode.value} not registered for {provider.value}")  # ty: ignore[too-many-positional-arguments]
+        # fmt: on
 
     handlers = mode_registry.get_handlers(provider, mode)
     assert handlers.request_handler is not None
@@ -167,7 +169,9 @@ def _skip_on_provider_quota(provider: Provider, exc: Exception) -> None:
         and isinstance(exc, InstructorRetryException)
         and "RESOURCE_EXHAUSTED" in str(exc)
     ):
-        pytest.skip("GenAI quota exhausted for this environment")
+        # fmt: off
+        pytest.skip("GenAI quota exhausted for this environment")  # ty: ignore[too-many-positional-arguments]
+        # fmt: on
     if (
         provider == Provider.OPENAI
         and isinstance(exc, InstructorRetryException)
@@ -175,7 +179,9 @@ def _skip_on_provider_quota(provider: Provider, exc: Exception) -> None:
     ):
         if os.environ.get("CI") or os.environ.get("INSTRUCTOR_STRICT_PROVIDER_TESTS"):
             return
-        pytest.skip("OpenAI connectivity is unavailable in this environment")
+        # fmt: off
+        pytest.skip("OpenAI connectivity is unavailable in this environment")  # ty: ignore[too-many-positional-arguments]
+        # fmt: on
 
 
 @pytest.mark.parametrize("provider,mode", _get_basic_mode_params())
@@ -280,7 +286,7 @@ def test_anthropic_parallel_tools_extraction():
         max_tokens=1000,
     )
 
-    result = list(cast(Iterable[Union[Weather, GoogleSearch]], response))
+    result = list(response)
     assert len(result) >= 1
     assert all(isinstance(r, (Weather, GoogleSearch)) for r in result)
 
