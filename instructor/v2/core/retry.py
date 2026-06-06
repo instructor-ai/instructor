@@ -168,10 +168,11 @@ def retry_sync_v2(
                 # Parse response using registry
                 try:
                     stream = kwargs.get("stream", False)
+                    attempt_context = context.copy() if context is not None else None
                     parsed = handlers.response_parser(
                         response=response,
                         response_model=response_model,
-                        validation_context=context,
+                        validation_context=attempt_context,
                         strict=strict,
                         stream=stream,
                         is_async=False,
@@ -384,10 +385,11 @@ async def retry_async_v2(
                 # Parse response using registry
                 try:
                     stream = kwargs.get("stream", False)
+                    attempt_context = context.copy() if context is not None else None
                     parsed = handlers.response_parser(
                         response=response,
                         response_model=response_model,
-                        validation_context=context,
+                        validation_context=attempt_context,
                         strict=strict,
                         stream=stream,
                         is_async=True,

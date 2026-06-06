@@ -318,3 +318,72 @@ async def test_retry_async_v2_raises_retry_exception_after_validation_error(
 
     assert exc_info.value.n_attempts == 1
     assert parser_calls == ["first"]
+
+
+def test_retry_sync_v2_isolates_validation_context(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    contexts_seen: list[dict[str, Any]] = []
+
+    def fake_func(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+        return {"payload": "first"}
+
+    def fake_parser(**kwargs: Any) -> Answer:
+        ctx = kwargs.get("validation_context")
+        assert ctx is not None
+        contexts_seen.append(ctx.copy())
+        # Mutate the context to check isolation
+        ctx["mutated"] = True
+        
+        if len(contexts_seen) == 1:
+            raise _validation_error()
+        return Answer(value=10)
+
+    def fake_reask_handler(
+        kwargs: dict[str, Any], response: Any, exception: ValidationError
+    ) -> dict[str, Any]:
+        return kwargs
+
+    def no_validate(_provider: Provider, _mode: Mode) -> None:
+        return None
+
+    def get_handlers(_provider: Provider, _mode: Mode) -> SimpleNamespace:
+        return SimpleNamespace(
+            response_parser=fake_parser,
+            reask_handler=fake_reask_handler,
+        )
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        no_validate,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        get_handlers,
+    )
+
+    initial_context = {"original": True}
+    result = retry_sync_v2(
+        func=fake_func,
+        response_model=Answer,
+        provider=Provider.OPENAI,
+        mode=Mode.TOOLS,
+        context=initial_context,
+        max_retries=Retrying(
+            stop=stop_after_attempt(2),
+            retry=retry_if_exception_type(ValidationError),
+            reraise=True,
+        ),
+        args=(),
+        kwargs={"messages": [{"role": "user", "content": "first"}]},
+        strict=True,
+        hooks=None,
+    )
+
+    # Initial context dict itself should not be mutated
+    assert "mutated" not in initial_context
+    # First attempt should see the original dict
+    assert contexts_seen[0] == {"original": True}
+    # Second attempt should see original dict (isolated from first attempt's mutation)
+    assert contexts_seen[1] == {"original": True}
+    assert result.value == 10
