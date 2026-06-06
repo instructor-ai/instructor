@@ -176,14 +176,22 @@ def reask_responses_tools(
     reask_messages = []
     for tool_call in _filter_responses_tool_calls(response.output):
         details = _format_responses_tool_call_details(tool_call)
+        arguments = getattr(tool_call, "arguments", "")
+        if isinstance(arguments, str) and arguments.strip() in ("", "{}"):
+            content = (
+                f"Validation Error found:\n{exception}\n"
+                "Tool called with empty arguments — populate all required fields."
+            )
+        else:
+            content = (
+                f"Validation Error found:\n{exception}\n"
+                "Recall the function correctly, fix the errors with "
+                f"{arguments}{details}"
+            )
         reask_messages.append(
             {
                 "role": "user",  # type: ignore
-                "content": (
-                    f"Validation Error found:\n{exception}\n"
-                    "Recall the function correctly, fix the errors with "
-                    f"{tool_call.arguments}{details}"
-                ),
+                "content": content,
             }
         )
 
@@ -1060,6 +1068,20 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
             "name": schema["function"]["name"],
         }
 
+        # Aligns text.format JSON schema with the tool schema
+        if "text" not in new_kwargs:
+            new_kwargs["text"] = {}
+        if isinstance(new_kwargs["text"], dict):
+            new_kwargs["text"] = {
+                "format": "json_schema",
+                "json_schema": {
+                    "name": schema_function["name"],
+                    "strict": True,
+                    "schema": schema_function.get("parameters", {}),
+                },
+                **{k: v for k, v in new_kwargs["text"].items() if k not in ("format", "json_schema")},
+            }
+
         return prepared_model, new_kwargs
 
     def handle_reask(
@@ -1101,6 +1123,13 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
                 if item_type in {"function_call", "tool_call"}:
                     args = getattr(item, "arguments", None)
                     if args:
+                        if isinstance(args, str) and args.strip() in ("", "{}"):
+                            import logging
+                            logger = logging.getLogger(__name__)
+                            logger.warning(
+                                "Responses API returned empty tool arguments '{}' in RESPONSES_TOOLS mode. "
+                                "This might indicate a schema mismatch or a conflict with the text configuration."
+                            )
                         parsed = response_model.model_validate_json(
                             args,
                             context=validation_context,
@@ -1112,6 +1141,13 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
 
         # Fallback to standard tool call parsing
         json_str = self._extract_tool_call_json(response)
+        if isinstance(json_str, str) and json_str.strip() in ("", "{}"):
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                "Responses API returned empty tool arguments '{}' in RESPONSES_TOOLS mode fallback. "
+                "This might indicate a schema mismatch or a conflict with the text configuration."
+            )
         parsed = response_model.model_validate_json(
             json_str,
             context=validation_context,
