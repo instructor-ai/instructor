@@ -74,8 +74,8 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 6. **Set up Pre-commit**:
    ```bash
-   pip install pre-commit
-   pre-commit install
+   uv tool install pre-commit
+   uv run pre-commit install
    ```
 
 ### Development Workflow
