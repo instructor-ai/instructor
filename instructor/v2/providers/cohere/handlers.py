@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncGenerator, Generator
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel
 
@@ -250,7 +250,7 @@ Respond with JSON only. Do not include code fences, markdown, or extra text.
         strict: bool | None = None,
         stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
-    ) -> BaseModel:
+    ) -> Any:
         if stream:
             if not (
                 isinstance(response_model, type)
@@ -266,14 +266,15 @@ Respond with JSON only. Do not include code fences, markdown, or extra text.
             if strict is not None:
                 parse_kwargs["strict"] = strict
 
+            streaming_model = cast(Any, response_model)
             if is_async:
-                return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+                return streaming_model.from_streaming_response_async(
                     response,
                     stream_extractor=self.extract_streaming_json_async,
                     **parse_kwargs,
                 )
 
-            return response_model.from_streaming_response(  # type: ignore[attr-defined]
+            return streaming_model.from_streaming_response(
                 response,
                 stream_extractor=self.extract_streaming_json,
                 **parse_kwargs,

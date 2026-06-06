@@ -2,15 +2,46 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncGenerator, Generator, Iterable
 
 
 def extract_json_from_codeblock(content: str) -> str:
-    """Extract the first JSON object-like span from a text block."""
-    first_brace = content.find("{")
-    last_brace = content.rfind("}")
-    if first_brace != -1 and last_brace != -1:
-        return content[first_brace : last_brace + 1]
+    """Extract the first JSON object- or array-like span from a text block."""
+    for start_index, start_char in enumerate(content):
+        if start_char not in "{[":
+            continue
+
+        end_stack = ["}" if start_char == "{" else "]"]
+        in_string = False
+        escape_next = False
+
+        for end_index in range(start_index + 1, len(content)):
+            char = content[end_index]
+
+            if escape_next:
+                escape_next = False
+            elif char == "\\" and in_string:
+                escape_next = True
+            elif char == '"':
+                in_string = not in_string
+
+            if in_string:
+                continue
+
+            if char in "{[":
+                end_stack.append("}" if char == "{" else "]")
+                continue
+            if end_stack and char == end_stack[-1]:
+                end_stack.pop()
+                if not end_stack:
+                    candidate = content[start_index : end_index + 1]
+                    try:
+                        json.loads(candidate)
+                    except Exception:
+                        break
+                    return candidate
+
     return content
 
 
@@ -21,7 +52,7 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
     json_started = False
     in_string = False
     escape_next = False
-    brace_stack: list[str] = []
+    delimiter_stack: list[str] = []
     buffer: list[str] = []
     codeblock_buffer: list[str] = []
 
@@ -47,21 +78,21 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                 if codeblock_delimiter_count > 0:
                     codeblock_delimiter_count = 0
 
-                if char == "{":
+                if char in "{[":
                     json_started = True
-                    brace_stack.append("{")
+                    delimiter_stack.append("}" if char == "{" else "]")
                     buffer.append(char)
                 continue
 
             if json_started:
-                if char == '"' and not escape_next:
-                    in_string = not in_string
+                if escape_next:
+                    escape_next = False
                 elif char == "\\" and in_string:
                     escape_next = True
                     buffer.append(char)
                     continue
-                else:
-                    escape_next = False
+                elif char == '"':
+                    in_string = not in_string
 
                 if in_codeblock and not in_string:
                     if char == "`":
@@ -77,11 +108,11 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                         codeblock_delimiter_count = 0
 
                 if not in_string:
-                    if char == "{":
-                        brace_stack.append("{")
-                    elif char == "}" and brace_stack:
-                        brace_stack.pop()
-                        if not brace_stack:
+                    if char in "{[":
+                        delimiter_stack.append("}" if char == "{" else "]")
+                    elif delimiter_stack and char == delimiter_stack[-1]:
+                        delimiter_stack.pop()
+                        if not delimiter_stack:
                             buffer.append(char)
                             yield from buffer
                             buffer = []
@@ -91,9 +122,9 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                 buffer.append(char)
                 continue
 
-            if not in_codeblock and not json_started and char == "{":
+            if not in_codeblock and not json_started and char in "{[":
                 json_started = True
-                brace_stack.append("{")
+                delimiter_stack.append("}" if char == "{" else "]")
                 buffer.append(char)
 
     if json_started and buffer:
@@ -109,7 +140,7 @@ async def extract_json_from_stream_async(
     json_started = False
     in_string = False
     escape_next = False
-    brace_stack: list[str] = []
+    delimiter_stack: list[str] = []
     buffer: list[str] = []
     codeblock_buffer: list[str] = []
 
@@ -135,21 +166,21 @@ async def extract_json_from_stream_async(
                 if codeblock_delimiter_count > 0:
                     codeblock_delimiter_count = 0
 
-                if char == "{":
+                if char in "{[":
                     json_started = True
-                    brace_stack.append("{")
+                    delimiter_stack.append("}" if char == "{" else "]")
                     buffer.append(char)
                 continue
 
             if json_started:
-                if char == '"' and not escape_next:
-                    in_string = not in_string
+                if escape_next:
+                    escape_next = False
                 elif char == "\\" and in_string:
                     escape_next = True
                     buffer.append(char)
                     continue
-                else:
-                    escape_next = False
+                elif char == '"':
+                    in_string = not in_string
 
                 if in_codeblock and not in_string:
                     if char == "`":
@@ -166,11 +197,11 @@ async def extract_json_from_stream_async(
                         codeblock_delimiter_count = 0
 
                 if not in_string:
-                    if char == "{":
-                        brace_stack.append("{")
-                    elif char == "}" and brace_stack:
-                        brace_stack.pop()
-                        if not brace_stack:
+                    if char in "{[":
+                        delimiter_stack.append("}" if char == "{" else "]")
+                    elif delimiter_stack and char == delimiter_stack[-1]:
+                        delimiter_stack.pop()
+                        if not delimiter_stack:
                             buffer.append(char)
                             for buffered_char in buffer:
                                 yield buffered_char
@@ -181,9 +212,9 @@ async def extract_json_from_stream_async(
                 buffer.append(char)
                 continue
 
-            if not in_codeblock and not json_started and char == "{":
+            if not in_codeblock and not json_started and char in "{[":
                 json_started = True
-                brace_stack.append("{")
+                delimiter_stack.append("}" if char == "{" else "]")
                 buffer.append(char)
 
     if json_started and buffer:

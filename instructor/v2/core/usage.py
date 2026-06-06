@@ -6,20 +6,18 @@ import logging
 from typing import TYPE_CHECKING, TypeVar
 
 from openai.types import CompletionUsage as OpenAIUsage
-from openai.types.chat import ChatCompletion
-from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from anthropic.types import Usage as AnthropicUsage
 
 logger = logging.getLogger("instructor")
-T_Model = TypeVar("T_Model", bound=BaseModel)
+T_Response = TypeVar("T_Response")
 
 
 def update_total_usage(
-    response: T_Model | None,
+    response: T_Response | None,
     total_usage: OpenAIUsage | AnthropicUsage,
-) -> T_Model | ChatCompletion | None:
+) -> T_Response | None:
     if response is None:
         return None
 

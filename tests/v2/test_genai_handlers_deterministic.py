@@ -4,6 +4,7 @@ from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
+from pydantic import BaseModel
 
 from instructor import Mode
 from instructor.v2.providers.genai.handlers import (
@@ -60,7 +61,7 @@ def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     google_module = ModuleType("google")
     genai_module = ModuleType("google.genai")
-    genai_module.types = fake_types  # type: ignore[attr-defined]
+    genai_module.types = fake_types  # ty: ignore[unresolved-attribute]
     monkeypatch.setitem(__import__("sys").modules, "google", google_module)
     monkeypatch.setitem(__import__("sys").modules, "google.genai", genai_module)
 
@@ -165,9 +166,12 @@ def test_structured_outputs_parse_response_unwraps_adapter(
         lambda *_args, **_kwargs: FakeAdapter("done"),
     )
 
+    class FakeResponseModel(BaseModel):
+        pass
+
     result = handler.parse_response(
         response=SimpleNamespace(),
-        response_model=object,  # type: ignore[arg-type]
+        response_model=FakeResponseModel,
         stream=False,
     )
 

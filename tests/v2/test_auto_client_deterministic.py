@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import ModuleType
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -36,7 +36,7 @@ def test_from_provider_passes_cache_and_api_key_to_builder(
 
     monkeypatch.setitem(auto_client._PROVIDER_BUILDERS, "openai", fake_builder)
 
-    result = auto_client.from_provider(
+    result = auto_client.from_provider(  # ty: ignore[no-matching-overload]
         "openai/gpt-5-nano",
         cache=cache,
         api_key="secret",
@@ -84,14 +84,14 @@ def test_build_openai_does_not_mask_runtime_import_errors(
         def __init__(self, **_kwargs: Any) -> None:
             raise ImportError("Using SOCKS proxy, but socksio is not installed.")
 
-    openai_module.OpenAI = FakeClient  # type: ignore[attr-defined]
-    openai_module.AsyncOpenAI = FakeClient  # type: ignore[attr-defined]
-    openai_module.DEFAULT_MAX_RETRIES = 2  # type: ignore[attr-defined]
-    openai_module.NotGiven = object  # type: ignore[attr-defined]
-    openai_module.Timeout = float  # type: ignore[attr-defined]
-    openai_module.not_given = object()  # type: ignore[attr-defined]
-    httpx_module.Client = object  # type: ignore[attr-defined]
-    httpx_module.AsyncClient = object  # type: ignore[attr-defined]
+    setattr(openai_module, "OpenAI", FakeClient)  # noqa: B010
+    setattr(openai_module, "AsyncOpenAI", FakeClient)  # noqa: B010
+    setattr(openai_module, "DEFAULT_MAX_RETRIES", 2)  # noqa: B010
+    setattr(openai_module, "NotGiven", object)  # noqa: B010
+    setattr(openai_module, "Timeout", float)  # noqa: B010
+    setattr(openai_module, "not_given", object())  # noqa: B010
+    setattr(httpx_module, "Client", object)  # noqa: B010
+    setattr(httpx_module, "AsyncClient", object)  # noqa: B010
 
     monkeypatch.setitem(__import__("sys").modules, "openai", openai_module)
     monkeypatch.setitem(__import__("sys").modules, "httpx", httpx_module)
@@ -121,8 +121,8 @@ def test_build_databricks_normalizes_base_url_and_forwards_client_kwargs(
         def __init__(self, **kwargs: Any) -> None:
             seen["client_kwargs"] = kwargs
 
-    openai_module.OpenAI = FakeOpenAI  # type: ignore[attr-defined]
-    openai_module.AsyncOpenAI = FakeOpenAI  # type: ignore[attr-defined]
+    setattr(openai_module, "OpenAI", FakeOpenAI)  # noqa: B010
+    setattr(openai_module, "AsyncOpenAI", FakeOpenAI)  # noqa: B010
     monkeypatch.setitem(__import__("sys").modules, "openai", openai_module)
 
     import instructor
@@ -134,14 +134,17 @@ def test_build_databricks_normalizes_base_url_and_forwards_client_kwargs(
 
     monkeypatch.setattr(instructor, "from_openai", fake_from_openai)
 
-    result = auto_client._build_databricks(
-        provider="databricks",
-        model_name="meta-llama",
-        async_client=False,
-        mode=None,
-        api_key=None,
-        kwargs={"timeout": 10, "custom": "value"},
-        provider_info={"provider": "databricks", "operation": "initialize"},
+    result = cast(
+        dict[str, Any],
+        auto_client._build_databricks(
+            provider="databricks",
+            model_name="meta-llama",
+            async_client=False,
+            mode=None,
+            api_key=None,
+            kwargs={"timeout": 10, "custom": "value"},
+            provider_info={"provider": "databricks", "operation": "initialize"},
+        ),
     )
 
     assert result["kwargs"]["model"] == "meta-llama"
@@ -165,7 +168,7 @@ def test_build_bedrock_chooses_default_mode_from_model_name(
         boto3_calls.append((service_name, kwargs))
         return object()
 
-    boto3_module.client = fake_client  # type: ignore[attr-defined]
+    setattr(boto3_module, "client", fake_client)  # noqa: B010
     monkeypatch.setitem(__import__("sys").modules, "boto3", boto3_module)
 
     import instructor.v2.providers.bedrock.client as bedrock_client
@@ -211,8 +214,8 @@ def test_build_ollama_uses_tool_mode_only_for_tool_capable_models(
         def __init__(self, **kwargs: Any) -> None:
             self.kwargs = kwargs
 
-    openai_module.OpenAI = FakeOpenAI  # type: ignore[attr-defined]
-    openai_module.AsyncOpenAI = FakeOpenAI  # type: ignore[attr-defined]
+    setattr(openai_module, "OpenAI", FakeOpenAI)  # noqa: B010
+    setattr(openai_module, "AsyncOpenAI", FakeOpenAI)  # noqa: B010
     monkeypatch.setitem(__import__("sys").modules, "openai", openai_module)
 
     import instructor.v2.providers.openai.client as openai_client_module

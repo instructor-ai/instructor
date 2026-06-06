@@ -12,7 +12,9 @@ try:
     from instructor.v2.core import mode_registry
     from google.genai import types
 except ModuleNotFoundError:
-    pytest.skip("google-genai package is not installed", allow_module_level=True)
+    # fmt: off
+    pytest.skip("google-genai package is not installed", allow_module_level=True)  # ty: ignore[too-many-positional-arguments]
+    # fmt: on
 
 
 class DummyModels:

@@ -52,29 +52,35 @@ class TestWriterClientWithSDK:
     def test_from_writer_raises_without_sdk(self, writer_available):
         """Test from_writer raises error when writerai not installed."""
         if writer_available:
-            pytest.skip("writerai is installed")
+            pytest.skip(
+                "writerai is installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.writer.client import from_writer
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="writerai is not installed"):
-            from_writer("not a client")  # type: ignore[arg-type]
+            from_writer("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_writer_with_invalid_client(self, writer_available):
         """Test from_writer raises error with invalid client."""
         if not writer_available:
-            pytest.skip("writerai not installed")
+            pytest.skip(
+                "writerai not installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from instructor.v2.providers.writer.client import from_writer
         from instructor.core.exceptions import ClientError
 
         with pytest.raises(ClientError, match="must be an instance"):
-            from_writer("not a client")  # type: ignore[arg-type]
+            from_writer("not a client")  # ty: ignore[no-matching-overload]
 
     def test_from_writer_with_invalid_mode(self, writer_available):
         """Test from_writer raises error with invalid mode."""
         if not writer_available:
-            pytest.skip("writerai not installed")
+            pytest.skip(
+                "writerai not installed"  # ty: ignore[too-many-positional-arguments]
+            )
 
         from writerai import Writer
 

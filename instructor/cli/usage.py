@@ -28,7 +28,9 @@ async def fetch_usage(date: str) -> dict[str, Any]:
             return await resp.json()
 
 
-async def get_usage_for_past_n_days(n_days: int) -> list[dict[str, Any]]:
+async def get_usage_for_past_n_days(
+    n_days: int,
+) -> List[dict[str, Any]]:  # noqa: UP006 - conflicting with the fn name
     tasks: List[Awaitable[dict[str, Any]]] = []  # noqa: UP006 - conflicting with the fn name
     all_data: List[dict[str, Any]] = []  # noqa: UP006 - conflicting with the fn name
     with Progress() as progress:
@@ -116,7 +118,9 @@ def calculate_cost(
     return prompt_cost + completion_cost
 
 
-def group_and_sum_by_date_and_snapshot(usage_data: list[dict[str, Any]]) -> Table:
+def group_and_sum_by_date_and_snapshot(
+    usage_data: List[dict[str, Any]],  # noqa: UP006 - conflicting with the fn name
+) -> Table:
     """Group and sum the usage data by date and snapshot, including costs."""
     summary: defaultdict[str, defaultdict[str, dict[str, Union[int, float]]]] = (
         defaultdict(

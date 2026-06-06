@@ -110,9 +110,9 @@ def from_cohere(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.COHERE)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.COHERE.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     # Use normalized mode for patching

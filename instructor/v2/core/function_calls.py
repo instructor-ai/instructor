@@ -601,9 +601,12 @@ def response_schema(cls: type[Model]) -> type[Model]:
     schema = cast(
         type[BaseModel],
         wraps(cls, updated=())(
-            create_model(
-                cls.__name__ if hasattr(cls, "__name__") else str(cls),
-                __base__=(cls, ResponseSchema),
+            cast(
+                Any,
+                create_model(
+                    cls.__name__ if hasattr(cls, "__name__") else str(cls),
+                    __base__=(cls, ResponseSchema),
+                ),
             )
         ),
     )
