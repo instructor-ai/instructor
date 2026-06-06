@@ -1,8 +1,9 @@
-"""LLM-backed validation helpers owned by the v2 runtime."""
+from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
-from openai import OpenAI
+if TYPE_CHECKING:
+    from openai import OpenAI
 
 from instructor.v2.core.client import Instructor
 from instructor.v2.core.validators import Validator

@@ -5,27 +5,38 @@ This module contains provider-specific implementations for OpenAI and Anthropic
 batch processing APIs.
 """
 
-from .base import BatchProvider
-import importlib.util
+from __future__ import annotations
 
-if importlib.util.find_spec("openai") is not None:
-    from .openai import OpenAIProvider
-if importlib.util.find_spec("anthropic") is not None:
-    from .anthropic import AnthropicProvider
+from typing import Any
+from .base import BatchProvider
 
 
 def get_provider(provider_name: str) -> BatchProvider:
     """Factory function to get the appropriate provider instance"""
     if provider_name == "openai":
-        if OpenAIProvider is None:
+        try:
+            from .openai import OpenAIProvider
+            return OpenAIProvider()
+        except ImportError:
             raise ValueError("OpenAI is not installed")
-        return OpenAIProvider()
     elif provider_name == "anthropic":
-        if AnthropicProvider is None:
+        try:
+            from .anthropic import AnthropicProvider
+            return AnthropicProvider()
+        except ImportError:
             raise ValueError("Anthropic is not installed")
-        return AnthropicProvider()
     else:
         raise ValueError(f"Unsupported provider: {provider_name}")
+
+
+def __getattr__(name: str) -> Any:
+    if name == "OpenAIProvider":
+        from .openai import OpenAIProvider
+        return OpenAIProvider
+    if name == "AnthropicProvider":
+        from .anthropic import AnthropicProvider
+        return AnthropicProvider
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 __all__ = ["BatchProvider", "OpenAIProvider", "AnthropicProvider", "get_provider"]
