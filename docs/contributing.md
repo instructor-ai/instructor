@@ -300,8 +300,8 @@ We use the following tools to maintain code quality:
 
 ```bash
 # Install pre-commit hooks
-pip install pre-commit
-pre-commit install
+uv tool install pre-commit
+uv run pre-commit install
 ```
 
 Key style guidelines:
