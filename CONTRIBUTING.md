@@ -38,7 +38,7 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 ### Environment Setup
 
-1. **Fork the Repository**: Click the "Fork" button at the top right of the [repository page](https://github.com/instructor-ai/instructor).
+1. **Fork the Repository**: Click the "Fork" button at the top right of the [repository page](https://github.com/567-labs/instructor).
 
 2. **Clone Your Fork**:
    ```bash
@@ -48,7 +48,7 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 3. **Set up Remote**:
    ```bash
-   git remote add upstream https://github.com/instructor-ai/instructor.git
+   git remote add upstream https://github.com/567-labs/instructor.git
    ```
 
 4. **Install UV** (recommended):
@@ -198,7 +198,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 
 ### Reporting Bugs
 
-If you find a bug, please create an issue on [our issue tracker](https://github.com/instructor-ai/instructor/issues) with:
+If you find a bug, please create an issue on [our issue tracker](https://github.com/567-labs/instructor/issues) with:
 
 1. A clear, descriptive title
 2. A detailed description including:
@@ -241,7 +241,7 @@ Documentation improvements are always welcome! Follow these guidelines:
 
 We encourage contributions to our evaluation tests:
 
-1. Explore existing evals in the [evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm)
+1. Explore existing evals in the [evals directory](https://github.com/567-labs/instructor/tree/main/tests/llm)
 2. Contribute new evals as pytest tests
 3. Evals should test specific capabilities or edge cases of the library or models
 4. Follow the existing patterns for structuring eval tests
