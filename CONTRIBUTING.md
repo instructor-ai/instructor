@@ -63,13 +63,13 @@ By participating in this project, you agree to abide by our code of conduct: tre
 5. **Install Dependencies**:
    ```bash
    # Using uv (recommended)
-   uv pip install -e ".[dev,docs,test-docs]"
+   uv sync --extra dev --extra docs --extra test-docs
    
    # Using poetry
    poetry install --with dev,docs,test-docs
    
    # For specific providers, add the provider name as an extra
-   # Example: uv pip install -e ".[dev,docs,test-docs,anthropic]"
+   # Example: uv sync --extra anthropic
    ```
 
 6. **Set up Pre-commit**:
@@ -115,16 +115,16 @@ UV is a fast Python package installer and resolver. It's recommended for day-to-
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install project and development dependencies
-uv pip install -e ".[dev,docs]"
+uv sync --extra dev --extra docs
 
 # Adding a new dependency (example)
-uv pip install new-package
+uv add <new-package>
 ```
 
 Key UV commands:
-- `uv pip install -e .` - Install the project in editable mode
-- `uv pip install -e ".[dev]"` - Install with development extras
-- `uv pip freeze > requirements.txt` - Generate requirements file
+- `uv sync` - Install the project in editable mode and updates lock file
+- `uv sync --extra dev` - Install with development extras
+- `uv export --no-hashes --no-emit-project --format requirements-txt -o requirements.txt` - Generate requirements file
 - `uv self update` - Update UV to the latest version
 
 #### Using Poetry
@@ -173,7 +173,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 4. **Document Installation**: Update the documentation to include installation instructions:
    ```
    # Install with your provider support
-   uv pip install "instructor[my-provider]"
+   uv add "instructor[my-provider]"
    # or
    poetry install --with my-provider
    ```
