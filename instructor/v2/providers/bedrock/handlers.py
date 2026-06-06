@@ -522,10 +522,8 @@ class BedrockMDJSONHandler(ModeHandler):
                 "Streaming is not supported for Bedrock in MD_JSON mode."
             )
         text = _extract_bedrock_text(response)
-        match = re.search(r"```?json(.*?)```?", text, re.DOTALL)
-        if match:
-            text = match.group(1).strip()
-        text = re.sub(r"```?json|\\n", "", text).strip()
+        from instructor.v2.core.json import extract_json_from_codeblock
+        text = extract_json_from_codeblock(text)
         return response_model.model_validate_json(
             text,
             context=validation_context,

@@ -144,6 +144,16 @@ class TestBedrockMDJSONHandler:
         assert isinstance(result, Answer)
         assert result.answer == 3.0
 
+    def test_parse_response_from_text_with_thinking(self, handler):
+        """parse_response ignores thinking tags preceding the JSON."""
+        response = _bedrock_text_response(
+            '<think>\nI need to extract the answer.\n</think>\n```json\n{"answer": 42.0}\n```'
+        )
+        result = handler.response_parser(response, Answer)
+
+        assert isinstance(result, Answer)
+        assert result.answer == 42.0
+
     def test_handle_reask_adds_messages(self, handler):
         """handle_reask adds user correction message."""
         kwargs = {"messages": [{"role": "user", "content": "Original"}]}
