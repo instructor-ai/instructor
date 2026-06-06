@@ -82,7 +82,7 @@ class JsonCompleteness:
         self._complete_paths.add(path)
         if isinstance(data, dict):
             for key, value in data.items():
-                child_path = f"{path}.{key}" if path else key
+                child_path = f"{path}.{key}" if path else str(key)
                 self._mark_all(value, child_path)
         elif isinstance(data, list):
             for i, item in enumerate(data):
@@ -98,7 +98,7 @@ class JsonCompleteness:
         if isinstance(data, dict):
             keys = list(data.keys())
             for i, key in enumerate(keys):
-                child_path = f"{path}.{key}" if path else key
+                child_path = f"{path}.{key}" if path else str(key)
                 if i < len(keys) - 1:
                     # Has next sibling → complete
                     self._mark_all(data[key], child_path)

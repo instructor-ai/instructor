@@ -16,11 +16,14 @@ from typing import (
 from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
+
 import requests
 from pydantic import BaseModel, Field
 
 from instructor.v2.core.errors import MultimodalError
 from instructor.v2.core.mode import Mode
+
+mimetypes.add_type("image/webp", ".webp")
 
 F = TypeVar("F", bound=Callable[..., Any])
 K = TypeVar("K", bound=Hashable)
@@ -90,6 +93,8 @@ class Image(BaseModel):
 
         if isinstance(source, Path):
             return cls.from_path(source)
+
+        raise ValueError(f"Unsupported image source type: {type(source).__name__}")
 
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
@@ -279,6 +284,8 @@ class Audio(BaseModel):
 
         if isinstance(source, Path):
             return cls.from_path(source)
+
+        raise ValueError(f"Unsupported audio source type: {type(source).__name__}")
 
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[Audio, str]:  # noqa: UP007
@@ -470,6 +477,8 @@ class PDF(BaseModel):
             return cls.from_raw_base64(source)
         elif isinstance(source, Path):
             return cls.from_path(source)
+
+        raise ValueError(f"Unsupported PDF source type: {type(source).__name__}")
 
     @classmethod
     def autodetect_safely(cls, source: Union[str, Path]) -> Union[PDF, str]:  # noqa: UP007
@@ -703,7 +712,8 @@ def convert_contents(
         dict[str, Any],
         Image,
         Audio,
-        list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
+        PDF,
+        list[Union[str, dict[str, Any], Image, Audio, PDF]],  # noqa: UP007
     ],
     mode: Mode,
 ) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
@@ -737,7 +747,7 @@ def convert_contents(
                 Mode.MISTRAL_STRUCTURED_OUTPUTS,
                 Mode.MISTRAL_TOOLS,
             } and isinstance(content, (PDF)):
-                converted_contents.append(content.to_mistral())  # type: ignore
+                converted_contents.append(content.to_mistral())
             else:
                 converted_contents.append(content.to_openai(mode))
         else:
@@ -803,15 +813,15 @@ def convert_messages(
     autodetect_images: bool = False,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
-    converted_messages = []
+    converted_messages: list[dict[str, Any]] = []
 
     def is_image_params(x: Any) -> bool:
-        return isinstance(x, dict) and x.get("type") == "image" and "source" in x  # type: ignore
+        return isinstance(x, dict) and x.get("type") == "image" and "source" in x
 
     for message in messages:
         if "type" in message:
             if message["type"] in {"audio", "image"}:
-                converted_messages.append(message)  # type: ignore
+                converted_messages.append(message)
                 continue
             else:
                 raise ValueError(f"Unsupported message type: {message['type']}")
@@ -842,16 +852,16 @@ def convert_messages(
                     cast(ImageParams, content)
                 )
         if isinstance(content, str):
-            converted_messages.append(  # type: ignore
+            converted_messages.append(
                 {"role": role, "content": content, **other_kwargs}
             )
         else:
             # At this point content is narrowed to non-str types accepted by convert_contents
-            converted_content = convert_contents(content, mode)  # type: ignore
-            converted_messages.append(  # type: ignore
+            converted_content = convert_contents(content, mode)
+            converted_messages.append(
                 {"role": role, "content": converted_content, **other_kwargs}
             )
-    return converted_messages  # type: ignore
+    return converted_messages
 
 
 def extract_genai_multimodal_content(

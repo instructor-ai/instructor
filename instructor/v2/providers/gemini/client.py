@@ -51,9 +51,9 @@ def from_gemini(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.GEMINI)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.GEMINI.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     if genai is None:

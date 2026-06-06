@@ -135,7 +135,7 @@ def _build_partial_object(
     if not isinstance(data, dict):
         return data
 
-    result = {}
+    result: dict[str, Any] = {}
 
     for field_name in data:
         field_value = data[field_name]
@@ -242,7 +242,7 @@ def _process_generic_arg(
         )
         # Special handling for Union types (types.UnionType isn't subscriptable)
         if arg_origin in UNION_ORIGINS:
-            return Union[modified_nested_args]  # type: ignore
+            return _subscript_type(Union, modified_nested_args)
 
         return arg_origin[modified_nested_args]
     else:
@@ -253,7 +253,7 @@ def _process_generic_arg(
             _processing_models.add(arg)
             try:
                 return (
-                    Partial[arg, MakeFieldsOptional]  # type: ignore[valid-type]
+                    _make_partial_type(arg, make_fields_optional=True)
                     if make_fields_optional
                     else Partial[arg]
                 )
@@ -261,6 +261,22 @@ def _process_generic_arg(
                 _processing_models.discard(arg)
         else:
             return arg
+
+
+def _subscript_type(origin: Any, args: Any) -> Any:
+    """Construct a runtime typing object from dynamically discovered arguments."""
+    return origin[args]
+
+
+def _make_optional_type(annotation: Any) -> Any:
+    return _subscript_type(Optional, annotation)
+
+
+def _make_partial_type(
+    annotation: type[BaseModel], *, make_fields_optional: bool = False
+) -> type[BaseModel]:
+    key = (annotation, MakeFieldsOptional) if make_fields_optional else annotation
+    return Partial.__class_getitem__(key)
 
 
 def _make_field_optional(
@@ -282,25 +298,29 @@ def _make_field_optional(
 
         # Reconstruct the generic type with modified arguments
         if generic_base is UNION_TYPE:
-            tmp_field.annotation = Optional[reduce(or_, modified_args)]  # type: ignore[valid-type]
+            tmp_field.annotation = _make_optional_type(reduce(or_, modified_args))
         else:
             tmp_field.annotation = (
-                Optional[generic_base[modified_args]] if generic_base else None
+                _make_optional_type(_subscript_type(generic_base, modified_args))
+                if generic_base
+                else None
             )
         tmp_field.default = None
         tmp_field.default_factory = None
     # If the field is a BaseModel, then recursively convert it's
     # attributes to optionals.
     elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-        tmp_field.annotation = Optional[Partial[annotation, MakeFieldsOptional]]  # type: ignore[assignment, valid-type]
+        tmp_field.annotation = _make_optional_type(
+            _make_partial_type(annotation, make_fields_optional=True)
+        )
         tmp_field.default = {}
         tmp_field.default_factory = None
     else:
-        tmp_field.annotation = Optional[field.annotation]  # type:ignore
+        tmp_field.annotation = _make_optional_type(field.annotation)
         tmp_field.default = None
         tmp_field.default_factory = None
 
-    return tmp_field.annotation, tmp_field  # type: ignore
+    return tmp_field.annotation, tmp_field
 
 
 class PartialBase(Generic[T_Model]):
@@ -325,14 +345,14 @@ class PartialBase(Generic[T_Model]):
         )
 
         # Create partial model with optional fields
-        partial_model = create_model(
+        partial_model = create_model(  # ty: ignore[no-matching-overload]
             model_name,
             __base__=cls,
             __module__=cls.__module__,
             **{
                 field_name: _make_field_optional(field_info)
                 for field_name, field_info in cls.model_fields.items()
-            },  # type: ignore[all]
+            },
         )
 
         # Store reference to original model for validation of complete objects
@@ -613,9 +633,9 @@ class Partial(Generic[T_Model]):
             else f"Partial{wrapped_class.__name__}"
         )
 
-        partial_model = create_model(
+        partial_model = create_model(  # ty: ignore[no-matching-overload]
             model_name,
-            __base__=(wrapped_class, PartialBase),  # type: ignore
+            __base__=(wrapped_class, PartialBase),
             __module__=wrapped_class.__module__,
             **{
                 field_name: (
@@ -624,7 +644,7 @@ class Partial(Generic[T_Model]):
                     else _wrap_models(field_info)
                 )
                 for field_name, field_info in wrapped_class.model_fields.items()
-            },  # type: ignore
+            },
         )
 
         # Store reference to original model for final validation

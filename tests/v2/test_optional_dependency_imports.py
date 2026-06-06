@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -33,7 +33,7 @@ def test_genai_factory_exposes_normalized_mode(monkeypatch: pytest.MonkeyPatch) 
 
     monkeypatch.setattr(genai_client, "Client", FakeClient)
 
-    client = genai_client.from_genai(FakeClient(), mode=Mode.GENAI_TOOLS)
+    client = genai_client.from_genai(cast(Any, FakeClient()), mode=Mode.GENAI_TOOLS)
 
     assert isinstance(client, Instructor)
     assert client.mode is Mode.TOOLS
@@ -50,7 +50,7 @@ def test_openai_connection_errors_only_skip_outside_strict_provider_runs(
         n_attempts=1,
         messages=[],
         create_kwargs={},
-        total_usage=None,
+        total_usage=0,
     )
 
     monkeypatch.delenv("CI", raising=False)

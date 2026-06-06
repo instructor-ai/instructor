@@ -1,7 +1,10 @@
 import json
+
 import pytest
 from instructor.auto_client import supported_providers
 from openai.types import CompletionUsage
+from pydantic import BaseModel
+
 from instructor.utils import (
     classproperty,
     extract_json_from_codeblock,
@@ -236,9 +239,8 @@ def test_update_total_usage_preserves_openai_usage_subclass():
         def get(self, key, default=None):
             return getattr(self, key, default)
 
-    class Response:
-        def __init__(self, usage):
-            self.usage = usage
+    class Response(BaseModel):
+        usage: LiteLLMUsage
 
     response_usage = LiteLLMUsage(
         prompt_tokens=3,
@@ -250,7 +252,7 @@ def test_update_total_usage_preserves_openai_usage_subclass():
         completion_tokens=20,
         total_tokens=30,
     )
-    response = Response(response_usage)
+    response = Response(usage=response_usage)
 
     updated = update_total_usage(response, total_usage)
 

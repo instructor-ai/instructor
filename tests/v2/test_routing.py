@@ -52,7 +52,9 @@ def test_top_level_from_anthropic_routes_to_v2(
 ):
     """Top-level from_anthropic should now route directly to the v2 implementation."""
     if importlib.util.find_spec("anthropic") is None:
-        pytest.skip("anthropic package is not installed")
+        pytest.skip(
+            "anthropic package is not installed"  # ty: ignore[too-many-positional-arguments]
+        )
     import anthropic
     from instructor import from_anthropic
 

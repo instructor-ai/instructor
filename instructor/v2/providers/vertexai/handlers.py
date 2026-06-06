@@ -13,10 +13,10 @@ from collections.abc import (
 from typing import Any, cast, get_origin
 
 from pydantic import BaseModel
-import jsonref
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
+from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import ParallelBase, get_types_array
 from instructor.v2.dsl.partial import PartialBase
@@ -60,7 +60,7 @@ def vertexai_message_parser(
     gm = _gm()
     if isinstance(message["content"], str):
         return gm.Content(
-            role=message["role"],  # type: ignore
+            role=message["role"],
             parts=[gm.Part.from_text(message["content"])],
         )
     if isinstance(message["content"], list):
@@ -73,7 +73,7 @@ def vertexai_message_parser(
             else:
                 raise ValueError(f"Unsupported content type in list: {type(item)}")
         return gm.Content(
-            role=message["role"],  # type: ignore
+            role=message["role"],
             parts=parts,
         )
     raise ValueError("Unsupported message content type")
@@ -176,6 +176,14 @@ def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
     if get_origin(model) is not None:
         raise TypeError(f"Expected concrete model class, got type hint {model}")
 
+    try:
+        import jsonref
+    except ImportError as err:
+        raise ConfigurationError(
+            "The 'jsonref' package is required for VertexAI structured output. "
+            "Install it with: pip install 'instructor[vertexai]'"
+        ) from err
+
     schema = model.model_json_schema()
     schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore[assignment]
     gemini_schema: dict[Any, Any] = {
@@ -194,7 +202,7 @@ def _create_vertexai_tool(
     """Create a tool with function declarations for model(s)."""
     gm = _gm()
     if get_origin(models) is not None:
-        model_list = list(get_types_array(models))
+        model_list = list(get_types_array(cast(Any, models)))
     else:
         model_list = models if isinstance(models, list) else [models]
 
@@ -294,27 +302,28 @@ class VertexAIHandlerBase(ModeHandler):
         if strict is not None:
             parse_kwargs["strict"] = strict
 
+        streaming_model = cast(Any, response_model)
         task_parser = None
         if (
             self.mode == Mode.TOOLS
             and inspect.isclass(response_model)
             and issubclass(response_model, IterableBase)
         ):
-            task_parser = response_model.tasks_from_task_list_chunks  # type: ignore[attr-defined]
+            task_parser = streaming_model.tasks_from_task_list_chunks
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 task_parser=(
-                    response_model.tasks_from_task_list_chunks_async  # type: ignore[attr-defined]
+                    streaming_model.tasks_from_task_list_chunks_async
                     if task_parser is not None
                     else None
                 ),
                 **parse_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = streaming_model.from_streaming_response(
             response,
             stream_extractor=self.extract_streaming_json,
             task_parser=task_parser,
@@ -376,7 +385,10 @@ class VertexAIToolsHandler(VertexAIHandlerBase):
             and issubclass(response_model, (IterableBase, PartialBase))
         ):
             return self._parse_streaming(
-                response_model, response, validation_context, strict
+                cast(type[BaseModel], response_model),
+                response,
+                validation_context,
+                strict,
             )
         if isinstance(response_model, ParallelBase):
             parallel_model = cast(ParallelBase[Any], response_model)

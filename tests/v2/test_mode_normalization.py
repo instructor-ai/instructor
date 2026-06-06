@@ -10,7 +10,9 @@ from instructor.utils.providers import Provider
 try:
     from instructor.v2.core import mode_registry, normalize_mode
 except ModuleNotFoundError:
-    pytest.skip("v2 module not available", allow_module_level=True)
+    # fmt: off
+    pytest.skip("v2 module not available", allow_module_level=True)  # ty: ignore[too-many-positional-arguments]
+    # fmt: on
 
 
 @pytest.mark.parametrize(

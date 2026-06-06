@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, create_model, Field
 from instructor import openai_schema
 
@@ -7,7 +9,7 @@ def test_dynamic_model_creation_with_field_description():
     Test that dynamic model creation with Field(description) works correctly.
     This verifies the example in the documentation at docs/concepts/models.md.
     """
-    types = {
+    types: dict[str, type[Any]] = {
         "string": str,
         "integer": int,
         "email": str,
@@ -19,13 +21,14 @@ def test_dynamic_model_creation_with_field_description():
         ("email", "email", "The email of the user."),
     ]
 
+    field_definitions: dict[str, Any] = {
+        property_name: (types[property_type], Field(description=description))
+        for property_name, property_type, description in mock_cursor
+    }
     DynamicModel = create_model(
         "User",
-        **{
-            property_name: (types[property_type], Field(description=description))
-            for property_name, property_type, description in mock_cursor
-        },
         __base__=BaseModel,
+        **field_definitions,
     )
 
     schema = DynamicModel.model_json_schema()

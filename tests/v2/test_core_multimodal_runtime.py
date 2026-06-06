@@ -41,7 +41,33 @@ def test_convert_contents_routes_pdf_to_mistral(
 
 def test_convert_contents_rejects_unknown_object() -> None:
     with pytest.raises(ValueError, match="Unsupported content type"):
-        convert_contents([object()], Mode.TOOLS)  # type: ignore[list-item]
+        convert_contents(
+            [object()],  # ty: ignore[invalid-argument-type]
+            Mode.TOOLS,
+        )
+
+
+@pytest.mark.parametrize(
+    ("media_type", "autodetect"),
+    [
+        ("image", Image.autodetect),
+        ("audio", Audio.autodetect),
+        ("PDF", PDF.autodetect),
+    ],
+)
+def test_autodetect_rejects_unsupported_source_types(
+    media_type: str, autodetect: Any
+) -> None:
+    with pytest.raises(
+        ValueError, match=rf"Unsupported {media_type} source type: bytes"
+    ):
+        autodetect(b"not a string or path")
+
+
+def test_webp_mime_type_is_registered() -> None:
+    import mimetypes
+
+    assert mimetypes.guess_type("image.webp")[0] == "image/webp"
 
 
 def test_autodetect_media_uses_mime_type_shortcut(
@@ -50,11 +76,11 @@ def test_autodetect_media_uses_mime_type_shortcut(
     image = Image(source="file.png", media_type="image/png", data="AA==")
     monkeypatch.setattr("mimetypes.guess_type", lambda _: ("image/png", None))
     monkeypatch.setattr(Image, "autodetect_safely", lambda _source: image)
-    monkeypatch.setattr(
-        Audio,
-        "autodetect_safely",
-        lambda _source: pytest.fail("audio autodetect should not be called"),
-    )
+
+    def fail_audio_autodetect(_source: str) -> None:
+        raise AssertionError("audio autodetect should not be called")
+
+    monkeypatch.setattr(Audio, "autodetect_safely", fail_audio_autodetect)
 
     assert autodetect_media("picture.png") is image
 
@@ -89,7 +115,7 @@ def test_convert_messages_autodetects_image_params_and_preserves_metadata(
         "instructor.v2.core.multimodal.convert_contents", fake_convert_contents
     )
 
-    messages = [
+    messages: list[dict[str, Any]] = [
         {
             "role": "user",
             "content": [

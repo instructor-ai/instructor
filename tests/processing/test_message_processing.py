@@ -2,6 +2,10 @@
 Tests for message processing optimizations.
 """
 
+from typing import cast
+
+from openai.types.chat import ChatCompletionMessageParam
+
 from instructor.utils import (
     merge_consecutive_messages,
     get_message_content,
@@ -90,37 +94,40 @@ class TestGetMessageContent:
 
     def test_string_content(self):
         """Test getting content from a message with string content."""
-        message = {"role": "user", "content": "Hello"}
+        message = cast(ChatCompletionMessageParam, {"role": "user", "content": "Hello"})
         result = get_message_content(message)
         assert result == ["Hello"]
 
     def test_list_content(self):
         """Test getting content from a message with list content."""
-        message = {"role": "user", "content": [{"type": "text", "text": "Hello"}]}
+        message = cast(
+            ChatCompletionMessageParam,
+            {"role": "user", "content": [{"type": "text", "text": "Hello"}]},
+        )
         result = get_message_content(message)
         assert result == [{"type": "text", "text": "Hello"}]
 
     def test_empty_content(self):
         """Test getting content from a message with empty content."""
-        message = {"role": "user", "content": ""}
+        message = cast(ChatCompletionMessageParam, {"role": "user", "content": ""})
         result = get_message_content(message)
         assert result == [""]
 
     def test_none_content(self):
         """Test getting content from a message with None content."""
-        message = {"role": "user", "content": None}
+        message = cast(ChatCompletionMessageParam, {"role": "user", "content": None})
         result = get_message_content(message)
         assert result == [""]
 
     def test_missing_content(self):
         """Test getting content from a message with missing content."""
-        message = {"role": "user"}
+        message = cast(ChatCompletionMessageParam, {"role": "user"})
         result = get_message_content(message)
         assert result == [""]
 
     def test_empty_message(self):
         """Test getting content from an empty message."""
-        message = {}
+        message = cast(ChatCompletionMessageParam, {})
         result = get_message_content(message)
         assert result == [""]
 

@@ -48,9 +48,9 @@ def _from_openai_compat(
 
         available_modes = mode_registry.get_modes_for_provider(provider)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=provider.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     valid_client_types = (
@@ -159,8 +159,9 @@ def from_openai(
 
 @overload
 def from_anyscale(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -168,8 +169,9 @@ def from_anyscale(
 
 @overload
 def from_anyscale(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -177,7 +179,7 @@ def from_anyscale(
 
 @overload
 def from_anyscale(
-    client: openai.OpenAI,
+    model_or_client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -186,7 +188,7 @@ def from_anyscale(
 
 @overload
 def from_anyscale(
-    client: openai.AsyncOpenAI,
+    model_or_client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -250,8 +252,9 @@ def from_anyscale(
 
 @overload
 def from_together(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -259,8 +262,9 @@ def from_together(
 
 @overload
 def from_together(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -268,7 +272,7 @@ def from_together(
 
 @overload
 def from_together(
-    client: openai.OpenAI,
+    model_or_client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -277,7 +281,7 @@ def from_together(
 
 @overload
 def from_together(
-    client: openai.AsyncOpenAI,
+    model_or_client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -341,8 +345,9 @@ def from_together(
 
 @overload
 def from_databricks(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -350,8 +355,9 @@ def from_databricks(
 
 @overload
 def from_databricks(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -359,7 +365,7 @@ def from_databricks(
 
 @overload
 def from_databricks(
-    client: openai.OpenAI,
+    model_or_client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -368,7 +374,7 @@ def from_databricks(
 
 @overload
 def from_databricks(
-    client: openai.AsyncOpenAI,
+    model_or_client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -432,8 +438,9 @@ def from_databricks(
 
 @overload
 def from_deepseek(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -441,8 +448,9 @@ def from_deepseek(
 
 @overload
 def from_deepseek(
-    model: str,
+    model_or_client: str,
     mode: Mode = Mode.TOOLS,
+    model: None = None,
     async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -450,7 +458,7 @@ def from_deepseek(
 
 @overload
 def from_deepseek(
-    client: openai.OpenAI,
+    model_or_client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,
@@ -459,7 +467,7 @@ def from_deepseek(
 
 @overload
 def from_deepseek(
-    client: openai.AsyncOpenAI,
+    model_or_client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     model: str | None = None,
     **kwargs: Any,

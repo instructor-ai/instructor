@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -68,6 +68,17 @@ def test_process_message_dispatches_to_provider_modules(
     assert calls == [(message, {"name": "Ada"})]
 
 
+def test_handle_templating_cohere_message_without_chat_history() -> None:
+    result = templating.handle_templating(
+        {"message": "Hello {{ name }}"},
+        Mode.TOOLS,
+        provider=Provider.COHERE,
+        context={"name": "Ada"},
+    )
+
+    assert result == {"message": "Hello Ada", "chat_history": []}
+
+
 def test_initialize_usage_dispatches_anthropic_to_provider_module(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -96,7 +107,7 @@ def test_update_total_usage_dispatches_anthropic_to_provider_module(
         usage = object()
 
     response = Response()
-    total_usage = object()
+    total_usage = cast(Any, object())
     calls: list[tuple[Any, Any]] = []
 
     def fake_update_total_usage(response_usage: Any, running_total: Any) -> bool:

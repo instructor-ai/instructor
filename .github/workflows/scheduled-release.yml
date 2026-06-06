@@ -41,8 +41,8 @@ jobs:
     
     - name: Run type checking
       run: |
-        uv run ty check instructor/
-        uv run ty check --config-file ty-tests.toml tests
+        uv run ty check --error-on-warning --output-format github instructor/
+        uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
     
     - name: Run core tests (no LLM)
       run: |

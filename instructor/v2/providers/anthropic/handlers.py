@@ -12,7 +12,7 @@ from collections.abc import (
     Iterable as TypingIterable,
 )
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Callable, TypedDict, get_origin
+from typing import TYPE_CHECKING, Any, Callable, TypedDict, cast, get_origin
 from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel, Field, TypeAdapter
@@ -279,14 +279,15 @@ class AnthropicHandlerBase(ModeHandler):
         if strict is not None:
             parse_kwargs["strict"] = strict
 
+        streaming_model = cast(Any, response_model)
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
-            return response_model.from_streaming_response_async(  # type: ignore[attr-defined]
+            return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
                 **parse_kwargs,
             )
 
-        generator = response_model.from_streaming_response(  # type: ignore[attr-defined]
+        generator = streaming_model.from_streaming_response(
             response,
             stream_extractor=self.extract_streaming_json,
             **parse_kwargs,
@@ -316,17 +317,15 @@ class AnthropicHandlerBase(ModeHandler):
     def _parse_with_callback(
         self,
         response: Any,
-        response_model: type[BaseModel] | ParallelBase,
+        response_model: type[BaseModel],
         validation_context: dict[str, Any] | None,
         strict: bool | None,
         parser: Callable[
-            [Any, type[BaseModel] | ParallelBase, dict[str, Any] | None, bool | None],
+            [Any, type[BaseModel], dict[str, Any] | None, bool | None],
             Any,
         ],
     ) -> Any:
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
-        ):
+        if self._consume_streaming_flag(response_model):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -377,7 +376,9 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
             from instructor.v2.core.response_model import prepare_response_model
 
             # Use prepare_response_model to handle simple types, TypedDict, etc.
-            response_model = prepare_response_model(response_model)
+            response_model = cast(
+                type[BaseModel], prepare_response_model(response_model)
+            )
 
         self._register_streaming_from_kwargs(response_model, new_kwargs)
 
