@@ -21,6 +21,7 @@ dependencies = [
     "jiter>=0.6.1,<0.15",
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
+    "jsonref>=1.1.0",
 ]
 name = "instructor"
 version = "1.15.2"
@@ -54,7 +55,7 @@ dev = [
     "python-dotenv>=1.0.1",
     "pytest-xdist>=3.8.0",
     "pre-commit>=4.2.0",
-    "ty==0.0.44",
+    "ty>=0.0.1a23",
     "anthropic==0.93.0",
     "xmltodict>=0.13,<1.1",
 ]
