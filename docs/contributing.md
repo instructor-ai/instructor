@@ -63,16 +63,16 @@ UV is a fast Python package installer and resolver that makes development easier
    cd instructor
 
    # Install with development dependencies
-   uv pip install -e ".[dev,docs]"
+   uv sync --extra dev --extra docs
    ```
 
 3. **Adding New Dependencies**:
    ```bash
    # Add a regular dependency
-   uv pip install some-package
+   uv add some-package
 
    # Install a specific version
-   uv pip install "some-package>=1.0.0,<2.0.0"
+   uv add "some-package>=1.0.0,<2.0.0"
    ```
 
 4. **Common UV Commands**:
@@ -81,7 +81,7 @@ UV is a fast Python package installer and resolver that makes development easier
    uv self update
 
    # Create a requirements file
-   uv pip freeze > requirements.txt
+   uv export --no-hashes --no-emit-project --format requirements-txt -o requirements.txt
    ```
 
 ### Using Poetry
@@ -142,7 +142,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 4. **Document Installation**:
    ```bash
    # Installation command for your provider
-   uv pip install "instructor[my-provider]"
+   uv add "instructor[my-provider]"
    # or with poetry
    poetry install --with my-provider
    ```
