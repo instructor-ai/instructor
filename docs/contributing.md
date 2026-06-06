@@ -13,7 +13,7 @@ We welcome contributions to Instructor! This page covers the different ways you 
 
 Evals help us monitor the quality of both the OpenAI models and the Instructor library. To contribute:
 
-1. **Explore Existing Evals**: Check out [our evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm/test_openai/evals)
+1. **Explore Existing Evals**: Check out [our evals directory](https://github.com/567-labs/instructor/tree/main/tests/llm/test_openai)
 2. **Create a New Eval**: Add new pytest tests that evaluate specific capabilities or edge cases
 3. **Follow the Pattern**: Structure your eval similar to existing ones
 4. **Submit a PR**: We'll review and incorporate your eval
@@ -22,7 +22,7 @@ Evals are run weekly, and results are tracked to monitor performance over time.
 
 ### Reporting Issues
 
-If you encounter a bug or problem, please [file an issue on GitHub](https://github.com/instructor-ai/instructor/issues) with:
+If you encounter a bug or problem, please [file an issue on GitHub](https://github.com/567-labs/instructor/issues) with:
 
 1. A clear, descriptive title
 2. Detailed information including:
@@ -38,8 +38,8 @@ If you encounter a bug or problem, please [file an issue on GitHub](https://gith
 We welcome pull requests! Here's the process:
 
 1. **For Small Changes**: Feel free to submit a PR directly
-2. **For Larger Changes**: [Start with an issue](https://github.com/instructor-ai/instructor/issues) to discuss approach
-3. **Looking for Ideas?** Check issues labeled [help wanted](https://github.com/instructor-ai/instructor/labels/help%20wanted) or [good first issue](https://github.com/instructor-ai/instructor/labels/good%20first%20issue)
+2. **For Larger Changes**: [Start with an issue](https://github.com/567-labs/instructor/issues) to discuss approach
+3. **Looking for Ideas?** Check issues labeled [help wanted](https://github.com/567-labs/instructor/labels/help%20wanted) or [good first issue](https://github.com/567-labs/instructor/labels/good%20first%20issue)
 
 ## Setting Up Your Development Environment
 
@@ -171,7 +171,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
    ```bash
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
-   git remote add upstream https://github.com/instructor-ai/instructor.git
+   git remote add upstream https://github.com/567-labs/instructor
    ```
 3. **Create a Branch**:
    ```bash
@@ -439,7 +439,7 @@ print(person.age)   # 25
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
+<a href="https://github.com/567-labs/instructor/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
 </a>
 
