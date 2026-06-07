@@ -177,7 +177,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
    ```bash
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
-   git remote add upstream https://github.com/567-labs/instructor
+   git remote add upstream https://github.com/567-labs/instructor.git
    ```
 3. **Create a Branch**:
    ```bash
