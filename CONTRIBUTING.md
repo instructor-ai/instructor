@@ -134,6 +134,7 @@ Key UV commands:
 - `uv sync --extra dev` - Install with development extras
 - `uv export --no-hashes --no-emit-project --format requirements-txt -o requirements.txt` - Generate requirements file
 - `uv self update` - Update UV to the latest version
+- `uv lock` - Generate lockfile based off pyproject.toml
 
 #### Using Poetry
 
