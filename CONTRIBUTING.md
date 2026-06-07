@@ -130,7 +130,7 @@ uv add <new-package>
 ```
 
 Key UV commands:
-- `uv sync` - Install the project in editable mode and updates lock file
+- `uv sync` - Install the project in editable mode and updates lockfile
 - `uv sync --extra dev` - Install with development extras
 - `uv export --no-hashes --no-emit-project --format requirements-txt -o requirements.txt` - Generate requirements file
 - `uv self update` - Update UV to the latest version
@@ -358,13 +358,13 @@ Run tests using pytest:
 
 ```bash
 # Run all tests
-pytest tests/
+uv run pytest tests/
 
 # Run specific test
-pytest tests/path_to_test.py::test_name
+uv run pytest tests/path_to_test.py::test_name
 
 # Skip LLM tests (faster for local development)
-pytest tests/ -k 'not llm and not openai'
+uv run pytest tests/ -k 'not llm and not openai'
 
 # Generate coverage report
 coverage run -m pytest tests/ -k "not docs"
