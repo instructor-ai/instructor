@@ -186,7 +186,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 4. **Make Changes, Test, and Commit**:
    ```bash
    # Run tests
-   pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
+   uv run pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
 
    # Commit changes
    git add .
