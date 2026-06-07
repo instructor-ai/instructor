@@ -16,12 +16,14 @@ def get_provider(provider_name: str) -> BatchProvider:
     if provider_name == "openai":
         try:
             from .openai import OpenAIProvider
+
             return OpenAIProvider()
         except ImportError as err:
             raise ValueError("OpenAI is not installed") from err
     elif provider_name == "anthropic":
         try:
             from .anthropic import AnthropicProvider
+
             return AnthropicProvider()
         except ImportError as err:
             raise ValueError("Anthropic is not installed") from err
@@ -32,9 +34,11 @@ def get_provider(provider_name: str) -> BatchProvider:
 def __getattr__(name: str) -> Any:
     if name == "OpenAIProvider":
         from .openai import OpenAIProvider
+
         return OpenAIProvider
     if name == "AnthropicProvider":
         from .anthropic import AnthropicProvider
+
         return AnthropicProvider
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

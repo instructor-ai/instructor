@@ -1079,7 +1079,11 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
                     "strict": True,
                     "schema": schema_function.get("parameters", {}),
                 },
-                **{k: v for k, v in new_kwargs["text"].items() if k not in ("format", "json_schema")},
+                **{
+                    k: v
+                    for k, v in new_kwargs["text"].items()
+                    if k not in ("format", "json_schema")
+                },
             }
 
         return prepared_model, new_kwargs
@@ -1125,6 +1129,7 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
                     if args:
                         if isinstance(args, str) and args.strip() in ("", "{}"):
                             import logging
+
                             logger = logging.getLogger(__name__)
                             logger.warning(
                                 "Responses API returned empty tool arguments '{}' in RESPONSES_TOOLS mode. "
@@ -1143,6 +1148,7 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         json_str = self._extract_tool_call_json(response)
         if isinstance(json_str, str) and json_str.strip() in ("", "{}"):
             import logging
+
             logger = logging.getLogger(__name__)
             logger.warning(
                 "Responses API returned empty tool arguments '{}' in RESPONSES_TOOLS mode fallback. "

@@ -18,6 +18,7 @@ def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
     from instructor.v2.providers.openai.schema import (
         generate_openai_schema as _generate_openai_schema,
     )
+
     return _generate_openai_schema(model)
 
 
@@ -26,6 +27,7 @@ def generate_anthropic_schema(model: type[BaseModel]) -> dict[str, Any]:
     from instructor.v2.providers.anthropic.schema import (
         generate_anthropic_schema as _generate_anthropic_schema,
     )
+
     return _generate_anthropic_schema(model)
 
 
@@ -34,4 +36,5 @@ def generate_gemini_schema(model: type[BaseModel]) -> Any:
     from instructor.v2.providers.gemini.schema import (
         generate_gemini_schema as _generate_gemini_schema,
     )
+
     return _generate_gemini_schema(model)

@@ -522,6 +522,7 @@ class BedrockMDJSONHandler(ModeHandler):
             )
         text = _extract_bedrock_text(response)
         from instructor.v2.core.json import extract_json_from_codeblock
+
         text = extract_json_from_codeblock(text)
         return response_model.model_validate_json(
             text,
