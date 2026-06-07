@@ -62,9 +62,17 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 5. **Install Dependencies**:
    ```bash
-   # Using uv (recommended)
+   # Create environment using uv (recommended)
+   uv venv
+
+   # Activate environment
+   source .venv/bin/activate
+
+   # Install with development dependencies
    uv sync --extra dev --extra docs --extra test-docs
    
+   # OR
+
    # Using poetry
    poetry install --with dev,docs,test-docs
    
