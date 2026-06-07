@@ -17,14 +17,14 @@ def get_provider(provider_name: str) -> BatchProvider:
         try:
             from .openai import OpenAIProvider
             return OpenAIProvider()
-        except ImportError:
-            raise ValueError("OpenAI is not installed")
+        except ImportError as err:
+            raise ValueError("OpenAI is not installed") from err
     elif provider_name == "anthropic":
         try:
             from .anthropic import AnthropicProvider
             return AnthropicProvider()
-        except ImportError:
-            raise ValueError("Anthropic is not installed")
+        except ImportError as err:
+            raise ValueError("Anthropic is not installed") from err
     else:
         raise ValueError(f"Unsupported provider: {provider_name}")
 
