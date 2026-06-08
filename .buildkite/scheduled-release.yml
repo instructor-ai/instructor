@@ -1,0 +1,458 @@
+# ============================================================================
+# Translated from: Scheduled Release
+# ============================================================================
+#
+# TRIGGER CONFIGURATION REQUIRED:
+# This workflow uses a schedule trigger that must be configured in Buildkite UI:
+#   1. Go to Pipeline Settings → Schedules
+#   2. Create a new schedule:
+#      - Cron: "0 9 * * 1/2" (Every 2 weeks on Monday at 9 AM UTC)
+#      - Branch: main
+#      - Message: "Scheduled release build"
+#
+# MANUAL TRIGGER:
+# Use the "New Build" button in Buildkite UI to trigger manually.
+# The workflow_dispatch inputs (skip_tests, dry_run) are converted to
+# input steps that prompt when triggered via UI.
+#
+# AGENT CONFIGURATION REQUIRED:
+# The original workflow used: ubuntu-latest
+# Configure agents with the following tools:
+#   - UV (Python package manager)
+#   - Git
+#   - Python 3.x
+#
+# Example agent configuration:
+#   agents:
+#     queue: "linux"
+#
+# PERMISSIONS REQUIRED:
+# Configure these secrets/environment variables on your agents:
+#   - GITHUB_TOKEN (with repo scope for pushing tags/releases)
+#   - OPENAI_API_KEY (optional, for LLM tests)
+#   - ANTHROPIC_API_KEY (optional, for LLM tests)
+#   - GOOGLE_API_KEY (optional, for LLM tests)
+#   - COHERE_API_KEY (optional, for LLM tests)
+#   - GROQ_API_KEY (optional, for LLM tests)
+#   - MISTRAL_API_KEY (optional, for LLM tests)
+#   - PYPI_TOKEN (optional, for PyPI publishing)
+#
+# SECURITY NOTE:
+# The original workflow restricted runs to 'main' branch only.
+# In Buildkite, configure this in Pipeline Settings → GitHub:
+#   - Set "Branch Filter Pattern" to "main"
+#
+# ============================================================================
+
+steps:
+  # Prompt for manual build options (only shown when triggered via UI)
+  - input: ":gear: Release Options"
+    key: "release-options"
+    fields:
+      - select: "Skip LLM tests?"
+        key: "skip_tests"
+        hint: "Use for testing workflow without running expensive LLM tests"
+        default: "false"
+        options:
+          - label: "No - Run all tests"
+            value: "false"
+          - label: "Yes - Skip LLM tests"
+            value: "true"
+      - select: "Dry run mode?"
+        key: "dry_run"
+        hint: "Don't push changes or create release"
+        default: "false"
+        options:
+          - label: "No - Perform actual release"
+            value: "false"
+          - label: "Yes - Dry run only"
+            value: "true"
+    if: build.source == "ui"
+
+  - wait
+
+  - group: ":test_tube: Quality Checks"
+    key: "quality-checks"
+    steps:
+      - label: ":gear: Setup & Install"
+        key: "setup"
+        command: |
+          echo "--- :package: Installing dependencies"
+          uv sync --all-extras --dev
+
+      - label: ":mag: Linting"
+        key: "lint"
+        depends_on: "setup"
+        command: |
+          echo "--- :mag: Running ruff"
+          uv run ruff check instructor examples tests
+
+      - label: ":clipboard: Type Checking"
+        key: "typecheck"
+        depends_on: "setup"
+        command: |
+          echo "--- :clipboard: Type checking instructor/"
+          uv run ty check --error-on-warning --output-format github instructor/
+          
+          echo "--- :clipboard: Type checking tests/"
+          uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
+
+      - label: ":test_tube: Core Tests"
+        key: "core-tests"
+        depends_on: "setup"
+        command: |
+          echo "--- :test_tube: Running core tests (no LLM)"
+          uv run pytest tests/ -k "not openai and not llm and not anthropic and not gemini and not cohere and not mistral and not groq and not vertexai and not xai and not cerebras and not fireworks and not writer and not bedrock and not perplexity and not genai" --tb=short -v --maxfail=10
+
+      - label: ":robot_face: LLM Tests"
+        key: "llm-tests"
+        depends_on: "setup"
+        # Skip if user selected skip_tests=true in input step
+        if: |
+          build.source != "ui" || 
+          build.env("skip_tests") == null || 
+          build.env("skip_tests") == "false"
+        soft_fail: true
+        command: |
+          echo "--- :robot_face: Running LLM integration tests"
+          echo "Running basic LLM tests if API keys are available..."
+          
+          # Run a subset of LLM tests to verify basic functionality
+          if [ ! -z "$$OPENAI_API_KEY" ]; then
+            echo "Testing OpenAI integration..."
+            uv run pytest tests/llm/test_openai/test_basics.py --tb=short -v --maxfail=1 || echo "OpenAI tests failed"
+          fi
+          
+          if [ ! -z "$$ANTHROPIC_API_KEY" ]; then
+            echo "Testing Anthropic integration..."
+            uv run pytest tests/llm/test_anthropic/test_basics.py --tb=short -v --maxfail=1 || echo "Anthropic tests failed"
+          fi
+          
+          echo "LLM tests completed (non-blocking)"
+
+  - wait
+
+  - group: ":rocket: Release Process"
+    key: "release"
+    steps:
+      - label: ":mag: Check for Changes"
+        key: "check-changes"
+        command: |
+          echo "--- :mag: Checking for changes since last release"
+          LAST_TAG=$$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -z "$$LAST_TAG" ]; then
+            buildkite-agent meta-data set "has_changes" "true"
+            buildkite-agent meta-data set "last_tag" "none"
+            buildkite-agent meta-data set "change_count" "initial"
+            echo "No previous tags found - this will be the initial release"
+          else
+            CHANGES=$$(git rev-list $$LAST_TAG..HEAD --count)
+            if [ $$CHANGES -gt 0 ]; then
+              buildkite-agent meta-data set "has_changes" "true"
+            else
+              buildkite-agent meta-data set "has_changes" "false"
+            fi
+            buildkite-agent meta-data set "change_count" "$$CHANGES"
+            buildkite-agent meta-data set "last_tag" "$$LAST_TAG"
+            
+            echo "Last tag: $$LAST_TAG"
+            echo "Changes since last tag: $$CHANGES"
+          fi
+
+      - label: ":package: Version Bump"
+        key: "version-bump"
+        depends_on: "check-changes"
+        command: |
+          HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+          
+          if [ "$$HAS_CHANGES" != "true" ]; then
+            echo "⏭️ No changes detected - skipping release"
+            buildkite-agent annotate "No changes since last release - build skipped" --style "info"
+            exit 0
+          fi
+          
+          echo "--- :package: Getting current version"
+          VERSION=$$(uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          buildkite-agent meta-data set "current_version" "$$VERSION"
+          echo "Current version: $$VERSION"
+          
+          echo "--- :chart_with_upwards_trend: Determining version bump type"
+          LAST_TAG=$$(buildkite-agent meta-data get "last_tag")
+          
+          if [ "$$LAST_TAG" = "none" ]; then
+            COMMITS=$$(git log --oneline HEAD~20..HEAD)
+          else
+            COMMITS=$$(git log --oneline $$LAST_TAG..HEAD)
+          fi
+          
+          echo "Recent commits:"
+          echo "$$COMMITS"
+          
+          # Look for breaking changes or major features
+          if echo "$$COMMITS" | grep -qE "(BREAKING|feat!|fix!)"; then
+            BUMP_TYPE="minor"
+            echo "Detected breaking changes - using minor bump"
+          elif echo "$$COMMITS" | grep -qE "feat:"; then
+            BUMP_TYPE="minor"
+            echo "Detected new features - using minor bump"
+          else
+            BUMP_TYPE="patch"
+            echo "Using patch bump for bug fixes and chores"
+          fi
+          
+          buildkite-agent meta-data set "bump_type" "$$BUMP_TYPE"
+          
+          echo "--- :arrow_up: Bumping version"
+          IFS='.' read -r major minor patch <<< "$$VERSION"
+          
+          case $$BUMP_TYPE in
+            major)
+              major=$$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$$((patch + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$$major.$$minor.$$patch"
+          buildkite-agent meta-data set "new_version" "$$NEW_VERSION"
+          echo "Bumping from $$VERSION to $$NEW_VERSION ($$BUMP_TYPE)"
+          
+          # Update pyproject.toml
+          sed -i "s/version = \"$$VERSION\"/version = \"$$NEW_VERSION\"/" pyproject.toml
+          
+          echo "--- :lock: Updating lockfile"
+          uv lock
+
+      - label: ":test_tube: Final Test Run"
+        key: "final-tests"
+        depends_on: "version-bump"
+        command: |
+          HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+          
+          if [ "$$HAS_CHANGES" != "true" ]; then
+            echo "⏭️ Skipping - no changes"
+            exit 0
+          fi
+          
+          echo "--- :test_tube: Running final tests after version bump"
+          uv sync
+          uv run pytest tests/ -k "not openai and not llm and not anthropic and not gemini and not cohere and not mistral and not groq and not vertexai and not xai and not cerebras and not fireworks and not writer and not bedrock and not perplexity and not genai" --tb=short --maxfail=5
+
+      - label: ":memo: Generate Changelog"
+        key: "changelog"
+        depends_on: "final-tests"
+        command: |
+          HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+          
+          if [ "$$HAS_CHANGES" != "true" ]; then
+            echo "⏭️ Skipping - no changes"
+            exit 0
+          fi
+          
+          echo "--- :memo: Generating changelog"
+          LAST_TAG=$$(buildkite-agent meta-data get "last_tag")
+          NEW_VERSION=$$(buildkite-agent meta-data get "new_version")
+          
+          if [ "$$LAST_TAG" = "none" ]; then
+            CHANGELOG=$$(git log --oneline HEAD~30..HEAD --pretty=format:"- %s" | head -20)
+          else
+            CHANGELOG=$$(git log --oneline $$LAST_TAG..HEAD --pretty=format:"- %s")
+          fi
+          
+          # Save changelog to file
+          cat > CHANGELOG.md << EOF
+          ## 🚀 What's Changed
+          
+          $$CHANGELOG
+          
+          ## 🔗 Links
+          **Full Changelog**: https://github.com/$${BUILDKITE_REPO}/compare/$$LAST_TAG...v$$NEW_VERSION
+          
+          ---
+          🤖 *This release was automatically generated every 2 weeks*
+          EOF
+          
+          echo "Changelog generated:"
+          cat CHANGELOG.md
+        artifact_paths:
+          - "CHANGELOG.md"
+
+      - label: ":git: Create Release Commit"
+        key: "commit"
+        depends_on: "changelog"
+        command: |
+          HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+          
+          if [ "$$HAS_CHANGES" != "true" ]; then
+            echo "⏭️ Skipping - no changes"
+            exit 0
+          fi
+          
+          NEW_VERSION=$$(buildkite-agent meta-data get "new_version")
+          
+          echo "--- :git: Creating release commit"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pyproject.toml uv.lock
+          git commit -m "chore: automated release v$$NEW_VERSION
+
+          🤖 Generated with Buildkite
+
+          Co-Authored-By: Buildkite <buildkite@buildkite.com>"
+          git tag "v$$NEW_VERSION"
+
+      - label: ":rocket: Push Changes"
+        key: "push"
+        depends_on: "commit"
+        command: |
+          HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+          
+          if [ "$$HAS_CHANGES" != "true" ]; then
+            echo "⏭️ Skipping - no changes"
+            exit 0
+          fi
+          
+          # Check if this is a dry run
+          DRY_RUN=$$(buildkite-agent meta-data get "dry_run" --default "false" 2>/dev/null || echo "false")
+          
+          if [ "$$DRY_RUN" = "true" ]; then
+            echo "🧪 DRY RUN MODE - Skipping push"
+            NEW_VERSION=$$(buildkite-agent meta-data get "new_version")
+            buildkite-agent artifact download "CHANGELOG.md" .
+            
+            buildkite-agent annotate --style "warning" << EOF
+          ## 🧪 DRY RUN MODE
+          
+          No changes were pushed to the repository.
+          
+          **Would have released:** v$$NEW_VERSION
+          
+          ### Changelog Preview:
+          $$(cat CHANGELOG.md)
+          EOF
+            exit 0
+          fi
+          
+          NEW_VERSION=$$(buildkite-agent meta-data get "new_version")
+          
+          echo "--- :rocket: Pushing changes to repository"
+          git push origin main
+          git push origin "v$$NEW_VERSION"
+          
+          echo "✅ Pushed commit and tag v$$NEW_VERSION"
+
+      - label: ":github: Create GitHub Release"
+        key: "github-release"
+        depends_on: "push"
+        command: |
+          HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+          DRY_RUN=$$(buildkite-agent meta-data get "dry_run" --default "false" 2>/dev/null || echo "false")
+          
+          if [ "$$HAS_CHANGES" != "true" ] || [ "$$DRY_RUN" = "true" ]; then
+            echo "⏭️ Skipping GitHub release"
+            exit 0
+          fi
+          
+          NEW_VERSION=$$(buildkite-agent meta-data get "new_version")
+          
+          echo "--- :github: Creating GitHub release"
+          buildkite-agent artifact download "CHANGELOG.md" .
+          
+          # Create GitHub release using gh CLI
+          gh release create "v$$NEW_VERSION" \
+            --title "🚀 Release v$$NEW_VERSION" \
+            --notes-file CHANGELOG.md \
+            --repo "$${BUILDKITE_REPO}"
+          
+          echo "✅ Created GitHub release v$$NEW_VERSION"
+
+  - wait
+
+  - label: ":bar_chart: Build Summary"
+    command: |
+      HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes" --default "false")
+      CHANGE_COUNT=$$(buildkite-agent meta-data get "change_count" --default "0")
+      
+      if [ "$$HAS_CHANGES" = "true" ]; then
+        CURRENT_VERSION=$$(buildkite-agent meta-data get "current_version")
+        NEW_VERSION=$$(buildkite-agent meta-data get "new_version")
+        BUMP_TYPE=$$(buildkite-agent meta-data get "bump_type")
+        DRY_RUN=$$(buildkite-agent meta-data get "dry_run" --default "false" 2>/dev/null || echo "false")
+        
+        if [ "$$DRY_RUN" = "true" ]; then
+          STATUS="🧪 Dry Run"
+        else
+          STATUS="✅ Released"
+        fi
+        
+        buildkite-agent annotate --style "success" << EOF
+      ## 📊 Scheduled Release Summary
+      
+      - **Branch**: $${BUILDKITE_BRANCH}
+      - **Has Changes**: $$HAS_CHANGES
+      - **Change Count**: $$CHANGE_COUNT
+      - **Version**: $$CURRENT_VERSION → $$NEW_VERSION
+      - **Bump Type**: $$BUMP_TYPE
+      - **Status**: $$STATUS
+      EOF
+      else
+        buildkite-agent annotate --style "info" << EOF
+      ## 📊 Scheduled Release Summary
+      
+      - **Branch**: $${BUILDKITE_BRANCH}
+      - **Has Changes**: $$HAS_CHANGES
+      - **Change Count**: $$CHANGE_COUNT
+      - **Status**: ⏭️ Skipped (no changes)
+      EOF
+      fi
+
+  - label: ":warning: Failure Notification"
+    if: build.state == "failing"
+    depends_on:
+      - step: "quality-checks"
+        allow_failure: true
+      - step: "release"
+        allow_failure: true
+    command: |
+      buildkite-agent annotate --style "error" << EOF
+      ## ❌ Scheduled Release Failed
+      
+      Check the logs above for details.
+      
+      ### Common Issues:
+      - Tests failed
+      - Linting issues
+      - Type checking errors
+      - Git push permissions
+      - Missing API keys or secrets
+      EOF
+
+# ============================================================================
+# OPTIONAL: PyPI Publishing
+# ============================================================================
+# Uncomment the step below to enable automatic PyPI publishing.
+# Requires PYPI_TOKEN to be configured on your agents.
+#
+# - label: ":python: Publish to PyPI"
+#   depends_on: "github-release"
+#   command: |
+#     HAS_CHANGES=$$(buildkite-agent meta-data get "has_changes")
+#     DRY_RUN=$$(buildkite-agent meta-data get "dry_run" --default "false" 2>/dev/null || echo "false")
+#     
+#     if [ "$$HAS_CHANGES" != "true" ] || [ "$$DRY_RUN" = "true" ] || [ -z "$$PYPI_TOKEN" ]; then
+#       echo "⏭️ Skipping PyPI publish"
+#       exit 0
+#     fi
+#     
+#     echo "--- :python: Building and publishing to PyPI"
+#     uv build
+#     uv publish --token $$PYPI_TOKEN
+# ============================================================================

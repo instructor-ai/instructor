@@ -1,0 +1,74 @@
+# ============================================================================
+# Translated from: Upload Python Package
+# ============================================================================
+#
+# TRIGGER CONFIGURATION REQUIRED:
+# This pipeline should be triggered on:
+#   - GitHub releases (published) - Configure webhook in Buildkite UI
+#   - Manual builds - Use "New Build" button in Buildkite UI
+#
+# Original workflow used:
+#   on:
+#     release:
+#       types: [published]
+#     workflow_dispatch:
+#
+# To trigger on GitHub releases:
+#   1. Go to Pipeline Settings → GitHub
+#   2. Configure a webhook for "release" events
+#   3. Use conditional: if: build.env("GITHUB_EVENT_NAME") == "release"
+#
+# Note: GitHub release triggers require external webhook configuration.
+# Consider keeping release publishing in GitHub Actions or using Buildkite's
+# tag-based triggers instead (Pipeline Settings → Build tags).
+#
+# PERMISSIONS REQUIRED:
+# Original workflow required:
+#   - contents: read (automatic via Git checkout)
+#
+# AGENT CONFIGURATION REQUIRED:
+# The original workflow used the following GitHub Actions runners:
+#
+#   Job                  | runs-on
+#   ---------------------|----------------
+#   release              | ubuntu-latest
+#
+# You must configure Buildkite agents to handle these workloads. Add an
+# `agents` block to each step once your queues are set up. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Required tools on agents: Python 3.10, uv
+# Alternatively, use the Docker plugin with an appropriate Python image.
+#
+# SECRETS CONFIGURATION:
+# Configure the following environment variable on your Buildkite agents:
+#   - UV_PUBLISH_TOKEN (PyPI API token)
+#
+# ============================================================================
+
+steps:
+  - label: ":python: Build and Publish Package"
+    key: "release"
+    # Assumes Python 3.10 and uv are installed on the agent.
+    # If not available, use the Docker plugin:
+    #   plugins:
+    #     - docker:
+    #         image: "ghcr.io/astral-sh/uv:python3.10-bookworm"
+    #         propagate-environment: true
+    plugins:
+      - cache#v1.10.0:
+          manifest: uv.lock
+          path: .venv
+          restore: pipeline
+          save: pipeline
+    command: |
+      uv python install 3.10
+      uv sync --all-extras
+      uv build
+      uv publish
+    env:
+      UV_PUBLISH_TOKEN: "${UV_PUBLISH_TOKEN}"
+    artifact_paths:
+      - "dist/*"

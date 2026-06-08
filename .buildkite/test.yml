@@ -1,0 +1,317 @@
+# ============================================================================
+# Translated from: Test workflow (GitHub Actions)
+# ============================================================================
+#
+# TRIGGERS: Configure in Buildkite UI
+#   - Push to main branch: Pipeline Settings → GitHub → Branch filter: "main"
+#   - Pull requests: Pipeline Settings → GitHub → "Build pull requests"
+#
+# AGENT CONFIGURATION REQUIRED
+# ============================================================================
+# The original workflow used the following GitHub Actions runners:
+#
+#   Job                  | runs-on
+#   ---------------------|----------------
+#   core-tests           | ubuntu-latest
+#   core-openai          | ubuntu-latest
+#   core-anthropic       | ubuntu-latest
+#   core-google          | ubuntu-latest
+#   core-other           | ubuntu-latest
+#   provider-tests       | ubuntu-latest
+#   auto-client-test     | ubuntu-latest
+#
+# You must configure Buildkite agents to handle these workloads. Add an
+# `agents` block to each step once your queues are set up. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Required tools on agents: Python 3.11, uv package manager
+# Alternatively, use the Docker plugin with a Python 3.11 image.
+#
+# SECRETS CONFIGURATION
+# ============================================================================
+# Configure these secrets as environment variables on your Buildkite agents
+# or use a secrets management plugin (Vault, AWS Secrets Manager, etc.):
+#
+#   - OPENAI_API_KEY
+#   - ANTHROPIC_API_KEY
+#   - COHERE_API_KEY
+#   - XAI_API_KEY
+#   - GOOGLE_API_KEY
+#   - GOOGLE_GENAI_MODEL
+#   - MISTRAL_API_KEY
+#   - CEREBRAS_API_KEY
+#   - FIREWORKS_API_KEY
+#   - WRITER_API_KEY
+#   - PERPLEXITY_API_KEY
+#
+# ============================================================================
+
+env:
+  INSTRUCTOR_ENV: "CI"
+
+steps:
+  - group: ":test_tube: Core Tests"
+    key: "core-tests-group"
+    steps:
+      - label: ":test_tube: Core Tests"
+        key: "core-tests"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          uv run pytest tests/ --asyncio-mode=auto -n auto \
+            -k 'not test_core_providers and not test_openai and not test_anthropic and not test_gemini and not test_genai and not test_writer and not test_vertexai and not docs'
+        env:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+          ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+          COHERE_API_KEY: "${COHERE_API_KEY}"
+          XAI_API_KEY: "${XAI_API_KEY}"
+          GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+          MISTRAL_API_KEY: "${MISTRAL_API_KEY}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline
+
+  - wait
+
+  - group: ":gear: Core Provider Tests"
+    key: "core-provider-tests-group"
+    steps:
+      - label: ":openai: Core Provider Tests (OpenAI)"
+        key: "core-openai"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          
+          if [ -z "$${OPENAI_API_KEY}" ]; then
+            echo "Skipping OpenAI core provider tests (missing OPENAI_API_KEY)."
+            exit 0
+          fi
+          
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
+          status=$$?
+          set -e
+          if [ $$status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $$status
+        env:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline
+
+      - label: ":anthropic: Core Provider Tests (Anthropic)"
+        key: "core-anthropic"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          
+          if [ -z "$${ANTHROPIC_API_KEY}" ]; then
+            echo "Skipping Anthropic core provider tests (missing ANTHROPIC_API_KEY)."
+            exit 0
+          fi
+          
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
+          status=$$?
+          set -e
+          if [ $$status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $$status
+        env:
+          ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline
+
+      - label: ":google: Core Provider Tests (Google)"
+        key: "core-google"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          
+          if [ -z "$${GOOGLE_API_KEY}" ] || [ -z "$${GOOGLE_GENAI_MODEL}" ]; then
+            echo "Skipping Google core provider tests (missing GOOGLE_API_KEY or GOOGLE_GENAI_MODEL)."
+            exit 0
+          fi
+          
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
+          status=$$?
+          set -e
+          if [ $$status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $$status
+        env:
+          GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+          GOOGLE_GENAI_MODEL: "${GOOGLE_GENAI_MODEL}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline
+
+      - label: ":package: Core Provider Tests (Other)"
+        key: "core-other"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          
+          if [ -z "$${COHERE_API_KEY}" ] && [ -z "$${XAI_API_KEY}" ] && \
+             [ -z "$${MISTRAL_API_KEY}" ] && [ -z "$${CEREBRAS_API_KEY}" ] && \
+             [ -z "$${FIREWORKS_API_KEY}" ] && [ -z "$${WRITER_API_KEY}" ] && \
+             [ -z "$${PERPLEXITY_API_KEY}" ]; then
+            echo "Skipping core provider tests (Other) (missing provider secrets)."
+            exit 0
+          fi
+          
+          set +e
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+          status=$$?
+          set -e
+          if [ $$status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $$status
+        env:
+          COHERE_API_KEY: "${COHERE_API_KEY}"
+          XAI_API_KEY: "${XAI_API_KEY}"
+          MISTRAL_API_KEY: "${MISTRAL_API_KEY}"
+          CEREBRAS_API_KEY: "${CEREBRAS_API_KEY}"
+          FIREWORKS_API_KEY: "${FIREWORKS_API_KEY}"
+          WRITER_API_KEY: "${WRITER_API_KEY}"
+          PERPLEXITY_API_KEY: "${PERPLEXITY_API_KEY}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline
+
+  - wait
+
+  - group: ":rocket: Provider Tests"
+    key: "provider-tests-group"
+    steps:
+      - label: ":openai: {{matrix.name}} Tests"
+        key: "provider-test-{{matrix.key}}"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          
+          # Check if required API key is present
+          if [ -z "$${PROVIDER_API_KEY}" ]; then
+            echo "Skipping {{matrix.name}} tests (missing {{matrix.env_key}})."
+            exit 0
+          fi
+          
+          # Additional check for Google-based providers
+          if [ "{{matrix.name}}" = "Gemini" ] || [ "{{matrix.name}}" = "Google GenAI" ] || [ "{{matrix.name}}" = "Vertex AI" ]; then
+            if [ -z "$${GOOGLE_GENAI_MODEL}" ]; then
+              echo "Skipping {{matrix.name}} tests (missing GOOGLE_GENAI_MODEL)."
+              exit 0
+            fi
+          fi
+          
+          set +e
+          uv run pytest {{matrix.test_path}} --asyncio-mode=auto -n auto
+          status=$$?
+          set -e
+          if [ $$status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $$status
+        env:
+          PROVIDER_API_KEY: "${{{matrix.env_key}}}"
+          GOOGLE_GENAI_MODEL: "${GOOGLE_GENAI_MODEL}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline
+        matrix:
+          setup:
+            name:
+              - "OpenAI"
+              - "Anthropic"
+              - "Gemini"
+              - "Google GenAI"
+              - "Vertex AI"
+              - "Writer"
+            env_key:
+              - "OPENAI_API_KEY"
+              - "ANTHROPIC_API_KEY"
+              - "GOOGLE_API_KEY"
+              - "GOOGLE_API_KEY"
+              - "GOOGLE_API_KEY"
+              - "WRITER_API_KEY"
+            test_path:
+              - "tests/llm/test_openai"
+              - "tests/llm/test_anthropic"
+              - "tests/llm/test_gemini"
+              - "tests/llm/test_genai"
+              - "tests/llm/test_vertexai"
+              - "tests/llm/test_writer"
+            key:
+              - "openai"
+              - "anthropic"
+              - "gemini"
+              - "google-genai"
+              - "vertexai"
+              - "writer"
+
+      - label: ":robot_face: Auto Client Tests"
+        key: "auto-client-test"
+        command: |
+          uv python install 3.11
+          uv sync --all-extras
+          
+          if [ -z "$${OPENAI_API_KEY}" ] || [ -z "$${GOOGLE_API_KEY}" ] || \
+             [ -z "$${COHERE_API_KEY}" ] || [ -z "$${ANTHROPIC_API_KEY}" ] || \
+             [ -z "$${XAI_API_KEY}" ]; then
+            echo "Skipping Auto Client tests (missing one or more provider secrets)."
+            exit 0
+          fi
+          
+          set +e
+          uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
+          status=$$?
+          set -e
+          if [ $$status -eq 5 ]; then
+            echo "No tests collected; treating as success."
+            exit 0
+          fi
+          exit $$status
+        env:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+          GOOGLE_API_KEY: "${GOOGLE_API_KEY}"
+          COHERE_API_KEY: "${COHERE_API_KEY}"
+          ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+          XAI_API_KEY: "${XAI_API_KEY}"
+        plugins:
+          - cache#v1.10.0:
+              manifest: "pyproject.toml"
+              path: ".venv"
+              restore: pipeline
+              save: pipeline

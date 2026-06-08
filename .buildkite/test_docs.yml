@@ -1,0 +1,63 @@
+# ============================================================================
+# Translated from: Test Docs (GitHub Actions)
+# ============================================================================
+#
+# TRIGGER CONFIGURATION REQUIRED:
+# This workflow originally ran on a monthly schedule (cron: '0 0 1 * *').
+# Configure this in Buildkite UI:
+#   1. Go to Pipeline Settings → Schedules
+#   2. Create a new schedule with:
+#      - Cron: "0 0 1 * *" (00:00 on the 1st of every month)
+#      - Branch: main (or your default branch)
+#
+# AGENT CONFIGURATION REQUIRED:
+# The original workflow used the following GitHub Actions runners:
+#
+#   Job                  | runs-on
+#   ---------------------|----------------
+#   release              | ubuntu-latest
+#
+# You must configure Buildkite agents to handle these workloads. Add an
+# `agents` block to each step once your queues are set up. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Required tools on agents:
+#   - Python 3.11
+#   - Poetry
+#   - uv (Python package installer)
+#   - System packages: graphviz, libcairo2-dev, xdg-utils
+#
+# Alternatively, use the Docker plugin with an appropriate Python image.
+#
+# SECRETS CONFIGURATION:
+# Configure the following environment variable on your Buildkite agents:
+#   - OPENAI_API_KEY
+#
+# ============================================================================
+
+steps:
+  - label: ":test_tube: Test Docs (Python 3.11)"
+    key: "test-docs-python-3-11"
+    # Assumes Python 3.11, Poetry, uv, and system dependencies are installed.
+    # If not available, use the Docker plugin with a custom image containing
+    # these tools, or install them in the command block.
+    command:
+      - "echo '--- :package: Installing system dependencies'"
+      - "sudo apt-get update"
+      - "sudo apt-get install -y graphviz libcairo2-dev xdg-utils"
+      - "echo '--- :gear: Installing Poetry'"
+      - "curl -sSL https://install.python-poetry.org | python3 -"
+      - "export PATH=\"$$HOME/.local/bin:$$PATH\""
+      - "echo '--- :gear: Installing uv'"
+      - "curl -LsSf https://astral.sh/uv/install.sh | sh"
+      - "export PATH=\"$$HOME/.cargo/bin:$$PATH\""
+      - "echo '--- :package: Installing project dependencies'"
+      - "uv sync --all-extras"
+      - "echo '--- :test_tube: Running tests'"
+      - "uv run pytest tests/docs --asyncio-mode=auto"
+    env:
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+    # agents:
+    #   queue: "linux"

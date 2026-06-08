@@ -1,0 +1,74 @@
+# ============================================================================
+# Translated from: ty.yml
+# ============================================================================
+#
+# TRIGGERS:
+#   - pull_request: branches [main]
+#   - push: branches [main]
+#
+# Configure in Buildkite UI → Pipeline Settings → GitHub:
+#   - Enable "Build pull requests"
+#   - Enable "Build branches" (filter: main)
+#
+# ============================================================================
+#
+# AGENT CONFIGURATION REQUIRED:
+# ============================================================================
+# The original workflow used the following GitHub Actions runners:
+#
+#   Job                  | runs-on
+#   ---------------------|----------------
+#   type-check           | ubuntu-latest
+#
+# You must configure Buildkite agents to handle these workloads. Add an
+# `agents` block to each step once your queues are set up. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Required tools on agents: Python 3.9-3.14, uv
+# Alternatively, use the Docker plugin with an appropriate Python image.
+# ============================================================================
+#
+# PERMISSIONS:
+#   - contents: read (automatic via Git checkout)
+#
+# ============================================================================
+
+env:
+  WORKING_DIRECTORY: "."
+
+steps:
+  - label: ":test_tube: Type Check"
+    key: "type-check"
+    # agents:
+    #   queue: "linux"
+    plugins:
+      - cache#v1.10.0:
+          manifest: "uv.lock"
+          path: ".venv"
+          restore: pipeline
+          save: pipeline
+    command: |
+      # Install uv
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      export PATH="$$HOME/.cargo/bin:$$PATH"
+
+      # Set up Python
+      uv python install 3.11
+
+      # Install the project
+      uv sync --all-extras
+
+      # Run type check with ty
+      uv run ty check --error-on-warning --output-format github instructor/
+
+      # Run type check with ty (tests)
+      uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
+
+      # Check installed-package public typing
+      tests/typing/check_installed_package.sh
+
+      # Check supported Python versions and platforms
+      uv run ty check --python-version 3.9 --python-platform all --error-on-warning --output-format github instructor/
+      uv run ty check --python-version 3.14 --python-platform all --error-on-warning --output-format github instructor/

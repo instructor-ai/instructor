@@ -1,0 +1,142 @@
+# ============================================================================
+# Translated from: OSS Issue Deduplicator
+# ============================================================================
+#
+# TRIGGER CONFIGURATION REQUIRED:
+# This workflow uses workflow_dispatch and issues triggers. Configure in Buildkite UI:
+#
+# 1. Manual Trigger (workflow_dispatch):
+#    - Use "New Build" button in Buildkite UI
+#    - Or call Buildkite API with custom metadata
+#
+# 2. Automatic Trigger (issues: opened, labeled):
+#    - Currently commented out in source workflow
+#    - To enable: Set up webhook endpoint to call Buildkite API on GitHub issue events
+#    - Webhook should filter for: action=opened OR (action=labeled AND label.name=codex-deduplicate)
+#    - Pass issue number and event details as build metadata
+#
+# PERMISSIONS REQUIRED:
+# Configure GitHub token on agent with scopes:
+#   - contents: read (automatic via Git checkout)
+#   - issues: read
+#   - issues: write (for comment-on-candidates step)
+#
+# AGENT CONFIGURATION REQUIRED:
+# The original workflow used the following GitHub Actions runners:
+#
+#   Job                  | runs-on
+#   ---------------------|----------------
+#   find-candidates      | ubuntu-latest
+#   comment-on-candidates| ubuntu-latest
+#
+# You must configure Buildkite agents to handle these workloads. Add an
+# `agents` block to each step once your queues are set up. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Required tools on agents: gh CLI, jq
+# Alternatively, use the Docker plugin with appropriate images.
+#
+# SECRETS REQUIRED:
+# - OPENAI_API_KEY: Configure as environment variable on agent
+# - GITHUB_TOKEN: Configure as environment variable on agent (for gh CLI)
+#
+# IMPORTANT NOTES:
+# - The openai/codex-action has no Buildkite equivalent. This translation
+#   assumes you will implement equivalent API calls or use a custom script.
+# - The workflow includes a safety mechanism ('shadow' vs 'execute' mode).
+#   Review manual runs before changing to 'execute' mode.
+# - Input handling: Use input step for manual builds, or pass via build metadata
+#   for webhook-triggered builds.
+# ============================================================================
+
+steps:
+  - input: "Issue Deduplication Options"
+    key: "options"
+    fields:
+      - text: "Issue number to preview"
+        key: "issue_number"
+        required: true
+        hint: "Enter the existing issue number"
+    if: build.source == "ui"
+
+  - wait
+
+  - label: ":mag: Find duplicate candidates"
+    key: "find-candidates"
+    # Assumes gh CLI and jq are installed on the agent.
+    # If not available, use the Docker plugin:
+    #   plugins:
+    #     - docker:
+    #         image: "ghcr.io/cli/cli:latest"
+    env:
+      # Use $$ for runtime interpolation
+      REPO: "$$BUILDKITE_REPO"
+    command: |
+      set -euo pipefail
+      
+      # Get issue number from input step or build metadata
+      if [ "$$BUILDKITE_SOURCE" = "ui" ]; then
+        ISSUE=$$(buildkite-agent meta-data get "issue_number")
+      else
+        # For webhook triggers, expect issue number in build metadata
+        ISSUE=$$(buildkite-agent meta-data get "github_issue_number" --default "")
+      fi
+      
+      if [ -z "$$ISSUE" ]; then
+        echo "Error: No issue number provided"
+        exit 1
+      fi
+      
+      echo "--- :github: Collecting issue data"
+      gh issue view "$$ISSUE" --repo "$$REPO" --json number,title,body > current-issue.json
+      gh issue list --repo "$$REPO" --state all --limit 500 --json number,title,body,state \
+        | jq --arg issue "$$ISSUE" '[.[] | select((.number|tostring) != $$issue) | .body = ((.body // "")[0:4000])]' \
+        > candidate-issues.json
+      
+      echo "--- :robot: Calling OpenAI API for deduplication"
+      # NOTE: The openai/codex-action has no direct Buildkite equivalent.
+      # You must implement equivalent API calls here. Example structure:
+      #
+      # PROMPT="Identify up to five likely duplicate issues for current-issue.json..."
+      # RESPONSE=$(curl -X POST https://api.openai.com/v1/chat/completions \
+      #   -H "Authorization: Bearer $$OPENAI_API_KEY" \
+      #   -H "Content-Type: application/json" \
+      #   -d "{
+      #     \"model\": \"gpt-4\",
+      #     \"messages\": [{\"role\": \"user\", \"content\": \"$$PROMPT\"}],
+      #     \"response_format\": {\"type\": \"json_object\"}
+      #   }")
+      #
+      # For now, this is a placeholder that you must implement:
+      echo "ERROR: OpenAI API integration not implemented"
+      echo "Replace this section with actual API calls to OpenAI"
+      exit 1
+      
+      # After implementing API call, extract and store the response:
+      # CODEX_OUTPUT=$(echo "$$RESPONSE" | jq -r '.choices[0].message.content')
+      # buildkite-agent meta-data set "codex_output" "$$CODEX_OUTPUT"
+      # printf 'DEDUPLICATOR_PREVIEW=%s\n' "$$CODEX_OUTPUT"
+
+  - label: ":speech_balloon: Comment on candidates"
+    key: "comment-on-candidates"
+    depends_on: "find-candidates"
+    # Change 'shadow' to 'execute' only after reviewing manual runs
+    if: build.source != "ui"
+    env:
+      REPO: "$$BUILDKITE_REPO"
+    command: |
+      set -euo pipefail
+      
+      # NOTE: This step is currently in 'shadow' mode and will not execute.
+      # To enable, change the if condition above to remove the source check.
+      
+      OUTPUT=$$(buildkite-agent meta-data get "codex_output")
+      ISSUE=$$(buildkite-agent meta-data get "github_issue_number")
+      
+      candidates=$$(printf '%s' "$$OUTPUT" | jq -r '.issues[:5] | map("#" + tostring) | join(", ")')
+      [ -n "$$candidates" ] || exit 0
+      
+      reason=$$(printf '%s' "$$OUTPUT" | jq -r '.reason // ""')
+      gh issue comment "$$ISSUE" --repo "$$REPO" --body "Codex found possible duplicate candidates: $${candidates}. $${reason}"

@@ -1,0 +1,70 @@
+# ============================================================================
+# Translated from: Weekly Tests (workflow_dispatch, schedule, push)
+# ============================================================================
+#
+# TRIGGER CONFIGURATION REQUIRED:
+#
+# 1. Schedule (cron: "0 0 * * 0"):
+#    - Configure in Buildkite UI → Pipeline Settings → Schedules
+#    - Add schedule: "0 0 * * 0" (00:00 UTC every Sunday)
+#    - Branch: main
+#
+# 2. Manual trigger (workflow_dispatch):
+#    - Use "New Build" button in Buildkite UI
+#    - Or trigger via API/CLI
+#
+# 3. Push to main:
+#    - Configure in Buildkite UI → Pipeline Settings → GitHub
+#    - Branch filter: main
+#
+# NOTE: Original workflow used paths-ignore: "**" to prevent push triggers.
+# In Buildkite, simply don't configure push triggers if you only want
+# scheduled/manual runs.
+#
+# ============================================================================
+#
+# AGENT CONFIGURATION REQUIRED:
+# ============================================================================
+# The original workflow used: ubuntu-latest
+#
+# Required tools on agents:
+#   - Python 3.11
+#   - uv (https://github.com/astral-sh/uv)
+#
+# Add an `agents` block to the step once your queue is configured. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Alternatively, use the Docker plugin with an appropriate image.
+# ============================================================================
+#
+# SECRETS CONFIGURATION:
+# ============================================================================
+# Configure the following environment variable on your Buildkite agents:
+#   - OPENAI_API_KEY
+#
+# See: https://buildkite.com/docs/pipelines/secrets
+# ============================================================================
+
+steps:
+  - label: ":test_tube: Weekly Tests"
+    key: "weekly-tests"
+    # Assumes Python 3.11 and uv are installed on the agent.
+    # If not available, use the Docker plugin:
+    #   plugins:
+    #     - docker:
+    #         image: "ghcr.io/astral-sh/uv:python3.11-bookworm"
+    #         propagate-environment: true
+    plugins:
+      - cache#v1.10.0:
+          manifest: "uv.lock"
+          path: ".venv"
+          restore: pipeline
+          save: pipeline
+    command: |
+      uv python install 3.11
+      uv sync --all-extras --dev
+      uv run pytest tests/ --asyncio-mode=auto
+    env:
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
