@@ -65,9 +65,6 @@ UV is a fast Python package installer and resolver that makes development easier
    # Create a uv environment
    uv venv
 
-   # Activate environment
-   source .venv/bin/activate
-
    # Install with development dependencies
    uv sync --extra dev --extra docs
    ```
