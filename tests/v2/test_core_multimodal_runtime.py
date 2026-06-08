@@ -139,6 +139,24 @@ def test_convert_messages_autodetects_image_params_and_preserves_metadata(
     ]
 
 
+def test_convert_messages_accepts_provider_owned_media_encoder() -> None:
+    image = Image(
+        source="data:image/png;base64,AA==",
+        media_type="image/png",
+        data="AA==",
+    )
+
+    converted = convert_messages(
+        [{"role": "user", "content": [image]}],
+        Mode.TOOLS,
+        media_converter=lambda media: {"provider": type(media).__name__},
+    )
+
+    assert converted == [
+        {"role": "user", "content": [{"provider": "Image"}]},
+    ]
+
+
 def test_convert_messages_rejects_unknown_typed_message() -> None:
     with pytest.raises(ValueError, match="Unsupported message type"):
         convert_messages(

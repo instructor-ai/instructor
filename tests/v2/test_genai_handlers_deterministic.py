@@ -120,7 +120,7 @@ def test_tools_handler_prepare_request_without_response_model(
         lambda messages: ["converted", *messages],
     )
     monkeypatch.setattr(
-        "instructor.v2.providers.genai.handlers.extract_genai_multimodal_content",
+        "instructor.v2.providers.genai.handlers.extract_multimodal_content",
         lambda contents, autodetect_images: [*contents, autodetect_images],
     )
 

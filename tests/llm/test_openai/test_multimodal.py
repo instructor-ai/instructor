@@ -8,6 +8,8 @@ from pathlib import Path
 import base64
 import os
 
+from instructor.core.exceptions import InstructorRetryException
+
 audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 image_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 
@@ -60,21 +62,32 @@ def test_multimodal_audio_description(audio_file, mode, client):
     class AudioDescription(BaseModel):
         source: str
 
-    response = client.chat.completions.create(
-        model="gpt-audio-1.5",
-        response_model=AudioDescription,
-        modalities=["text"],
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    "Where's this excerpt from?",
-                    audio_file,
-                ],  # type: ignore
-            },
-        ],
-        audio={"voice": "alloy", "format": "wav"},  # type: ignore
-    )
+    try:
+        response = client.chat.completions.create(
+            model="gpt-audio-1.5",
+            response_model=AudioDescription,
+            modalities=["text"],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        "Where's this excerpt from?",
+                        audio_file,
+                    ],  # type: ignore
+                },
+            ],
+            audio={"voice": "alloy", "format": "wav"},  # type: ignore
+        )
+    except InstructorRetryException as exc:
+        message = str(exc).lower()
+        if (
+            "model_not_found" in message
+            or "does not exist or you do not have access" in message
+        ):
+            pytest.skip(f"Audio model unavailable in this environment: {exc}")
+        raise
+
+    assert isinstance(response, AudioDescription)
 
 
 class ImageDescription(BaseModel):

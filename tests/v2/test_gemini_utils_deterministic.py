@@ -9,6 +9,7 @@ import pytest
 from pydantic import BaseModel
 
 from instructor.v2.core.errors import ConfigurationError
+from instructor.v2.core.multimodal import PDFWithGenaiFile
 from instructor.v2.providers.gemini import utils
 
 
@@ -208,11 +209,11 @@ def test_convert_to_genai_messages_supports_strings_existing_content_and_media(
     _install_fake_genai_types(monkeypatch)
 
     class FakeImage:
-        def to_genai(self) -> str:
-            return "image-part"
+        pass
 
     image = FakeImage()
     monkeypatch.setattr(utils, "Image", FakeImage)
+    monkeypatch.setattr(utils, "media_to_genai", lambda _image: "image-part")
 
     existing = FakeContent(role="user", parts=[FakePart.from_text("existing")])
     uploaded = FakeFile()
@@ -233,6 +234,22 @@ def test_convert_to_genai_messages_supports_strings_existing_content_and_media(
     assert result[3].parts[1] == "image-part"
 
 
+def test_convert_to_genai_messages_preserves_uploaded_pdf_conversion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_genai_types(monkeypatch)
+    uploaded = PDFWithGenaiFile(
+        source="https://generativelanguage.googleapis.com/v1beta/files/abc",
+        media_type="application/pdf",
+        data=None,
+    )
+    monkeypatch.setattr(utils, "media_to_genai", lambda media: ("media", media))
+
+    result = utils.convert_to_genai_messages([{"role": "user", "content": [uploaded]}])
+
+    assert result[0].parts == [("media", uploaded)]
+
+
 def test_handle_genai_message_conversion_extracts_system_and_contents(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -243,7 +260,8 @@ def test_handle_genai_message_conversion_extracts_system_and_contents(
         lambda messages: ["converted", *messages],
     )
     monkeypatch.setattr(
-        "instructor.v2.core.multimodal.extract_genai_multimodal_content",
+        utils,
+        "extract_multimodal_content",
         lambda contents, autodetect_images: [*contents, autodetect_images],
     )
 
@@ -331,7 +349,10 @@ def test_handle_gemini_json_guards_empty_or_missing_messages(
 
 def test_handle_gemini_tools_sets_tool_config(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
-    monkeypatch.setattr(Answer, "gemini_schema", {"name": "Answer"}, raising=False)
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.schema.generate_gemini_schema",
+        lambda model: {"name": model.__name__},
+    )
 
     model, kwargs = utils.handle_gemini_tools(
         Answer,
@@ -432,7 +453,8 @@ def test_handle_genai_structured_outputs_builds_config(
         lambda _messages: ["converted"],
     )
     monkeypatch.setattr(
-        "instructor.v2.core.multimodal.extract_genai_multimodal_content",
+        utils,
+        "extract_multimodal_content",
         lambda contents, autodetect_images: [*contents, autodetect_images],
     )
     monkeypatch.setattr(utils, "map_to_gemini_function_schema", lambda schema: schema)
@@ -469,7 +491,8 @@ def test_handle_genai_tools_builds_tool_declaration(
         lambda _messages: ["converted"],
     )
     monkeypatch.setattr(
-        "instructor.v2.core.multimodal.extract_genai_multimodal_content",
+        utils,
+        "extract_multimodal_content",
         lambda contents, autodetect_images: [*contents, autodetect_images],
     )
     monkeypatch.setattr(utils, "map_to_genai_schema", lambda _schema: {"schema": "ok"})

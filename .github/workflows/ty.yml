@@ -27,6 +27,8 @@ jobs:
         run: uv run ty check --error-on-warning --output-format github instructor/
       - name: Run type check with ty (tests)
         run: uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
+      - name: Run public surface inference check with Pyright
+        run: uv run --with 'pyright==1.1.408' pyright tests/typing/test_public_surface.py
       - name: Check installed-package public typing
         run: tests/typing/check_installed_package.sh
       - name: Check supported Python versions and platforms

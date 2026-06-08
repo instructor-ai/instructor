@@ -13,10 +13,7 @@ from instructor.v2.core.registry import mode_registry
 
 # Import handler loading utilities from existing test
 from tests.v2.conftest import get_registered_provider_mode_pairs
-from tests.v2.test_handlers_parametrized import (
-    PROVIDER_HANDLER_MODES,
-    _ensure_handlers_loaded,
-)
+from tests.v2.provider_matrix import PROVIDER_HANDLER_MODES, ensure_handlers_loaded
 
 
 def _get_provider_mode_params():
@@ -44,7 +41,7 @@ def _get_provider_params():
 @pytest.mark.parametrize("provider,mode", _get_provider_mode_params())
 def test_mode_is_registered(provider: Provider, mode: Mode) -> None:
     """Test that all expected modes are registered."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider)
     assert mode_registry.is_registered(provider, mode), (
         f"Mode {mode.value} should be registered for {provider.value}"
     )
@@ -53,7 +50,7 @@ def test_mode_is_registered(provider: Provider, mode: Mode) -> None:
 @pytest.mark.parametrize("provider,mode", _get_provider_mode_params())
 def test_handlers_have_all_methods(provider: Provider, mode: Mode) -> None:
     """Test that all handlers have required methods."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider)
     handlers = mode_registry.get_handlers(provider, mode)
 
     assert handlers.request_handler is not None, (
@@ -70,7 +67,7 @@ def test_handlers_have_all_methods(provider: Provider, mode: Mode) -> None:
 @pytest.mark.parametrize("provider", _get_provider_params())
 def test_get_modes_for_provider(provider: Provider) -> None:
     """Test getting all modes for a provider."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider)
     expected_modes = set(PROVIDER_HANDLER_MODES.get(provider, []))
     registered_modes = set(mode_registry.get_modes_for_provider(provider))
 
@@ -82,7 +79,7 @@ def test_get_modes_for_provider(provider: Provider) -> None:
 @pytest.mark.parametrize("provider", _get_provider_params())
 def test_provider_in_mode_providers(provider: Provider) -> None:
     """Test that provider is listed for its supported modes."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider)
     expected_modes = PROVIDER_HANDLER_MODES.get(provider, [])
 
     for mode in expected_modes:
@@ -175,7 +172,7 @@ def test_md_json_handler_inherits_from_openai(provider: Provider) -> None:
 @pytest.mark.parametrize("provider", _get_provider_params())
 def test_parallel_tools_not_supported_unless_listed(provider: Provider) -> None:
     """Test that PARALLEL_TOOLS is not supported unless in PROVIDER_HANDLER_MODES."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider)
     expected_modes = PROVIDER_HANDLER_MODES.get(provider, [])
     is_expected = Mode.PARALLEL_TOOLS in expected_modes
     is_registered = mode_registry.is_registered(provider, Mode.PARALLEL_TOOLS)
@@ -189,7 +186,7 @@ def test_parallel_tools_not_supported_unless_listed(provider: Provider) -> None:
 @pytest.mark.parametrize("provider", _get_provider_params())
 def test_responses_tools_not_supported_unless_listed(provider: Provider) -> None:
     """Test that RESPONSES_TOOLS is not supported unless in PROVIDER_HANDLER_MODES."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider)
     expected_modes = PROVIDER_HANDLER_MODES.get(provider, [])
     is_expected = Mode.RESPONSES_TOOLS in expected_modes
     is_registered = mode_registry.is_registered(provider, Mode.RESPONSES_TOOLS)

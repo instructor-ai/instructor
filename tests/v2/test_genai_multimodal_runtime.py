@@ -191,6 +191,23 @@ def test_uploaded_pdf_to_genai_falls_back_to_pdf_encoder(
     assert multimodal.uploaded_pdf_to_genai(pdf) is sentinel
 
 
+def test_media_to_genai_routes_uploaded_pdf_through_uri_encoder(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_genai(monkeypatch)
+    multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
+    sentinel = object()
+    monkeypatch.setattr(multimodal, "uploaded_pdf_to_genai", lambda _pdf: sentinel)
+
+    pdf = PDFWithGenaiFile(
+        source="https://generativelanguage.googleapis.com/v1beta/files/abc",
+        media_type="application/pdf",
+        data=None,
+    )
+
+    assert multimodal.media_to_genai(pdf) is sentinel
+
+
 def test_upload_new_pdf_file_waits_until_active(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -291,7 +308,7 @@ def test_extract_multimodal_content_converts_detected_media(
 ) -> None:
     _install_fake_genai(monkeypatch)
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
-    monkeypatch.setattr(Image, "to_genai", lambda _self: "converted-image")
+    monkeypatch.setattr(multimodal, "media_to_genai", lambda _media: "converted-image")
     monkeypatch.setattr(
         multimodal,
         "autodetect_media",

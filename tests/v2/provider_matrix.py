@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -23,25 +22,31 @@ TEST_PROVIDER_SPECS = {
 PROVIDER_HANDLER_MODES = {
     provider: spec.supported_modes for provider, spec in PROVIDER_SPECS.items()
 }
-
-
-def legacy_config_dicts() -> dict[Provider, dict[str, Any]]:
-    """Expose the old dict shape while the baseline tests migrate."""
-    return {
-        provider: {
-            "provider_string": spec.provider_string,
-            "supported_modes": list(spec.supported_modes),
-            "unsupported_modes": list(spec.unsupported_modes),
-            "legacy_modes": spec.legacy_modes,
-            "from_function": spec.from_function,
-            "sdk_module": spec.sdk_module,
-            "basic_modes": list(spec.basic_modes),
-            "async_modes": list(spec.async_modes),
-            "missing_sdk_message": spec.missing_sdk_message,
-        }
-        for provider, spec in TEST_PROVIDER_SPECS.items()
-    }
-
+PARTIAL_STREAM_CASES = tuple(
+    (provider, mode)
+    for provider, spec in TEST_PROVIDER_SPECS.items()
+    for mode in spec.capabilities.partial_stream_modes
+)
+ITERABLE_STREAM_CASES = tuple(
+    (provider, mode)
+    for provider, spec in TEST_PROVIDER_SPECS.items()
+    for mode in spec.capabilities.iterable_stream_modes
+)
+TYPED_MULTIMODAL_PROVIDERS = tuple(
+    provider
+    for provider, spec in TEST_PROVIDER_SPECS.items()
+    if spec.capabilities.multimodal_inputs
+)
+TYPED_MULTIMODAL_CASES = tuple(
+    (provider, media_type)
+    for provider, spec in TEST_PROVIDER_SPECS.items()
+    for media_type in spec.capabilities.multimodal_inputs
+)
+EXPLICIT_PARALLEL_PROVIDERS = tuple(
+    provider
+    for provider, spec in TEST_PROVIDER_SPECS.items()
+    if spec.capabilities.explicit_parallel_tools
+)
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _HANDLERS_LOADED: set[Provider] = set()

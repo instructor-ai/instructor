@@ -4,4 +4,5 @@ exclude = [
     ".venv/",
     "tests/llm/",
     "tests/docs/",
+    "tests/typing/test_public_surface.py",
 ]

@@ -1,8 +1,12 @@
 import importlib
 import json
+import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import TypedDict
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ColdImportState(TypedDict):
@@ -21,11 +25,17 @@ mods = sorted(
 )
 print(json.dumps(mods))
 """
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(_PROJECT_ROOT), env.get("PYTHONPATH")) if path
+    )
     result = subprocess.run(
         [sys.executable, "-c", probe, code],
         check=True,
         capture_output=True,
         text=True,
+        cwd=_PROJECT_ROOT,
+        env=env,
     )
     modules = json.loads(result.stdout)
     return {"modules": modules, "count": len(modules)}

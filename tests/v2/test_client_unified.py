@@ -1,528 +1,260 @@
-"""Unified parametrized tests for all provider client factories.
-
-These tests verify client factory behavior (mode normalization, registry, errors, imports)
-across all providers without requiring API keys.
-"""
+"""Shared contracts for declarative provider client factories."""
 
 from __future__ import annotations
 
 import importlib.util
-from pathlib import Path
-from typing import Any
+import inspect
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
 from instructor import Mode, Provider
-from instructor.v2.core.registry import mode_registry, normalize_mode
-from tests.v2.provider_matrix import legacy_config_dicts
-
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-_HANDLER_MODULE_PATHS: dict[Provider, Path] = {
-    Provider.OPENAI: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.ANYSCALE: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.TOGETHER: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.DATABRICKS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.DEEPSEEK: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.ANTHROPIC: _PROJECT_ROOT / "instructor/v2/providers/anthropic/handlers.py",
-    Provider.GENAI: _PROJECT_ROOT / "instructor/v2/providers/genai/handlers.py",
-    Provider.GEMINI: _PROJECT_ROOT / "instructor/v2/providers/gemini/handlers.py",
-    Provider.COHERE: _PROJECT_ROOT / "instructor/v2/providers/cohere/handlers.py",
-    Provider.OPENROUTER: _PROJECT_ROOT
-    / "instructor/v2/providers/openrouter/handlers.py",
-    Provider.PERPLEXITY: _PROJECT_ROOT
-    / "instructor/v2/providers/perplexity/handlers.py",
-    Provider.XAI: _PROJECT_ROOT / "instructor/v2/providers/xai/handlers.py",
-    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.MISTRAL: _PROJECT_ROOT / "instructor/v2/providers/mistral/handlers.py",
-    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.WRITER: _PROJECT_ROOT / "instructor/v2/providers/writer/handlers.py",
-    Provider.BEDROCK: _PROJECT_ROOT / "instructor/v2/providers/bedrock/handlers.py",
-    Provider.VERTEXAI: _PROJECT_ROOT / "instructor/v2/providers/vertexai/handlers.py",
-}
-_HANDLERS_LOADED: set[Provider] = set()
-
-
-def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    for key in (
-        "ALL_PROXY",
-        "all_proxy",
-        "HTTPS_PROXY",
-        "https_proxy",
-        "HTTP_PROXY",
-        "http_proxy",
-    ):
-        monkeypatch.delenv(key, raising=False)
-
-
-def _ensure_handlers_loaded(provider: Provider) -> None:
-    if provider in _HANDLERS_LOADED:
-        return
-    provider_modes = PROVIDER_CLIENT_CONFIGS.get(provider, {}).get(
-        "supported_modes", []
-    )
-    if provider_modes and all(
-        mode_registry.is_registered(provider, mode) for mode in provider_modes
-    ):
-        _HANDLERS_LOADED.add(provider)
-        return
-    handler_path = _HANDLER_MODULE_PATHS.get(provider)
-    if handler_path is None or not handler_path.exists():
-        return
-    spec = importlib.util.spec_from_file_location(
-        f"tests.v2.handlers_{provider.value}",
-        handler_path,
-    )
-    if spec is None or spec.loader is None:
-        return
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    _HANDLERS_LOADED.add(provider)
-
-
-PROVIDER_CLIENT_CONFIGS: dict[Provider, dict[str, Any]] = legacy_config_dicts()
+from instructor.v2.core import client_factory
+from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.errors import ClientError, ModeError
+from instructor.v2.core.provider_specs import PROVIDER_SPECS
+from instructor.v2.core.registry import mode_registry
+from instructor.v2.providers.anthropic import client as anthropic_client
+from instructor.v2.providers.cohere import client as cohere_client
+from instructor.v2.providers.gemini import client as gemini_client
+from instructor.v2.providers.vertexai import client as vertexai_client
+from tests.v2.provider_matrix import TEST_PROVIDER_SPECS, ensure_handlers_loaded
 
 
 def _dependency_missing(module: str) -> bool:
-    """Check if a dependency module is missing."""
     try:
-        return importlib.util.find_spec(module.split(".")[0]) is None
+        return importlib.util.find_spec(module) is None
     except ModuleNotFoundError:
         return True
 
 
-def _is_expected_missing_dependency(provider: Provider, exc: ImportError) -> bool:
-    """Return True when an import failed because the provider SDK is unavailable."""
-    sdk_module = PROVIDER_CLIENT_CONFIGS[provider]["sdk_module"]
-    expected_root = str(sdk_module).split(".")[0]
-    missing_name = getattr(exc, "name", None)
-    if missing_name:
-        return missing_name.split(".")[0] == expected_root
-
-    return f"No module named '{expected_root}'" in str(exc)
-
-
-def _get_provider_params():
-    """Generate provider parameters for parametrized tests."""
-    return [
-        pytest.param(provider, id=provider.value)
-        for provider in PROVIDER_CLIENT_CONFIGS.keys()
-    ]
-
-
-def _get_provider_mode_params():
-    """Generate (provider, mode) parameters for supported modes."""
-    params = []
-    for provider, config in PROVIDER_CLIENT_CONFIGS.items():
-        for mode in config["supported_modes"]:
-            params.append(
-                pytest.param(provider, mode, id=f"{provider.value}-{mode.value}")
-            )
-    return params
-
-
-def _get_provider_unsupported_mode_params():
-    """Generate (provider, mode) parameters for unsupported modes."""
-    params = []
-    for provider, config in PROVIDER_CLIENT_CONFIGS.items():
-        for mode in config["unsupported_modes"]:
-            params.append(
-                pytest.param(provider, mode, id=f"{provider.value}-{mode.value}")
-            )
-    return params
-
-
-def _get_provider_legacy_mode_params():
-    """Generate (provider, legacy_mode) parameters."""
-    params = []
-    for provider, config in PROVIDER_CLIENT_CONFIGS.items():
-        for legacy_mode in config["legacy_modes"].keys():
-            params.append(
-                pytest.param(
-                    provider,
-                    legacy_mode,
-                    id=f"{provider.value}-{legacy_mode.value}",
+def test_manifest_exposes_complete_declarative_client_contracts() -> None:
+    public = __import__("instructor.v2", fromlist=["__all__"])
+    custom_factories = {Provider.LITELLM, Provider.XAI}
+    for provider, spec in TEST_PROVIDER_SPECS.items():
+        ensure_handlers_loaded(provider)
+        assert callable(getattr(public, spec.from_function or "")), provider
+        for mode in spec.supported_modes:
+            handlers = mode_registry.get_handlers(provider, mode)
+            assert all(
+                (
+                    handlers.request_handler,
+                    handlers.reask_handler,
+                    handlers.response_parser,
                 )
-            )
-    return params
-
-
-# ============================================================================
-# Mode Registry Tests
-# ============================================================================
-
-
-@pytest.mark.parametrize("provider,mode", _get_provider_mode_params())
-def test_supported_mode_is_registered(provider: Provider, mode: Mode) -> None:
-    """Test that all supported modes are registered in the registry."""
-    _ensure_handlers_loaded(provider)
-    assert mode_registry.is_registered(provider, mode), (
-        f"Mode {mode.value} should be registered for {provider.value}"
-    )
-
-
-@pytest.mark.parametrize("provider,mode", _get_provider_unsupported_mode_params())
-def test_unsupported_mode_not_registered(provider: Provider, mode: Mode) -> None:
-    """Test that unsupported modes are NOT registered."""
-    assert not mode_registry.is_registered(provider, mode), (
-        f"Mode {mode.value} should NOT be registered for {provider.value}"
-    )
-
-
-@pytest.mark.parametrize("provider", _get_provider_params())
-def test_get_modes_for_provider(provider: Provider) -> None:
-    """Test getting all modes for a provider."""
-    _ensure_handlers_loaded(provider)
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    registered_modes = mode_registry.get_modes_for_provider(provider)
-
-    # All supported modes should be registered
-    for mode in config["supported_modes"]:
-        assert mode in registered_modes, (
-            f"Mode {mode.value} should be in registered modes for {provider.value}"
-        )
-
-    # Unsupported modes should not be registered
-    for mode in config["unsupported_modes"]:
-        assert mode not in registered_modes, (
-            f"Mode {mode.value} should NOT be in registered modes for {provider.value}"
-        )
-
-
-@pytest.mark.parametrize("provider,mode", _get_provider_mode_params())
-def test_handlers_have_all_methods(provider: Provider, mode: Mode) -> None:
-    """Test that all handlers have required methods."""
-    _ensure_handlers_loaded(provider)
-    handlers = mode_registry.get_handlers(provider, mode)
-
-    assert handlers.request_handler is not None
-    assert handlers.reask_handler is not None
-    assert handlers.response_parser is not None
-
-
-# ============================================================================
-# Mode Normalization Tests
-# ============================================================================
-
-
-@pytest.mark.parametrize("provider,mode", _get_provider_mode_params())
-def test_generic_mode_passes_through(provider: Provider, mode: Mode) -> None:
-    """Test that generic modes pass through unchanged."""
-    result = normalize_mode(provider, mode)
-    assert result == mode, (
-        f"Generic mode {mode.value} should pass through unchanged for {provider.value}"
-    )
-
-
-@pytest.mark.parametrize("provider,legacy_mode", _get_provider_legacy_mode_params())
-def test_legacy_mode_normalizes_to_registered_mode(
-    provider: Provider, legacy_mode: Mode
-) -> None:
-    """Legacy provider-specific modes normalize to registered v2 modes."""
-    result = normalize_mode(provider, legacy_mode)
-    assert result != legacy_mode
-    assert mode_registry.is_registered(provider, legacy_mode), (
-        f"Legacy mode {legacy_mode.value} should remain accepted for {provider.value}"
-    )
-
-
-# ============================================================================
-# Import Tests
-# ============================================================================
-
-
-@pytest.mark.parametrize("provider", _get_provider_params())
-def test_from_function_importable(provider: Provider) -> None:
-    """Test that from_* function is importable from instructor.v2."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    from_function = config["from_function"]
-
-    # Import from instructor.v2
-    module = __import__("instructor.v2", fromlist=[from_function])
-    func = getattr(module, from_function, None)
-
-    # Should be None if SDK not installed, or a callable if installed
-    assert func is None or callable(func), (
-        f"{from_function} should be None or callable, got {type(func)}"
-    )
-
-
-@pytest.mark.parametrize("provider", _get_provider_params())
-def test_handlers_importable(provider: Provider) -> None:
-    """Test that handlers are importable."""
-    handler_path = _HANDLER_MODULE_PATHS.get(provider)
-    assert handler_path is not None and handler_path.exists(), (
-        f"Missing handler module path for {provider.value}"
-    )
-
-    _ensure_handlers_loaded(provider)
-
-    assert any(
-        mode_registry.is_registered(provider, mode)
-        for mode in PROVIDER_CLIENT_CONFIGS[provider]["supported_modes"]
-    ), f"No registered handlers found for {provider.value}"
-
-
-# ============================================================================
-# Error Handling Tests
-# ============================================================================
-
-
-@pytest.mark.parametrize("provider,mode", _get_provider_unsupported_mode_params())
-def test_unsupported_mode_raises_error(provider: Provider, mode: Mode) -> None:
-    """Test that getting handlers for unsupported mode raises KeyError."""
-    with pytest.raises(KeyError):
-        mode_registry.get_handlers(provider, mode)
-
-
-@pytest.mark.parametrize("provider", _get_provider_params())
-def test_parallel_tools_not_supported_unless_registered(provider: Provider) -> None:
-    """Test that PARALLEL_TOOLS is not supported unless registered."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    is_supported = Mode.PARALLEL_TOOLS in config["supported_modes"]
-    is_registered = mode_registry.is_registered(provider, Mode.PARALLEL_TOOLS)
-
-    assert is_supported == is_registered, (
-        f"PARALLEL_TOOLS support mismatch for {provider.value}: "
-        f"supported={is_supported}, registered={is_registered}"
-    )
-
-
-@pytest.mark.parametrize("provider", _get_provider_params())
-def test_responses_tools_not_supported_unless_registered(provider: Provider) -> None:
-    """Test that RESPONSES_TOOLS is not supported unless registered."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    is_supported = Mode.RESPONSES_TOOLS in config["supported_modes"]
-    is_registered = mode_registry.is_registered(provider, Mode.RESPONSES_TOOLS)
-
-    assert is_supported == is_registered, (
-        f"RESPONSES_TOOLS support mismatch for {provider.value}: "
-        f"supported={is_supported}, registered={is_registered}"
-    )
-
-
-# ============================================================================
-# SDK Availability Tests
-# ============================================================================
-
-
-@pytest.mark.parametrize("provider", _get_provider_params())
-def test_from_function_raises_without_sdk(provider: Provider) -> None:
-    """Test that from_* function raises error when SDK not installed."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    sdk_module = config["sdk_module"]
-    from_function = config["from_function"]
-
-    if not _dependency_missing(sdk_module):
-        pytest.skip(
-            f"{sdk_module} is installed"  # ty: ignore[too-many-positional-arguments]
-        )
-
-    # Try to import the from_* function from the provider's client module
-    try:
-        client_module_path = f"instructor.v2.providers.{provider.value}.client"
-        client_module = __import__(client_module_path, fromlist=[from_function])
-        from_function_obj = getattr(client_module, from_function, None)
-
-        if from_function_obj is None:
-            pytest.skip(
-                f"{from_function} not found in client module"  # ty: ignore[too-many-positional-arguments]
+            ), (provider, mode)
+        if provider not in custom_factories:
+            assert spec.client and spec.client.sync_types and spec.client.create, (
+                provider
             )
 
-        from instructor.core.exceptions import ClientError
 
-        expected_message = config.get(
-            "missing_sdk_message",
-            f"{sdk_module.split('.')[0]} is not installed",
+def test_missing_optional_sdks_raise_shared_client_error() -> None:
+    for spec in TEST_PROVIDER_SPECS.values():
+        if spec.sdk_module is None or not _dependency_missing(spec.sdk_module):
+            continue
+        module = __import__(
+            spec.client_module or "", fromlist=[spec.from_function or ""]
         )
-        with pytest.raises(ClientError, match=expected_message):
-            from_function_obj("not a client")  # type: ignore[call-arg]
-    except (ImportError, ModuleNotFoundError) as exc:
-        if _is_expected_missing_dependency(provider, exc):
-            pytest.skip(
-                f"{sdk_module} import path is unavailable in this environment"  # ty: ignore[too-many-positional-arguments]
-            )
-        raise
+        with pytest.raises(ClientError, match=spec.missing_sdk_message):
+            getattr(module, spec.from_function or "")("not a client")
 
 
-# ============================================================================
-# String-Based Initialization Tests
-# ============================================================================
+class _SyncClient:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+        create = lambda **kwargs: self.calls.append(kwargs) or object()
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=create))
+        self.custom_create = create
 
 
-# OpenAI-compatible providers that support string-based initialization
-_OPENAI_COMPAT_PROVIDERS = [
-    Provider.ANYSCALE,
-    Provider.TOGETHER,
-    Provider.DATABRICKS,
-    Provider.DEEPSEEK,
-]
+class _AsyncClient(_SyncClient):
+    pass
 
 
+def _fake_types(paths: tuple[str, ...], _message: str) -> tuple[type[Any], ...]:
+    return (_AsyncClient,) if any("Async" in path for path in paths) else (_SyncClient,)
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "provider",
-    [pytest.param(p, id=p.value) for p in _OPENAI_COMPAT_PROVIDERS],
+    ("native", "wrapper_type"),
+    [(_SyncClient(), Instructor), (_AsyncClient(), AsyncInstructor)],
 )
-def test_string_based_initialization_delegates_to_from_provider(
-    provider: Provider,
+async def test_shared_factory_selects_wrapper_and_preserves_native_stream_flag(
+    monkeypatch: pytest.MonkeyPatch,
+    native: _SyncClient,
+    wrapper_type: type[Instructor] | type[AsyncInstructor],
 ) -> None:
-    """Test that string-based initialization delegates to from_provider."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    from_function = config["from_function"]
-
-    # Import the from_* function
-    module = __import__("instructor.v2", fromlist=[from_function])
-    func = getattr(module, from_function, None)
-
-    if func is None:
-        pytest.skip(
-            f"{from_function} not available (SDK may not be installed)"  # ty: ignore[too-many-positional-arguments]
-        )
-    assert callable(func)
-
-    # Mock from_provider to verify it's called
-    from unittest.mock import patch
-
-    with patch("instructor.from_provider") as mock_from_provider:
-        # Call with string (model name)
-        func("test-model", mode=Mode.TOOLS)
-
-        # Verify from_provider was called with correct provider prefix
-        mock_from_provider.assert_called_once()
-        call_args = mock_from_provider.call_args
-        assert call_args[0][0] == f"{provider.value}/test-model"
-        assert call_args[1]["mode"] == Mode.TOOLS
+    monkeypatch.setattr(client_factory, "_resolve_types", _fake_types)
+    monkeypatch.setattr(client_factory, "patch_v2", lambda *, func, **_kwargs: func)
+    wrapped = client_factory.create_instructor(
+        native, provider=Provider.GROQ, mode=Mode.TOOLS
+    )
+    result = wrapped.create_fn(stream=True)
+    if inspect.isawaitable(result):
+        await result
+    assert isinstance(wrapped, wrapper_type)
+    assert native.calls == [{"stream": True}]
 
 
-@pytest.mark.parametrize(
-    "provider",
-    [pytest.param(p, id=p.value) for p in _OPENAI_COMPAT_PROVIDERS],
+def _set_path(root: Any, path: str, value: Any) -> None:
+    parts = path.split(".")
+    for part in parts[:-1]:
+        child = getattr(root, part, None)
+        if child is None:
+            child = SimpleNamespace()
+            setattr(root, part, child)
+        root = child
+    setattr(root, parts[-1], value)
+
+
+_STREAM_CASES = tuple(
+    (provider, is_async)
+    for provider, spec in PROVIDER_SPECS.items()
+    if spec.client is not None
+    for is_async, path in (
+        (False, spec.client.stream),
+        (True, spec.client.async_stream),
+    )
+    if path is not None
 )
-def test_string_based_initialization_with_async_client(provider: Provider) -> None:
-    """Test that string-based initialization supports async_client parameter."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    from_function = config["from_function"]
-
-    # Import the from_* function
-    module = __import__("instructor.v2", fromlist=[from_function])
-    func = getattr(module, from_function, None)
-
-    if func is None:
-        pytest.skip(
-            f"{from_function} not available (SDK may not be installed)"  # ty: ignore[too-many-positional-arguments]
-        )
-    assert callable(func)
-
-    # Mock from_provider to verify it's called
-    from unittest.mock import patch
-
-    with patch("instructor.from_provider") as mock_from_provider:
-        # Call with string and async_client=True
-        func("test-model", mode=Mode.TOOLS, async_client=True)
-
-        # Verify from_provider was called with async_client=True
-        mock_from_provider.assert_called_once()
-        call_args = mock_from_provider.call_args
-        assert call_args[0][0] == f"{provider.value}/test-model"
-        assert call_args[1]["mode"] == Mode.TOOLS
-        assert call_args[1]["async_client"] is True
 
 
-@pytest.mark.parametrize(
-    "provider",
-    [pytest.param(p, id=p.value) for p in _OPENAI_COMPAT_PROVIDERS],
-)
-def test_string_based_initialization_forwards_kwargs(provider: Provider) -> None:
-    """Test that string-based initialization forwards all kwargs to from_provider."""
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    from_function = config["from_function"]
-
-    # Import the from_* function
-    module = __import__("instructor.v2", fromlist=[from_function])
-    func = getattr(module, from_function, None)
-
-    if func is None:
-        pytest.skip(
-            f"{from_function} not available (SDK may not be installed)"  # ty: ignore[too-many-positional-arguments]
-        )
-    assert callable(func)
-
-    # Mock from_provider to verify it's called
-    from unittest.mock import patch
-
-    with patch("instructor.from_provider") as mock_from_provider:
-        # Call with string and additional kwargs
-        func(
-            "test-model",
-            mode=Mode.TOOLS,
-            api_key="test-key",
-            base_url="https://test.example.com",
-            timeout=30,
-        )
-
-        # Verify from_provider was called with all kwargs
-        mock_from_provider.assert_called_once()
-        call_args = mock_from_provider.call_args
-        assert call_args[0][0] == f"{provider.value}/test-model"
-        assert call_args[1]["mode"] == Mode.TOOLS
-        assert call_args[1]["api_key"] == "test-key"
-        assert call_args[1]["base_url"] == "https://test.example.com"
-        assert call_args[1]["timeout"] == 30
-
-
-@pytest.mark.parametrize(
-    "provider",
-    [pytest.param(p, id=p.value) for p in _OPENAI_COMPAT_PROVIDERS],
-)
-def test_client_based_initialization_still_works(
-    provider: Provider, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("provider", "is_async"), _STREAM_CASES)
+async def test_declared_stream_paths_resolve_and_switch(
+    monkeypatch: pytest.MonkeyPatch, provider: Provider, is_async: bool
 ) -> None:
-    """Test that client-based initialization still works (backward compatibility)."""
-    from unittest.mock import patch
+    contract = PROVIDER_SPECS[provider].client
+    assert contract is not None
+    calls: list[dict[str, Any]] = []
 
-    config = PROVIDER_CLIENT_CONFIGS[provider]
-    from_function = config["from_function"]
-    sdk_module = config["sdk_module"]
+    async def async_stream(**kwargs: Any) -> object:
+        calls.append(kwargs)
+        return object()
 
-    # Skip if SDK not installed
-    if _dependency_missing(sdk_module):
-        pytest.skip(
-            f"{sdk_module} not installed"  # ty: ignore[too-many-positional-arguments]
+    native = SimpleNamespace()
+    create_path = (
+        (contract.async_create or contract.create) if is_async else contract.create
+    )
+    stream_path = contract.async_stream if is_async else contract.stream
+    _set_path(
+        native, create_path, async_stream if is_async else lambda **_kwargs: object()
+    )
+    _set_path(
+        native,
+        stream_path or "",
+        async_stream if is_async else lambda **kwargs: calls.append(kwargs),
+    )
+    monkeypatch.setattr(client_factory, "patch_v2", lambda *, func, **_kwargs: func)
+    wrapped = client_factory.create_instructor(
+        native,
+        provider=provider,
+        mode=PROVIDER_SPECS[provider].supported_modes[0],
+        model="default-model",
+        use_async=is_async,
+        sync_types=(SimpleNamespace,),
+        async_types=(SimpleNamespace,),
+    )
+    result = wrapped.create_fn(stream=True, model=None, value=1)
+    if inspect.isawaitable(result):
+        await result
+    expected = {
+        "model": "default-model" if contract.falsey_model_fallback else None,
+        "value": 1,
+    }
+    assert calls == [expected]
+
+
+def _missing_types(*_args: Any) -> tuple[type[Any], ...]:
+    raise ClientError("missing dependency")
+
+
+def _unexpected_types(*_args: Any) -> tuple[type[Any], ...]:
+    raise AssertionError("mode validation must run first")
+
+
+@pytest.mark.parametrize(
+    ("provider", "resolver", "error"),
+    [
+        (Provider.GROQ, _missing_types, ClientError),
+        (Provider.GROQ, _fake_types, ModeError),
+        (Provider.GEMINI, _unexpected_types, ModeError),
+        (Provider.GENAI, _fake_types, ClientError),
+    ],
+)
+def test_shared_factory_preserves_validation_precedence(
+    monkeypatch: pytest.MonkeyPatch, provider: Provider, resolver: Any, error: Any
+) -> None:
+    monkeypatch.setattr(client_factory, "_resolve_types", resolver)
+    with pytest.raises(error):
+        client_factory.create_instructor(
+            object(), provider=provider, mode=Mode.RESPONSES_TOOLS
         )
 
-    # Import the from_* function
-    module = __import__("instructor.v2", fromlist=[from_function])
-    func = getattr(module, from_function, None)
 
-    if func is None:
-        pytest.skip(
-            f"{from_function} not available"  # ty: ignore[too-many-positional-arguments]
-        )
-    assert callable(func)
+@pytest.mark.parametrize(
+    ("module", "sdk_attribute", "factory"),
+    [
+        (gemini_client, "genai", gemini_client.from_gemini),
+        (vertexai_client, "gm", vertexai_client.from_vertexai),
+    ],
+)
+def test_mode_first_adapters_validate_before_missing_sdk(
+    monkeypatch: pytest.MonkeyPatch, module: Any, sdk_attribute: str, factory: Any
+) -> None:
+    monkeypatch.setattr(module, sdk_attribute, None)
+    with pytest.raises(ModeError):
+        factory(object(), mode=Mode.RESPONSES_TOOLS)
 
-    # Import OpenAI client
-    try:
-        import openai
-    except ImportError:
-        pytest.skip(
-            "openai package not installed"  # ty: ignore[too-many-positional-arguments]
-        )
 
-    _clear_proxy_env(monkeypatch)
+def _capture_factory(monkeypatch: pytest.MonkeyPatch, module: Any) -> dict[str, Any]:
+    captured: dict[str, Any] = {}
+    monkeypatch.setattr(
+        module,
+        "create_instructor",
+        lambda _client, **kwargs: captured.update(kwargs) or object(),
+    )
+    return captured
 
-    # Create a mock OpenAI client
-    client = openai.OpenAI(api_key="test-key")
 
-    # Call with client (should use _from_openai_compat, not from_provider)
-    with patch(
-        "instructor.v2.providers.openai.client._from_openai_compat"
-    ) as mock_compat:
-        mock_compat.return_value = "mock_instructor"
-        result = func(client, mode=Mode.TOOLS)
+def test_anthropic_beta_declares_beta_method_override(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sync_type, async_type = type("Sync", (), {}), type("Async", (), {})
+    monkeypatch.setattr(
+        anthropic_client,
+        "anthropic",
+        SimpleNamespace(
+            Anthropic=sync_type,
+            AnthropicBedrock=sync_type,
+            AnthropicVertex=sync_type,
+            AsyncAnthropic=async_type,
+            AsyncAnthropicBedrock=async_type,
+            AsyncAnthropicVertex=async_type,
+        ),
+    )
+    captured = _capture_factory(monkeypatch, anthropic_client)
+    cast(Any, anthropic_client.from_anthropic)(sync_type(), beta=True)
+    assert captured["create_path"] == "beta.messages.create"
+    assert captured["async_create_path"] == "beta.messages.create"
 
-        # Verify _from_openai_compat was called (not from_provider)
-        mock_compat.assert_called_once()
-        call_args = mock_compat.call_args
-        assert call_args[0][0] == client
-        assert call_args[1]["provider"] == provider
-        assert call_args[1]["mode"] == Mode.TOOLS
+
+def test_cohere_v2_declares_version_and_client_families(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    v1, v2, async_v1, async_v2 = (type(name, (), {}) for name in "V1 V2 A1 A2".split())
+    monkeypatch.setattr(
+        cohere_client,
+        "cohere",
+        SimpleNamespace(
+            Client=v1, ClientV2=v2, AsyncClient=async_v1, AsyncClientV2=async_v2
+        ),
+    )
+    captured = _capture_factory(monkeypatch, cohere_client)
+    cast(Any, cohere_client.from_cohere)(v2())
+    assert captured["_cohere_client_version"] == "v2"
+    assert captured["sync_types"] == (v1, v2)
+    assert captured["async_types"] == (async_v1, async_v2)
