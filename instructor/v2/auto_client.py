@@ -16,6 +16,7 @@ InstructorType = Union[Instructor, AsyncInstructor]
 
 logger = logging.getLogger("instructor.auto_client")
 
+# Comment (please delete)
 
 # Canonical strings and compatibility aliases accepted by from_provider().
 supported_providers = list(ALIAS_TO_PROVIDER)

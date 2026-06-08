@@ -1,0 +1,50 @@
+# ============================================================================
+# Translated from: Ruff
+# ============================================================================
+#
+# TRIGGERS: Configure in Buildkite UI → Pipeline Settings → GitHub
+#   - push: All branches (default)
+#   - pull_request: Branches [main]
+#
+# AGENT CONFIGURATION REQUIRED
+# ============================================================================
+# The original workflow used the following GitHub Actions runners:
+#
+#   Job                  | runs-on
+#   ---------------------|----------------
+#   Ruff                 | ubuntu-latest
+#
+# You must configure Buildkite agents to handle these workloads. Add an
+# `agents` block to each step once your queues are set up. Example:
+#
+#   agents:
+#     queue: "linux"
+#
+# Required tools on agents: Python 3.9+, uv
+# Alternatively, use the Docker plugin with an appropriate Python image.
+# ============================================================================
+
+env:
+  WORKING_DIRECTORY: "."
+  CUSTOM_PACKAGES: "instructor examples tests"
+
+steps:
+  - label: ":python: Ruff"
+    key: "ruff"
+    # Assumes Python 3.9+ and uv are installed on the agent.
+    # If not available, use the Docker plugin:
+    #   plugins:
+    #     - docker:
+    #         image: "ghcr.io/astral-sh/uv:latest"
+    #         propagate-environment: true
+    plugins:
+      - cache#1.8.1:
+          manifest: "pyproject.toml"
+          path: ".venv"
+          restore: pipeline
+          save: pipeline
+    command: |
+      uv python install 3.9
+      uv sync --all-extras
+      uv run ruff check $$CUSTOM_PACKAGES
+      uv run ruff format --check $$CUSTOM_PACKAGES
