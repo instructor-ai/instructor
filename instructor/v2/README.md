@@ -36,6 +36,29 @@ The v2 architecture uses a hierarchical registry system for managing provider mo
   `instructor/dsl`, and `instructor/validation` are compatibility facades over
   v2-owned implementations.
 
+### Capability Contract
+
+`ProviderSpec.capabilities` is the executable feature contract. It records the
+public streaming modes, typed multimodal input conversion, and explicit or
+implicit parallel tool support for each provider. These fields are intentionally
+narrow: a provider may accept its own SDK media object without advertising
+Instructor typed-media conversion, and an internal streaming parser is not a
+public `create_iterable()` feature until the client exposes that path.
+
+This keeps provider differences visible instead of pretending all SDKs implement
+the same surface. For example:
+
+| Provider | Public partial streams | Public iterable streams | Typed media conversion |
+| --- | --- | --- | --- |
+| OpenAI | `TOOLS`, `JSON`, `JSON_SCHEMA`, `MD_JSON`, `RESPONSES_TOOLS` | `TOOLS`, `RESPONSES_TOOLS` | image, audio, PDF |
+| Anthropic | `TOOLS`, `JSON`, `JSON_SCHEMA` | `TOOLS` | image, PDF |
+| GenAI (`google`) | `TOOLS`, `JSON` | `TOOLS`, `JSON` | image, audio, PDF |
+| Gemini / VertexAI | `TOOLS`, `MD_JSON` | not exposed through the public iterable API | none |
+| xAI | `TOOLS`, `JSON_SCHEMA` | `TOOLS`, `JSON_SCHEMA` | none |
+
+Tests build their conformance parameters from this manifest, so an advertised
+feature must route to a registered provider handler.
+
 ## Core Components
 
 ### Protocols (`instructor/v2/core/protocols.py`)

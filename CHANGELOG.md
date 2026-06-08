@@ -9,7 +9,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Changed
+- **Provider architecture**: Native provider factories now declare SDK client contracts and delegate shared validation, mode normalization, sync/async selection, streaming dispatch, patching, and wrapper construction to one implementation.
+- **Provider tests**: Replace repeated provider client suites with manifest-driven behavioral contracts, including async streaming parity.
+
 ### Fixed
+- **Hooks**: Emit `completion:error` and `completion:last_attempt` consistently for raw and structured provider failures, including attempt metadata.
+- **Documentation**: Correct Mistral and Bedrock async examples and clarify that provider-specific native-client helpers remain supported.
 - **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
 
 ### Tests / CI

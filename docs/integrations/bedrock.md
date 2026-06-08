@@ -21,7 +21,7 @@ pip install "instructor[bedrock]"
 - [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Mode Migration Guide](../concepts/mode-migration.md) - Move to core modes
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
-- [AWS Integration Guide](../examples/index.md#aws-integration) - More AWS examples
+- [Examples](../examples/index.md) - More integration examples
 
 # AWS Bedrock
 
@@ -43,11 +43,10 @@ client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-
 # - Mode selection based on model (Claude models use TOOLS)
 ```
 
-## Deprecation Notice
+## Async Clients
 
-> **Deprecation Notice:**
->
-> The `_async` argument to `instructor.from_bedrock` is deprecated. Please use `async_client=True` for async clients instead. Support for `_async` may be removed in a future release. All new code and examples should use `async_client`.
+Use `async_client=True` with `from_provider` or `from_bedrock`. The obsolete
+`_async` keyword is no longer accepted as an async selector.
 
 ### Environment Configuration
 

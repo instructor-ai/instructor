@@ -100,7 +100,7 @@ user = await client.create(...)
 ### Anthropic
 
 ```python
-# Before (removed)
+# Before (still supported)
 import anthropic
 from instructor import from_anthropic
 
@@ -115,7 +115,7 @@ user = client.create(...)
 ### Google/Gemini
 
 ```python
-# Before (removed)
+# Before (still supported)
 import google.genai as genai
 from instructor import from_genai
 
@@ -188,13 +188,16 @@ anthropic_client = instructor.from_provider("anthropic/claude-3-5-sonnet")
 
 ## Backward Compatibility
 
-Legacy helpers have been removed:
+V2 keeps the established v1 factory and patch import paths as lazy
+compatibility facades. Existing applications do not need a flag-day rewrite:
 
-- `instructor.patch()` → Use `from_provider` instead
-- `instructor.apatch()` → Use `from_provider` with `async_client=True`
-- `from_openai()`, `from_anthropic()`, etc. → Use `from_provider`
+- `instructor.patch()` and `instructor.apatch()` continue to work.
+- `from_openai()`, `from_anthropic()`, and other provider factories continue to work.
+- Provider-specific legacy modes normalize to the corresponding core modes with
+  deprecation warnings.
 
-Update all call sites before upgrading.
+Prefer `from_provider()` and core modes in new code because their capability
+contract and type surface receive the new conformance checks.
 
 ## See Also
 

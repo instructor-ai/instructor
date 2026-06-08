@@ -545,13 +545,13 @@ print(response)
 
 ## Streaming Responses
 
-!!! warning "Streaming Limitations"
+!!! note "V2 streaming contract"
 
-    **As of July 11, 2025, Google GenAI does not support streaming with tool/function calling or structured outputs for regular models.** 
-    
-    - `Mode.TOOLS` and `Mode.JSON` do not support streaming with regular models
-    - To use streaming, you must use `Partial[YourModel]` explicitly or switch to other modes like `Mode.JSON`
-    - Alternatively, set `stream=False` to disable streaming
+    The v2 GenAI client advertises public partial and iterable streaming for
+    `Mode.TOOLS` and `Mode.JSON`. This contract covers Instructor's request and
+    parsing path; select a Gemini model that supports the requested operation.
+    The legacy `gemini` and `vertexai` provider families have separate feature
+    contracts and do not currently expose public iterable streaming.
 
 Streaming allows you to process responses incrementally rather than waiting for the complete result. This is extremely useful for making UI changes feel instant and responsive.
 

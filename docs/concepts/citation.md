@@ -185,6 +185,6 @@ Use CitationMixin when:
 ## See Also
 
 - [Validation](./validation.md) - Learn about validation in Instructor
-- [Context-Based Validation](./validation.md#context-based-validation) - Using context for validation
+- [Custom Validators](./validation.md#custom-validators) - Using context for validation
 - [Citation Examples](../examples/exact_citations.md) - More citation examples
 - [RAG Patterns](../blog/posts/rag-and-beyond.md) - Building RAG systems with Instructor

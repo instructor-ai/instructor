@@ -5,7 +5,7 @@ categories:
   - instructor
 comments: true
 date: 2026-05-11
-description: "What changed in Instructor v2, how the migration works, and why the new provider architecture is easier to extend and maintain."
+description: "A technical tour of Instructor v2: provider-owned dispatch, executable capability contracts, compatibility facades, streaming, and typed results."
 draft: false
 slug: whats-new-in-instructor-v2
 tags:
@@ -17,27 +17,22 @@ tags:
 
 # What's new in Instructor v2?
 
-Instructor v2 is a large internal rewrite with a deliberately conservative public goal: the library should feel familiar to existing users, while becoming much easier to extend, reason about, and type-check.
+Instructor's public job is simple: pass a Pydantic model to an LLM client and
+get validated Python data back. Instructor v2 keeps that API, but changes how
+the library implements it. Provider packages, or an explicitly shared
+wire-compatible implementation, now own the SDK construction, wire format,
+streaming events, tool schema, and validation reask payload.
 
-The previous architecture accumulated a lot of provider-specific behavior in shared modules. That worked, but it made the codebase harder to grow. Adding a provider could mean touching response parsing, retry logic, multimodal handling, mode normalization, and client setup in several unrelated places.
-
-V2 moves that logic into a provider-owned architecture. The external API stays recognizable. The internals become more explicit.
+This is not only a directory move. It changes the unit of correctness. In v2,
+support for a feature is declared for a provider, registered by that
+provider's handlers, and exercised by tests generated from the same
+declaration.
 
 <!-- more -->
 
-## The short version
+## The user-facing path stays short
 
-V2 changes five things:
-
-1. Provider-specific behavior lives with the provider.
-2. Runtime dispatch goes through a registry of provider and mode handlers.
-3. Old public modules remain as compatibility facades where that preserves the upgrade path.
-4. Provider capabilities are described from one manifest instead of duplicated across routing and tests.
-5. Sync, async, streaming, partials, and public return types are much easier to validate consistently.
-
-## What stays familiar
-
-The core usage model is still the one Instructor users already know:
+The common call still looks like this:
 
 ```python
 import instructor
@@ -49,201 +44,347 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
-
+client = instructor.from_provider("openai/gpt-4o-mini")
 user = client.create(
-    messages=[{"role": "user", "content": "Extract Jason, age 36."}],
     response_model=User,
+    messages=[{"role": "user", "content": "Extract: Jason is 36"}],
 )
 ```
 
-That remains the heart of the library:
+Async construction remains the same decision expressed once:
 
-- define a Pydantic model
-- create a provider-backed Instructor client
-- ask for structured output
-- receive validated Python objects
+```python
+async_client = instructor.from_provider(
+    "anthropic/claude-sonnet-4-6",
+    async_client=True,
+)
+user = await async_client.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "Extract: Jason is 36"}],
+)
+```
 
-V2 is designed so that existing concepts such as retries, partials, iterables, multimodal inputs, and provider-specific client factories remain recognizable instead of being replaced wholesale.
+The technical path behind those calls is now:
 
-## What changed under the hood
+```text
+"anthropic/claude-sonnet-4-6"
+  -> alias lookup in ProviderSpec
+  -> lazy import of instructor.v2.providers.anthropic.client
+  -> build_from_model(...)
+  -> handler lookup for Provider.ANTHROPIC + Mode
+  -> request preparation, response parsing, streaming, and reasks
+  -> typed User result
+```
 
-### 1. Providers now own provider behavior
+The first three steps construct a client. The provider and mode handler owns
+everything that changes the provider's payload or response interpretation.
 
-In v1, provider-specific request formatting, response parsing, and reask logic could end up spread across shared modules.
+## Why a provider-owned architecture?
 
-In v2, that logic lives under:
+Structured output is not one transport feature. It includes:
+
+- converting a Pydantic schema into the provider's tool or JSON-schema shape
+- translating `Image`, `Audio`, and `PDF` values into SDK payloads
+- extracting JSON fragments from each provider's streaming events
+- deciding which validation error message or tool result to send on a retry
+- initializing sync and async SDK clients with provider-specific credentials
+
+Those operations may begin with the same Python model, but they do not end in
+the same request. Anthropic tools use `input_schema`. OpenAI tools use a
+function object. Google GenAI builds `types.FunctionDeclaration` and
+`GenerateContentConfig`. Vertex AI and legacy Gemini have different SDK
+surfaces again.
+
+V2 puts those decisions under:
 
 ```text
 instructor/v2/providers/<provider>/
 ```
 
-A provider package can own:
+Shared core code still owns shared mechanics: the client wrapper, retry
+orchestration, validation primitives, the handler registry, common media
+value types, and compatibility entrypoints. It no longer needs to be the
+place where every provider's wire-format branch accumulates.
 
-- client factories
-- request preparation
-- response parsing
-- validation reasks
-- streaming extraction
-- templating
-- multimodal encoding
-- usage handling
+## `from_provider()` is now dispatch, not construction policy
 
-This gives each provider a clear home and keeps shared runtime modules from slowly becoming giant provider switchboards.
+The model-string factory previously had to know how to build many kinds of
+SDK clients directly. In v2, `auto_client.py` performs four operations:
 
-### 2. Modes dispatch through registered handlers
+1. Split `"provider/model"` into an alias and model name.
+2. Resolve the alias through `ProviderSpec`.
+3. Lazily import the builder module named by that spec.
+4. Call its `build_from_model(...)` function with common arguments.
 
-V2 introduces a registry keyed by provider and mode. Instead of branching through one large shared path, the runtime asks:
+A simplified form of the implementation is:
 
 ```python
-handlers = mode_registry.get_handlers(provider, mode)
+provider_enum = ALIAS_TO_PROVIDER.get(provider_name)
+spec = PROVIDER_SPECS.get(provider_enum)
+module = importlib.import_module(spec.model_builder_module)
+
+return module.build_from_model(
+    provider=spec.provider,
+    model_name=model_name,
+    async_client=async_client,
+    mode=mode,
+    api_key=api_key,
+    kwargs=kwargs,
+)
 ```
 
-Those handlers define how to:
+That reduction is measurable in code size: the v2 `auto_client.py` is now 181
+lines. More importantly, adding or fixing provider construction no longer
+means extending a central factory branch.
 
-- prepare the provider request
-- parse the response
-- build a reask after validation fails
-- extract streaming chunks when needed
+V2 does share construction when the behavior is genuinely identical.
+OpenAI-compatible endpoints can use `compatible_model_builder(...)`, a
+higher-order builder that handles an OpenAI wire-compatible client, base URL,
+API key environment variable, and default mode. Providers that need special
+credentials or client classes, such as Azure OpenAI or Databricks, retain
+specialized construction inside the OpenAI provider builder instead of being
+forced into the generic path.
 
-This makes behavior more explicit. It also means provider support can be extended without adding another round of conditional logic to the middle of the library.
+## `ProviderSpec` is executable documentation
 
-### 3. Retry and reask logic is modular again
+Provider support is represented by an immutable specification. The important
+parts are:
 
-Instructor retries failed validations. That behavior is essential, but providers do not all want the same retry payload.
+```python
+@dataclass(frozen=True)
+class ProviderCapabilities:
+    partial_stream_modes: tuple[Mode, ...] = ()
+    iterable_stream_modes: tuple[Mode, ...] = ()
+    multimodal_inputs: tuple[str, ...] = ()
+    explicit_parallel_tools: bool = False
 
-V2 keeps the generic retry loop in shared runtime code, while moving provider-specific reask formatting to the owning provider handler. That gives us the right split:
 
-- shared orchestration stays shared
-- wire-format behavior stays local
-
-This matters for providers whose follow-up messages, tool payloads, or structured-output conventions differ in small but important ways.
-
-### 4. Compatibility becomes intentional
-
-One concern with a migration this broad is upgrade pain. V2 takes the opposite route: compatibility is explicit.
-
-Old public modules under paths such as:
-
-```text
-instructor/core
-instructor/processing
-instructor/dsl
-instructor/validation
+@dataclass(frozen=True)
+class ProviderSpec:
+    aliases: tuple[str, ...]
+    handler_module: str | None
+    supported_modes: tuple[Mode, ...]
+    unsupported_modes: tuple[Mode, ...]
+    legacy_modes: Mapping[Mode, Mode]
+    client_module: str | None
+    sdk_module: str | None
+    capabilities: ProviderCapabilities
+    builder_module: str | None = None
 ```
 
-remain as thin compatibility facades where users still need those imports. The real runtime behavior moves under `instructor/v2`.
+This is a contract, not a marketing list. It distinguishes four different
+questions:
 
-That gives us two useful properties at once:
+- Can the provider construct an Instructor client?
+- Which core modes can its handlers execute?
+- Which older mode names should normalize with compatibility behavior?
+- Which user-visible features have conformance coverage?
 
-- existing import paths keep working where possible
-- new implementation work has one obvious home
+For example, the current contract declares:
 
-The same idea applies to legacy modes. Older provider-specific mode names can normalize into the smaller core mode system, preserving behavior while reducing long-term surface area.
+| Provider path | Modes in the contract | Streaming contract | Typed multimodal inputs |
+| --- | --- | --- | --- |
+| `openai/...` | tools, JSON, JSON schema, Markdown JSON, parallel tools, Responses tools | partial and iterable, including Responses tools where declared | image, audio, PDF |
+| `anthropic/...` | tools, JSON, JSON schema, parallel tools | partial for tools/JSON/JSON schema; iterable for tools | image, PDF |
+| `google/...` | tools, JSON | partial and iterable for both declared modes | image, audio, PDF |
+| `gemini/...` | tools, Markdown JSON | partial only | none declared |
+| `vertexai/...` | tools, Markdown JSON, parallel tools | partial for tools and Markdown JSON | none declared |
+| `xai/...` | tools, JSON schema, Markdown JSON, parallel tools | partial and iterable only for the declared streaming modes | none declared |
 
-### 5. Provider capabilities come from one manifest
+An empty capability is meaningful. It means the shared v2 conformance suite
+does not promise that feature for that provider.
 
-V2 adds a provider specification layer that records:
+## Handlers own request, response, stream, and reask behavior
 
-- provider aliases
-- handler modules
-- supported modes
-- unsupported modes
-- legacy mode normalization
-- public factory bindings
-- optional SDK requirements
+Modes are registered against a provider:
 
-That manifest becomes the single place to understand what a provider supports. It also drives tests and runtime wiring, which means fewer duplicated lists and fewer places for support claims to drift.
-
-## Why this is better
-
-### New providers are easier to add
-
-The path is clearer:
-
-1. add the provider spec
-2. implement provider handlers
-3. wire the client factory
-4. rely on shared registry and retry machinery
-
-The codebase no longer asks each new provider to thread behavior through unrelated shared modules.
-
-### Existing providers are easier to make feature-complete
-
-Streaming, partials, schema conversion, and reasks often expose the places where a provider integration is shallow. V2 gives those features a provider-local place to live, so it is easier to finish the implementation instead of leaving small one-off gaps in shared utilities.
-
-### Type inference is more trustworthy
-
-The v2 migration also tightens public typing around:
-
-- sync clients
-- async clients
-- partial streaming
-- iterable streaming
-- completion-returning helpers
-- provider factory return types
-
-That matters because Instructor users often lean on the IDE to understand the shape of returned data. V2 makes those guarantees easier to test directly.
-
-### Imports can stay lightweight
-
-Optional provider SDKs should not become a hidden tax for everyone else. The v2 public surface uses lazy exports and provider-local loading so importing Instructor does not eagerly drag every provider dependency into memory.
-
-This is especially important for a library that wants to support many providers without forcing every user into the largest possible environment.
-
-## What changes for contributors
-
-The main contributor habit shift is simple:
-
-- put provider-specific behavior in the provider package
-- keep shared runtime modules provider-agnostic
-- add reusable coverage to parametrized v2 tests where possible
-- reserve provider-specific tests for genuinely provider-specific behavior
-
-That last point matters. The v2 test suite is being pushed toward a smaller, more reusable structure:
-
-- one parametrized suite for common client behavior
-- one for handler registration
-- one for shared provider/mode dispatch expectations
-- provider-specific files only where the behavior is actually unique
-
-The new parametrized suites reduce repeated provider boilerplate and centralize the shared client and handler assertions.
-
-## A concrete mental model
-
-If you want one picture of v2, use this:
-
-```text
-public factory
-  -> provider spec
-  -> provider client
-  -> registry lookup by provider + mode
-  -> request / response / reask handlers
-  -> typed Instructor result
+```python
+@register_mode_handler(Provider.ANTHROPIC, Mode.TOOLS)
+class AnthropicToolsHandler(AnthropicHandlerBase):
+    ...
 ```
 
-V1 made many of those steps work implicitly. V2 keeps the user-facing simplicity, but makes the implementation shape visible enough to maintain.
+A mode handler is the local place for four related operations:
 
-## Is this a breaking change?
+- `prepare_request(...)` turns a response model and user kwargs into the SDK
+  request shape.
+- `parse_response(...)` converts the provider response into the requested
+  Pydantic type.
+- streaming extractors expose provider event chunks to `Partial` and
+  `Iterable` processing.
+- `handle_reask(...)` constructs the provider's correction request after
+  validation fails.
 
-The migration is designed to preserve the common public workflows and import paths where practical. That does not mean no code moved. A lot moved. But the migration is intentionally built around:
+The retry loop remains shared because retry orchestration is generic. The
+reask payload is local because sending an Anthropic tool error is not the same
+operation as sending a GenAI function response or an OpenAI tool message.
 
-- compatibility facades
-- normalized legacy modes
-- preserved factory names
-- continued support for existing structured-output workflows
+The ownership boundary is visible in specific implementations:
 
-The main breaking-pressure points are internal, not user-facing. The library is stricter about ownership boundaries because that is what keeps the public API stable over time.
+| Provider family | Provider-owned work in v2 |
+| --- | --- |
+| Anthropic | Anthropic tool schema generation, parallel tool schemas, media conversion callbacks, streaming extraction, and reask payloads |
+| OpenAI and compatible handlers | OpenAI function/JSON schema shapes, Responses tool events, OpenAI media conversion, and compatible mode registration |
+| Google GenAI | `GenerateContentConfig`, function declarations, content/media conversion, stream extraction, and GenAI reasks |
+| Mistral | Mistral message conversion and stream parsing, with explicit compatible media encoder reuse where the wire shape matches |
 
-## Why now
+There is still intentional reuse inside provider families. Several
+OpenAI-compatible providers register the OpenAI handler implementation rather
+than copying equivalent wire logic. The GenAI handler uses Google
+schema/message utilities currently located in
+`instructor.v2.providers.gemini.utils`. That is Google-specific reuse, not a
+claim that the two SDKs expose identical public behavior: `google/...`,
+`gemini/...`, and `vertexai/...` have separate provider specs and separate
+declared capabilities. The `google/...` path targets `google.genai`;
+`gemini/...` remains the legacy `google.generativeai` integration, and
+`generative-ai/...` is a compatibility alias for the GenAI builder.
 
-Instructor has grown from an OpenAI-focused structured-output helper into a broad provider toolkit. That growth is good, but the implementation needed to catch up with the product surface.
+## Multimodal values stay common; encoders do not
 
-V2 is the cleanup that makes the next phase healthier:
+Users should not need a new `Image` class for every provider. V2 therefore
+keeps common media value types in core. The conversion boundary changed:
+active handlers pass provider-local encoders into the shared message walker.
 
-- easier provider work
-- more consistent feature parity
-- better typing
-- less duplicated routing logic
-- more focused tests
-- lighter imports
+For example, Anthropic passes `media_to_anthropic` and `image_from_params`
+when converting messages. OpenAI passes its own encoders. GenAI produces
+Google `Part` content through its provider module. This preserves a common
+input API without asking core code to produce every provider's final wire
+payload.
+
+Compatibility wrappers remain in shared modules for public imports that
+already exist. They forward into provider-owned implementations; the active
+Anthropic, Gemini, GenAI, and OpenAI-compatible request paths updated in this
+refactor no longer need a core compatibility schema surface to build provider
+requests.
+
+## Compatibility is lazy, not eager
+
+V2 is intended to be a practical upgrade, so older provider factory and
+utility imports continue to exist. The facade modules use module-level
+`__getattr__` resolution:
+
+```python
+__getattr__ = make_getattr("anthropic", ("client",))
+```
+
+Importing `instructor.providers.anthropic.client` therefore does not import
+the v2 Anthropic implementation or the optional Anthropic SDK until a
+forwarded symbol is actually accessed. Subprocess tests block optional SDK
+imports and verify that legacy client facades can still be imported.
+
+This boundary also has a measurable import effect in fresh Python processes:
+
+| Import | Before this refactor | After this refactor |
+| --- | ---: | ---: |
+| `import instructor` | `0.01s`, `17.5 MB` RSS | `0.01s`, `17.4 MB` RSS |
+| `from instructor import Mode` | `0.03s`, `20.7 MB` RSS | `0.02s`, `19.5 MB` RSS |
+| `import instructor.providers.anthropic.client` | `0.55s`, `79.2 MB` RSS | `0.02s`, `19.6 MB` RSS |
+
+These numbers are an implementation comparison, not a promise that every
+machine will have identical timings. The guarantee enforced in tests is the
+architectural one: compatibility imports do not eagerly require optional
+provider SDKs.
+
+## Tests now follow the feature contract
+
+The test suite reads the same provider specifications used by runtime
+dispatch. A shared matrix derives:
+
+- provider and mode registration cases
+- partial streaming cases
+- iterable streaming cases
+- typed multimodal cases
+- explicit parallel-tools cases
+
+The conformance tests then execute each advertised feature. If a provider
+adds a streaming mode to `ProviderCapabilities`, it joins the streaming
+contract tests. If it removes that declaration, the public feature claim is
+removed with it. Unique SDK request shapes can still have provider-specific
+tests; repeated capability bookkeeping no longer needs a hand-maintained list
+per test file.
+
+These are deterministic contract tests: they use representative stream events
+and media values to prove handler registration and conversion behavior without
+calling hosted models. They do not by themselves claim that every provider
+and model performs equally well in production.
+
+The migration also adds two guardrails beyond runtime tests:
+
+- public sync and async factory inference is checked with `assert_type(...)`
+  and Pyright, including `from_provider(..., async_client=True)`;
+- deterministic lazy-import tests protect the optional-SDK boundary described
+  above.
+
+## Benchmarking model and mode combinations
+
+V2 also includes a live benchmark example for the question deterministic
+contracts cannot answer: for a particular extraction task, which configured
+model and mode combination is fast and reliable?
+
+```bash
+uv run python examples/v2-model-mode-benchmark/run.py --trials 3
+```
+
+The runner derives mode cells from `ProviderSpec`, uses each provider's
+configured default model when one exists, and emits one result per model/mode
+cell. Cells are reported as skipped when the model has no configured default,
+its optional SDK is unavailable, or its required API-key environment variable
+is absent. Providers that authenticate through a cloud credential chain, such
+as Bedrock or Vertex AI, require explicit `--allow-cloud-auth` so the runner
+does not guess whether ambient credentials are valid. That makes the default
+run safe in a partial local environment without turning missing keys into
+failed comparisons.
+
+To compare selected models rather than the defaults:
+
+```bash
+uv run python examples/v2-model-mode-benchmark/run.py \
+  --model openai/gpt-4o-mini \
+  --model anthropic/claude-sonnet-4-6 \
+  --mode TOOLS \
+  --mode JSON_SCHEMA \
+  --trials 5 \
+  --markdown-out benchmark-results.md \
+  --json-out benchmark-results.json
+```
+
+The benchmark records success rate and latency for a small typed extraction
+probe, then ranks completed cells by correctness first and median latency
+second. It is a harness for comparing a supplied workload, not a universal
+model leaderboard; a meaningful decision should replace or extend the probe
+with representative application examples.
+
+## What upgrading code requires
+
+For most applications, no architectural knowledge is required. Existing
+factory paths remain compatibility entrypoints, while new code can prefer the
+model-string form:
+
+```python
+# Existing factory style remains supported.
+client = instructor.from_anthropic(anthropic_client)
+
+# Recommended v2 construction path.
+client = instructor.from_provider("anthropic/claude-sonnet-4-6")
+```
+
+Older provider-specific modes normalize to the smaller v2 mode vocabulary
+where a mapping exists. New code should select core modes such as
+`Mode.TOOLS`, `Mode.JSON_SCHEMA`, `Mode.MD_JSON`, or
+`Mode.PARALLEL_TOOLS`, and check the integration guide for provider-specific
+support before depending on streaming or multimodal behavior.
+
+For contributors, the rule is stricter:
+
+1. Put provider SDK construction in that provider's client module.
+2. Put wire schemas, streaming events, and reask payloads in that provider's
+   handler or helper modules.
+3. Declare supported user-visible behavior in `ProviderSpec`.
+4. Add shared conformance coverage through the manifest, and add one-off tests
+   only for genuinely unique behavior.
+5. Keep core exports only when they represent shared machinery or compatibility
+   that users already import.
+
+That is the technical change in v2: Instructor still presents one typed
+structured-output workflow, while its implementation stops pretending every
+provider reaches that workflow through the same protocol.

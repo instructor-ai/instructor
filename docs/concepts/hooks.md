@@ -19,6 +19,11 @@ Hooks let you intercept and handle events during the completion and parsing proc
 
 `completion:error` and `completion:last_attempt` handlers receive optional retry metadata as keyword arguments. Old-style handlers that only accept `error` continue to work — the metadata is silently dropped for backward compatibility.
 
+For custom Tenacity policies, `max_attempts` is populated when the policy uses a
+direct `stop_after_attempt` limit. With predicate- or delay-based stop conditions,
+the runtime may not know that an error is terminal when `completion:error` is
+emitted; use `completion:last_attempt` as the authoritative exhaustion signal.
+
 ## Registering and Removing Hooks
 
 ```python

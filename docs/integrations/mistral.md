@@ -185,17 +185,12 @@ Instructor now supports streaming capabilities with Mistral! You can use both `c
 ```python
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
 from instructor.dsl.partial import Partial
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream partial responses
@@ -220,16 +215,11 @@ for partial_user in model:
 ```python
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream iterable responses
@@ -255,16 +245,16 @@ You can also use async versions of both streaming approaches:
 import asyncio
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
 from instructor.dsl.partial import Partial
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
-# Initialize client with async support
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-instructor_client = instructor.from_provider("mistral/mistral-small")
+instructor_client = instructor.from_provider(
+    "mistral/mistral-small",
+    async_client=True,
+)
 
 async def stream_partial():
     model = await instructor_client.create(

@@ -31,7 +31,7 @@ Use this table to replace legacy modes:
 | `FUNCTIONS` | `TOOLS` |
 | `TOOLS_STRICT` | `TOOLS` |
 | `ANTHROPIC_TOOLS` | `TOOLS` |
-| `ANTHROPIC_JSON` | `MD_JSON` |
+| `ANTHROPIC_JSON` | `JSON` |
 | `COHERE_TOOLS` | `TOOLS` |
 | `COHERE_JSON_SCHEMA` | `JSON_SCHEMA` |
 | `XAI_TOOLS` | `TOOLS` |
@@ -99,7 +99,7 @@ from instructor import Mode
 
 client = instructor.from_provider(
     "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
-    mode=Mode.BEDROCK_TOOLS,
+    mode=Mode.TOOLS,
 )
 ```
 

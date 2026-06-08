@@ -249,6 +249,7 @@ nav:
     - Multimodal : 'concepts/multimodal.md'
     - Patching: 'concepts/patching.md'
     - from_provider: 'concepts/from_provider.md'
+    - Provider Architecture and Parity: 'concepts/provider-architecture-parity.md'
     - Migration Guide: 'concepts/migration.md'
     - Mode Migration: 'concepts/mode-migration.md'
     - Hooks: 'concepts/hooks.md'

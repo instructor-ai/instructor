@@ -331,13 +331,21 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 ### from_provider vs. Provider-Specific Functions
 
-Provider-specific helpers were removed. Use `from_provider` for all clients:
+Provider-specific helpers remain supported for applications that already construct
+native SDK clients. Use `from_provider` when a model string is the most convenient
+entrypoint; use `from_openai`, `from_anthropic`, and the other `from_*` helpers when
+you need to configure the underlying SDK client directly.
 
 ```python
 import instructor
 
 openai_client = instructor.from_provider("openai/gpt-4o-mini")
 anthropic_client = instructor.from_provider("anthropic/claude-3-5-sonnet")
+
+# Existing native-client factories remain public compatibility entrypoints.
+from openai import OpenAI
+
+native_client = instructor.from_openai(OpenAI())
 ```
 
 ## Troubleshooting
