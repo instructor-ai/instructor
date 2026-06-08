@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from textwrap import dedent
 from typing import Any, NamedTuple
+
 from jinja2 import Template
+from typing_extensions import Self
 
 
 class InstructorError(Exception):
@@ -46,7 +48,7 @@ class InstructorError(Exception):
     @classmethod
     def from_exception(
         cls, exception: Exception, failed_attempts: list[FailedAttempt] | None = None
-    ):
+    ) -> Self:
         """Create an InstructorError from another exception.
 
         Args:

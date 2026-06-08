@@ -9,9 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.client_factory import create_instructor
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 # Fireworks uses OpenAI-compatible API, so handlers are registered via OpenAI handlers
@@ -80,9 +80,6 @@ def from_fireworks(
         >>> # Or use MD_JSON mode for text extraction
         >>> instructor_client = from_fireworks(client, mode=Mode.MD_JSON)
     """
-    from instructor.v2.core.registry import mode_registry, normalize_mode
-
-    # Check if fireworks is installed
     if Fireworks is None or AsyncFireworks is None:
         from instructor.v2.core.errors import ClientError
 
@@ -90,73 +87,35 @@ def from_fireworks(
             "fireworks is not installed. Install it with: pip install fireworks-ai"
         )
 
-    # Normalize provider-specific modes to generic modes
-    # FIREWORKS_TOOLS -> TOOLS, FIREWORKS_JSON -> MD_JSON
-    normalized_mode = normalize_mode(Provider.FIREWORKS, mode)
-
-    # Validate mode is registered (use normalized mode for check)
-    if not mode_registry.is_registered(Provider.FIREWORKS, normalized_mode):
-        from instructor.v2.core.errors import ModeError
-
-        available_modes = mode_registry.get_modes_for_provider(Provider.FIREWORKS)
-        raise ModeError(
-            mode=str(mode.value),
-            provider=Provider.FIREWORKS.value,
-            valid_modes=[str(m.value) for m in available_modes],
-        )
-
-    # Use normalized mode for patching
-    mode = normalized_mode
-
-    # Validate client type
-    valid_client_types = (
-        Fireworks,
-        AsyncFireworks,
-    )
-
-    if not isinstance(client, valid_client_types):
-        from instructor.v2.core.errors import ClientError
-
-        raise ClientError(
-            f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "
-            f"Got: {type(client).__name__}"
-        )
-
-    # Get create function - Fireworks uses chat.completions.create like OpenAI
-    if isinstance(client, AsyncFireworks):
-        # Fireworks async client uses acreate method
-        async def async_create(*args: Any, **create_kwargs: Any) -> Any:
-            if create_kwargs.get("stream"):
-                # For streaming, await to get the async generator
-                return await client.chat.completions.acreate(*args, **create_kwargs)
-            return await client.chat.completions.acreate(*args, **create_kwargs)
-
-        create = async_create
-    else:
-        create = client.chat.completions.create
-
-    # Patch using v2 registry, passing the model for injection
-    patched_create = patch_v2(
-        func=create,
+    return create_instructor(
+        client,
         provider=Provider.FIREWORKS,
         mode=mode,
-        default_model=model,
+        model=model,
+        sync_types=(Fireworks,),
+        async_types=(AsyncFireworks,),
+        **kwargs,
     )
 
-    # Return sync or async instructor
-    if isinstance(client, Fireworks):
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.FIREWORKS,
-            mode=mode,
-            **kwargs,
+
+def build_from_model(
+    *,
+    provider: Provider,  # noqa: ARG001
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    """Construct the native Fireworks client for `from_provider`."""
+    if Fireworks is None or AsyncFireworks is None:
+        from instructor.v2.core.errors import ConfigurationError
+
+        raise ConfigurationError(
+            "The fireworks-ai package is required to use the Fireworks provider. "
+            "Install it with `pip install fireworks-ai`."
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.FIREWORKS,
-            mode=mode,
-            **kwargs,
-        )
+    client = (
+        AsyncFireworks(api_key=api_key) if async_client else Fireworks(api_key=api_key)
+    )
+    return from_fireworks(client, model=model_name, mode=mode or Mode.TOOLS, **kwargs)

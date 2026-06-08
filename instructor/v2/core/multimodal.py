@@ -677,6 +677,11 @@ class PDF(BaseModel):
 class PDFWithCacheControl(PDF):
     """PDF with Anthropic prompt caching support."""
 
+    cache_control: OptionalCacheControlType = Field(
+        default_factory=lambda: {"type": "ephemeral"},
+        description="Optional Anthropic cache control document",
+    )
+
     def to_anthropic(self) -> dict[str, Any]:
         from instructor.v2.providers.anthropic.multimodal import (
             pdf_with_cache_control_to_anthropic,
@@ -716,6 +721,7 @@ def convert_contents(
         list[Union[str, dict[str, Any], Image, Audio, PDF]],  # noqa: UP007
     ],
     mode: Mode,
+    media_converter: Callable[[Image | Audio | PDF], dict[str, Any]] | None = None,
 ) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
@@ -735,7 +741,9 @@ def convert_contents(
         elif isinstance(content, dict):
             converted_contents.append(content)
         elif isinstance(content, (Image, Audio, PDF)):
-            if mode in {
+            if media_converter is not None:
+                converted_contents.append(media_converter(content))
+            elif mode in {
                 Mode.ANTHROPIC_JSON,
                 Mode.ANTHROPIC_TOOLS,
                 Mode.ANTHROPIC_REASONING_TOOLS,
@@ -811,9 +819,12 @@ def convert_messages(
     ],
     mode: Mode,
     autodetect_images: bool = False,
+    media_converter: Callable[[Image | Audio | PDF], dict[str, Any]] | None = None,
+    image_param_converter: Callable[[ImageParams], Image] | None = None,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
     converted_messages: list[dict[str, Any]] = []
+    image_factory = image_param_converter or ImageWithCacheControl.from_image_params
 
     def is_image_params(x: Any) -> bool:
         return isinstance(x, dict) and x.get("type") == "image" and "source" in x
@@ -837,27 +848,28 @@ def convert_messages(
                     if isinstance(item, str):
                         new_content.append(autodetect_media(item))
                     elif is_image_params(item):
-                        new_content.append(
-                            ImageWithCacheControl.from_image_params(
-                                cast(ImageParams, item)
-                            )
-                        )
+                        new_content.append(image_factory(cast(ImageParams, item)))
                     else:
                         new_content.append(item)
                 content = new_content
             elif isinstance(content, str):
                 content = autodetect_media(content)
             elif is_image_params(content):
-                content = ImageWithCacheControl.from_image_params(
-                    cast(ImageParams, content)
-                )
+                content = image_factory(cast(ImageParams, content))
         if isinstance(content, str):
             converted_messages.append(
                 {"role": role, "content": content, **other_kwargs}
             )
         else:
             # At this point content is narrowed to non-str types accepted by convert_contents
-            converted_content = convert_contents(content, mode)
+            if media_converter is None:
+                converted_content = convert_contents(content, mode)
+            else:
+                converted_content = convert_contents(
+                    content,
+                    mode,
+                    media_converter=media_converter,
+                )
             converted_messages.append(
                 {"role": role, "content": converted_content, **other_kwargs}
             )

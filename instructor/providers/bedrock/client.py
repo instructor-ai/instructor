@@ -1,5 +1,6 @@
 """Compatibility facade for ``instructor.providers.bedrock.client``."""
 
-from instructor.v2.providers.bedrock.client import from_bedrock
+from instructor.providers._compat import make_getattr
 
 __all__ = ["from_bedrock"]
+__getattr__ = make_getattr("bedrock", ("client",))

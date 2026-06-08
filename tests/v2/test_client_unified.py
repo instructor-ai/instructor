@@ -378,6 +378,7 @@ def test_string_based_initialization_delegates_to_from_provider(
         pytest.skip(
             f"{from_function} not available (SDK may not be installed)"  # ty: ignore[too-many-positional-arguments]
         )
+    assert callable(func)
 
     # Mock from_provider to verify it's called
     from unittest.mock import patch
@@ -410,6 +411,7 @@ def test_string_based_initialization_with_async_client(provider: Provider) -> No
         pytest.skip(
             f"{from_function} not available (SDK may not be installed)"  # ty: ignore[too-many-positional-arguments]
         )
+    assert callable(func)
 
     # Mock from_provider to verify it's called
     from unittest.mock import patch
@@ -443,6 +445,7 @@ def test_string_based_initialization_forwards_kwargs(provider: Provider) -> None
         pytest.skip(
             f"{from_function} not available (SDK may not be installed)"  # ty: ignore[too-many-positional-arguments]
         )
+    assert callable(func)
 
     # Mock from_provider to verify it's called
     from unittest.mock import patch
@@ -495,6 +498,7 @@ def test_client_based_initialization_still_works(
         pytest.skip(
             f"{from_function} not available"  # ty: ignore[too-many-positional-arguments]
         )
+    assert callable(func)
 
     # Import OpenAI client
     try:

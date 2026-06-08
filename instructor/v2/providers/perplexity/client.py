@@ -9,7 +9,10 @@ import openai
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.providers.openai.client import _from_openai_compat
+from instructor.v2.providers.openai.client import (
+    _from_openai_compat,
+    compatible_model_builder,
+)
 
 # Ensure handlers are registered.
 from instructor.v2.providers.perplexity import handlers  # noqa: F401
@@ -48,4 +51,12 @@ def from_perplexity(
     )
 
 
-__all__ = ["from_perplexity"]
+build_from_model = compatible_model_builder(
+    from_perplexity,
+    env_var="PERPLEXITY_API_KEY",
+    base_url="https://api.perplexity.ai",
+    default_mode=Mode.MD_JSON,
+)
+
+
+__all__ = ["build_from_model", "from_perplexity"]

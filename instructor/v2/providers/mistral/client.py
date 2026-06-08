@@ -11,12 +11,13 @@ Mistral has a unique API structure:
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.client_factory import create_instructor
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.mistral import handlers  # noqa: F401
@@ -100,86 +101,45 @@ def from_mistral(
         >>> # Or use structured outputs
         >>> instructor_client = from_mistral(client, mode=Mode.JSON_SCHEMA)
     """
-    from instructor.v2.core.registry import mode_registry, normalize_mode
+    return create_instructor(
+        client,
+        provider=Provider.MISTRAL,
+        mode=mode,
+        model=model,
+        use_async=use_async,
+        sync_types=(Mistral,) if Mistral is not None else None,
+        **kwargs,
+    )
 
-    # Check if mistralai is installed
+
+def build_from_model(
+    *,
+    provider: Provider,  # noqa: ARG001
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    """Construct the native Mistral client for `from_provider`."""
     if Mistral is None:
-        from instructor.v2.core.errors import ClientError
+        from instructor.v2.core.errors import ConfigurationError
 
-        raise ClientError(
-            "mistralai is not installed. Install it with: pip install mistralai"
+        raise ConfigurationError(
+            "The mistralai package is required to use the Mistral provider. "
+            "Install it with `pip install mistralai`."
         )
-
-    # Normalize provider-specific modes to generic modes
-    normalized_mode = normalize_mode(Provider.MISTRAL, mode)
-
-    # Validate mode is registered (use normalized mode for check)
-    if not mode_registry.is_registered(Provider.MISTRAL, normalized_mode):
-        from instructor.v2.core.errors import ModeError
-
-        available_modes = mode_registry.get_modes_for_provider(Provider.MISTRAL)
-        raise ModeError(
-            mode=str(mode.value),
-            provider=Provider.MISTRAL.value,
-            valid_modes=[str(m.value) for m in available_modes],
+    api_key = api_key or os.environ.get("MISTRAL_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "MISTRAL_API_KEY is not set. "
+            "Set it with `export MISTRAL_API_KEY=<your-api-key>`."
         )
-
-    # Use normalized mode for patching
-    mode = normalized_mode
-
-    # Validate client type
-    if not isinstance(client, Mistral):
-        from instructor.v2.core.errors import ClientError
-
-        raise ClientError(
-            f"Client must be an instance of mistralai.Mistral. "
-            f"Got: {type(client).__name__}"
-        )
-
-    # Create wrapper functions for Mistral's unique API
-    if use_async:
-
-        async def async_wrapper(*args: Any, **wrapper_kwargs: Any) -> Any:
-            """Async wrapper that handles streaming."""
-            if wrapper_kwargs.pop("stream", False):
-                return await client.chat.stream_async(*args, **wrapper_kwargs)
-            return await client.chat.complete_async(*args, **wrapper_kwargs)
-
-        # Patch using v2 registry
-        patched_create = patch_v2(
-            func=async_wrapper,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            default_model=model,
-        )
-
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            **kwargs,
-        )
-    else:
-
-        def sync_wrapper(*args: Any, **wrapper_kwargs: Any) -> Any:
-            """Sync wrapper that handles streaming."""
-            if wrapper_kwargs.pop("stream", False):
-                return client.chat.stream(*args, **wrapper_kwargs)
-            return client.chat.complete(*args, **wrapper_kwargs)
-
-        # Patch using v2 registry
-        patched_create = patch_v2(
-            func=sync_wrapper,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            default_model=model,
-        )
-
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            **kwargs,
-        )
+    client = Mistral(api_key=api_key)
+    return from_mistral(
+        client,
+        model=model_name,
+        mode=mode or Mode.TOOLS,
+        use_async=async_client,
+        **kwargs,
+    )

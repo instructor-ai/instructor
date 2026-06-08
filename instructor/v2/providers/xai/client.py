@@ -9,6 +9,7 @@ the translation between Instructor's interface and xAI's native SDK.
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any, cast, overload
 
 from pydantic import BaseModel
@@ -296,12 +297,16 @@ def from_xai(
                         schema=json.dumps(_get_model_schema(prepared_model)),
                     )
                 )
-                json_chunks = (chunk.content async for _, chunk in chat.stream())  # type: ignore[misc]
+
+                async def json_chunks() -> AsyncGenerator[str, None]:
+                    async for _, chunk in chat.stream():  # type: ignore[misc]
+                        yield chunk.content
+
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
-                    return rm.tasks_from_chunks_async(json_chunks)
+                    return rm.tasks_from_chunks_async(json_chunks())
                 elif issubclass(rm, PartialBase):
-                    return rm.model_from_chunks_async(json_chunks)  # type: ignore
+                    return rm.model_from_chunks_async(json_chunks())  # type: ignore
                 else:
                     raise ValueError(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
@@ -609,3 +614,30 @@ def from_xai(
             mode=mode,
             **kwargs,
         )
+
+
+def build_from_model(
+    *,
+    provider: Provider,  # noqa: ARG001
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    from instructor.v2.core.errors import ConfigurationError
+
+    if SyncClient is None or AsyncClient is None:
+        raise ConfigurationError(
+            "The xAI provider needs the optional dependency `xai-sdk`. "
+            'Install it with `uv pip install "instructor[xai]"` '
+            '(or `pip install "instructor[xai]"`). '
+            "Note: xai-sdk requires Python 3.10+."
+        )
+    factory = AsyncClient if async_client else SyncClient
+    return from_xai(
+        factory(api_key=api_key),
+        mode=mode or Mode.TOOLS,
+        model=model_name,
+        **kwargs,
+    )

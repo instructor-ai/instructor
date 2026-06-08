@@ -8,10 +8,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.client_factory import create_instructor
 from instructor.v2.core.errors import ClientError
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.anthropic import handlers  # noqa: F401
@@ -92,78 +92,54 @@ def from_anthropic(
         >>> # Or use JSON mode
         >>> instructor_client = from_anthropic(client, mode=Mode.JSON)
     """
-    from instructor.v2.core.registry import mode_registry, normalize_mode
-
     if anthropic is None:
         raise ClientError(
             "anthropic is not installed. Install it with: pip install anthropic"
         )
 
-    # Normalize provider-specific modes to generic modes
-    # ANTHROPIC_TOOLS -> TOOLS, ANTHROPIC_JSON -> JSON, ANTHROPIC_PARALLEL_TOOLS -> PARALLEL_TOOLS
-    normalized_mode = normalize_mode(Provider.ANTHROPIC, mode)
-
-    # Validate mode is registered (use normalized mode for check)
-    if not mode_registry.is_registered(Provider.ANTHROPIC, normalized_mode):
-        from instructor.v2.core.errors import ModeError
-
-        available_modes = mode_registry.get_modes_for_provider(Provider.ANTHROPIC)
-        raise ModeError(
-            mode=str(mode.value),
-            provider=Provider.ANTHROPIC.value,
-            valid_modes=[str(m.value) for m in available_modes],
-        )
-
-    # Use normalized mode for patching
-    mode = normalized_mode
-
-    # Validate client type
-    valid_client_types = (
-        anthropic.Anthropic,
-        anthropic.AsyncAnthropic,
-        anthropic.AnthropicBedrock,
-        anthropic.AnthropicVertex,
-        anthropic.AsyncAnthropicBedrock,
-        anthropic.AsyncAnthropicVertex,
-    )
-
-    if not isinstance(client, valid_client_types):
-        raise ClientError(
-            f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "
-            f"Got: {type(client).__name__}"
-        )
-
-    # Get create function (beta or regular)
-    if beta:
-        create = client.beta.messages.create
-    else:
-        create = client.messages.create
-
-    # Patch using v2 registry, passing the model for injection
-    patched_create = patch_v2(
-        func=create,
+    create_path = "beta.messages.create" if beta else None
+    return create_instructor(
+        client,
         provider=Provider.ANTHROPIC,
         mode=mode,
-        default_model=model,
+        model=model,
+        create_path=create_path,
+        async_create_path=create_path,
+        sync_types=(
+            anthropic.Anthropic,
+            anthropic.AnthropicBedrock,
+            anthropic.AnthropicVertex,
+        ),
+        async_types=(
+            anthropic.AsyncAnthropic,
+            anthropic.AsyncAnthropicBedrock,
+            anthropic.AsyncAnthropicVertex,
+        ),
+        **kwargs,
     )
 
-    # Return sync or async instructor
-    if isinstance(
-        client,
-        (anthropic.Anthropic, anthropic.AnthropicBedrock, anthropic.AnthropicVertex),
-    ):
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.ANTHROPIC,
-            mode=mode,
-            **kwargs,
+
+def build_from_model(
+    *,
+    provider: Provider,  # noqa: ARG001
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    from instructor import __version__
+    from instructor.v2.core.errors import ConfigurationError
+
+    if anthropic is None:
+        raise ConfigurationError(
+            "The anthropic package is required to use the Anthropic provider. "
+            "Install it with `pip install anthropic`."
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.ANTHROPIC,
-            mode=mode,
-            **kwargs,
-        )
+    factory = anthropic.AsyncAnthropic if async_client else anthropic.Anthropic
+    client = factory(
+        api_key=api_key,
+        default_headers={"User-Agent": f"instructor/{__version__}"},
+    )
+    kwargs.setdefault("max_tokens", 4096)
+    return from_anthropic(client, model=model_name, mode=mode or Mode.TOOLS, **kwargs)

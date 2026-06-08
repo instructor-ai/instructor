@@ -35,11 +35,15 @@ from instructor.v2.providers.anthropic.parallel import (
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.multimodal import Audio, Image, PDF
-from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
+from instructor.v2.core.multimodal import convert_messages
 from instructor.v2.core.json import extract_json_from_codeblock
-from instructor.v2.providers.anthropic.schema import generate_anthropic_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.providers.anthropic.multimodal import (
+    image_from_params,
+    media_to_anthropic,
+)
+from instructor.v2.providers.anthropic.schema import generate_anthropic_schema
 
 
 class SystemMessage(TypedDict, total=False):
@@ -119,9 +123,9 @@ def serialize_message_content(content: Any) -> Any:
     """Serialize message content, converting Pydantic models to dicts."""
 
     if isinstance(content, Image):
-        return content.to_anthropic()
+        return media_to_anthropic(content)
     if isinstance(content, PDF):
-        return content.to_anthropic()
+        return media_to_anthropic(content)
     if isinstance(content, Audio):
         source = str(content.source)
         if source.startswith(("http://", "https://")):
@@ -262,8 +266,12 @@ class AnthropicHandlerBase(ModeHandler):
             target_mode = Mode.ANTHROPIC_TOOLS
         else:
             target_mode = Mode.ANTHROPIC_JSON
-        return convert_messages_v1(
-            messages, target_mode, autodetect_images=autodetect_images
+        return convert_messages(
+            messages,
+            target_mode,
+            autodetect_images=autodetect_images,
+            media_converter=media_to_anthropic,
+            image_param_converter=image_from_params,
         )
 
     def _parse_streaming_response(

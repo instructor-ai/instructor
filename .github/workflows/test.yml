@@ -187,14 +187,29 @@ jobs:
           || env.PERPLEXITY_API_KEY != '' }}
         run: |
           set +e
-          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+          provider_filter="cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "$provider_filter"
           status=$?
+
+          if [ "$status" -eq 1 ]; then
+            echo "Retrying only failed live-provider tests once."
+            sleep 5
+            uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto --lf --lfnf=none -k "$provider_filter"
+            retry_status=$?
+          else
+            retry_status=$status
+          fi
           set -e
-          if [ $status -eq 5 ]; then
+
+          if [ "$status" -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
           fi
-          exit $status
+          if [ "$retry_status" -eq 5 ]; then
+            echo "Retry selected no failed tests; preserving the initial failure."
+            exit "$status"
+          fi
+          exit "$retry_status"
         env:
           INSTRUCTOR_ENV: CI
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}

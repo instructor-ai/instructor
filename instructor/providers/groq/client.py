@@ -1,5 +1,6 @@
 """Compatibility facade for ``instructor.providers.groq.client``."""
 
-from instructor.v2.providers.groq.client import from_groq
+from instructor.providers._compat import make_getattr
 
 __all__ = ["from_groq"]
+__getattr__ = make_getattr("groq", ("client",))

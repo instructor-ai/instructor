@@ -3,9 +3,34 @@
 from __future__ import annotations
 
 import base64
+from collections.abc import Mapping
 from typing import Any
 
 import requests
+
+from instructor.v2.core.multimodal import (
+    Audio,
+    Image,
+    ImageParams,
+    PDF,
+)
+
+
+class CacheableImage(Image):
+    """Anthropic-owned image representation with optional prompt caching."""
+
+    cache_control: Mapping[str, str] | None = None
+
+
+def image_from_params(params: ImageParams) -> Image:
+    """Construct an Anthropic image from its cache-aware shorthand."""
+    image = Image.autodetect(params["source"])
+    return CacheableImage(
+        source=image.source,
+        media_type=image.media_type,
+        data=image.data,
+        cache_control=params.get("cache_control"),
+    )
 
 
 def image_to_anthropic(image: Any) -> dict[str, Any]:
@@ -47,16 +72,26 @@ def pdf_to_anthropic(pdf: Any) -> dict[str, Any]:
 
 def image_with_cache_control_to_anthropic(image: Any) -> dict[str, Any]:
     result = image_to_anthropic(image)
-    if image.cache_control:
-        result["cache_control"] = image.cache_control
+    if cache_control := getattr(image, "cache_control", None):
+        result["cache_control"] = cache_control
     return result
 
 
 def pdf_with_cache_control_to_anthropic(pdf: Any) -> dict[str, Any]:
     result = pdf_to_anthropic(pdf)
-    result["cache_control"] = {"type": "ephemeral"}
+    if cache_control := getattr(pdf, "cache_control", None):
+        result["cache_control"] = cache_control
     return result
 
 
 def audio_to_anthropic(_audio: Any) -> dict[str, Any]:
     raise NotImplementedError("Anthropic is not supported yet")
+
+
+def media_to_anthropic(media: Image | Audio | PDF) -> dict[str, Any]:
+    """Encode a typed media item through Anthropic-owned conversion."""
+    if isinstance(media, Image):
+        return image_with_cache_control_to_anthropic(media)
+    if isinstance(media, PDF):
+        return pdf_with_cache_control_to_anthropic(media)
+    return audio_to_anthropic(media)

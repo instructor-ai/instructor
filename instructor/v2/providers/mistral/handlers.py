@@ -36,7 +36,7 @@ from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import ParallelBase, get_types_array
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
-from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
+from instructor.v2.core.multimodal import convert_messages
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
     extract_json_from_stream,
@@ -46,6 +46,10 @@ from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.providers.mistral.multimodal import (
+    image_from_params,
+    media_to_mistral,
+)
 
 
 class MistralHandlerBase(ModeHandler):
@@ -151,8 +155,12 @@ class MistralHandlerBase(ModeHandler):
             target_mode = Mode.MISTRAL_STRUCTURED_OUTPUTS
         else:
             target_mode = Mode.MD_JSON
-        return convert_messages_v1(
-            messages, target_mode, autodetect_images=autodetect_images
+        return convert_messages(
+            messages,
+            target_mode,
+            autodetect_images=autodetect_images,
+            media_converter=lambda media: media_to_mistral(media, target_mode),
+            image_param_converter=image_from_params,
         )
 
     def _parse_streaming_response(

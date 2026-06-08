@@ -64,3 +64,29 @@ def from_litellm(
         provider=Provider.OPENAI,
         **kwargs,
     )
+
+
+def build_from_model(
+    *,
+    provider: Provider,  # noqa: ARG001
+    model_name: str,  # noqa: ARG001
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,  # noqa: ARG001
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    from instructor.v2.core.errors import ConfigurationError
+
+    try:
+        from litellm import acompletion, completion
+    except ImportError:
+        raise ConfigurationError(
+            "The litellm package is required to use the LiteLLM provider. "
+            "Install it with `pip install litellm`."
+        ) from None
+    return from_litellm(
+        acompletion if async_client else completion,
+        mode=mode or Mode.TOOLS,
+        async_client=async_client,
+        **kwargs,
+    )

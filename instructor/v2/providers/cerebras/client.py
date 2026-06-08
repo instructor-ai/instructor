@@ -9,9 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
+from instructor.v2.core.client_factory import create_instructor
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.patch import patch_v2
 
 # Ensure handlers are registered (decorators auto-register on import)
 # Cerebras uses OpenAI-compatible API, so handlers are registered via OpenAI handlers
@@ -80,9 +80,6 @@ def from_cerebras(
         >>> # Or use MD_JSON mode for text extraction
         >>> instructor_client = from_cerebras(client, mode=Mode.MD_JSON)
     """
-    from instructor.v2.core.registry import mode_registry, normalize_mode
-
-    # Check if cerebras SDK is installed
     if Cerebras is None or AsyncCerebras is None:
         from instructor.v2.core.errors import ClientError
 
@@ -90,63 +87,35 @@ def from_cerebras(
             "cerebras is not installed. Install it with: pip install cerebras-cloud-sdk"
         )
 
-    # Normalize provider-specific modes to generic modes
-    # CEREBRAS_TOOLS -> TOOLS, CEREBRAS_JSON -> MD_JSON
-    normalized_mode = normalize_mode(Provider.CEREBRAS, mode)
-
-    # Validate mode is registered (use normalized mode for check)
-    if not mode_registry.is_registered(Provider.CEREBRAS, normalized_mode):
-        from instructor.v2.core.errors import ModeError
-
-        available_modes = mode_registry.get_modes_for_provider(Provider.CEREBRAS)
-        raise ModeError(
-            mode=str(mode.value),
-            provider=Provider.CEREBRAS.value,
-            valid_modes=[str(m.value) for m in available_modes],
-        )
-
-    # Use normalized mode for patching
-    mode = normalized_mode
-
-    # Validate client type
-    valid_client_types = (
-        Cerebras,
-        AsyncCerebras,
-    )
-
-    if not isinstance(client, valid_client_types):
-        from instructor.v2.core.errors import ClientError
-
-        raise ClientError(
-            f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "
-            f"Got: {type(client).__name__}"
-        )
-
-    # Get create function - Cerebras uses chat.completions.create like OpenAI
-    create = client.chat.completions.create
-
-    # Patch using v2 registry, passing the model for injection
-    patched_create = patch_v2(
-        func=create,
+    return create_instructor(
+        client,
         provider=Provider.CEREBRAS,
         mode=mode,
-        default_model=model,
+        model=model,
+        sync_types=(Cerebras,),
+        async_types=(AsyncCerebras,),
+        **kwargs,
     )
 
-    # Return sync or async instructor
-    if isinstance(client, Cerebras):
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.CEREBRAS,
-            mode=mode,
-            **kwargs,
+
+def build_from_model(
+    *,
+    provider: Provider,  # noqa: ARG001
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    """Construct the native Cerebras client for `from_provider`."""
+    if Cerebras is None or AsyncCerebras is None:
+        from instructor.v2.core.errors import ConfigurationError
+
+        raise ConfigurationError(
+            "The cerebras package is required to use the Cerebras provider. "
+            "Install it with `pip install cerebras`."
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.CEREBRAS,
-            mode=mode,
-            **kwargs,
-        )
+    client = (
+        AsyncCerebras(api_key=api_key) if async_client else Cerebras(api_key=api_key)
+    )
+    return from_cerebras(client, model=model_name, mode=mode or Mode.TOOLS, **kwargs)

@@ -9,13 +9,13 @@ from pydantic import BaseModel
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 from instructor.v2.core.mode import Mode
-from instructor.v2.core.multimodal import extract_genai_multimodal_content
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import ParallelBase
 from instructor.v2.dsl.partial import Partial, PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
+from instructor.v2.providers.genai.multimodal import extract_multimodal_content
 from instructor.v2.providers.gemini import utils as gemini_utils
 
 
@@ -234,9 +234,7 @@ class GenAIHandlerBase(ModeHandler):
         autodetect_images: bool,
     ) -> dict[str, Any]:
         contents = gemini_utils.convert_to_genai_messages(kwargs.get("messages", []))
-        kwargs["contents"] = extract_genai_multimodal_content(
-            contents, autodetect_images
-        )
+        kwargs["contents"] = extract_multimodal_content(contents, autodetect_images)
         kwargs.pop("messages", None)
         return kwargs
 

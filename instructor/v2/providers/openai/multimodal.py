@@ -8,8 +8,14 @@ from typing import Any
 import requests
 
 from instructor.v2.core.mode import Mode
+from instructor.v2.core.multimodal import Audio, Image, ImageParams, PDF
 
 RESPONSES_MODES = {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
+
+
+def image_from_params(params: ImageParams) -> Image:
+    """Construct an OpenAI image from the provider-neutral image shorthand."""
+    return Image.autodetect(params["source"])
 
 
 def image_to_openai(image: Any, mode: Mode) -> dict[str, Any]:
@@ -81,3 +87,12 @@ def pdf_to_openai(pdf: Any, mode: Mode) -> dict[str, Any]:
             },
         }
     raise ValueError("PDF data is missing for base64 encoding.")
+
+
+def media_to_openai(media: Image | Audio | PDF, mode: Mode) -> dict[str, Any]:
+    """Encode a typed media item through OpenAI-owned conversion."""
+    if isinstance(media, Image):
+        return image_to_openai(media, mode)
+    if isinstance(media, Audio):
+        return audio_to_openai(media, mode)
+    return pdf_to_openai(media, mode)

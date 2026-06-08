@@ -15,6 +15,10 @@ from instructor.v2.dsl.partial import Partial, PartialBase
 from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.messages import get_message_content
+from instructor.v2.providers.genai.multimodal import (
+    extract_multimodal_content,
+    media_to_genai,
+)
 
 if TYPE_CHECKING:
     from google.genai.types import Content as GenAIContent
@@ -425,7 +429,7 @@ def convert_to_genai_messages(
                     if isinstance(content_item, str):
                         content_parts.append(types.Part.from_text(text=content_item))
                     elif isinstance(content_item, (Image, Audio, PDF)):
-                        content_parts.append(content_item.to_genai())
+                        content_parts.append(media_to_genai(content_item))
                     else:
                         raise ValueError(
                             f"Unsupported content item type: {type(content_item)}"
@@ -452,9 +456,7 @@ def handle_genai_message_conversion(
 
     new_kwargs["contents"] = convert_to_genai_messages(messages)
 
-    from instructor.v2.core.multimodal import extract_genai_multimodal_content
-
-    new_kwargs["contents"] = extract_genai_multimodal_content(
+    new_kwargs["contents"] = extract_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
 
@@ -512,6 +514,8 @@ def handle_gemini_json(
 def handle_gemini_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    from instructor.v2.providers.gemini.schema import generate_gemini_schema
+
     if "model" in new_kwargs:
         raise ConfigurationError(
             "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
@@ -521,7 +525,7 @@ def handle_gemini_tools(
         new_kwargs = update_gemini_kwargs(new_kwargs)
         return None, new_kwargs
 
-    new_kwargs["tools"] = [response_model.gemini_schema]
+    new_kwargs["tools"] = [generate_gemini_schema(response_model)]
     new_kwargs["tool_config"] = {
         "function_calling_config": {
             "mode": "ANY",
@@ -571,9 +575,7 @@ def handle_genai_structured_outputs(
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    from instructor.v2.core.multimodal import extract_genai_multimodal_content
-
-    new_kwargs["contents"] = extract_genai_multimodal_content(
+    new_kwargs["contents"] = extract_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
 
@@ -656,9 +658,7 @@ def handle_genai_tools(
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    from instructor.v2.core.multimodal import extract_genai_multimodal_content
-
-    new_kwargs["contents"] = extract_genai_multimodal_content(
+    new_kwargs["contents"] = extract_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
 

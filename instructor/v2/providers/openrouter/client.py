@@ -9,7 +9,10 @@ import openai
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.providers.openai.client import _from_openai_compat
+from instructor.v2.providers.openai.client import (
+    _from_openai_compat,
+    compatible_model_builder,
+)
 
 # Ensure OpenRouter handlers are registered (overrides JSON_SCHEMA).
 from instructor.v2.providers.openrouter import handlers  # noqa: F401
@@ -48,4 +51,11 @@ def from_openrouter(
     )
 
 
-__all__ = ["from_openrouter"]
+build_from_model = compatible_model_builder(
+    from_openrouter,
+    env_var="OPENROUTER_API_KEY",
+    base_url="https://openrouter.ai/api/v1",
+)
+
+
+__all__ = ["build_from_model", "from_openrouter"]

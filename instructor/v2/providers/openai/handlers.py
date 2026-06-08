@@ -34,50 +34,33 @@ from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import ParallelBase, ParallelModel, get_types_array
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
-from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
+from instructor.v2.core.multimodal import convert_messages
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
     extract_json_from_stream,
     extract_json_from_stream_async,
 )
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.providers.openai.multimodal import image_from_params, media_to_openai
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.provider_specs import PROVIDER_SPECS
 
 
-OPENAI_COMPAT_PROVIDERS = [
-    Provider.OPENAI,
-    Provider.ANYSCALE,
-    Provider.TOGETHER,
-    Provider.DATABRICKS,
-    Provider.DEEPSEEK,
-    Provider.OPENROUTER,
-    Provider.GROQ,
-    Provider.FIREWORKS,
-    Provider.CEREBRAS,
-]
+def _providers_for_mode(mode: Mode) -> list[Provider]:
+    return [
+        spec.provider
+        for spec in PROVIDER_SPECS.values()
+        if spec.handler_module == __name__ and mode in spec.supported_modes
+    ]
 
-OPENAI_PARALLEL_TOOL_PROVIDERS = [
-    Provider.OPENAI,
-    Provider.ANYSCALE,
-    Provider.TOGETHER,
-    Provider.DATABRICKS,
-    Provider.DEEPSEEK,
-    Provider.OPENROUTER,
-    Provider.CEREBRAS,
-]
 
-OPENAI_JSON_SCHEMA_PROVIDERS = [
-    Provider.OPENAI,
-    Provider.ANYSCALE,
-    Provider.TOGETHER,
-    Provider.DATABRICKS,
-    Provider.DEEPSEEK,
-    Provider.GROQ,
-    Provider.FIREWORKS,
-    Provider.CEREBRAS,
-]
+OPENAI_COMPAT_PROVIDERS = _providers_for_mode(Mode.TOOLS)
+OPENAI_JSON_PROVIDERS = _providers_for_mode(Mode.JSON)
+OPENAI_JSON_SCHEMA_PROVIDERS = _providers_for_mode(Mode.JSON_SCHEMA)
+OPENAI_MD_JSON_PROVIDERS = _providers_for_mode(Mode.MD_JSON)
+OPENAI_PARALLEL_TOOL_PROVIDERS = _providers_for_mode(Mode.PARALLEL_TOOLS)
 
 
 def _is_stream_response(response: Any) -> bool:
@@ -428,8 +411,12 @@ class OpenAIHandlerBase(ModeHandler):
         self, messages: list[dict[str, Any]], autodetect_images: bool = False
     ) -> list[dict[str, Any]]:
         """Convert multimodal messages for OpenAI-compatible formats."""
-        return convert_messages_v1(
-            messages, self.mode, autodetect_images=autodetect_images
+        return convert_messages(
+            messages,
+            self.mode,
+            autodetect_images=autodetect_images,
+            media_converter=lambda media: media_to_openai(media, self.mode),
+            image_param_converter=image_from_params,
         )
 
     def _parse_streaming_response(
@@ -735,7 +722,7 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
         return self._finalize_parsed_result(response_model, response, parsed)
 
 
-@register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.JSON)
+@register_mode_handler(OPENAI_JSON_PROVIDERS, Mode.JSON)
 class OpenAIJSONHandler(OpenAIHandlerBase):
     """Handler for OpenAI JSON mode (response_format=json_object)."""
 
@@ -822,7 +809,7 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
         return self._finalize_parsed_result(response_model, response, parsed)
 
 
-@register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.MD_JSON)
+@register_mode_handler(OPENAI_MD_JSON_PROVIDERS, Mode.MD_JSON)
 class OpenAIMDJSONHandler(OpenAIHandlerBase):
     """Handler for MD_JSON mode - extract JSON from markdown code blocks."""
 

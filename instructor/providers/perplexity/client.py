@@ -1,5 +1,6 @@
 """Compatibility facade for ``instructor.providers.perplexity.client``."""
 
-from instructor.v2.providers.perplexity.client import from_perplexity
+from instructor.providers._compat import make_getattr
 
 __all__ = ["from_perplexity"]
+__getattr__ = make_getattr("perplexity", ("client",))

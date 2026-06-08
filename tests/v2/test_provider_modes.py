@@ -6,12 +6,10 @@ Tests all registered modes for each provider with actual API calls to ensure com
 
 from __future__ import annotations
 
+import importlib.util
 import os
 from collections.abc import Iterable
 from typing import Literal, Union
-
-import importlib.util
-from pathlib import Path
 
 import pytest
 from pydantic import BaseModel
@@ -20,24 +18,7 @@ import instructor
 from instructor.core.exceptions import InstructorRetryException
 from instructor import Mode
 from instructor.v2 import Provider, mode_registry
-from tests.v2.provider_matrix import legacy_config_dicts
-
-# Ensure handlers are loaded by dynamically importing them
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-_HANDLER_MODULE_PATHS: dict[Provider, Path] = {
-    Provider.OPENAI: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.ANTHROPIC: _PROJECT_ROOT / "instructor/v2/providers/anthropic/handlers.py",
-    Provider.GENAI: _PROJECT_ROOT / "instructor/v2/providers/genai/handlers.py",
-    Provider.COHERE: _PROJECT_ROOT / "instructor/v2/providers/cohere/handlers.py",
-    Provider.XAI: _PROJECT_ROOT / "instructor/v2/providers/xai/handlers.py",
-    Provider.GROQ: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.MISTRAL: _PROJECT_ROOT / "instructor/v2/providers/mistral/handlers.py",
-    Provider.FIREWORKS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.BEDROCK: _PROJECT_ROOT / "instructor/v2/providers/bedrock/handlers.py",
-    Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
-    Provider.WRITER: _PROJECT_ROOT / "instructor/v2/providers/writer/handlers.py",
-}
-_HANDLERS_LOADED: set[Provider] = set()
+from tests.v2.provider_matrix import TEST_PROVIDER_SPECS, ensure_handlers_loaded
 
 
 def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -50,48 +31,6 @@ def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
         "http_proxy",
     ):
         monkeypatch.delenv(key, raising=False)
-
-
-def _is_expected_missing_dependency(provider: Provider, exc: ImportError) -> bool:
-    """Return True when handler loading failed only because an optional SDK is absent."""
-    sdk_module = PROVIDER_CONFIGS.get(provider, {}).get("sdk_module")
-    if not sdk_module:
-        return False
-
-    expected_root = str(sdk_module).split(".")[0]
-    missing_name = getattr(exc, "name", None)
-    if missing_name:
-        return missing_name.split(".")[0] == expected_root
-
-    return f"No module named '{expected_root}'" in str(exc)
-
-
-def _ensure_handlers_loaded(provider: Provider) -> None:
-    """Dynamically load handler module to ensure handlers are registered."""
-    if provider in _HANDLERS_LOADED:
-        return
-    handler_path = _HANDLER_MODULE_PATHS.get(provider)
-    if handler_path is None:
-        return
-    if not handler_path.exists():
-        return
-    try:
-        spec = importlib.util.spec_from_file_location(
-            f"tests.v2.handlers_{provider.value}",
-            handler_path,
-        )
-        if spec is None or spec.loader is None:
-            return
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        _HANDLERS_LOADED.add(provider)
-    except (ImportError, ModuleNotFoundError) as exc:
-        if _is_expected_missing_dependency(provider, exc):
-            pytest.skip(
-                f"{provider.value} handlers require optional dependency "  # ty: ignore[too-many-positional-arguments]
-                f"{PROVIDER_CONFIGS[provider]['sdk_module']}"
-            )
-        raise
 
 
 class Answer(BaseModel):
@@ -113,17 +52,10 @@ class GoogleSearch(BaseModel):
     query: str
 
 
-_PROVIDER_CLIENT_CONFIGS = legacy_config_dicts()
 PROVIDER_CONFIGS = {
-    provider: {
-        "provider_string": config["provider_string"],
-        "sdk_module": config["sdk_module"],
-        "modes": config["supported_modes"],
-        "basic_modes": config["basic_modes"],
-        "async_modes": config["async_modes"],
-    }
-    for provider, config in _PROVIDER_CLIENT_CONFIGS.items()
-    if config["provider_string"] is not None and config["basic_modes"]
+    provider: spec
+    for provider, spec in TEST_PROVIDER_SPECS.items()
+    if spec.provider_string is not None and spec.basic_modes
 }
 
 
@@ -131,7 +63,7 @@ def _get_all_mode_params():
     """Generate (provider, mode) tuples for all registered modes."""
     params = []
     for provider, config in PROVIDER_CONFIGS.items():
-        for mode in config["modes"]:
+        for mode in config.supported_modes:
             params.append((provider, mode))
     return params
 
@@ -139,13 +71,13 @@ def _get_all_mode_params():
 @pytest.mark.parametrize("provider,mode", _get_all_mode_params())
 def test_mode_is_registered(provider: Provider, mode: Mode):
     """Verify each mode is registered in the v2 registry."""
-    _ensure_handlers_loaded(provider)
+    ensure_handlers_loaded(provider, skip_missing_dependency=True)
 
     # Skip if handler module doesn't exist or isn't registered
     if not mode_registry.is_registered(provider, mode):
-        # fmt: off
-        pytest.skip(f"Mode {mode.value} not registered for {provider.value}")  # ty: ignore[too-many-positional-arguments]
-        # fmt: on
+        pytest.skip(
+            f"Mode {mode.value} not registered for {provider.value}"  # ty: ignore[too-many-positional-arguments]
+        )
 
     handlers = mode_registry.get_handlers(provider, mode)
     assert handlers.request_handler is not None
@@ -157,7 +89,7 @@ def _get_basic_mode_params():
     """Generate (provider, mode) tuples for basic extraction tests."""
     params = []
     for provider, config in PROVIDER_CONFIGS.items():
-        for mode in config["basic_modes"]:
+        for mode in config.basic_modes:
             params.append((provider, mode))
     return params
 
@@ -169,9 +101,9 @@ def _skip_on_provider_quota(provider: Provider, exc: Exception) -> None:
         and isinstance(exc, InstructorRetryException)
         and "RESOURCE_EXHAUSTED" in str(exc)
     ):
-        # fmt: off
-        pytest.skip("GenAI quota exhausted for this environment")  # ty: ignore[too-many-positional-arguments]
-        # fmt: on
+        pytest.skip(
+            "GenAI quota exhausted for this environment"  # ty: ignore[too-many-positional-arguments]
+        )
     if (
         provider == Provider.OPENAI
         and isinstance(exc, InstructorRetryException)
@@ -179,9 +111,39 @@ def _skip_on_provider_quota(provider: Provider, exc: Exception) -> None:
     ):
         if os.environ.get("CI") or os.environ.get("INSTRUCTOR_STRICT_PROVIDER_TESTS"):
             return
-        # fmt: off
-        pytest.skip("OpenAI connectivity is unavailable in this environment")  # ty: ignore[too-many-positional-arguments]
-        # fmt: on
+        pytest.skip(
+            "OpenAI connectivity is unavailable in this environment"  # ty: ignore[too-many-positional-arguments]
+        )
+
+
+def _skip_if_provider_sdk_missing(provider: Provider) -> None:
+    sdk_module = PROVIDER_CONFIGS[provider].sdk_module
+    if sdk_module is None:
+        return
+    try:
+        installed = importlib.util.find_spec(sdk_module) is not None
+    except ModuleNotFoundError:
+        installed = False
+    if provider is Provider.XAI:
+        from instructor.v2.providers.xai.client import SyncClient
+
+        installed = installed and SyncClient is not None
+    if not installed:
+        pytest.skip(
+            f"{sdk_module} is not installed or unusable"  # ty: ignore[too-many-positional-arguments]
+        )
+
+
+def test_live_provider_matrix_skips_unusable_optional_sdk(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from instructor.v2.providers.xai import client as xai_client
+
+    monkeypatch.setattr(importlib.util, "find_spec", lambda _module: object())
+    monkeypatch.setattr(xai_client, "SyncClient", None)
+
+    with pytest.raises(pytest.skip.Exception):
+        _skip_if_provider_sdk_missing(Provider.XAI)
 
 
 @pytest.mark.parametrize("provider,mode", _get_basic_mode_params())
@@ -191,11 +153,12 @@ def test_mode_basic_extraction(
 ):
     """Test basic extraction with each mode."""
     config = PROVIDER_CONFIGS[provider]
+    assert config.provider_string is not None
+    _skip_if_provider_sdk_missing(provider)
     _clear_proxy_env(monkeypatch)
 
-    # All providers now use from_provider()
     client = instructor.from_provider(
-        config["provider_string"],
+        config.provider_string,
         mode=mode,
     )
 
@@ -222,7 +185,7 @@ def _get_async_mode_params():
     """Generate (provider, mode) tuples for async extraction tests."""
     params = []
     for provider, config in PROVIDER_CONFIGS.items():
-        for mode in config["async_modes"]:
+        for mode in config.async_modes:
             params.append((provider, mode))
     return params
 
@@ -235,11 +198,12 @@ async def test_mode_async_extraction(
 ):
     """Test async extraction with each mode."""
     config = PROVIDER_CONFIGS[provider]
+    assert config.provider_string is not None
+    _skip_if_provider_sdk_missing(provider)
     _clear_proxy_env(monkeypatch)
 
-    # All providers now use from_provider()
     client = instructor.from_provider(
-        config["provider_string"],
+        config.provider_string,
         mode=mode,
         async_client=True,
     )
@@ -331,7 +295,7 @@ def test_anthropic_reasoning_tools_normalizes_in_v2():
 def test_all_modes_covered(provider: Provider):
     """Verify we're testing all registered modes for each provider."""
     config = PROVIDER_CONFIGS[provider]
-    tested_modes = set(config["modes"])
+    tested_modes = set(config.supported_modes)
     registered_modes = set(mode_registry.get_modes_for_provider(provider))
 
     # All registered modes should be tested

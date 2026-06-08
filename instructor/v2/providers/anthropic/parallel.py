@@ -8,18 +8,16 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
-from instructor.v2.core.function_calls import openai_schema
 from instructor.v2.core.mode import Mode
 from instructor.v2.dsl.parallel import ParallelBase, get_types_array
+from instructor.v2.providers.anthropic.schema import generate_anthropic_schema
 
 T = TypeVar("T", bound=BaseModel)
 
 
 def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
     """Build Anthropic tool schemas for a parallel model."""
-    return [
-        openai_schema(model).anthropic_schema for model in get_types_array(typehint)
-    ]
+    return [generate_anthropic_schema(model) for model in get_types_array(typehint)]
 
 
 class AnthropicParallelBase(ParallelBase[T]):

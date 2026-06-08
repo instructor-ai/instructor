@@ -12,18 +12,18 @@ class PartialBase(BaseModel, Generic[T_Model]):
     @staticmethod
     def extract_json(
         completion: Iterable[Any],
-        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]] | Any,
+        stream_extractor: Callable[[Iterable[Any]], Generator[str, None, None]] | Any,  # noqa: UP043
         on_event: Callable[..., Any] | None = None,
-    ) -> Generator[str, None, None]: ...
+    ) -> Generator[str, None, None]: ...  # noqa: UP043
     @staticmethod
     def extract_json_async(
-        completion: AsyncGenerator[Any, None],
+        completion: AsyncGenerator[Any, None],  # noqa: UP043
         stream_extractor: Callable[
-            [AsyncGenerator[Any, None]], AsyncGenerator[str, None]
+            [AsyncGenerator[Any, None]], AsyncGenerator[str, None]  # noqa: UP043
         ]
         | Any,
         on_event: Callable[..., Any] | None = None,
-    ) -> AsyncGenerator[str, None]: ...
+    ) -> AsyncGenerator[str, None]: ...  # noqa: UP043
 
 class PartialLiteralMixin: ...
 

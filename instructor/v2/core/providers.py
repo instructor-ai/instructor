@@ -5,7 +5,7 @@ This module contains provider-related enums and detection logic.
 
 from enum import Enum
 
-from instructor.v2.core.mode import DEPRECATED_TO_CORE, Mode
+from instructor.v2.core.mode import Mode
 
 
 class Provider(Enum):
@@ -40,45 +40,21 @@ class Provider(Enum):
 
 def provider_from_mode(mode: Mode, default: Provider = Provider.OPENAI) -> Provider:
     """Infer provider from a provider-specific Mode."""
-    mapping = {
-        Mode.ANTHROPIC_TOOLS: Provider.ANTHROPIC,
-        Mode.ANTHROPIC_JSON: Provider.ANTHROPIC,
-        Mode.ANTHROPIC_PARALLEL_TOOLS: Provider.ANTHROPIC,
-        Mode.ANTHROPIC_REASONING_TOOLS: Provider.ANTHROPIC,
-        Mode.COHERE_TOOLS: Provider.COHERE,
-        Mode.COHERE_JSON_SCHEMA: Provider.COHERE,
-        Mode.MISTRAL_TOOLS: Provider.MISTRAL,
-        Mode.MISTRAL_STRUCTURED_OUTPUTS: Provider.MISTRAL,
-        Mode.VERTEXAI_TOOLS: Provider.VERTEXAI,
-        Mode.VERTEXAI_JSON: Provider.VERTEXAI,
-        Mode.VERTEXAI_PARALLEL_TOOLS: Provider.VERTEXAI,
-        Mode.GEMINI_TOOLS: Provider.GEMINI,
-        Mode.GEMINI_JSON: Provider.GEMINI,
-        Mode.GENAI_TOOLS: Provider.GENAI,
-        Mode.GENAI_JSON: Provider.GENAI,
-        Mode.GENAI_STRUCTURED_OUTPUTS: Provider.GENAI,
-        Mode.XAI_TOOLS: Provider.XAI,
-        Mode.XAI_JSON: Provider.XAI,
-        Mode.CEREBRAS_TOOLS: Provider.CEREBRAS,
-        Mode.CEREBRAS_JSON: Provider.CEREBRAS,
-        Mode.FIREWORKS_TOOLS: Provider.FIREWORKS,
-        Mode.FIREWORKS_JSON: Provider.FIREWORKS,
-        Mode.WRITER_TOOLS: Provider.WRITER,
-        Mode.WRITER_JSON: Provider.WRITER,
-        Mode.BEDROCK_TOOLS: Provider.BEDROCK,
-        Mode.BEDROCK_JSON: Provider.BEDROCK,
-        Mode.PERPLEXITY_JSON: Provider.PERPLEXITY,
-        Mode.OPENROUTER_STRUCTURED_OUTPUTS: Provider.OPENROUTER,
+    from instructor.v2.core.provider_specs import PROVIDER_SPECS
+
+    owners = {
+        spec.canonical_provider
+        for spec in PROVIDER_SPECS.values()
+        if mode in spec.legacy_modes
     }
-    return mapping.get(mode, default)
+    return owners.pop() if len(owners) == 1 else default
 
 
-def normalize_mode_for_provider(mode: Mode, _provider: Provider) -> Mode:
+def normalize_mode_for_provider(mode: Mode, provider: Provider) -> Mode:
     """Apply provider-specific mode overrides before registry lookup."""
-    if mode in DEPRECATED_TO_CORE:
-        Mode.warn_deprecated_mode(mode)
-        return DEPRECATED_TO_CORE[mode]
-    return mode
+    from instructor.v2.core.registry import normalize_mode
+
+    return normalize_mode(provider, mode)
 
 
 def get_provider(base_url: str) -> Provider:

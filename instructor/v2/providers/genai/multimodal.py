@@ -7,7 +7,12 @@ from typing import Any
 
 import requests
 
-from instructor.v2.core.multimodal import Audio, Image, PDF, autodetect_media
+from instructor.v2.core.multimodal import (
+    Audio,
+    Image,
+    PDF,
+    autodetect_media,
+)
 
 
 def _types() -> Any:
@@ -112,6 +117,15 @@ def uploaded_pdf_to_genai(pdf: Any) -> Any:
     return pdf_to_genai(pdf)
 
 
+def media_to_genai(media: Image | Audio | PDF) -> Any:
+    """Encode a typed media item through the GenAI-owned converter."""
+    if isinstance(media, Image):
+        return image_to_genai(media)
+    if isinstance(media, Audio):
+        return audio_to_genai(media)
+    return uploaded_pdf_to_genai(media)
+
+
 def extract_multimodal_content(
     contents: list[Any],
     autodetect_images: bool = True,
@@ -134,7 +148,7 @@ def extract_multimodal_content(
             if content_part.text and autodetect_images:
                 converted_item = autodetect_media(content_part.text)
                 if isinstance(converted_item, (Image, Audio, PDF)):
-                    converted_contents.append(converted_item.to_genai())
+                    converted_contents.append(media_to_genai(converted_item))
                     continue
             converted_contents.append(content_part)
         result.append(types.Content(parts=converted_contents, role=content.role))

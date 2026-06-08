@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+import os
+import warnings
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
-from instructor.v2.core.errors import ClientError
+from instructor.v2.core.client_factory import create_instructor
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from ...core.patch import patch_v2
-from ...core.registry import mode_registry, normalize_mode
 
 # Ensure handlers are registered (decorators auto-register on import)
 from . import handlers  # noqa: F401
@@ -61,86 +61,60 @@ def from_genai(
         model: Default model name to inject into requests if not provided
         **kwargs: Additional kwargs passed to Instructor constructor
     """
-    if Client is None:
-        raise ClientError(
-            "google-genai is not installed. Install it with: pip install google-genai"
-        )
-
-    if not isinstance(client, Client):
-        raise ClientError(
-            f"Client must be an instance of google.genai.Client. Got: {type(client).__name__}"
-        )
-
-    # Normalize mode for handler lookup and client metadata.
-    normalized_mode = normalize_mode(Provider.GENAI, mode)
-
-    # Validate mode is registered (use normalized mode for check)
-    if not mode_registry.is_registered(Provider.GENAI, normalized_mode):
-        from instructor.v2.core.errors import ModeError
-
-        available_modes = mode_registry.get_modes_for_provider(Provider.GENAI)
-        raise ModeError(
-            mode=str(mode.value),
-            provider=Provider.GENAI.value,
-            valid_modes=[str(m.value) for m in available_modes],
-        )
-
-    if use_async:
-
-        async def async_wrapper(*_args: Any, **call_kwargs: Any) -> Any:
-            # Extract model and stream from kwargs
-            # default_model will be injected by patch_v2 if not present
-            model_param: str = call_kwargs.pop("model", None) or model or ""
-            stream = call_kwargs.pop("stream", False)
-
-            # contents should be in call_kwargs from handler
-            if stream:
-                return await client.aio.models.generate_content_stream(
-                    model=model_param, **call_kwargs
-                )  # type: ignore[attr-defined]
-
-            return await client.aio.models.generate_content(
-                model=model_param, **call_kwargs
-            )  # type: ignore[attr-defined]
-
-        patched = patch_v2(
-            func=async_wrapper,
-            provider=Provider.GENAI,
-            mode=normalized_mode,
-            default_model=model,
-        )
-        return AsyncInstructor(
-            client=client,
-            create=patched,
-            provider=Provider.GENAI,
-            mode=normalized_mode,
-            **kwargs,
-        )
-
-    def sync_wrapper(*_args: Any, **call_kwargs: Any) -> Any:
-        # Extract model and stream from kwargs
-        # default_model will be injected by patch_v2 if not present
-        model_param: str = call_kwargs.pop("model", None) or model or ""
-        stream = call_kwargs.pop("stream", False)
-
-        # contents should be in call_kwargs from handler
-        if stream:
-            return client.models.generate_content_stream(
-                model=model_param, **call_kwargs
-            )
-
-        return client.models.generate_content(model=model_param, **call_kwargs)
-
-    patched = patch_v2(
-        func=sync_wrapper,
+    return create_instructor(
+        client,
         provider=Provider.GENAI,
-        mode=normalized_mode,
-        default_model=model,
+        mode=mode,
+        model=model,
+        use_async=use_async,
+        sync_types=(Client,) if Client is not None else None,
+        **kwargs,
     )
-    return Instructor(
-        client=client,
-        create=patched,
-        provider=Provider.GENAI,
-        mode=normalized_mode,
+
+
+def build_from_model(
+    *,
+    provider: Provider,
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+) -> Instructor | AsyncInstructor:
+    from instructor.v2.core.errors import ConfigurationError
+
+    if Client is None:
+        raise ConfigurationError(
+            "The google-genai package is required to use the Google provider. "
+            "Install it with `pip install google-genai`."
+        )
+    if provider is Provider.GENERATIVE_AI:
+        warnings.warn(
+            "The 'generative-ai' provider is deprecated. Use 'google' provider instead. "
+            "Example: instructor.from_provider('google/gemini-pro')",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    client_kwargs = {
+        key: kwargs.pop(key)
+        for key in (
+            "debug_config",
+            "http_options",
+            "credentials",
+            "project",
+            "location",
+        )
+        if key in kwargs
+    }
+    client = Client(
+        vertexai=kwargs.pop("vertexai", False),
+        api_key=api_key or os.environ.get("GOOGLE_API_KEY"),
+        **client_kwargs,
+    )
+    return from_genai(
+        client,
+        mode=mode or Mode.TOOLS,
+        use_async=async_client,
+        model=kwargs.pop("model", model_name),
         **kwargs,
     )
