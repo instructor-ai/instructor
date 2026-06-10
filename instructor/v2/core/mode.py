@@ -29,6 +29,10 @@ class Mode(enum.Enum):
     RESPONSES_TOOLS = "responses_tools"
     RESPONSES_TOOLS_WITH_INBUILT_TOOLS = "responses_tools_with_inbuilt_tools"
 
+    # Note: When using RESPONSES_TOOLS, do NOT set text.format to json_schema
+    # as this combination is known to produce empty tool arguments ({}) intermittently.
+    # The handling code must detect empty args and raise a ValidationError or retry.
+
     # XAI modes
     XAI_JSON = "xai_json"
     XAI_TOOLS = "xai_tools"
