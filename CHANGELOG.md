@@ -11,6 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
+- **Multimodal (Audio)**: `Audio.from_url` and `Audio.from_path` now raise `ValueError` (unsupported/empty) and `FileNotFoundError` (missing) instead of bare `assert` statements, which are silently stripped under `python -O`. Brings `Audio` validation in line with `Image`/`PDF`. ([#2361](https://github.com/567-labs/instructor/pull/2361))
 
 ### Tests / CI
 - **Type checking**: Upgrade to `ty` 0.0.44, enforce warning-free checks with GitHub annotations, cover V2 tests, validate supported Python versions and platforms, and strengthen installed-package public API typing tests.
