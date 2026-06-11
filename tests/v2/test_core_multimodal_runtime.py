@@ -50,7 +50,6 @@ def test_convert_contents_rejects_unknown_object() -> None:
 @pytest.mark.parametrize(
     ("media_type", "autodetect"),
     [
-        ("image", Image.autodetect),
         ("audio", Audio.autodetect),
         ("PDF", PDF.autodetect),
     ],
@@ -59,9 +58,9 @@ def test_autodetect_rejects_unsupported_source_types(
     media_type: str, autodetect: Any
 ) -> None:
     with pytest.raises(
-        ValueError, match=rf"Unsupported {media_type} source type: bytes"
+        ValueError, match=rf"Unsupported {media_type} source type: dict"
     ):
-        autodetect(b"not a string or path")
+        autodetect({"not": "a string or path"})
 
 
 def test_webp_mime_type_is_registered() -> None:
@@ -191,3 +190,49 @@ def test_audio_from_path_normalizes_windows_wav_and_aac_mime_types(
 
     assert wav_audio.media_type == "audio/wav"
     assert aac_audio.media_type == "audio/aac"
+
+
+def test_image_autodetect_bytes_jpeg() -> None:
+    """Image.autodetect should accept raw bytes and detect JPEG from magic bytes."""
+    # Minimal JPEG: SOI marker + minimal content
+    jpeg_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * 100
+    image = Image.autodetect(jpeg_bytes)
+    assert image.media_type == "image/jpeg"
+    assert image.data is not None
+
+
+def test_image_autodetect_bytes_png() -> None:
+    """Image.autodetect should accept raw bytes and detect PNG from magic bytes."""
+    # Minimal PNG signature
+    png_bytes = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+    image = Image.autodetect(png_bytes)
+    assert image.media_type == "image/png"
+    assert image.data is not None
+
+
+def test_image_autodetect_bytes_gif() -> None:
+    """Image.autodetect should accept raw bytes and detect GIF from magic bytes."""
+    gif_bytes = b"GIF89a" + b"\x00" * 100
+    image = Image.autodetect(gif_bytes)
+    assert image.media_type == "image/gif"
+    assert image.data is not None
+
+
+def test_image_autodetect_bytes_webp() -> None:
+    """Image.autodetect should accept raw bytes and detect WebP from magic bytes."""
+    webp_bytes = b"RIFF" + b"\x00" * 4 + b"WEBP" + b"\x00" * 100
+    image = Image.autodetect(webp_bytes)
+    assert image.media_type == "image/webp"
+    assert image.data is not None
+
+
+def test_image_autodetect_bytes_unsupported_type() -> None:
+    """Image.autodetect should raise ValueError for bytes with unknown image format."""
+    with pytest.raises(ValueError, match="Unsupported image type"):
+        Image.autodetect(b"not an image at all")
+
+
+def test_image_autodetect_unsupported_type_raises() -> None:
+    """Image.autodetect should raise ValueError for non-str/Path/bytes types."""
+    with pytest.raises(ValueError, match="Unsupported image source type: dict"):
+        Image.autodetect({"not": "valid"})
