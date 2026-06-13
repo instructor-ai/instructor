@@ -262,6 +262,32 @@ def test_handle_genai_message_conversion_extracts_system_and_contents(
     assert "messages" not in result
 
 
+def test_handle_genai_message_conversion_folds_generation_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Regression test for #2366: when response_model is None, generation_config must be folded
+    # into `config` instead of leaking as a raw keyword argument to generate_content.
+    _install_fake_genai_types(monkeypatch)
+    monkeypatch.setattr(
+        utils, "convert_to_genai_messages", lambda _messages: ["converted"]
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.multimodal.extract_genai_multimodal_content",
+        lambda contents, _autodetect_images: contents,
+    )
+
+    result = utils.handle_genai_message_conversion(
+        {
+            "messages": [{"role": "user", "content": "hello"}],
+            "generation_config": {"temperature": 0.7, "max_tokens": 128},
+        }
+    )
+
+    assert "generation_config" not in result
+    assert result["config"].kwargs["temperature"] == 0.7
+    assert result["config"].kwargs["max_output_tokens"] == 128
+
+
 def test_handle_vertexai_wrappers_use_provider_helpers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

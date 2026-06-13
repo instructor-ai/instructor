@@ -10,6 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **Gemini/GenAI**: Fold `generation_config` (and `safety_settings`/`thinking_config`) into `config` when `response_model=None`, so plain-text calls no longer raise `generate_content() got an unexpected keyword argument 'generation_config'` ([#2366](https://github.com/567-labs/instructor/issues/2366)).
 - **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
 
 ### Tests / CI
