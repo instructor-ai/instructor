@@ -275,6 +275,28 @@ def _prepare_bedrock_converse_kwargs_internal(
     elif "stopSequences" in call_kwargs:
         inference_config_params["stopSequences"] = call_kwargs.pop("stopSequences")
 
+    # top_k is not part of the Bedrock InferenceConfiguration base set
+    # (maxTokens/stopSequences/temperature/topP). Model-specific parameters
+    # like top_k must be routed through additionalModelRequestFields, otherwise
+    # the leftover kwarg reaches client.converse() and boto3 raises
+    # ParamValidationError: Unknown parameter "top_k".
+    additional_model_request_fields = {}
+    if "top_k" in call_kwargs:
+        additional_model_request_fields["top_k"] = call_kwargs.pop("top_k")
+    elif "topK" in call_kwargs:
+        additional_model_request_fields["top_k"] = call_kwargs.pop("topK")
+
+    if additional_model_request_fields:
+        if "additionalModelRequestFields" in call_kwargs:
+            existing_additional_fields = call_kwargs["additionalModelRequestFields"]
+            for key, value in additional_model_request_fields.items():
+                if key not in existing_additional_fields:
+                    existing_additional_fields[key] = value
+        else:
+            call_kwargs["additionalModelRequestFields"] = (
+                additional_model_request_fields
+            )
+
     if inference_config_params:
         if "inferenceConfig" in call_kwargs:
             existing_inference_config = call_kwargs["inferenceConfig"]
