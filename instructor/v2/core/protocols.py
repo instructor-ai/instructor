@@ -4,6 +4,8 @@ Defines the interfaces that all mode handlers must implement for type safety
 and consistency across providers.
 """
 
+from __future__ import annotations
+
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import Any, Protocol, TypeVar
 

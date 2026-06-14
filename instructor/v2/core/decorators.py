@@ -1,5 +1,7 @@
 """Decorator utilities for v2 mode registration."""
 
+from __future__ import annotations
+
 from collections.abc import Iterable
 
 from instructor.v2.core.mode import Mode
