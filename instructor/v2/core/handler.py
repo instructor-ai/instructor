@@ -3,6 +3,8 @@
 Provides the common interface and default implementations for mode handlers.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any
 
