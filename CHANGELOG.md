@@ -7,7 +7,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
-## [Unreleased]
+## [1.15.3] - 2026-06-15
 
 ### Fixed
 - **Bedrock**: Route `top_k`/`topK` through `additionalModelRequestFields` instead of leaving it as a top-level Converse kwarg. AWS `InferenceConfiguration` only supports `maxTokens`/`stopSequences`/`temperature`/`topP`, so a leftover `top_k` reached `client.converse(top_k=...)` and boto3 raised `ParamValidationError: Unknown parameter "top_k"`.
