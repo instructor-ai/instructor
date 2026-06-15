@@ -37,15 +37,7 @@ def _ensure_registry_loaded() -> None:
         return
 
 
-class Response:
-    """Helper for responses API using a patched client."""
-
-    def __init__(
-        self,
-        client: Instructor,
-    ):
-        self.client = client
-
+class _ResponseBase:
     @staticmethod
     def _normalize_messages(
         messages: str | list[ChatCompletionMessageParam] | None,
@@ -61,6 +53,16 @@ class Response:
         if isinstance(messages, str):
             return [{"role": "user", "content": messages}]
         return messages
+
+
+class Response(_ResponseBase):
+    """Helper for responses API using a patched client."""
+
+    def __init__(
+        self,
+        client: Instructor,
+    ):
+        self.client = client
 
     @overload
     def create(
@@ -95,7 +97,8 @@ class Response:
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
 
-        return self.client.create(
+        create = cast(Callable[..., T | Any], self.client.create)
+        return create(
             response_model=response_model,
             context=context,
             max_retries=max_retries,
@@ -131,7 +134,10 @@ class Response:
     ) -> tuple[T, Any]:
         messages = self._normalize_messages(messages, kwargs)
 
-        return self.client.create_with_completion(
+        create_with_completion = cast(
+            Callable[..., tuple[T, Any]], self.client.create_with_completion
+        )
+        return create_with_completion(
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
@@ -165,7 +171,10 @@ class Response:
     ) -> Generator[T, None, None]:
         messages = self._normalize_messages(messages, kwargs)
 
-        return self.client.create_iterable(
+        create_iterable = cast(
+            Callable[..., Generator[T, None, None]], self.client.create_iterable
+        )
+        return create_iterable(
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
@@ -199,7 +208,10 @@ class Response:
     ) -> Generator[T, None, None]:
         messages = self._normalize_messages(messages, kwargs)
 
-        return self.client.create_partial(
+        create_partial = cast(
+            Callable[..., Generator[T, None, None]], self.client.create_partial
+        )
+        return create_partial(
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
@@ -207,7 +219,7 @@ class Response:
         )
 
 
-class AsyncResponse(Response):
+class AsyncResponse(_ResponseBase):
     def __init__(self, client: AsyncInstructor):
         self.client = client
 
@@ -244,7 +256,8 @@ class AsyncResponse(Response):
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
 
-        return await self.client.create(
+        create = cast(Callable[..., Awaitable[T | Any]], self.client.create)
+        return await create(
             response_model=response_model,
             context=context,
             max_retries=max_retries,
@@ -280,7 +293,11 @@ class AsyncResponse(Response):
     ) -> tuple[T, Any]:
         messages = self._normalize_messages(messages, kwargs)
 
-        return await self.client.create_with_completion(
+        create_with_completion = cast(
+            Callable[..., Awaitable[tuple[T, Any]]],
+            self.client.create_with_completion,
+        )
+        return await create_with_completion(
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
@@ -314,7 +331,47 @@ class AsyncResponse(Response):
     ) -> AsyncGenerator[T, None]:
         messages = self._normalize_messages(messages, kwargs)
 
-        return self.client.create_iterable(
+        create_iterable = cast(
+            Callable[..., AsyncGenerator[T, None]], self.client.create_iterable
+        )
+        return create_iterable(
+            messages=messages,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    @overload
+    def create_partial(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] = ...,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> AsyncGenerator[T, None]: ...
+
+    @overload
+    def create_partial(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: None = None,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> AsyncGenerator[Any, None]: ...
+
+    def create_partial(
+        self,
+        messages: str | list[ChatCompletionMessageParam] | None = None,
+        response_model: type[T] | None = None,
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs: Any,
+    ) -> AsyncGenerator[T, None]:
+        messages = self._normalize_messages(messages, kwargs)
+
+        create_partial = cast(
+            Callable[..., AsyncGenerator[T, None]], self.client.create_partial
+        )
+        return create_partial(
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
@@ -704,7 +761,7 @@ class AsyncInstructor(Instructor):
             assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
             self.responses = AsyncResponse(client=self)
 
-    async def create(  # type: ignore[override]
+    async def create(  # type: ignore[override]  # ty: ignore[invalid-method-override]
         self,
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
@@ -748,7 +805,7 @@ class AsyncInstructor(Instructor):
             **kwargs,
         )
 
-    async def create_partial(  # type: ignore[override]
+    async def create_partial(  # type: ignore[override]  # ty: ignore[invalid-method-override]
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
@@ -777,7 +834,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_iterable(  # type: ignore[override]
+    async def create_iterable(  # type: ignore[override]  # ty: ignore[invalid-method-override]
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
@@ -795,8 +852,9 @@ class AsyncInstructor(Instructor):
         if hooks is not None:
             combined_hooks = self.hooks + hooks
 
+        iterable_model: Any = Iterable
         async for item in await self.create_fn(
-            response_model=Iterable[response_model],
+            response_model=iterable_model[response_model],
             context=context,
             max_retries=max_retries,
             messages=messages,
@@ -806,7 +864,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_with_completion(  # type: ignore[override]
+    async def create_with_completion(  # type: ignore[override]  # ty: ignore[invalid-method-override]
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
@@ -913,13 +971,13 @@ def from_litellm(
         )
     if async_client is False:
         return from_litellm_v2(
-            completion=cast(Callable[..., object], completion),
+            completion=completion,
             mode=mode,
             async_client=False,
             **kwargs,
         )
     return from_litellm_v2(
-        completion=cast(Callable[..., object], completion),
+        completion=completion,
         mode=mode,
         **kwargs,
     )

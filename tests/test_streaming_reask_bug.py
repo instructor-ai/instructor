@@ -196,7 +196,9 @@ class TestStreamingReaskIntegration:
         import os
 
         if not os.getenv("OPENAI_API_KEY"):
-            pytest.skip("OPENAI_API_KEY not set")
+            pytest.skip(
+                "OPENAI_API_KEY not set"  # ty: ignore[too-many-positional-arguments]
+            )
 
         import instructor
         from openai import OpenAI

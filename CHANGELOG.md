@@ -7,7 +7,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
-## [Unreleased]
+## [1.15.3] - 2026-06-15
+
+### Fixed
+- **Bedrock**: Route `top_k`/`topK` through `additionalModelRequestFields` instead of leaving it as a top-level Converse kwarg. AWS `InferenceConfiguration` only supports `maxTokens`/`stopSequences`/`temperature`/`topP`, so a leftover `top_k` reached `client.converse(top_k=...)` and boto3 raised `ParamValidationError: Unknown parameter "top_k"`.
+- **Gemini/GenAI**: Fold `generation_config` (and `safety_settings`/`thinking_config`) into `config` when `response_model=None`, so plain-text calls no longer raise `generate_content() got an unexpected keyword argument 'generation_config'` ([#2366](https://github.com/567-labs/instructor/issues/2366)).
+- **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
+
+### Tests / CI
+- **Type checking**: Upgrade to `ty` 0.0.44, enforce warning-free checks with GitHub annotations, cover V2 tests, validate supported Python versions and platforms, and strengthen installed-package public API typing tests.
 
 ### Added
 - **MiniMax**: First-class provider support via `from_minimax()` and `from_provider("minimax/...")`. Adds `MINIMAX_TOOLS` (tool-calling) and `MINIMAX_JSON` (system-prompt JSON) modes. `MINIMAX_JSON` automatically strips `<think>...</think>` reasoning blocks emitted by MiniMax reasoning models before JSON parsing. ([#2260](https://github.com/instructor-ai/instructor/issues/2260))

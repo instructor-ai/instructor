@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import Any, Callable, Literal, Union, cast, overload
+from typing import Any, Callable, Literal, Optional, Union, cast, overload
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor import __version__
 from instructor.v2.core.mode import Mode
@@ -194,14 +194,14 @@ def _build_openai(
     try:
         # Extract base_url and other OpenAI client parameters from kwargs
         base_url = kwargs.pop("base_url", None)
-        organization = cast(str | None, kwargs.pop("organization", None))
+        organization = cast(Optional[str], kwargs.pop("organization", None))
 
         timeout_raw = kwargs.pop("timeout", not_given)
         timeout: float | Timeout | None | NotGiven
         timeout = (
             not_given
             if timeout_raw is not_given
-            else cast(float | Timeout | None, timeout_raw)
+            else cast(Optional[Union[float, Timeout]], timeout_raw)
         )
 
         max_retries_raw = kwargs.pop("max_retries", None)
@@ -212,10 +212,10 @@ def _build_openai(
         )
 
         default_headers = cast(
-            Mapping[str, str] | None, kwargs.pop("default_headers", None)
+            Optional[Mapping[str, str]], kwargs.pop("default_headers", None)
         )
         default_query = cast(
-            Mapping[str, object] | None, kwargs.pop("default_query", None)
+            Optional[Mapping[str, object]], kwargs.pop("default_query", None)
         )
         http_client_raw = kwargs.pop("http_client", None)
         strict_response_validation = bool(
@@ -223,7 +223,7 @@ def _build_openai(
         )
 
         if async_client:
-            http_client = cast(httpx.AsyncClient | None, http_client_raw)
+            http_client = cast(Optional[httpx.AsyncClient], http_client_raw)
             client = openai.AsyncOpenAI(
                 api_key=api_key,
                 base_url=base_url,
@@ -236,7 +236,7 @@ def _build_openai(
                 _strict_response_validation=strict_response_validation,
             )
         else:
-            http_client = cast(httpx.Client | None, http_client_raw)
+            http_client = cast(Optional[httpx.Client], http_client_raw)
             client = openai.OpenAI(
                 api_key=api_key,
                 base_url=base_url,

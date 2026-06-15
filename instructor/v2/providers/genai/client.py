@@ -80,9 +80,9 @@ def from_genai(
 
         available_modes = mode_registry.get_modes_for_provider(Provider.GENAI)
         raise ModeError(
-            mode=mode.value,
+            mode=str(mode.value),
             provider=Provider.GENAI.value,
-            valid_modes=[m.value for m in available_modes],
+            valid_modes=[str(m.value) for m in available_modes],
         )
 
     if use_async:

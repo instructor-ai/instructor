@@ -337,16 +337,14 @@ class GenAIHandlerBase(ModeHandler):
         if isinstance(model, AdapterBase):
             return cast(Any, model).content
 
-        model._raw_response = response  # type: ignore[attr-defined]
+        cast(Any, model)._raw_response = response
         return model
 
     def handle_reask(
         self,
-        *,
         kwargs: dict[str, Any],
         response: Any,  # noqa: ARG002
         exception: Exception,  # noqa: ARG002
-        failed_attempts: list[Any] | None = None,  # noqa: ARG002  # noqa: ARG002
     ) -> dict[str, Any]:
         return kwargs.copy()
 
@@ -422,11 +420,9 @@ class GenAIToolsHandler(GenAIHandlerBase):
 
     def handle_reask(
         self,
-        *,
         kwargs: dict[str, Any],
         response: Any,
         exception: Exception,
-        failed_attempts: list[Any] | None = None,  # noqa: ARG002
     ) -> dict[str, Any]:
         return reask_genai_tools(
             kwargs.copy(),
@@ -495,11 +491,9 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
 
     def handle_reask(
         self,
-        *,
         kwargs: dict[str, Any],
         response: Any,
         exception: Exception,
-        failed_attempts: list[Any] | None = None,  # noqa: ARG002
     ) -> dict[str, Any]:
         return reask_genai_structured_outputs(
             kwargs.copy(),

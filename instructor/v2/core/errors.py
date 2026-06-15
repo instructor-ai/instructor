@@ -63,7 +63,7 @@ class InstructorError(Exception):
         self,
         *args: Any,
         failed_attempts: list[FailedAttempt] | None = None,
-        **kwargs: dict[str, Any],
+        **kwargs: Any,
     ):
         self.failed_attempts = failed_attempts
         super().__init__(*args, **kwargs)
@@ -179,7 +179,7 @@ class IncompleteOutputException(InstructorError):
         *args: Any,
         last_completion: Any | None = None,
         message: str = "The output is incomplete due to a max_tokens length limit.",
-        **kwargs: dict[str, Any],
+        **kwargs: Any,
     ):
         self.last_completion = last_completion
         super().__init__(message, *args, **kwargs)
@@ -245,7 +245,7 @@ class InstructorRetryException(InstructorError):
         total_usage: int,
         create_kwargs: dict[str, Any] | None = None,
         failed_attempts: list[FailedAttempt] | None = None,
-        **kwargs: dict[str, Any],
+        **kwargs: Any,
     ):
         self.last_completion = last_completion
         self.messages = messages

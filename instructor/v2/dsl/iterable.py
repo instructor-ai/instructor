@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 from collections.abc import AsyncGenerator, Callable, Generator, Iterable
 from typing import (
     Any,
     ClassVar,
-    Optional,
     cast,
     get_origin,
     get_args,
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class IterableBase:
-    task_type: ClassVar[Optional[type[BaseModel]]] = None
+    task_type: ClassVar[type[BaseModel] | None] = None
 
     @classmethod
     def from_streaming_response(
@@ -171,12 +172,25 @@ class IterableBase:
             yield chunk
 
     @staticmethod
-    def get_object(s: str, stack: int) -> tuple[Optional[str], str]:
+    def get_object(s: str, stack: int) -> tuple[str | None, str]:
         start_index = s.find("{")
+        in_string = False
+        escape_next = False
         for i, c in enumerate(s):
+            if escape_next:
+                escape_next = False
+            elif c == "\\" and in_string:
+                escape_next = True
+                continue
+            elif c == '"':
+                in_string = not in_string
+
+            if in_string:
+                continue
+
             if c == "{":
                 stack += 1
-            if c == "}":
+            elif c == "}":
                 stack -= 1
                 if stack == 0:
                     return s[start_index : i + 1], s[i + 2 :]
@@ -185,8 +199,8 @@ class IterableBase:
 
 def IterableModel(
     subtask_class: type[BaseModel],
-    name: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
 ) -> type[BaseModel]:
     # Import at runtime to avoid circular import
     from instructor.v2.core.function_calls import ResponseSchema

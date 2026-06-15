@@ -204,7 +204,7 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             from_function="from_genai",
             client_module="instructor.v2.providers.genai.client",
             sdk_module="google.genai",
-            provider_string="google/gemini-2.0-flash",
+            provider_string="google/gemini-3.5-flash",
             basic_modes=(Mode.TOOLS, Mode.JSON),
             async_modes=(Mode.TOOLS, Mode.JSON),
         ),

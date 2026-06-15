@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, TypeVar, TYPE_CHECKING
+from typing import Any, TypeVar, TYPE_CHECKING, cast
 
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
@@ -172,14 +172,15 @@ async def process_response_async(
         and not hasattr(response, "choices")
         and hasattr(response_model, "from_response")
     ):
-        model = response_model.from_response(  # type: ignore[attr-defined]
+        dynamic_response_model = cast(Any, response_model)
+        model = dynamic_response_model.from_response(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
         )
         return ListResponse.from_list(
-            [task for task in model.tasks],
+            list(model.tasks),
             raw_response=response,
         )
 
@@ -212,7 +213,7 @@ async def process_response_async(
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
         return ListResponse.from_list(  # type: ignore[return-value]
-            [task for task in model.tasks],
+            list(cast(Any, model).tasks),
             raw_response=response,
         )
     if isinstance(model, list) and not isinstance(model, ListResponse):
@@ -221,15 +222,15 @@ async def process_response_async(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
+        object.__setattr__(model, "_raw_response", response)
         return model
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
-        return model.content
+        return cast(Any, model).content
 
     if isinstance(model, BaseModel):
-        model._raw_response = response
+        object.__setattr__(model, "_raw_response", response)
     return model
 
 
@@ -310,14 +311,15 @@ def process_response(
         and not hasattr(response, "choices")
         and hasattr(response_model, "from_response")
     ):
-        model = response_model.from_response(  # type: ignore[attr-defined]
+        dynamic_response_model = cast(Any, response_model)
+        model = dynamic_response_model.from_response(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
         )
         return ListResponse.from_list(
-            [task for task in model.tasks],
+            list(model.tasks),
             raw_response=response,
         )
 
@@ -350,7 +352,7 @@ def process_response(
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
         return ListResponse.from_list(  # type: ignore[return-value]
-            [task for task in model.tasks],
+            list(cast(Any, model).tasks),
             raw_response=response,
         )
     if isinstance(model, list) and not isinstance(model, ListResponse):
@@ -359,15 +361,15 @@ def process_response(
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
-        model._raw_response = response
+        object.__setattr__(model, "_raw_response", response)
         return model
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
-        return model.content
+        return cast(Any, model).content
 
     if isinstance(model, BaseModel):
-        model._raw_response = response
+        object.__setattr__(model, "_raw_response", response)
     return model
 
 
