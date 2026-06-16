@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import logging
 from collections.abc import (
     AsyncGenerator,
     AsyncIterator,
@@ -44,6 +45,8 @@ from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+
+logger = logging.getLogger("instructor")
 
 
 OPENAI_COMPAT_PROVIDERS = [
@@ -116,6 +119,49 @@ def _format_responses_tool_call_details(tool_call: Any) -> str:
     return f" (tool call {', '.join(details)})"
 
 
+def _ensure_text_format_config(
+    new_kwargs: dict[str, Any],
+    response_model: type[Any],
+    parameters_schema: dict[str, Any],
+) -> None:
+    """Set ``text.format`` to a ``json_schema`` that matches the tool schema.
+
+    Per OpenAI's Responses API migration guide, ``text.format`` is the
+    equivalent of ``response_format`` for structured outputs.  When forced
+    tool calls are used alongside a *different* ``text.format`` schema the
+    model receives competing output constraints and may satisfy the text
+    format while deprioritizing tool arguments to ``'{}'``.
+
+    By setting ``text.format`` to the **same** schema used by the tool
+    definition both output paths are aligned and the model has a single,
+    consistent signal.
+
+    See: https://developers.openai.com/api/docs/guides/migrate-to-responses
+         #6-update-structured-outputs-definition
+    """
+    existing = new_kwargs.get("text")
+    if isinstance(existing, dict):
+        fmt = existing.get("format", {})
+        if isinstance(fmt, dict) and fmt.get("type") == "json_schema":
+            existing_schema = fmt.get("schema")
+            if existing_schema == parameters_schema:
+                return  # Already aligned, nothing to do
+            else:
+                logger.debug(
+                    "Overriding user-provided text.format with tool schema "
+                    "to prevent competing output paths."
+                )
+
+    new_kwargs["text"] = {
+        "format": {
+            "type": "json_schema",
+            "name": response_model.__name__,
+            "strict": True,
+            "schema": parameters_schema,
+        }
+    }
+
+
 def reask_tools(
     kwargs: dict[str, Any],
     response: Any,
@@ -176,16 +222,36 @@ def reask_responses_tools(
     reask_messages = []
     for tool_call in _filter_responses_tool_calls(response.output):
         details = _format_responses_tool_call_details(tool_call)
-        reask_messages.append(
-            {
-                "role": "user",
-                "content": (
-                    f"Validation Error found:\n{exception}\n"
-                    "Recall the function correctly, fix the errors with "
-                    f"{tool_call.arguments}{details}"
-                ),
-            }
-        )
+        args = getattr(tool_call, "arguments", "")
+
+        is_empty = not args or (isinstance(args, str) and args.strip() in ("{}", ""))
+
+        if is_empty:
+            # Targeted message for empty args — the model needs explicit
+            # guidance to populate required fields instead of returning '{}'.
+            reask_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Validation Error found:\n{exception}\n"
+                        "The function was called with empty arguments '{}'. "
+                        "You MUST populate ALL required fields in the function "
+                        "call according to the schema. Do not return empty "
+                        f"arguments.{details}"
+                    ),
+                }
+            )
+        else:
+            reask_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Validation Error found:\n{exception}\n"
+                        "Recall the function correctly, fix the errors with "
+                        f"{tool_call.arguments}{details}"
+                    ),
+                }
+            )
 
     kwargs["messages"].extend(reask_messages)
     return kwargs
@@ -1029,7 +1095,6 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         if response_model is None:
             return None, new_kwargs
 
-        from typing import cast
         from instructor.v2.core.response_model import prepare_response_model
 
         prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
@@ -1059,6 +1124,14 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
             "type": "function",
             "name": schema["function"]["name"],
         }
+
+        # Align text.format with the tool schema so both output paths use the
+        # same json_schema — prevents the model from deprioritizing tool args.
+        _ensure_text_format_config(
+            new_kwargs,
+            prepared_model,
+            tool_definition["parameters"],
+        )
 
         return prepared_model, new_kwargs
 
@@ -1100,6 +1173,18 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
                 item_type = getattr(item, "type", None)
                 if item_type in {"function_call", "tool_call"}:
                     args = getattr(item, "arguments", None)
+
+                    # Diagnostic: warn when tool args are empty so users can
+                    # identify text.format / tool_choice conflicts or
+                    # insufficient reasoning budget.
+                    if not args or (isinstance(args, str) and args.strip() in ("{}", "")):
+                        logger.warning(
+                            "RESPONSES_TOOLS: tool '%s' returned empty arguments. "
+                            "This usually indicates a text.format / tool_choice "
+                            "conflict or insufficient reasoning budget.",
+                            getattr(item, "name", "unknown"),
+                        )
+
                     if args:
                         parsed = response_model.model_validate_json(
                             args,
