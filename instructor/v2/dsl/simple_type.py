@@ -108,6 +108,15 @@ def is_simple_type(
                 ):
                     return True
 
+                # Check if inner type is a BaseModel - if so, not a simple type.
+                # This must run before the broad pipe-syntax check below, since
+                # every class exposes ``__or__`` on Python 3.10+.
+                try:
+                    if isclass(inner_arg) and issubclass(inner_arg, BaseModel):
+                        return False
+                except TypeError:
+                    pass
+
                 # Check for Python 3.10+ pipe syntax
                 if hasattr(inner_arg, "__or__"):
                     return True
@@ -115,13 +124,6 @@ def is_simple_type(
                 # For simple list with basic types, also return True
                 if inner_arg in {str, int, float, bool}:
                     return True
-
-                # Check if inner type is a BaseModel - if so, not a simple type
-                try:
-                    if isclass(inner_arg) and issubclass(inner_arg, BaseModel):
-                        return False
-                except TypeError:
-                    pass
 
             # If no args or unknown pattern, treat as simple list
             return len(args) == 0
