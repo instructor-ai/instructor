@@ -879,6 +879,63 @@ def _build_perplexity(
         raise
 
 
+def _build_pinstripes(
+    *,
+    provider: str,
+    model_name: str,
+    async_client: bool,
+    mode: Mode | None,
+    api_key: str | None,
+    kwargs: dict[str, Any],
+    provider_info: dict[str, str],
+) -> InstructorType:
+    try:
+        import openai
+        from instructor.v2.providers.pinstripes.client import from_pinstripes
+        import os
+
+        api_key = api_key or os.environ.get("PINSTRIPES_API_KEY")
+        if not api_key:
+            from instructor.v2.core.errors import ConfigurationError
+
+            raise ConfigurationError(
+                "PINSTRIPES_API_KEY is not set. "
+                "Set it with `export PINSTRIPES_API_KEY=<your-api-key>` or pass it as a kwarg api_key=<your-api-key>"
+            )
+
+        base_url = kwargs.pop("base_url", "https://pinstripes.io/v1")
+        client = (
+            openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+            if async_client
+            else openai.OpenAI(api_key=api_key, base_url=base_url)
+        )
+        call_kwargs: dict[str, Any] = {}
+        if mode is not None:
+            call_kwargs["mode"] = mode
+        result = from_pinstripes(client, model=model_name, **call_kwargs, **kwargs)
+        logger.info(
+            "Client initialized",
+            extra={**provider_info, "status": "success"},
+        )
+        return result
+    except ImportError:
+        from instructor.v2.core.errors import ConfigurationError
+
+        raise ConfigurationError(
+            "The openai package is required to use the Pinstripes provider. "
+            "Install it with `pip install openai`."
+        ) from None
+    except Exception as e:
+        logger.error(
+            "Error initializing %s client: %s",
+            provider,
+            e,
+            exc_info=True,
+            extra={**provider_info, "status": "error"},
+        )
+        raise
+
+
 def _build_groq(
     *,
     provider: str,
@@ -1593,6 +1650,7 @@ _PROVIDER_BUILDERS: dict[str, ProviderBuilder] = {
     "mistral": _build_mistral,
     "cohere": _build_cohere,
     "perplexity": _build_perplexity,
+    "pinstripes": _build_pinstripes,
     "groq": _build_groq,
     "writer": _build_writer,
     "bedrock": _build_bedrock,

@@ -444,6 +444,17 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             client_module=None,
             sdk_module="openai",
         ),
+        Provider.PINSTRIPES: _spec(
+            Provider.PINSTRIPES,
+            aliases=("pinstripes",),
+            handler_module="instructor.v2.providers.openai.handlers",
+            supported_modes=_OPENAI_COMPAT_SUPPORTED_MODES,
+            unsupported_modes=_OPENAI_COMPAT_UNSUPPORTED_MODES,
+            legacy_modes=_OPENAI_COMPAT_LEGACY_MODES,
+            from_function="from_pinstripes",
+            client_module="instructor.v2.providers.pinstripes.client",
+            sdk_module="openai",
+        ),
         Provider.LITELLM: _spec(
             Provider.LITELLM,
             aliases=("litellm",),

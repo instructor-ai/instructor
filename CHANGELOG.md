@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Pinstripes**: Add `from_pinstripes` factory for [Pinstripes](https://pinstripes.io), an OpenAI-compatible LLM inference API. Supports all standard OpenAI-compatible modes (`TOOLS`, `JSON`, `JSON_SCHEMA`, `MD_JSON`, `PARALLEL_TOOLS`). Install with `pip install "instructor[pinstripes]"`.
+
+---
+
 ## [1.15.3] - 2026-06-15
 
 ### Fixed
