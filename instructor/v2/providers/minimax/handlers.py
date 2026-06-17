@@ -10,7 +10,10 @@ from pydantic import BaseModel
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.decorators import register_mode_handler
-from instructor.v2.providers.openai.handlers import OpenAIToolsHandler, OpenAIMDJSONHandler
+from instructor.v2.providers.openai.handlers import (
+    OpenAIToolsHandler,
+    OpenAIMDJSONHandler,
+)
 
 
 def reask_minimax_tools(
