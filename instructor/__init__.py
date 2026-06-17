@@ -58,6 +58,7 @@ if TYPE_CHECKING:
     )
     from .v2.providers.openrouter.client import from_openrouter as from_openrouter
     from .v2.providers.perplexity.client import from_perplexity as from_perplexity
+    from .v2.providers.pinstripes.client import from_pinstripes as from_pinstripes
     from .v2.providers.vertexai.client import from_vertexai as from_vertexai
     from .v2.providers.writer.client import from_writer as from_writer
     from .v2.providers.xai.client import from_xai as from_xai
@@ -157,6 +158,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "from_writer": (".v2.providers.writer.client", "from_writer"),
     "from_xai": (".v2.providers.xai.client", "from_xai"),
     "from_perplexity": (".v2.providers.perplexity.client", "from_perplexity"),
+    "from_pinstripes": (".v2.providers.pinstripes.client", "from_pinstripes"),
     "from_genai": (".v2.providers.genai.client", "from_genai"),
 }
 
@@ -188,4 +190,5 @@ _add_optional_export("from_bedrock", "boto3")
 _add_optional_export("from_writer", "writerai")
 _add_optional_export("from_xai", "xai_sdk")
 _add_optional_export("from_perplexity", "openai")
+_add_optional_export("from_pinstripes", "openai")
 _add_optional_export("from_genai", "google", "google.genai")

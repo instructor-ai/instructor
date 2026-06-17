@@ -192,6 +192,7 @@ nav:
     - Mistral: 'integrations/mistral.md'
     - Ollama: 'integrations/ollama.md'
     - Perplexity: 'integrations/perplexity.md'
+    - Pinstripes: 'integrations/pinstripes.md'
     - Writer: 'integrations/writer.md'
     - OpenRouter: 'integrations/openrouter.md'
     - SambaNova: 'integrations/sambanova.md'
