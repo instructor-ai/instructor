@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Response models**: `list[A | B]` written with PEP 604 union syntax is now treated as an iterable of models, identical to `list[Union[A, B]]`. Previously the `|` form was misrouted to the simple-type wrapper (root property `content`) instead of an iterable (root property `tasks`), silently changing the JSON schema sent to the model and breaking multi-item extraction. Pipe-union iterables also get a clean generated name (e.g. `IterableAOrB`) instead of leaking a module-qualified `str(types.UnionType)`.
+
+---
+
 ## [1.15.3] - 2026-06-15
 
 ### Fixed

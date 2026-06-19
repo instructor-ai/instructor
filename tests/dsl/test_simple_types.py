@@ -115,3 +115,61 @@ def test_prepare_response_model_with_list_union():
     assert prepared_model is not None, (
         "prepare_response_model should not return None for list[int | str]"
     )
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="Union pipe syntax is only available in Python 3.10+",
+)
+def test_list_of_model_pipe_union_is_treated_as_iterable():
+    """``list[A | B]`` must be treated as an iterable of models, exactly like
+    ``list[Union[A, B]]`` (regression for PEP 604 union response models).
+
+    Before the fix the PEP 604 form fell through to the simple-type ``ModelAdapter``
+    wrapper (root property ``content``) instead of an ``IterableModel`` (root property
+    ``tasks``), silently changing the schema sent to the model.
+    """
+    from instructor.v2.dsl.iterable import IterableBase
+
+    class A(BaseModel):
+        x: int
+
+    class B(BaseModel):
+        y: str
+
+    pipe = prepare_response_model(list[A | B])
+    typing_union = prepare_response_model(List[Union[A, B]])  # noqa: UP006
+
+    # The legacy ``Union`` form is wrapped as an iterable of models...
+    assert isinstance(typing_union, type) and issubclass(typing_union, IterableBase)
+    # ...and the PEP 604 ``A | B`` form must behave identically.
+    assert isinstance(pipe, type) and issubclass(pipe, IterableBase), (
+        "list[A | B] should be an iterable of models like list[Union[A, B]]"
+    )
+
+    pipe_schema = pipe.model_json_schema()
+    assert "tasks" in pipe_schema["properties"]
+    assert "content" not in pipe_schema["properties"]
+    # the iterable element still references both union members
+    assert set(pipe_schema.get("$defs", {})) == {"A", "B"}
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="Union pipe syntax is only available in Python 3.10+",
+)
+def test_list_of_model_pipe_union_generates_clean_name():
+    """The generated iterable class name for ``list[A | B]`` must not leak a
+    module-qualified ``str(types.UnionType)`` such as ``Iterablemod.A | mod.B``."""
+
+    class A(BaseModel):
+        x: int
+
+    class B(BaseModel):
+        y: str
+
+    prepared = prepare_response_model(list[A | B])
+
+    assert "|" not in prepared.__name__
+    assert "." not in prepared.__name__
+    assert prepared.__name__ == "IterableAOrB"

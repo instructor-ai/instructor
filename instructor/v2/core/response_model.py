@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import sys
 from collections.abc import Iterable
 from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
@@ -11,6 +12,16 @@ from pydantic import BaseModel, create_model
 T = TypeVar("T")
 
 _create_dynamic_model = cast(Callable[..., type[BaseModel]], create_model)
+
+# PEP 604 unions (``A | B``) report ``types.UnionType`` as their origin, whereas the
+# legacy ``Union[A, B]`` form reports ``typing.Union``. Both must be recognized so that
+# ``list[A | B]`` is treated as an iterable of models, matching ``list[Union[A, B]]``.
+if sys.version_info >= (3, 10):
+    from types import UnionType
+
+    _UNION_ORIGINS: tuple[Any, ...] = (Union, UnionType)
+else:  # pragma: no cover - Python 3.9 has no runtime ``X | Y`` union syntax
+    _UNION_ORIGINS = (Union,)
 
 
 def is_typed_dict(cls: Any) -> bool:
@@ -41,7 +52,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         def _is_model_type(candidate: Any) -> bool:
             if inspect.isclass(candidate) and issubclass(candidate, BaseModel):
                 return True
-            return get_origin(candidate) is Union and all(
+            return get_origin(candidate) in _UNION_ORIGINS and all(
                 inspect.isclass(member) and issubclass(member, BaseModel)
                 for member in get_args(candidate)
             )

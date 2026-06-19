@@ -11,8 +11,20 @@ from typing import (
     TYPE_CHECKING,
 )
 import json
+import sys
 
 from pydantic import BaseModel, Field, create_model
+
+# PEP 604 unions (``A | B``) report ``types.UnionType`` as their origin; the legacy
+# ``Union[A, B]`` form reports ``typing.Union``. Recognize both when deriving the
+# iterable's task name so ``list[A | B]`` yields a clean name instead of leaking a
+# module-qualified ``str(UnionType)`` such as ``Iterablemymodule.A | mymodule.B``.
+if sys.version_info >= (3, 10):
+    from types import UnionType
+
+    _UNION_ORIGINS: tuple[Any, ...] = (Union, UnionType)
+else:  # pragma: no cover - Python 3.9 has no runtime ``X | Y`` union syntax
+    _UNION_ORIGINS = (Union,)
 
 if TYPE_CHECKING:
     pass
@@ -261,7 +273,7 @@ def IterableModel(
         # Handle `Union[A, B]` / `A | B` task types.
         # `types.UnionType` does not have `__name__`, so fall back to a stable name.
         task_name = getattr(subtask_class, "__name__", None)
-        if task_name is None and get_origin(subtask_class) is Union:
+        if task_name is None and get_origin(subtask_class) in _UNION_ORIGINS:
             members = get_args(subtask_class)
             task_name = "Or".join(getattr(m, "__name__", str(m)) for m in members)
         if task_name is None:
