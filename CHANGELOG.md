@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **v2 core**: Call `prepare_response_model()` in `patch.py` before dispatching to provider handlers, fixing `AttributeError: type object 'list' has no attribute 'model_json_schema'` when using `response_model=list[Model]` with Gemini (and other providers whose handlers do not internally prepare the model). This restores parity with `response.py` and resolves a regression introduced in the v2 refactor ([#2374](https://github.com/567-labs/instructor/issues/2374)).
+
+---
+
 ## [1.15.3] - 2026-06-15
 
 ### Fixed
