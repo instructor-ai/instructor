@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Azure OpenAI / AI Foundry**: First-class provider support via `from_azure()` and `from_provider("azure/...")` / `from_provider("azure_openai/...")`. Supports `TOOLS`, `JSON`, `JSON_SCHEMA`, `MD_JSON`, and `PARALLEL_TOOLS` modes. Accepts `AzureOpenAI`/`AsyncAzureOpenAI` clients (or plain `OpenAI`/`AsyncOpenAI` for Foundry endpoints). Auto-detects `AZURE_OPENAI_API_KEY` and `AZURE_OPENAI_ENDPOINT` environment variables. Works with both Azure OpenAI models and Foundry-hosted non-OpenAI models (Mistral, Llama, Phi). ([#2383](https://github.com/567-labs/instructor/issues/2383))
+
+---
+
 ## [1.15.3] - 2026-06-15
 
 ### Fixed

@@ -286,7 +286,7 @@ def _build_azure_openai(
     try:
         import os
         from openai import AzureOpenAI, AsyncAzureOpenAI
-        from instructor.v2.providers.openai.client import from_openai
+        from instructor.v2.providers.azure.client import from_azure
 
         # Get required Azure OpenAI configuration from environment
         api_key = api_key or os.environ.get("AZURE_OPENAI_API_KEY")
@@ -324,7 +324,7 @@ def _build_azure_openai(
                 azure_endpoint=azure_endpoint,
             )
         )
-        result = from_openai(
+        result = from_azure(
             client,
             model=model_name,
             mode=mode if mode else Mode.TOOLS,
@@ -339,7 +339,7 @@ def _build_azure_openai(
         from instructor.v2.core.errors import ConfigurationError
 
         raise ConfigurationError(
-            "The openai package is required to use the Azure OpenAI provider. "
+            "The openai package is required to use the Azure OpenAI / AI Foundry provider. "
             "Install it with `pip install openai`."
         ) from None
     except Exception as e:
@@ -1585,6 +1585,7 @@ _PROVIDER_BUILDERS: dict[str, ProviderBuilder] = {
     "openai": _build_openai,
     "anyscale": _build_anyscale,
     "together": _build_together,
+    "azure": _build_azure_openai,
     "azure_openai": _build_azure_openai,
     "databricks": _build_databricks,
     "anthropic": _build_anthropic,

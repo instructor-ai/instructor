@@ -184,6 +184,7 @@ nav:
     - Anyscale: 'integrations/anyscale.md'
     
     # Other commercial providers
+    - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
     - Databricks: 'integrations/databricks.md'

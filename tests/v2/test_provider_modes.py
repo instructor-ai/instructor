@@ -36,6 +36,7 @@ _HANDLER_MODULE_PATHS: dict[Provider, Path] = {
     Provider.BEDROCK: _PROJECT_ROOT / "instructor/v2/providers/bedrock/handlers.py",
     Provider.CEREBRAS: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
     Provider.WRITER: _PROJECT_ROOT / "instructor/v2/providers/writer/handlers.py",
+    Provider.AZURE_OPENAI: _PROJECT_ROOT / "instructor/v2/providers/openai/handlers.py",
 }
 _HANDLERS_LOADED: set[Provider] = set()
 

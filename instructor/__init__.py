@@ -158,6 +158,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "from_xai": (".v2.providers.xai.client", "from_xai"),
     "from_perplexity": (".v2.providers.perplexity.client", "from_perplexity"),
     "from_genai": (".v2.providers.genai.client", "from_genai"),
+    "from_azure": (".v2.providers.azure.client", "from_azure"),
 }
 
 
@@ -189,3 +190,4 @@ _add_optional_export("from_writer", "writerai")
 _add_optional_export("from_xai", "xai_sdk")
 _add_optional_export("from_perplexity", "openai")
 _add_optional_export("from_genai", "google", "google.genai")
+_add_optional_export("from_azure", "openai")
