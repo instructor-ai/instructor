@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **v2 streaming**: Preserve backtick characters that appear inside JSON string values during streaming extraction. `extract_json_from_stream` (and its async counterpart) treated any backtick as a potential markdown code-fence delimiter, even while inside a JSON string, silently dropping content such as inline code (`` "use `pip install`" ``) or fenced snippets (`` "```py```" ``) from unfenced streamed responses.
+
+---
+
 ## [1.15.3] - 2026-06-15
 
 ### Fixed

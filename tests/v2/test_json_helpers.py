@@ -75,6 +75,42 @@ def test_extract_json_from_stream_handles_even_backslashes_before_quote() -> Non
     )
 
 
+def test_extract_json_from_stream_preserves_backticks_in_plain_string() -> None:
+    # Backticks inside a string value of unfenced JSON are literal content and
+    # must not be consumed as codeblock-fence candidates.
+    chunks = ['{"md":"use ', "`", "pip install`", ' here"}']
+
+    assert (
+        "".join(extract_json_from_stream(chunks)) == '{"md":"use `pip install` here"}'
+    )
+
+
+def test_extract_json_from_stream_preserves_triple_backticks_in_plain_string() -> None:
+    chunks = ['{"code":"', "```", "py```", '"}']
+
+    assert "".join(extract_json_from_stream(chunks)) == '{"code":"```py```"}'
+
+
+def test_extract_json_from_stream_preserves_backticks_in_fenced_string() -> None:
+    # Backticks within a string value still survive when the JSON itself is
+    # wrapped in a markdown codeblock.
+    chunks = ["```json\n", '{"code":"`inline`"}', "\n```"]
+
+    assert "".join(extract_json_from_stream(chunks)) == '{"code":"`inline`"}'
+
+
+@pytest.mark.asyncio
+async def test_extract_json_from_stream_async_preserves_backticks_in_string() -> None:
+    async def chunks():
+        for chunk in ['{"md":"use ', "`", "pip install`", ' here"}']:
+            yield chunk
+
+    assert (
+        "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
+        == '{"md":"use `pip install` here"}'
+    )
+
+
 @pytest.mark.asyncio
 async def test_extract_json_from_stream_async_handles_fenced_json() -> None:
     async def chunks():
