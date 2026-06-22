@@ -10,6 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **Schema generation**: Add `get_json_schema()` utility to safely handle non-BaseModel response models (e.g. `list`, `list[str]`, `dict`, primitive types) instead of raising `AttributeError: type object 'list' has no attribute 'model_json_schema'`. Applies to all providers (OpenAI, Anthropic, Gemini, xAI, Bedrock, Cohere, Mistral, Perplexity, Writer, VertexAI), batch requests, and caching. ([#2374](https://github.com/567-labs/instructor/issues/2374))
 - **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
 
 ### Tests / CI

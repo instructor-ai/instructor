@@ -6,6 +6,7 @@ import functools
 from typing import Any
 
 from pydantic import BaseModel
+from instructor.v2.core.function_calls import get_json_schema
 
 from instructor.v2.providers.openai.schema import generate_openai_schema
 
@@ -17,5 +18,5 @@ def generate_anthropic_schema(model: type[BaseModel]) -> dict[str, Any]:
     return {
         "name": openai_schema["name"],
         "description": openai_schema["description"],
-        "input_schema": model.model_json_schema(),
+        "input_schema": get_json_schema(model),
     }

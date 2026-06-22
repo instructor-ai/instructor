@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from instructor.v2.dsl.partial import Partial, PartialBase
 from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.core.multimodal import Audio, Image, PDF
+from instructor.v2.core.function_calls import get_json_schema
 from instructor.v2.core.messages import get_message_content
 
 if TYPE_CHECKING:
@@ -53,11 +54,7 @@ def _default_safety_thresholds() -> dict[Any, Any] | None:
 
 
 def _get_model_schema(response_model: Any) -> dict[str, Any]:
-    if hasattr(response_model, "model_json_schema") and callable(
-        response_model.model_json_schema
-    ):
-        return response_model.model_json_schema()
-    return getattr(response_model, "model_json_schema", {})  # type: ignore[return-value]
+    return get_json_schema(response_model)
 
 
 def _get_model_name(response_model: Any) -> str:

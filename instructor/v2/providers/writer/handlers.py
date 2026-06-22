@@ -22,6 +22,7 @@ from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
+from instructor.v2.core.function_calls import get_json_schema
 from instructor.v2.providers.openai.handlers import OpenAIHandlerBase
 
 
@@ -108,7 +109,7 @@ def handle_writer_json(
     """Handle Writer JSON mode."""
     new_kwargs["response_format"] = {
         "type": "json_schema",
-        "json_schema": {"schema": response_model.model_json_schema()},
+        "json_schema": {"schema": get_json_schema(response_model)},
     }
     return response_model, new_kwargs
 
@@ -214,7 +215,7 @@ class WriterMDJSONHandler(WriterHandlerBase):
 
         new_kwargs = kwargs.copy()
         self._register_streaming_from_kwargs(response_model, new_kwargs)
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
 
         message = dedent(
             f"""

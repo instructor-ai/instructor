@@ -171,7 +171,9 @@ def make_cache_key(
     if response_model is not None:
         # Include the entire JSON schema – guarantees busting when either
         # a field or its meta (title, description, constraints) changes.
-        payload["schema"] = response_model.model_json_schema()
+        from instructor.v2.core.function_calls import get_json_schema
+
+        payload["schema"] = get_json_schema(response_model)
 
     # ``default=str`` converts non-serializable objects (e.g. datetime) to
     # string so dumps never fails.

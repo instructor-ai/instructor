@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.decorators import register_mode_handler
+from instructor.v2.core.function_calls import get_json_schema
 from instructor.v2.providers.openai.handlers import OpenAIMDJSONHandler
 
 
@@ -41,7 +42,7 @@ def handle_perplexity_json(
     """Handle Perplexity JSON mode."""
     new_kwargs["response_format"] = {
         "type": "json_schema",
-        "json_schema": {"schema": response_model.model_json_schema()},
+        "json_schema": {"schema": get_json_schema(response_model)},
     }
     return response_model, new_kwargs
 

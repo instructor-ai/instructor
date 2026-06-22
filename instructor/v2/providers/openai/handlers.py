@@ -44,6 +44,7 @@ from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.function_calls import get_json_schema
 
 
 OPENAI_COMPAT_PROVIDERS = [
@@ -272,7 +273,7 @@ def handle_openrouter_structured_outputs(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
     """Handle OpenRouter structured outputs mode."""
-    schema = response_model.model_json_schema()
+    schema = get_json_schema(response_model)
     schema["additionalProperties"] = False
     new_kwargs["response_format"] = {
         "type": "json_schema",
@@ -679,7 +680,7 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
         new_kwargs["response_format"] = {
             "type": "json_schema",
             "json_schema": {
@@ -753,7 +754,7 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
 
         new_kwargs = kwargs.copy()
         new_kwargs["response_format"] = {"type": "json_object"}
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
         message = dedent(
             f"""
             As a genius expert, your task is to understand the content and provide
@@ -840,7 +841,7 @@ class OpenAIMDJSONHandler(OpenAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
 
         message = dedent(
             f"""

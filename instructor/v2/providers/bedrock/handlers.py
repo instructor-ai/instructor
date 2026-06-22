@@ -15,6 +15,7 @@ import requests
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
+from instructor.v2.core.function_calls import get_json_schema
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -22,7 +23,7 @@ from instructor.v2.core.handler import ModeHandler
 
 def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
     """Generate Bedrock tool schema from a Pydantic model."""
-    schema = response_model.model_json_schema()
+    schema = get_json_schema(response_model)
 
     return {
         "toolSpec": {
@@ -342,7 +343,7 @@ def handle_bedrock_json(
         As a genius expert, your task is to understand the content and provide
         the parsed objects in json that match the following json_schema:\n
 
-        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+        {json.dumps(get_json_schema(response_model), indent=2, ensure_ascii=False)}
 
         Make sure to return an instance of the JSON, not the schema itself
         and don't include any other text in the response apart from the json

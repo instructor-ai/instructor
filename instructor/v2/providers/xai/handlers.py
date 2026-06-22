@@ -51,6 +51,7 @@ from instructor.v2.core.json import (
     extract_json_from_stream_async,
 )
 from instructor.v2.core.decorators import register_mode_handler
+from instructor.v2.core.function_calls import get_json_schema
 from instructor.v2.core.handler import ModeHandler
 
 
@@ -155,7 +156,7 @@ def handle_xai_tools(
         new_kwargs["tool"] = xchat.tool(
             name=response_model.__name__,
             description=response_model.__doc__ or "",
-            parameters=response_model.model_json_schema(),
+            parameters=get_json_schema(response_model),
         )
 
     return response_model, new_kwargs
@@ -409,7 +410,7 @@ class XAIToolsHandler(XAIHandlerBase):
         self._register_streaming_from_kwargs(prepared_model, new_kwargs)
 
         # Generate tool schema
-        schema = prepared_model.model_json_schema()
+        schema = get_json_schema(prepared_model)
         tool_name = getattr(prepared_model, "__name__", "response")
         tool_description = prepared_model.__doc__ or ""
 
@@ -593,7 +594,7 @@ class XAIJSONSchemaHandler(XAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
 
         # Store schema info for xAI SDK's parse() method
         new_kwargs["_xai_json_schema"] = {
@@ -690,7 +691,7 @@ class XAIMDJSONHandler(XAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
 
         message = dedent(
             f"""

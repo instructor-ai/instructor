@@ -46,6 +46,7 @@ from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.function_calls import get_json_schema
 
 
 class MistralHandlerBase(ModeHandler):
@@ -486,7 +487,7 @@ class MistralMDJSONHandler(MistralHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
-        schema = response_model.model_json_schema()
+        schema = get_json_schema(response_model)
 
         message = dedent(
             f"""

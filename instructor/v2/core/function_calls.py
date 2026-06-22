@@ -32,6 +32,70 @@ Model = TypeVar("Model", bound=BaseModel)
 
 logger = logging.getLogger("instructor")
 
+
+def get_json_schema(response_model: Any) -> dict[str, Any]:
+    """Safely generate a JSON schema from a response model.
+
+    Handles both Pydantic BaseModel subclasses (which have
+    ``model_json_schema()``) and plain types such as ``list`` or
+    ``list[str]`` that do not.  For non-BaseModel types a minimal
+    schema is inferred from the type annotation so that structured
+    output extraction still works instead of raising ``AttributeError``.
+    """
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, BaseModel)
+        and callable(
+            getattr(response_model, "model_json_schema", None)
+        )
+    ):
+        return response_model.model_json_schema()
+
+    # Handle parameterized generics like list[str], list[int], etc.
+    import typing
+    origin = typing.get_origin(response_model)
+    if origin is list or origin is tuple:
+        args = typing.get_args(response_model)
+        if args:
+            item_schema = get_json_schema(args[0])
+        else:
+            item_schema = {}
+        if origin is list:
+            return {"type": "array", "items": item_schema}
+        else:
+            # tuple
+            if args:
+                return {
+                    "type": "array",
+                    "items": [get_json_schema(a) for a in args],
+                    "minLength": len(args),
+                    "maxLength": len(args),
+                }
+            return {"type": "array"}
+
+    # Handle dict types
+    if origin is dict:
+        args = typing.get_args(response_model)
+        if args and len(args) == 2:
+            return {
+                "type": "object",
+                "additionalProperties": get_json_schema(args[1]),
+            }
+        return {"type": "object"}
+
+    # Handle primitive types
+    type_map: dict[Any, dict[str, Any]] = {
+        str: {"type": "string"},
+        int: {"type": "integer"},
+        float: {"type": "number"},
+        bool: {"type": "boolean"},
+    }
+    if response_model in type_map:
+        return type_map[response_model]
+
+    # Fallback: empty schema
+    return {}
+
 # No schema cache
 
 

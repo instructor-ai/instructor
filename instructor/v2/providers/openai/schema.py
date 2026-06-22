@@ -12,7 +12,9 @@ from pydantic import BaseModel
 @functools.lru_cache(maxsize=256)
 def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
     """Generate an OpenAI function schema from a Pydantic model."""
-    schema = model.model_json_schema()
+    from instructor.v2.core.function_calls import get_json_schema
+
+    schema = get_json_schema(model)
     docstring = parse(model.__doc__ or "")
     parameters = {k: v for k, v in schema.items() if k not in ("title", "description")}
 

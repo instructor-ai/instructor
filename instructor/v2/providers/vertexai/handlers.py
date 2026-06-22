@@ -28,6 +28,7 @@ from instructor.v2.providers.gemini.utils import (
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.function_calls import get_json_schema
 
 
 def _gm() -> Any:
@@ -184,7 +185,7 @@ def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
             "Install it with: pip install 'instructor[vertexai]'"
         ) from err
 
-    schema = model.model_json_schema()
+    schema = get_json_schema(model)
     schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore[assignment]
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],

@@ -276,13 +276,15 @@ class Instructions:
             self.logger.info(json.dumps(openai_kwargs))
 
         if finetune_format == FinetuneFormat.RAW:
+            from instructor.v2.core.function_calls import get_json_schema
+
             function_body = dict(
                 fn_name=name,
                 fn_repr=format_function(fn),
                 args=args,
                 kwargs=kwargs,
                 resp=resp.model_dump(),
-                schema=base_model.model_json_schema(),
+                schema=get_json_schema(base_model),
             )
             self.logger.info(json.dumps(function_body))
 

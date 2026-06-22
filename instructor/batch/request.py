@@ -54,7 +54,9 @@ class BatchRequest(BaseModel, Generic[T]):
 
     def get_json_schema(self) -> dict[str, Any]:
         """Generate JSON schema from response_model"""
-        return self.response_model.model_json_schema()
+        from instructor.v2.core.function_calls import get_json_schema
+
+        return get_json_schema(self.response_model)
 
     def to_openai_format(self) -> dict[str, Any]:
         """Convert to OpenAI batch format with JSON schema"""

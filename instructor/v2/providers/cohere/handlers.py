@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
+from instructor.v2.core.function_calls import get_json_schema
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -196,7 +197,7 @@ class CohereToolsHandler(CohereHandlerBase):
         # Create extraction instruction
         instruction = f"""\
 Extract a valid {prepared_model.__name__} object based on the chat history and the json schema below.
-{prepared_model.model_json_schema()}
+{get_json_schema(prepared_model)}
 The JSON schema was obtained by running:
 ```python
 schema = {prepared_model.__name__}.model_json_schema()
@@ -329,7 +330,7 @@ class CohereJSONSchemaHandler(CohereHandlerBase):
         # Set response_format with JSON schema
         new_kwargs["response_format"] = {
             "type": "json_object",
-            "schema": prepared_model.model_json_schema(),
+            "schema": get_json_schema(prepared_model),
         }
 
         return prepared_model, new_kwargs
@@ -404,7 +405,7 @@ class CohereMDJSONHandler(CohereHandlerBase):
         prepared_model = prepare_response_model(response_model)
         assert prepared_model is not None  # Already checked response_model is not None
 
-        schema = prepared_model.model_json_schema()
+        schema = get_json_schema(prepared_model)
 
         # Add instruction to return JSON in markdown code block
         instruction = (

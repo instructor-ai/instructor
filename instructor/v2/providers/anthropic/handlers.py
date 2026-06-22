@@ -670,7 +670,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
             f"""
             As a genius expert, your task is to understand the content and provide
             the parsed objects in json that match the following json_schema:\n
-            {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+            {json.dumps(get_json_schema(response_model), indent=2, ensure_ascii=False)}
 
             Make sure to return an instance of the JSON, not the schema itself
             """
@@ -823,13 +823,15 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
         if transform_schema is None:
             warnings.warn(
                 "Anthropic structured outputs works best with anthropic>=0.71.0. "
-                "Falling back to response_model.model_json_schema().",
+                "Falling back to get_json_schema(response_model).",
                 UserWarning,
                 stacklevel=2,
             )
 
             def transform_schema(model: type[BaseModel]) -> dict[str, Any]:
-                return model.model_json_schema()
+                from instructor.v2.core.function_calls import get_json_schema
+
+                return get_json_schema(model)
 
         new_kwargs["output_format"] = {
             "type": "json_schema",

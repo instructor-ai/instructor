@@ -21,6 +21,7 @@ from instructor.v2.dsl.parallel import get_types_array
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.response_model import prepare_response_model
+from instructor.v2.core.function_calls import get_json_schema
 
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.xai import handlers  # noqa: F401
@@ -42,11 +43,7 @@ else:
 
 def _get_model_schema(response_model: Any) -> dict[str, Any]:
     """Get JSON schema from a response model."""
-    if hasattr(response_model, "model_json_schema") and callable(
-        response_model.model_json_schema
-    ):
-        return response_model.model_json_schema()
-    return {}
+    return get_json_schema(response_model)
 
 
 def _get_model_name(response_model: Any) -> str:
