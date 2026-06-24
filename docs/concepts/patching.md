@@ -37,7 +37,7 @@ Different providers support different modes for structured extraction. Instructo
 
 Uses the provider's function/tool calling API. This is the default for OpenAI.
 
-Supported by: OpenAI, Anthropic (ANTHROPIC_TOOLS), Google (GENAI_TOOLS), Ollama (for supported models)
+Supported by: OpenAI, Anthropic, Google, Ollama (for supported models)
 
 ### JSON Mode
 
@@ -136,14 +136,14 @@ The patched client's `create()` method:
 
 ### Anthropic
 
-- Default mode: `ANTHROPIC_TOOLS` (tool use)
+- Default mode: `Mode.TOOLS` (tool use)
 - Uses Claude's native tool calling API
 
 ### Google Gemini
 
-- Default mode: `GENAI_TOOLS` (function calling)
+- Default mode: `Mode.TOOLS` (function calling)
 - Requires `jsonref` package for tool calling
-- Some limitations with strict validation and enums
+- Union types (except `Optional`) are not supported
 
 ### Ollama (Local Models)
 

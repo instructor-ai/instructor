@@ -31,7 +31,7 @@ We currently have two modes for Gemini
 
 !!! note "Backwards Compatibility"
 
-    The provider-specific modes (`Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`) are still supported but emit deprecation warnings and map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
+    The legacy provider-specific modes (`Mode.GENAI_TOOLS`, `Mode.GENAI_JSON`, `Mode.GENAI_STRUCTURED_OUTPUTS`) are still supported but emit deprecation warnings and automatically map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
 
 ## Installation
 
@@ -41,9 +41,9 @@ pip install "instructor[google-genai]"
 
 ## Basic Usage
 
-!!! warning "Unions and Optionals"
+!!! warning "Union Types"
 
-    Gemini doesn't have support for Union and Optional types in the structured outputs and tool calling integrations. We currently throw an error when we detect these in your response model.
+    Gemini does not support Union types (except for `Optional`) in structured outputs and tool calling. Use separate response models or `Literal` types instead. `Optional` fields (i.e., `X | None`) work correctly.
 
 Getting started with Instructor and the genai SDK is straightforward. Just create a Pydantic model defining your output structure, patch the genai client, and make your request with a response_model parameter:
 
@@ -547,11 +547,11 @@ print(response)
 
 !!! warning "Streaming Limitations"
 
-    **As of July 11, 2025, Google GenAI does not support streaming with tool/function calling or structured outputs for regular models.** 
+    Google GenAI does not support streaming with tool/function calling (`Mode.TOOLS`) for regular models. To use streaming with Gemini:
     
-    - `Mode.TOOLS` and `Mode.JSON` do not support streaming with regular models
-    - To use streaming, you must use `Partial[YourModel]` explicitly or switch to other modes like `Mode.JSON`
-    - Alternatively, set `stream=False` to disable streaming
+    - Use `Mode.JSON` which supports streaming via `create_partial` and `create_iterable`
+    - Or use `Partial[YourModel]` explicitly with `Mode.JSON`
+    - Alternatively, set `stream=False` to disable streaming when using `Mode.TOOLS`
 
 Streaming allows you to process responses incrementally rather than waiting for the complete result. This is extremely useful for making UI changes feel instant and responsive.
 

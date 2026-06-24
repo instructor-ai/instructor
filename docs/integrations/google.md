@@ -321,13 +321,12 @@ for user in users:
     #> name='Mike' age=28
 ```
 
-## Known Limitations (as of Nov 12, 2024)
+## Known Limitations
 
 Google Gemini has the following known limitations when used with Instructor:
 
-1. **Union Types**: Gemini does not support Union types (except for Optional). Use separate response models or Literal types instead.
-2. **Enum Types**: Gemini returns string values instead of properly typed Enum instances. You may need to manually convert strings to enums after extraction.
-3. **Union Streaming**: Streaming is not supported for Union types with Iterable.
+1. **Union Types**: Gemini does not support Union types (except for `Optional`). Use separate response models or `Literal` types instead.
+2. **Union Streaming**: Streaming is not supported for Union types with Iterable.
 
 These limitations are specific to Google Gemini and do not affect other providers like OpenAI or Anthropic. Tests automatically skip these features for Google to prevent failures.
 
@@ -340,7 +339,7 @@ We provide several modes to make it easy to work with the different response mod
 
 !!! note "Backwards Compatibility"
 
-    Legacy provider-specific modes (for example `Mode.TOOLS`, `Mode.JSON`, `Mode.JSON`, `Mode.TOOLS`) are deprecated. They emit warnings and map to the generic modes.
+    Legacy provider-specific modes (such as `Mode.GENAI_TOOLS`, `Mode.GENAI_JSON`, `Mode.GENAI_STRUCTURED_OUTPUTS`) are deprecated. They emit warnings and automatically map to the generic modes (`Mode.TOOLS`, `Mode.JSON`).
 
 !!! info "Mode Selection"
     When using `from_provider`, the appropriate mode is automatically selected based on the provider and model capabilities.
@@ -349,9 +348,9 @@ We provide several modes to make it easy to work with the different response mod
 
 Google offers several Gemini models:
 
-- Gemini Flash (General purpose)
-- Gemini Pro (Multimodal)
-- Gemini Flash-8b (Coming soon)
+- Gemini Flash (General purpose, fast inference)
+- Gemini Pro (Advanced reasoning, multimodal)
+- Gemini Flash-8b (Lightweight, cost-effective)
 
 ## Using Gemini's Multimodal Capabilities
 
@@ -410,7 +409,9 @@ import vertexai
 from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
-client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    vertexai=True,
     mode=instructor.Mode.TOOLS,
 )
 ```

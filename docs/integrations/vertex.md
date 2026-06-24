@@ -242,7 +242,9 @@ from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
 
-client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    vertexai=True,
     mode=instructor.Mode.TOOLS,
 )
 ```
