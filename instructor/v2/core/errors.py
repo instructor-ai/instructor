@@ -255,6 +255,39 @@ class InstructorRetryException(InstructorError):
         super().__init__(*args, failed_attempts=failed_attempts, **kwargs)
 
 
+class TokenBudgetExceeded(InstructorError):
+    """Raised when cumulative token usage exceeds the configured budget.
+
+    This allows users to cap the total cost of retries. When a token_budget
+    is set and the cumulative tokens across all attempts exceed it, this
+    exception is raised instead of continuing to retry.
+
+    Attributes:
+        total_usage: Cumulative token usage at the time of budget breach
+        budget: The configured token budget that was exceeded
+        n_attempts: Number of attempts made before budget was exceeded
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        total_usage: Any,
+        budget: int,
+        n_attempts: int,
+        last_completion: Any | None = None,
+        **kwargs: Any,
+    ):
+        self.total_usage = total_usage
+        self.budget = budget
+        self.n_attempts = n_attempts
+        self.last_completion = last_completion
+        message = (
+            f"Token budget exceeded: used {getattr(total_usage, 'total_tokens', '?')} "
+            f"tokens across {n_attempts} attempts (budget: {budget})"
+        )
+        super().__init__(message, *args, **kwargs)
+
+
 class ValidationError(InstructorError):
     """Exception raised when LLM response validation fails.
 

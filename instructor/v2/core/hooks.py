@@ -15,6 +15,7 @@ class HookName(Enum):
     COMPLETION_RESPONSE = "completion:response"
     COMPLETION_ERROR = "completion:error"
     COMPLETION_LAST_ATTEMPT = "completion:last_attempt"
+    COMPLETION_USAGE = "completion:usage"
     PARSE_ERROR = "parse:error"
 
 
@@ -44,6 +45,20 @@ class CompletionErrorHandler(Protocol):
     ) -> None: ...
 
 
+class CompletionUsageHandler(Protocol):
+    """Protocol for completion usage handlers.
+
+    Fired after each API attempt with cumulative token usage.
+    """
+
+    def __call__(
+        self,
+        usage: Any,
+        *,
+        attempt_number: int = ...,
+    ) -> None: ...
+
+
 class ParseErrorHandler(Protocol):
     """Protocol for parse error handlers."""
 
@@ -58,6 +73,7 @@ HookNameType = Union[
         "completion:response",
         "completion:error",
         "completion:last_attempt",
+        "completion:usage",
         "parse:error",
     ],
 ]
@@ -67,6 +83,7 @@ HandlerType = Union[
     CompletionKwargsHandler,
     CompletionResponseHandler,
     CompletionErrorHandler,
+    CompletionUsageHandler,
     ParseErrorHandler,
 ]
 
@@ -197,6 +214,18 @@ class Hooks:
             **kwargs: Optional metadata (attempt_number, max_attempts, is_last_attempt)
         """
         self.emit(HookName.COMPLETION_LAST_ATTEMPT, error, **kwargs)
+
+    def emit_completion_usage(self, usage: Any, **kwargs: Any) -> None:
+        """
+        Emit a completion usage event with cumulative token counts.
+
+        Fired after each API attempt with the running total of tokens consumed.
+
+        Args:
+            usage: Cumulative CompletionUsage object
+            **kwargs: Optional metadata (attempt_number)
+        """
+        self.emit(HookName.COMPLETION_USAGE, usage, **kwargs)
 
     def emit_parse_error(self, error: Exception, **kwargs: Any) -> None:
         """

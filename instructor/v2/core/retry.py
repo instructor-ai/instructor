@@ -27,6 +27,7 @@ from instructor.v2.core.errors import (
     IncompleteOutputException,
     InstructorRetryException,
     ResponseParsingError,
+    TokenBudgetExceeded,
 )
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.response_list import ListResponse
@@ -69,7 +70,9 @@ def _attempt_metadata(
     }
 
 
-def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
+def _finalize_parsed_response(
+    parsed: Any, response: Any, total_usage: Any = None
+) -> Any:
     if isinstance(parsed, IterableBase):
         parsed = [task for task in parsed.tasks]
     if isinstance(parsed, AdapterBase):
@@ -78,6 +81,8 @@ def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
         return ListResponse.from_list(parsed, raw_response=response)
     if isinstance(parsed, BaseModel):
         parsed._raw_response = response  # type: ignore[attr-defined]
+        if total_usage is not None:
+            parsed._total_usage = total_usage  # type: ignore[attr-defined]
     return parsed
 
 
@@ -121,6 +126,7 @@ def retry_sync_v2(
     kwargs: dict[str, Any],
     strict: bool,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model:
     """Sync retry logic using v2 registry handlers.
 
@@ -135,12 +141,15 @@ def retry_sync_v2(
         kwargs: Keyword args for func
         strict: Strict validation mode
         hooks: Optional hooks
+        token_budget: Optional max total tokens across all attempts. If cumulative
+            usage exceeds this, TokenBudgetExceeded is raised instead of retrying.
 
     Returns:
         Validated Pydantic model instance
 
     Raises:
         InstructorRetryException: If max retries exceeded
+        TokenBudgetExceeded: If token_budget is set and cumulative usage exceeds it
     """
     if response_model is None:
         # No structured output, just call the API
@@ -207,6 +216,22 @@ def retry_sync_v2(
 
                 update_total_usage(response=response, total_usage=total_usage)
 
+                if hooks:
+                    hooks.emit_completion_usage(
+                        total_usage, attempt_number=attempt_number
+                    )
+
+                if (
+                    token_budget is not None
+                    and getattr(total_usage, "total_tokens", 0) > token_budget
+                ):
+                    raise TokenBudgetExceeded(
+                        total_usage=total_usage,
+                        budget=token_budget,
+                        n_attempts=attempt_number,
+                        last_completion=response,
+                    )
+
                 # Parse response using registry
                 try:
                     stream = kwargs.get("stream", False)
@@ -222,7 +247,9 @@ def retry_sync_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)
+                    return _finalize_parsed_response(
+                        parsed, response, total_usage=total_usage
+                    )
 
                 except IncompleteOutputException:
                     raise
@@ -256,7 +283,7 @@ def retry_sync_v2(
                     # Will retry with modified kwargs
                     raise
 
-    except IncompleteOutputException:
+    except (IncompleteOutputException, TokenBudgetExceeded):
         raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred
@@ -366,6 +393,7 @@ async def retry_async_v2(
     kwargs: dict[str, Any],
     strict: bool,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model:
     """Async retry logic using v2 registry handlers.
 
@@ -380,12 +408,15 @@ async def retry_async_v2(
         kwargs: Keyword args for func
         strict: Strict validation mode
         hooks: Optional hooks
+        token_budget: Optional max total tokens across all attempts. If cumulative
+            usage exceeds this, TokenBudgetExceeded is raised instead of retrying.
 
     Returns:
         Validated Pydantic model instance
 
     Raises:
         InstructorRetryException: If max retries exceeded
+        TokenBudgetExceeded: If token_budget is set and cumulative usage exceeds it
     """
     if response_model is None:
         # No structured output, just call the API
@@ -452,6 +483,22 @@ async def retry_async_v2(
 
                 update_total_usage(response=response, total_usage=total_usage)
 
+                if hooks:
+                    hooks.emit_completion_usage(
+                        total_usage, attempt_number=attempt_number
+                    )
+
+                if (
+                    token_budget is not None
+                    and getattr(total_usage, "total_tokens", 0) > token_budget
+                ):
+                    raise TokenBudgetExceeded(
+                        total_usage=total_usage,
+                        budget=token_budget,
+                        n_attempts=attempt_number,
+                        last_completion=response,
+                    )
+
                 # Parse response using registry
                 try:
                     stream = kwargs.get("stream", False)
@@ -467,7 +514,9 @@ async def retry_async_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)
+                    return _finalize_parsed_response(
+                        parsed, response, total_usage=total_usage
+                    )
 
                 except IncompleteOutputException:
                     raise
@@ -501,7 +550,7 @@ async def retry_async_v2(
                     # Will retry with modified kwargs
                     raise
 
-    except IncompleteOutputException:
+    except (IncompleteOutputException, TokenBudgetExceeded):
         raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred

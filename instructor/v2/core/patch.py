@@ -192,6 +192,7 @@ def _create_sync_wrapper(
         max_retries: int | Retrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> T_Model:
@@ -256,6 +257,7 @@ def _create_sync_wrapper(
             kwargs=new_kwargs,
             strict=strict,
             hooks=hooks,
+            token_budget=token_budget,
         )
 
         # Store in cache after successful call
@@ -301,6 +303,7 @@ def _create_async_wrapper(
         max_retries: int | AsyncRetrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> T_Model:
@@ -364,6 +367,7 @@ def _create_async_wrapper(
             args=args,
             kwargs=new_kwargs,
             strict=strict,
+            token_budget=token_budget,
             hooks=hooks,
         )
 
