@@ -73,7 +73,7 @@ client = instructor.from_provider(
 )
 
 resp = client.create(
-    model="llama3",
+    model="llama3.2",
     messages=[
         {
             "role": "user",
