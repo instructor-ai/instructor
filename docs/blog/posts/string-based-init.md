@@ -30,7 +30,7 @@ class UserInfo(BaseModel):
 
 
 # Initialize any provider with a single consistent interface
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 client = instructor.from_provider("anthropic/claude-3-sonnet")
 client = instructor.from_provider("google/gemini-pro")
 client = instructor.from_provider("mistral/mistral-large")
@@ -47,7 +47,7 @@ The `from_provider` function takes a string in the format `"provider/model-name"
 
 The string-based initialization currently supports all major providers in the ecosystem:
 
-- OpenAI: `"openai/gpt-4"`, `"openai/gpt-4o"`, `"openai/gpt-5-nano"`
+- OpenAI: `"openai/gpt-5.4-mini"`, `"openai/gpt-4o"`, `"openai/gpt-5-nano"`
 - Anthropic: `"anthropic/claude-3-opus-20240229"`, `"anthropic/claude-3-sonnet-20240229"`, `"anthropic/claude-3-5-haiku-latest"`
 - Google Gemini: `"google/gemini-pro"`, `"google/gemini-pro-vision"`
 - Mistral: `"mistral/mistral-small-latest"`, `"mistral/mistral-medium-latest"`, `"mistral/mistral-large-latest"`
@@ -69,7 +69,7 @@ The unified interface fully supports both synchronous and asynchronous clients:
 
 ```python
 # Synchronous client (default)
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 
 # Asynchronous client
 async_client = instructor.from_provider("anthropic/claude-3-sonnet", async_client=True)
@@ -165,7 +165,7 @@ os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key"
 os.environ["MISTRAL_API_KEY"] = "your-mistral-key"
 
 # No need to pass API keys directly
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 ```
 
 ## Troubleshooting

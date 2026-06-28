@@ -58,7 +58,7 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
 
     for chunk in chunks:
         for char in chunk:
-            if not in_codeblock and char == "`":
+            if not in_codeblock and char == "`" and not (json_started and in_string):
                 codeblock_buffer.append(char)
                 if len(codeblock_buffer) == 3:
                     in_codeblock = True
@@ -146,7 +146,7 @@ async def extract_json_from_stream_async(
 
     async for chunk in chunks:
         for char in chunk:
-            if not in_codeblock and char == "`":
+            if not in_codeblock and char == "`" and not (json_started and in_string):
                 codeblock_buffer.append(char)
                 if len(codeblock_buffer) == 3:
                     in_codeblock = True

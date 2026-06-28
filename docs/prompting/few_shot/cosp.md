@@ -45,7 +45,7 @@ def generate_responses(prompt: str, n: int = 3) -> List[Response]:
     responses = []
     for _ in range(n):
         response = client.create(
-            model="gpt-4",
+            model="gpt-5.4-mini",
             messages=[{"role": "user", "content": prompt}],
             response_model=Response
         )
@@ -102,7 +102,7 @@ class COSPSelector:
     def generate_responses(self, prompt: str) -> List[Response]:
         return [
             self.client.create(
-                model="gpt-4",
+                model="gpt-5.4-mini",
                 messages=[{"role": "user", "content": prompt}],
                 response_model=Response
             )

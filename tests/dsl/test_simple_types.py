@@ -76,6 +76,16 @@ def test_iterable_not_simple():
     assert not is_simple_type(new_type), f"Failed for type: {new_type}"
 
 
+def test_list_of_base_model_not_simple():
+    """list[BaseModel] must route through iterable handling."""
+
+    class Item(BaseModel):
+        value: int
+
+    assert not is_simple_type(list[Item])
+    assert not is_simple_type(List[Item])  # noqa: UP006
+
+
 @pytest.mark.skipif(
     sys.version_info < (3, 10),
     reason="Union pipe syntax is only available in Python 3.10+",

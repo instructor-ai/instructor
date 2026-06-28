@@ -122,7 +122,7 @@ $ instructor batch create-from-file --help
 │                                                       [required]             │
 │    --model                                      TEXT  Model in format        │
 │                                                       'provider/model-name'  │
-│                                                       (e.g., 'openai/gpt-4', │
+│                                                       (e.g., 'openai/gpt-5.4-mini', │
 │                                                       'anthropic/claude-3-s… │
 │                                                       [default:              │
 │                                                       openai/gpt-4o-mini]    │
@@ -287,7 +287,7 @@ $ instructor batch results --help
 │ *  --output-file        TEXT  File to save the results to [default: None]    │
 │                               [required]                                     │
 │    --model              TEXT  Model in format 'provider/model-name' (e.g.,   │
-│                               'openai/gpt-4', 'anthropic/claude-3-sonnet')   │
+│                               'openai/gpt-5.4-mini', 'anthropic/claude-3-sonnet')   │
 │                               [default: openai/gpt-4o-mini]                  │
 │    --help                     Show this message and exit.                    │
 ╰──────────────────────────────────────────────────────────────────────────────╯

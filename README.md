@@ -55,7 +55,7 @@ Getting structured data from LLMs is hard. You need to:
 
 ```python
 response = openai.chat.completions.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     messages=[{"role": "user", "content": "..."}],
     tools=[
         {
@@ -88,7 +88,7 @@ if "name" not in user_data:
 <td>
 
 ```python
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 
 user = client.chat.completions.create(
     response_model=User,

@@ -25,7 +25,7 @@ class Book(BaseModel):
 
 # Stream a list of books
 for book in client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "List 5 classic science fiction books"}
     ],
@@ -63,7 +63,7 @@ start_time = time.time()
 received_tasks = 0
 
 for task in client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {
             "role": "user",

@@ -154,7 +154,7 @@ instructions = Instructions(
 )
 
 
-@instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch")  # (2)!
+@instructions.distil(model='gpt-5.4-mini:finetuned-123', mode="dispatch")  # (2)!
 def fn(a: int, b: int) -> Multiply:
     resp = a + b
     return Multiply(a=a, b=b, result=resp)
@@ -164,7 +164,7 @@ def fn(a: int, b: int) -> Multiply:
     automatically serialize the content back into the `Pydantic`` model that we're looking for.
 
 2.  Don't forget to replace this with your new model id. OpenAI identifies fine tuned models with an id
-    of `ft:gpt-3.5-turbo-0613:personal::<id>` under their **Fine-tuning** tab on their dashboard
+    of `ft:gpt-5.4-mini:personal::<id>` under their **Fine-tuning** tab on their dashboard
 
 With this, you can swap the function implementation, making it backward compatible. You can even imagine using the different models for different tasks or validating and running evals by using the original function and comparing it to the distillation.
 

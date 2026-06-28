@@ -11,7 +11,7 @@ Batch processing lets you send multiple requests in a single operation, saving u
 
 | Provider | Models | Cost Savings |
 |----------|--------|--------------|
-| OpenAI | gpt-4o, gpt-4.1-mini, gpt-4-turbo | 50% |
+| OpenAI | gpt-4o, gpt-4.1-mini, gpt-5.4-mini | 50% |
 | Anthropic | claude-3-5-sonnet, claude-3-opus, claude-3-haiku | 50% |
 | Google GenAI | gemini-2.5-flash, gemini-2.0-flash, gemini-pro | 50% |
 

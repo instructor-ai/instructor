@@ -7,6 +7,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.15.4] - 2026-06-27
+
+### Fixed
+- **CLI fine-tuning**: Use the uploaded validation file ID when creating a fine-tuning job from local files, instead of passing the local validation file path through to OpenAI. ([#2397](https://github.com/567-labs/instructor/pull/2397))
+- **v2 core**: Prepare list and primitive response models before provider handler dispatch, fixing `list[Model]` and scalar response-model crashes such as `AttributeError: type object 'list' has no attribute 'model_json_schema'`. ([#2374](https://github.com/567-labs/instructor/issues/2374))
+- **v2 streaming**: Preserve backticks inside JSON string values during streamed JSON extraction.
+- **v2 multimodal**: Accept raw bytes in `Image.autodetect()` for JPEG, PNG, GIF, and WebP, while raising clear errors for unsupported image inputs. ([#2344](https://github.com/567-labs/instructor/issues/2344))
+- **Docs**: Refresh stale OpenAI and Ollama model strings in documentation examples. ([#2395](https://github.com/567-labs/instructor/issues/2395))
+
+---
+
 ## [1.15.3] - 2026-06-15
 
 ### Fixed

@@ -105,7 +105,7 @@ async def classify(data: str) -> QuestionClassification:
     """
     async with sem:  # some simple rate limiting
         return data, await client.create(
-            model="gpt-4-turbo-preview",
+            model="gpt-5.4-mini",
             response_model=QuestionClassification,
             max_retries=2,
             messages=[

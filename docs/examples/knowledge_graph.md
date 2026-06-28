@@ -282,7 +282,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     num_iterations = len(input)
     for i, inp in enumerate(input):
         new_updates = client.create(
-            model="gpt-3.5-turbo-16k",
+            model="gpt-5.4-mini",
             messages=[
                 {
                     "role": "system",

@@ -62,7 +62,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def extract_df(data: str) -> pd.DataFrame:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=MarkdownDataFrame,
         messages=[
             {
@@ -84,7 +84,7 @@ class Table(BaseModel):
 
 def extract_table(data: str) -> Table:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=Table,
         messages=[
             {

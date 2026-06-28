@@ -241,7 +241,7 @@ This gives us a list of products identified in all the images.
 
 Then, we can use the `generate_ad_copy` function to generate advertising copy for each of the products identified in the images.
 
-Two clients are defined for the two different models. This is because the `gpt-4-vision-preview` model is not compatible with the `gpt-4-1106-preview` model in terms of their response format.
+Two clients are defined for the two different models. This is because the `gpt-5.4-mini` model is not compatible with the `gpt-5.4-mini` model in terms of their response format.
 
 ```python
 # <%hide%>

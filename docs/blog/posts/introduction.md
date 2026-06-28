@@ -55,7 +55,7 @@ class UserDetail(pydantic.BaseModel):
 
 
 user: UserDetail = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
