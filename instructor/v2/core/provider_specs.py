@@ -166,6 +166,27 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             client_module="instructor.v2.providers.openrouter.client",
             sdk_module="openai",
         ),
+        Provider.ORCAROUTER: _spec(
+            Provider.ORCAROUTER,
+            aliases=("orcarouter",),
+            handler_module="instructor.v2.providers.orcarouter.handlers",
+            supported_modes=(
+                Mode.TOOLS,
+                Mode.JSON_SCHEMA,
+                Mode.MD_JSON,
+                Mode.PARALLEL_TOOLS,
+            ),
+            unsupported_modes=(Mode.RESPONSES_TOOLS,),
+            legacy_modes={
+                Mode.FUNCTIONS: Mode.TOOLS,
+                Mode.TOOLS_STRICT: Mode.TOOLS,
+                Mode.JSON_O1: Mode.JSON_SCHEMA,
+                Mode.ORCAROUTER_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
+            },
+            from_function="from_orcarouter",
+            client_module="instructor.v2.providers.orcarouter.client",
+            sdk_module="openai",
+        ),
         Provider.ANTHROPIC: _spec(
             Provider.ANTHROPIC,
             aliases=("anthropic",),

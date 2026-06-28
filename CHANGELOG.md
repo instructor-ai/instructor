@@ -28,6 +28,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Tests / CI
 - **Type checking**: Upgrade to `ty` 0.0.44, enforce warning-free checks with GitHub annotations, cover V2 tests, validate supported Python versions and platforms, and strengthen installed-package public API typing tests.
 
+### Added
+- **OrcaRouter**: New `from_orcarouter` factory and `orcarouter/<model>` shortcut for `from_provider`, giving access to 150+ models behind the OrcaRouter meta-router with adaptive routing, fallback chains, and `extra_body` routing preferences. Uses the OpenAI-compatible API at `https://api.orcarouter.ai/v1`. Supports `TOOLS`, `JSON_SCHEMA`, `MD_JSON`, and `PARALLEL_TOOLS` modes.
+
 ---
 
 ## [1.15.2] - 2026-05-10
