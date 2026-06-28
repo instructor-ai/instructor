@@ -138,7 +138,7 @@ from instructor.cache import make_cache_key
 # Generate deterministic cache key
 key = make_cache_key(
     messages=[{"role": "user", "content": "hello"}],
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     response_model=User,
     mode="TOOLS",
 )

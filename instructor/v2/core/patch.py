@@ -21,6 +21,7 @@ from instructor.v2.core.templating import handle_templating
 from instructor.v2.core.utils import is_async
 from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
+from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 
 if TYPE_CHECKING:
@@ -208,6 +209,9 @@ def _create_sync_wrapper(
         # Get handlers from registry
         handlers = mode_registry.get_handlers(provider, mode)
 
+        if response_model is not None:
+            response_model = prepare_response_model(response_model)
+
         # Prepare request kwargs using registry handler
         response_model, new_kwargs = handlers.request_handler(
             response_model=response_model, kwargs=kwargs
@@ -316,6 +320,9 @@ def _create_async_wrapper(
 
         # Get handlers from registry
         handlers = mode_registry.get_handlers(provider, mode)
+
+        if response_model is not None:
+            response_model = prepare_response_model(response_model)
 
         # Prepare request kwargs using registry handler
         response_model, new_kwargs = handlers.request_handler(

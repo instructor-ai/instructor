@@ -31,7 +31,7 @@ class Person(BaseModel):
 
 # Extract data with validation
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "The person's name is John and they are 150 years old."}
     ],

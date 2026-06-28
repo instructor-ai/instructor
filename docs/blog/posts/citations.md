@@ -122,7 +122,7 @@ class Statements(BaseModel):
                     "content": f"Does the following citation exist in the following context?\n\nCitation: {self.substring_quote}\n\nContext: {context}",
                 }
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
         )
 
         if resp.is_valid:
@@ -228,7 +228,7 @@ class AnswerWithCitaton(BaseModel):
                     "content": f"Does the following answers match the question and the context?\n\nQuestion: {self.question}\n\nAnswer: {self.answer}\n\nContext: {context}",
                 }
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
         )
 
         if resp.is_valid:

@@ -60,10 +60,10 @@ class ImageParams(ImageParamsBase, total=False):
 
 
 class Image(BaseModel):
-    """Image content loaded from a URL, path, or base64 data."""
+    """Image content loaded from a URL, path, base64 data, or bytes."""
 
-    source: Union[str, Path] = Field(  # noqa: UP007
-        description="URL, file path, or base64 data of the image"
+    source: Union[str, Path, bytes] = Field(  # noqa: UP007
+        description="URL, file path, base64 data, or raw bytes of the image"
     )
     media_type: str = Field(description="MIME type of the image")
     data: Union[str, None] = Field(  # noqa: UP007
@@ -71,8 +71,8 @@ class Image(BaseModel):
     )
 
     @classmethod
-    def autodetect(cls, source: str | Path) -> Image:
-        """Attempt to autodetect an image from a source string or Path."""
+    def autodetect(cls, source: str | Path | bytes) -> Image:
+        """Attempt to autodetect an image from a source string, Path, or bytes."""
         if isinstance(source, str):
             if cls.is_base64(source):
                 return cls.from_base64(source)
@@ -94,10 +94,14 @@ class Image(BaseModel):
         if isinstance(source, Path):
             return cls.from_path(source)
 
+        if isinstance(source, bytes):
+            encoded = base64.b64encode(source).decode("utf-8")
+            return cls.from_raw_base64(encoded)
+
         raise ValueError(f"Unsupported image source type: {type(source).__name__}")
 
     @classmethod
-    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(cls, source: Union[str, Path, bytes]) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:

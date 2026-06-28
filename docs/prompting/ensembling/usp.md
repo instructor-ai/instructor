@@ -88,7 +88,7 @@ client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 async def generate_prediction(query: str):
     return (
         await client.create(
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
             messages=[
                 {
                     "role": "user",

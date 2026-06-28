@@ -50,7 +50,7 @@ prompt = prompt_template.format(
 
 # Extract structured data using the formatted prompt
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": prompt}
     ],
@@ -73,7 +73,7 @@ def extract_person(content, document_type="text"):
     """
 
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[
             {"role": "user", "content": prompt}
         ],
@@ -142,7 +142,7 @@ prompt = create_review_extraction_prompt(
 )
 
 review = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": prompt}
     ],

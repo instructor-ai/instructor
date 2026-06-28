@@ -105,7 +105,7 @@ import instructor
 client = instructor.from_provider("openai/gpt-5-nano")
 
 query = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     response_model=MetaphorQuery,
     messages=[
         {
@@ -185,7 +185,7 @@ import instructor
 client = instructor.from_provider("openai/gpt-5-nano")
 
 retrieval = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     response_model=Retrieval,
     messages=[
         {"role": "system", "content": "You are Jason's personal assistant."},
