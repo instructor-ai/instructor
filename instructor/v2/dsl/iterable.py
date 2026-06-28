@@ -11,8 +11,16 @@ from typing import (
     TYPE_CHECKING,
 )
 import json
+import sys
 
 from pydantic import BaseModel, Field, create_model
+
+if sys.version_info >= (3, 10):
+    from types import UnionType
+
+    _UNION_ORIGINS: tuple[Any, ...] = (Union, UnionType)
+else:  # pragma: no cover - Python 3.9 has no runtime ``X | Y`` syntax
+    _UNION_ORIGINS = (Union,)
 
 if TYPE_CHECKING:
     pass
@@ -261,7 +269,7 @@ def IterableModel(
         # Handle `Union[A, B]` / `A | B` task types.
         # `types.UnionType` does not have `__name__`, so fall back to a stable name.
         task_name = getattr(subtask_class, "__name__", None)
-        if task_name is None and get_origin(subtask_class) is Union:
+        if task_name is None and get_origin(subtask_class) in _UNION_ORIGINS:
             members = get_args(subtask_class)
             task_name = "Or".join(getattr(m, "__name__", str(m)) for m in members)
         if task_name is None:

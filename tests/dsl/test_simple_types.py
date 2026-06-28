@@ -1,7 +1,7 @@
 import sys
 from collections.abc import Iterable
 from enum import Enum
-from typing import Annotated, Literal, Union, List, get_origin, get_args  # noqa: UP035
+from typing import Annotated, Literal, Union, List, cast, get_origin, get_args  # noqa: UP035
 
 import pytest
 from pydantic import BaseModel, Field
@@ -125,3 +125,48 @@ def test_prepare_response_model_with_list_union():
     assert prepared_model is not None, (
         "prepare_response_model should not return None for list[int | str]"
     )
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="Union pipe syntax is only available in Python 3.10+",
+)
+def test_list_of_model_pipe_union_is_treated_as_iterable():
+    from instructor.v2.dsl.iterable import IterableBase
+
+    class A(BaseModel):
+        x: int
+
+    class B(BaseModel):
+        y: str
+
+    pipe = prepare_response_model(list[A | B])
+    typing_union = prepare_response_model(List[Union[A, B]])  # noqa: UP006
+
+    assert isinstance(typing_union, type) and issubclass(typing_union, IterableBase)
+    assert isinstance(pipe, type) and issubclass(pipe, IterableBase)
+
+    pipe_model = cast(type[BaseModel], pipe)
+    pipe_schema = pipe_model.model_json_schema()
+    assert "tasks" in pipe_schema["properties"]
+    assert "content" not in pipe_schema["properties"]
+    assert set(pipe_schema.get("$defs", {})) == {"A", "B"}
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="Union pipe syntax is only available in Python 3.10+",
+)
+def test_list_of_model_pipe_union_generates_clean_name():
+    class A(BaseModel):
+        x: int
+
+    class B(BaseModel):
+        y: str
+
+    prepared = prepare_response_model(list[A | B])
+    assert prepared is not None
+
+    assert "|" not in prepared.__name__
+    assert "." not in prepared.__name__
+    assert prepared.__name__ == "IterableAOrB"

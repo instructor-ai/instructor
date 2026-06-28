@@ -1760,7 +1760,7 @@ wheels = [
 
 [[package]]
 name = "instructor"
-version = "1.15.4"
+version = "1.15.5"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },

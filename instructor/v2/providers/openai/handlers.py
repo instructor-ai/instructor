@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import logging
 from collections.abc import (
     AsyncGenerator,
     AsyncIterator,
@@ -44,6 +45,8 @@ from instructor.v2.core.messages import dump_message, merge_consecutive_messages
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+
+logger = logging.getLogger("instructor")
 
 
 OPENAI_COMPAT_PROVIDERS = [
@@ -116,6 +119,37 @@ def _format_responses_tool_call_details(tool_call: Any) -> str:
     return f" (tool call {', '.join(details)})"
 
 
+def _ensure_text_format_config(
+    new_kwargs: dict[str, Any],
+    response_model: type[Any],
+    parameters_schema: dict[str, Any],
+) -> None:
+    """Align Responses API text.format with the forced tool schema."""
+    desired_format = {
+        "type": "json_schema",
+        "name": response_model.__name__,
+        "strict": True,
+        "schema": parameters_schema,
+    }
+
+    existing_text = new_kwargs.get("text")
+    if isinstance(existing_text, dict):
+        existing_format = existing_text.get("format")
+        if existing_format == desired_format:
+            return
+        if isinstance(existing_format, dict):
+            logger.debug(
+                "Overriding user-provided text.format with tool schema "
+                "to prevent competing Responses output paths."
+            )
+        updated_text = existing_text.copy()
+        updated_text["format"] = desired_format
+        new_kwargs["text"] = updated_text
+        return
+
+    new_kwargs["text"] = {"format": desired_format}
+
+
 def reask_tools(
     kwargs: dict[str, Any],
     response: Any,
@@ -176,13 +210,32 @@ def reask_responses_tools(
     reask_messages = []
     for tool_call in _filter_responses_tool_calls(response.output):
         details = _format_responses_tool_call_details(tool_call)
+        args = getattr(tool_call, "arguments", "")
+        is_empty_args = not args or (
+            isinstance(args, str) and args.strip() in {"", "{}"}
+        )
+        if is_empty_args:
+            reask_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Validation Error found:\n{exception}\n"
+                        "The function was called with empty arguments '{}'. "
+                        "You MUST populate ALL required fields in the function "
+                        "call according to the schema. Do not return empty "
+                        f"arguments.{details}"
+                    ),
+                }
+            )
+            continue
+
         reask_messages.append(
             {
                 "role": "user",
                 "content": (
                     f"Validation Error found:\n{exception}\n"
                     "Recall the function correctly, fix the errors with "
-                    f"{tool_call.arguments}{details}"
+                    f"{args}{details}"
                 ),
             }
         )
@@ -1059,6 +1112,11 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
             "type": "function",
             "name": schema["function"]["name"],
         }
+        _ensure_text_format_config(
+            new_kwargs,
+            prepared_model,
+            tool_definition["parameters"],
+        )
 
         return prepared_model, new_kwargs
 
@@ -1100,6 +1158,15 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
                 item_type = getattr(item, "type", None)
                 if item_type in {"function_call", "tool_call"}:
                     args = getattr(item, "arguments", None)
+                    if not args or (
+                        isinstance(args, str) and args.strip() in {"", "{}"}
+                    ):
+                        logger.warning(
+                            "RESPONSES_TOOLS: tool '%s' returned empty arguments. "
+                            "This can indicate a text.format/tool_choice conflict "
+                            "or insufficient reasoning budget.",
+                            getattr(item, "name", "unknown"),
+                        )
                     if args:
                         parsed = response_model.model_validate_json(
                             args,
