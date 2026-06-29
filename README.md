@@ -294,3 +294,7 @@ MIT License - see [LICENSE](https://github.com/567-labs/instructor/blob/main/LIC
 <p align="center">
 Built by the Instructor community. Special thanks to <a href="https://twitter.com/jxnlco">Jason Liu</a> and all <a href="https://github.com/567-labs/instructor/graphs/contributors">contributors</a>.
 </p>
+
+## Directories
+
+- [OpenRuna](https://www.openruna.com/best/ai-coding-prompts) — Graph directory of AI coding prompts, tools, and n8n workflows.
