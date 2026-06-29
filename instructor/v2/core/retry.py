@@ -78,7 +78,14 @@ def _finalize_parsed_response(
     if isinstance(parsed, AdapterBase):
         return parsed.content
     if isinstance(parsed, list) and not isinstance(parsed, ListResponse):
-        return ListResponse.from_list(parsed, raw_response=response)
+        result = ListResponse.from_list(parsed, raw_response=response)
+        if total_usage is not None:
+            result._total_usage = total_usage  # type: ignore[attr-defined]
+        return result
+    if isinstance(parsed, ListResponse):
+        if total_usage is not None:
+            parsed._total_usage = total_usage  # type: ignore[attr-defined]
+        return parsed
     if isinstance(parsed, BaseModel):
         parsed._raw_response = response  # type: ignore[attr-defined]
         if total_usage is not None:
