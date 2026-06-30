@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 from collections.abc import AsyncGenerator, Callable, Generator, Iterable
 from typing import (
     Any,
     ClassVar,
-    Optional,
     cast,
     get_origin,
     get_args,
@@ -10,15 +11,23 @@ from typing import (
     TYPE_CHECKING,
 )
 import json
+import sys
 
 from pydantic import BaseModel, Field, create_model
+
+if sys.version_info >= (3, 10):
+    from types import UnionType
+
+    _UNION_ORIGINS: tuple[Any, ...] = (Union, UnionType)
+else:  # pragma: no cover - Python 3.9 has no runtime ``X | Y`` syntax
+    _UNION_ORIGINS = (Union,)
 
 if TYPE_CHECKING:
     pass
 
 
 class IterableBase:
-    task_type: ClassVar[Optional[type[BaseModel]]] = None
+    task_type: ClassVar[type[BaseModel] | None] = None
 
     @classmethod
     def from_streaming_response(
@@ -171,7 +180,7 @@ class IterableBase:
             yield chunk
 
     @staticmethod
-    def get_object(s: str, stack: int) -> tuple[Optional[str], str]:
+    def get_object(s: str, stack: int) -> tuple[str | None, str]:
         start_index = s.find("{")
         in_string = False
         escape_next = False
@@ -198,8 +207,8 @@ class IterableBase:
 
 def IterableModel(
     subtask_class: type[BaseModel],
-    name: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
 ) -> type[BaseModel]:
     # Import at runtime to avoid circular import
     from instructor.v2.core.function_calls import ResponseSchema
@@ -260,7 +269,7 @@ def IterableModel(
         # Handle `Union[A, B]` / `A | B` task types.
         # `types.UnionType` does not have `__name__`, so fall back to a stable name.
         task_name = getattr(subtask_class, "__name__", None)
-        if task_name is None and get_origin(subtask_class) is Union:
+        if task_name is None and get_origin(subtask_class) in _UNION_ORIGINS:
             members = get_args(subtask_class)
             task_name = "Or".join(getattr(m, "__name__", str(m)) for m in members)
         if task_name is None:

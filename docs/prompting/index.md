@@ -224,7 +224,7 @@ class ReasonedAnswer(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 response = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     response_model=ReasonedAnswer,
     messages=[
         {"role": "user", "content": "What is the cube root of 27?"}

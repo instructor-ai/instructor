@@ -41,7 +41,7 @@ class Person(BaseModel):
 
 # Extract the nested data
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         John Smith is 35 years old.
@@ -92,7 +92,7 @@ class Person(BaseModel):
 
 # Extract deeply nested data
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Employee Profile:
@@ -133,7 +133,7 @@ class Recipe(BaseModel):
 
 # Extract nested list data
 response = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Recipe: Chocolate Chip Cookies
@@ -256,7 +256,7 @@ class Post(BaseModel):
 
 # Extract recursive nested data
 response = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Blog Post: "Python Tips and Tricks"
@@ -308,7 +308,7 @@ class Organization(BaseModel):
 
 # Extract organization structure
 response = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Acme Corporation

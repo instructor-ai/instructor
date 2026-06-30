@@ -71,7 +71,7 @@ class Person(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 # Or: instructor.from_provider("anthropic/claude-3")
 # Or: instructor.from_provider("google/gemini-pro")
-# Or: instructor.from_provider("ollama/llama3")  # local
+# Or: instructor.from_provider("ollama/llama3.2")  # local
 
 # Extract structured data from natural language
 person = client.create(
@@ -227,7 +227,7 @@ All providers use the same simple interface. Here are quick examples for the mos
         age: int
 
 
-    client = instructor.from_provider("ollama/llama3")
+    client = instructor.from_provider("ollama/llama3.2")
     resp = client.create(
         response_model=ExtractUser,
         messages=[{"role": "user", "content": "Extract Jason is 25 years old."}],

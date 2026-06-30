@@ -44,7 +44,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def parse_lead_from_message(user_message: str):
     return client.create(
-        model="gpt-4-turbo-preview",
+        model="gpt-5.4-mini",
         response_model=Iterable[Lead],
         messages=[
             {

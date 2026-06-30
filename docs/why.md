@@ -41,7 +41,7 @@ class User(BaseModel):
     name: str
     age: int
 
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 user = client.create(
     response_model=User,
     messages=[{"role": "user", "content": "John is 25 years old"}],
@@ -97,7 +97,7 @@ elif provider == "google":
     # ... different API again
 
 # With Instructor: One API for all providers
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 # or
 client = instructor.from_provider("anthropic/claude-3")
 # or
@@ -210,7 +210,7 @@ Try it in 30 seconds:
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 
 class User(BaseModel):
     name: str

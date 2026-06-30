@@ -7,9 +7,31 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
-## [Unreleased]
+## [1.15.5] - 2026-06-28
 
 ### Fixed
+- **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))
+- **v2 response models**: Treat `list[A | B]` PEP 604 unions of Pydantic models as iterable response models, matching `list[Union[A, B]]` schema behavior. ([#2377](https://github.com/567-labs/instructor/pull/2377))
+- **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
+
+---
+
+## [1.15.4] - 2026-06-27
+
+### Fixed
+- **CLI fine-tuning**: Use the uploaded validation file ID when creating a fine-tuning job from local files, instead of passing the local validation file path through to OpenAI. ([#2397](https://github.com/567-labs/instructor/pull/2397))
+- **v2 core**: Prepare list and primitive response models before provider handler dispatch, fixing `list[Model]` and scalar response-model crashes such as `AttributeError: type object 'list' has no attribute 'model_json_schema'`. ([#2374](https://github.com/567-labs/instructor/issues/2374))
+- **v2 streaming**: Preserve backticks inside JSON string values during streamed JSON extraction.
+- **v2 multimodal**: Accept raw bytes in `Image.autodetect()` for JPEG, PNG, GIF, and WebP, while raising clear errors for unsupported image inputs. ([#2344](https://github.com/567-labs/instructor/issues/2344))
+- **Docs**: Refresh stale OpenAI and Ollama model strings in documentation examples. ([#2395](https://github.com/567-labs/instructor/issues/2395))
+
+---
+
+## [1.15.3] - 2026-06-15
+
+### Fixed
+- **Bedrock**: Route `top_k`/`topK` through `additionalModelRequestFields` instead of leaving it as a top-level Converse kwarg. AWS `InferenceConfiguration` only supports `maxTokens`/`stopSequences`/`temperature`/`topP`, so a leftover `top_k` reached `client.converse(top_k=...)` and boto3 raised `ParamValidationError: Unknown parameter "top_k"`.
+- **Gemini/GenAI**: Fold `generation_config` (and `safety_settings`/`thinking_config`) into `config` when `response_model=None`, so plain-text calls no longer raise `generate_content() got an unexpected keyword argument 'generation_config'` ([#2366](https://github.com/567-labs/instructor/issues/2366)).
 - **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
 
 ### Tests / CI

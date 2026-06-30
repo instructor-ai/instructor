@@ -64,7 +64,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate(data: str) -> Iterable[Ticket]:
     return client.create(
-        model="gpt-4",
+        model="gpt-5.4-mini",
         response_model=Iterable[Ticket],
         messages=[
             {

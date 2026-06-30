@@ -58,4 +58,4 @@ At the end, it will print a summary of the statistics collected.
 
 ## Learn More
 
-For more information about hooks in Instructor, see the [hooks documentation](https://instructor-ai.github.io/instructor/concepts/hooks/). 
+For more information about hooks in Instructor, see the [hooks documentation](https://python.useinstructor.com/concepts/hooks/). 

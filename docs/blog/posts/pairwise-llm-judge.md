@@ -64,7 +64,7 @@ Next, we'll create a function that uses our LLM to judge the relevance between a
 ```python
 def judge_relevance(question: str, text: str) -> Judgment:
     return client.chat.create(
-        model="gpt-4",
+        model="gpt-5.4-mini",
         messages=[
             {
                 "role": "system",

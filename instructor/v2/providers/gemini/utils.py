@@ -458,14 +458,23 @@ def handle_genai_message_conversion(
         new_kwargs["contents"], autodetect_images
     )
 
+    base_config: dict[str, Any] = {}
     if "system" not in new_kwargs:
         system_message = extract_genai_system_message(messages)
         if system_message:
-            new_kwargs["config"] = types.GenerateContentConfig(
-                system_instruction=system_message
-            )
+            base_config["system_instruction"] = system_message
+
+    # Fold `generation_config`, `safety_settings` and `thinking_config` into `config` the same
+    # way the structured-output path does. Otherwise these would be passed as raw keyword
+    # arguments to `generate_content`, which raises e.g. "got an unexpected keyword argument
+    # 'generation_config'" when `response_model=None` (see #2366).
+    generation_config = update_genai_kwargs(new_kwargs, base_config)
+    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
 
     new_kwargs.pop("messages", None)
+    new_kwargs.pop("generation_config", None)
+    new_kwargs.pop("safety_settings", None)
+    new_kwargs.pop("thinking_config", None)
 
     return new_kwargs
 

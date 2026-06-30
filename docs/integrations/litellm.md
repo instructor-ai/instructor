@@ -23,7 +23,7 @@ import instructor
 from pydantic import BaseModel
 
 # Enable instructor patches
-client = instructor.from_provider("litellm/gpt-3.5-turbo")
+client = instructor.from_provider("litellm/gpt-5.4-mini")
 
 class User(BaseModel):
     name: str
@@ -48,7 +48,7 @@ from pydantic import BaseModel
 import asyncio
 
 client = instructor.from_provider(
-    "litellm/gpt-3.5-turbo",
+    "litellm/gpt-5.4-mini",
     async_client=True,
 )
 
@@ -91,7 +91,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_provider("litellm/gpt-3.5-turbo")
+client = instructor.from_provider("litellm/gpt-5.4-mini")
 instructor_resp, raw_completion = client.create_with_completion(
     max_tokens=1024,
     messages=[

@@ -50,7 +50,6 @@ def test_convert_contents_rejects_unknown_object() -> None:
 @pytest.mark.parametrize(
     ("media_type", "autodetect"),
     [
-        ("image", Image.autodetect),
         ("audio", Audio.autodetect),
         ("PDF", PDF.autodetect),
     ],
@@ -62,6 +61,34 @@ def test_autodetect_rejects_unsupported_source_types(
         ValueError, match=rf"Unsupported {media_type} source type: bytes"
     ):
         autodetect(b"not a string or path")
+
+
+def test_image_autodetect_rejects_unsupported_source_type() -> None:
+    invalid_source: Any = {"not": "a string or path"}
+
+    with pytest.raises(ValueError, match="Unsupported image source type: dict"):
+        Image.autodetect(invalid_source)
+
+
+@pytest.mark.parametrize(
+    ("source", "media_type"),
+    [
+        (b"\xff\xd8\xff\xe0" + b"\x00" * 100, "image/jpeg"),
+        (b"\x89PNG\r\n\x1a\n" + b"\x00" * 100, "image/png"),
+        (b"GIF89a" + b"\x00" * 100, "image/gif"),
+        (b"RIFF" + b"\x00" * 4 + b"WEBP" + b"\x00" * 100, "image/webp"),
+    ],
+)
+def test_image_autodetect_accepts_raw_bytes(source: bytes, media_type: str) -> None:
+    image = Image.autodetect(source)
+
+    assert image.media_type == media_type
+    assert image.data is not None
+
+
+def test_image_autodetect_rejects_unknown_byte_content() -> None:
+    with pytest.raises(ValueError, match="Invalid or unsupported base64 image data"):
+        Image.autodetect(b"not an image")
 
 
 def test_webp_mime_type_is_registered() -> None:
