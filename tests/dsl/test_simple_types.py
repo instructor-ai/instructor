@@ -170,3 +170,43 @@ def test_list_of_model_pipe_union_generates_clean_name():
     assert "|" not in prepared.__name__
     assert "." not in prepared.__name__
     assert prepared.__name__ == "IterableAOrB"
+
+
+def test_list_of_model_typing_union_generates_clean_name():
+    """`List[Union[A, B]]` must derive its Iterable name from the union members.
+
+    Both `typing.Union[A, B]` and PEP 604 `A | B` expose ``__name__ == "Union"``, so a
+    naive ``__name__`` lookup collapses every union to ``IterableUnion``. The name should
+    instead be built from the member names (``IterableAOrB``).
+    """
+
+    class A(BaseModel):
+        x: int
+
+    class B(BaseModel):
+        y: str
+
+    prepared = prepare_response_model(List[Union[A, B]])  # noqa: UP006
+    assert prepared is not None
+    assert prepared.__name__ == "IterableAOrB"
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 10),
+    reason="Union pipe syntax is only available in Python 3.10+",
+)
+def test_list_of_model_three_way_union_generates_clean_name():
+    """A union with more than two members joins every member name with ``Or``."""
+
+    class A(BaseModel):
+        x: int
+
+    class B(BaseModel):
+        y: str
+
+    class C(BaseModel):
+        z: float
+
+    prepared = prepare_response_model(list[A | B | C])
+    assert prepared is not None
+    assert prepared.__name__ == "IterableAOrBOrC"
