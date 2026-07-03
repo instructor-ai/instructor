@@ -64,7 +64,7 @@ client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 @app.post("/user", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -103,7 +103,7 @@ client = instructor.from_provider("openai/gpt-4o")
 @app.post("/user", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -158,7 +158,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
             user_detail = await client.create(
-                model="gpt-3.5-turbo",
+                model="gpt-5.4-mini",
                 response_model=UserDetail,
                 messages=[
                     {"role": "user", "content": f"Extract: `{query}`"},
@@ -205,7 +205,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     @app.post("/user", response_model=UserDetail)
     async def endpoint_function(data: UserData) -> UserDetail:
         user_detail = await client.create(
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
             response_model=UserDetail,
             messages=[
                 {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -219,7 +219,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
             user_detail = await client.create(
-                model="gpt-3.5-turbo",
+                model="gpt-5.4-mini",
                 response_model=UserDetail,
                 messages=[
                     {"role": "user", "content": f"Extract: `{query}`"},
@@ -277,7 +277,7 @@ Let's add a new endpoint to our server to see how this might work
         )  # (1)!
         client = instructor.from_provider("openai/gpt-4o")
         users = await client.create(
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
             response_model=Iterable[UserDetail],
             stream=True,
             messages=[
@@ -334,7 +334,7 @@ Let's add a new endpoint to our server to see how this might work
     @app.post("/user", response_model=UserDetail)
     async def endpoint_function(data: UserData) -> UserDetail:
         user_detail = await client.create(
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
             response_model=UserDetail,
             messages=[
                 {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -348,7 +348,7 @@ Let's add a new endpoint to our server to see how this might work
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
             user_detail = await client.create(
-                model="gpt-3.5-turbo",
+                model="gpt-5.4-mini",
                 response_model=UserDetail,
                 messages=[
                     {"role": "user", "content": f"Extract: `{query}`"},
@@ -367,7 +367,7 @@ Let's add a new endpoint to our server to see how this might work
         logfire.instrument_openai(suppressed_client, suppress_other_instrumentation=False)
         client = instructor.from_provider("openai/gpt-4o")
         users = await client.create(
-            model="gpt-3.5-turbo",
+            model="gpt-5.4-mini",
             response_model=Iterable[UserDetail],
             stream=True,
             messages=[

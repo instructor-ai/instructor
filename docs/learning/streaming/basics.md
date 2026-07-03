@@ -45,7 +45,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 # Enable streaming
 for partial in client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Generate a profile for Alex Chen"}
     ],
@@ -93,7 +93,7 @@ completed = set()
 total_fields = 3  # Number of fields in our model
 
 for partial in client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Generate a report on climate change"}
     ],

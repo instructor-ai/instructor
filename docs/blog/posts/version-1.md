@@ -50,7 +50,7 @@ import openai
 import instructor
 
 client = instructor.from_openai(
-    openai.OpenAI(), model="gpt-4-turbo-preview", temperature=0.2
+    openai.OpenAI(), model="gpt-5.4-mini", temperature=0.2
 )
 ```
 
@@ -76,9 +76,9 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
-client.create(model="gpt-4", response_model=type[T]) -> T
-client.create(model="gpt-4", response_model=type[T]) -> T
-client.messages.create(model="gpt-4", response_model=type[T]) -> T
+client.create(model="gpt-5.4-mini", response_model=type[T]) -> T
+client.create(model="gpt-5.4-mini", response_model=type[T]) -> T
+client.messages.create(model="gpt-5.4-mini", response_model=type[T]) -> T
 ```
 
 ## Type are inferred correctly
@@ -100,7 +100,7 @@ class User(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 user = client.create(
-    model="gpt-4-turbo-preview",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -131,7 +131,7 @@ class User(BaseModel):
 
 async def extract():
     return await client.create(
-        model="gpt-4-turbo-preview",
+        model="gpt-5.4-mini",
         messages=[
             {"role": "user", "content": "Create a user"},
         ],
@@ -161,7 +161,7 @@ class User(BaseModel):
 
 
 user, completion = client.create_with_completion(
-    model="gpt-4-turbo-preview",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -190,7 +190,7 @@ class User(BaseModel):
 
 
 user_stream = client.create_partial(
-    model="gpt-4-turbo-preview",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -238,7 +238,7 @@ class User(BaseModel):
 
 
 users = client.create_iterable(
-    model="gpt-4-turbo-preview",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Create 2 users"},
     ],

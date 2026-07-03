@@ -14,7 +14,7 @@ import pytest
 # Skip if google-genai is not installed
 genai = pytest.importorskip("google.genai")
 
-from instructor.providers.gemini.utils import (
+from instructor.v2.providers.gemini.utils import (
     update_genai_kwargs,
     verify_no_unions,
     map_to_gemini_function_schema,
@@ -291,7 +291,7 @@ def test_handle_genai_structured_outputs_skips_system_instruction_with_cached_co
     from google.genai import types
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+    from instructor.v2.providers.gemini.utils import handle_genai_structured_outputs
 
     class TestModel(BaseModel):
         name: str
@@ -319,7 +319,7 @@ def test_handle_genai_structured_outputs_sets_system_instruction_without_cached_
     """Test that system_instruction IS set when cached_content is NOT provided."""
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+    from instructor.v2.providers.gemini.utils import handle_genai_structured_outputs
 
     class TestModel(BaseModel):
         name: str
@@ -348,7 +348,7 @@ def test_handle_genai_tools_skips_tools_and_system_instruction_with_cached_conte
     from google.genai import types
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_tools
+    from instructor.v2.providers.gemini.utils import handle_genai_tools
 
     class TestModel(BaseModel):
         name: str
@@ -378,7 +378,7 @@ def test_handle_genai_tools_sets_tools_without_cached_content():
     """Test that tools and tool_config ARE set when cached_content is NOT provided."""
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_tools
+    from instructor.v2.providers.gemini.utils import handle_genai_tools
 
     class TestModel(BaseModel):
         name: str
@@ -434,7 +434,7 @@ def test_handle_genai_structured_outputs_preserves_labels_from_config_dict():
     """Test that labels are preserved when config is provided as a dict (issue #1759)."""
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+    from instructor.v2.providers.gemini.utils import handle_genai_structured_outputs
 
     class TestModel(BaseModel):
         name: str
@@ -454,7 +454,7 @@ def test_handle_genai_tools_preserves_labels_from_config_dict():
     """Test that labels are preserved in tools mode when config is a dict (issue #1759)."""
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_tools
+    from instructor.v2.providers.gemini.utils import handle_genai_tools
 
     class TestModel(BaseModel):
         name: str
@@ -474,7 +474,7 @@ def test_handle_genai_structured_outputs_skips_system_instruction_with_cached_co
     """Test cached_content dict config disables system_instruction in structured outputs."""
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+    from instructor.v2.providers.gemini.utils import handle_genai_structured_outputs
 
     class TestModel(BaseModel):
         name: str
@@ -498,7 +498,7 @@ def test_handle_genai_tools_skips_tools_and_system_instruction_with_cached_conte
     """Test cached_content dict config disables tools/tool_config/system_instruction in tools mode."""
     from pydantic import BaseModel
 
-    from instructor.providers.gemini.utils import handle_genai_tools
+    from instructor.v2.providers.gemini.utils import handle_genai_tools
 
     class TestModel(BaseModel):
         name: str

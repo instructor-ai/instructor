@@ -21,7 +21,7 @@ class Person(BaseModel):
 # Extract structured data from LLM
 client = instructor.from_provider("openai/gpt-5-nano")
 person = client.create(
-    model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini
+    model="gpt-5.4-mini",  # Works with GPT-4, Claude, Gemini
     messages=[
         {"role": "user", "content": "John Smith is a 35-year-old software engineer."}
     ],
@@ -112,7 +112,7 @@ class ContactInfo(BaseModel):
 # Extract structured data
 client = instructor.from_provider("openai/gpt-5-nano")
 contact = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Contact information:

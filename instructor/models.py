@@ -8,7 +8,7 @@ KnownModelName = TypeAliasType(
         # Anthropic Models
         "anthropic/claude-opus-4-0-20250514",
         "anthropic/claude-sonnet-4-0-20250514",
-        "anthropic/claude-sonnet-4-6-20250627",
+        "anthropic/claude-sonnet-4-6",
         "anthropic/claude-3-5-haiku-20241022",
         "anthropic/claude-3-7-sonnet-latest",
         "anthropic/claude-3-7-sonnet-20250219",
@@ -19,7 +19,7 @@ KnownModelName = TypeAliasType(
         "anthropic/claude-3-5-haiku-20241022",
         "anthropic/claude-3-opus-latest",
         "anthropic/claude-3-opus-20240229",
-        "anthropic/claude-3-haiku-20240307",
+        "anthropic/claude-haiku-4-5-20251001",
         # Cohere Models - https://docs.cohere.com/docs/models
         "cohere/c4ai-aya-expanse-32b",
         "cohere/c4ai-aya-expanse-8b",

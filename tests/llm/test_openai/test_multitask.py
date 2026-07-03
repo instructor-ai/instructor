@@ -83,15 +83,20 @@ async def test_multi_user_tools_mode_async(model, mode, aclient):
             response_model=Users,
             messages=[
                 {
+                    "role": "system",
+                    "content": "You are a perfect entity extraction system",
+                },
+                {
                     "role": "user",
                     "content": (
-                        f"Consider the data below:\n{input}"
-                        "Correctly segment it into entitites"
-                        "Make sure the JSON is correct"
+                        f"Consider the data below:\n{input}\n"
+                        "Correctly segment it into entities. "
+                        "Make sure the JSON is correct."
                     ),
                 },
             ],
             max_tokens=1000,
+            temperature=0,
         )
 
     resp = []
@@ -151,15 +156,20 @@ async def test_multi_user_tools_mode_async_stream(model, mode, aclient):
             response_model=Users,
             messages=[
                 {
+                    "role": "system",
+                    "content": "You are a perfect entity extraction system",
+                },
+                {
                     "role": "user",
                     "content": (
-                        f"Consider the data below:\n{input}"
-                        "Correctly segment it into entitites"
-                        "Make sure the JSON is correct"
+                        f"Consider the data below:\n{input}\n"
+                        "Correctly segment it into entities. "
+                        "Make sure the JSON is correct."
                     ),
                 },
             ],
             max_tokens=1000,
+            temperature=0,
         )
 
     resp = []

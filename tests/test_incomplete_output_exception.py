@@ -5,13 +5,13 @@ without being wrapped in InstructorRetryException.
 Regression tests for issue #2273.
 """
 
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-import asyncio
-from unittest.mock import Mock, AsyncMock
 from pydantic import BaseModel
 
 import instructor
-from instructor.core.exceptions import IncompleteOutputException, InstructorRetryException
+from instructor.core.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 
 
@@ -31,7 +31,7 @@ def _make_truncated_response() -> Mock:
     return mock_response
 
 
-def _raise_incomplete(*args, **kwargs):
+def _raise_incomplete(*_args, **_kwargs):
     raise IncompleteOutputException(last_completion=None)
 
 
@@ -45,7 +45,7 @@ def test_incomplete_output_exception_is_catchable_sync():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
@@ -63,7 +63,7 @@ def test_incomplete_output_not_wrapped_in_instructor_retry_exception_sync():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
@@ -75,7 +75,7 @@ def test_incomplete_output_exception_with_max_retries_zero():
     """IncompleteOutputException is raised immediately when max_retries=0."""
     call_count = {"n": 0}
 
-    def _raise_incomplete_and_count(*args, **kwargs):
+    def _raise_incomplete_and_count(*_args, **_kwargs):
         call_count["n"] += 1
         raise IncompleteOutputException(last_completion=None)
 
@@ -87,7 +87,7 @@ def test_incomplete_output_exception_with_max_retries_zero():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        client.chat.completions.create(
+        client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],
@@ -109,7 +109,7 @@ async def test_incomplete_output_exception_is_catchable_async():
     client = instructor.patch(mock_client, mode=Mode.TOOLS)
 
     with pytest.raises(IncompleteOutputException):
-        await client.chat.completions.create(
+        await client.chat.completions.create(  # ty: ignore[no-matching-overload] - runtime-patched API
             model="gpt-4o-mini",
             response_model=User,
             messages=[{"role": "user", "content": "test"}],

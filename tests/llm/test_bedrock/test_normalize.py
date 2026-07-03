@@ -1,6 +1,6 @@
 from __future__ import annotations
 import pytest
-from instructor.providers.bedrock.utils import _normalize_bedrock_image_format
+from instructor.v2.providers.bedrock.handlers import _normalize_bedrock_image_format
 
 
 @pytest.mark.parametrize(

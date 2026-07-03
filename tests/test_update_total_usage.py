@@ -36,6 +36,7 @@ def test_update_total_usage_preserves_openai_usage_subclass() -> None:
 
     updated = update_total_usage(response, total_usage)
 
+    assert updated is not None
     assert isinstance(updated.usage, ProviderSpecificUsage)
     assert updated.usage.get("prompt_tokens") == 16
     assert updated.usage.get("completion_tokens") == 10

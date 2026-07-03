@@ -290,4 +290,4 @@ class BatchJobInfo(BaseModel):
 
 
 # Union type for batch results - like a Maybe/Result type
-BatchResult: TypeAlias = Union[BatchSuccess[T], BatchError]  # type: ignore
+BatchResult: TypeAlias = Union[BatchSuccess[Any], BatchError]

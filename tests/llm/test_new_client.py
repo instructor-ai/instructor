@@ -164,7 +164,7 @@ def test_client_from_anthropic_with_response():
     client = instructor.from_anthropic(
         anthropic.Anthropic(),
         max_tokens=1000,
-        model="claude-3-haiku-20240307",
+        model="claude-haiku-4-5-20251001",
     )
 
     user, response = client.messages.create_with_completion(
@@ -182,7 +182,7 @@ def test_client_anthropic_response():
     instructor_client = instructor.from_anthropic(
         client,
         max_tokens=1000,
-        model="claude-3-haiku-20240307",
+        model="claude-haiku-4-5-20251001",
     )
 
     user = instructor_client.messages.create(
@@ -224,7 +224,7 @@ async def test_async_client_anthropic_response():
     instructor_client = instructor.from_anthropic(
         client,
         max_tokens=1000,
-        model="claude-3-haiku-20240307",
+        model="claude-haiku-4-5-20251001",
     )
 
     user = await instructor_client.messages.create(

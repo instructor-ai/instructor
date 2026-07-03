@@ -9,7 +9,7 @@ def test_genai_tools_validation_retry_preserves_model_content(mode):
     """Ensure GENAI_TOOLS validation retries are wired end-to-end."""
     from instructor.core.exceptions import InstructorRetryException
 
-    model = os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.0-flash")
+    model = os.getenv("GOOGLE_GENAI_MODEL", "gemini-3.5-flash")
 
     class AlwaysInvalid(BaseModel):
         value: int

@@ -7,7 +7,7 @@ alwaysApply: true
 - When being asked to make new features, make sure that you check out from main a new branch and make incremental commits
   - Use conventional commit format: `<type>(<scope>): <description>`
     - Types: feat, fix, docs, style, refactor, perf, test, chore
-    - Example: `feat(validation): add email validation function` 
+    - Example: `feat(validation): add email validation function`
     - Keep commits focused on a single change
     - Write descriptive commit messages in imperative mood
   - Use `git commit -m "type(scope): subject" -m "body" -m "footer"` for multiline commits
@@ -42,4 +42,4 @@ alwaysApply: true
     - This creates a "stacked PR" pattern where:
         1. The original PR (base) contains the initial changes
         2. The new PR (stack) contains only the review-related updates
-        3. Once the base PR is merged, the stack can be rebased onto main 
+        3. Once the base PR is merged, the stack can be rebased onto main

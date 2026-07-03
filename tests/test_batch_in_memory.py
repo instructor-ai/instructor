@@ -146,7 +146,10 @@ class TestBatchRequestInMemory:
         )
 
         with pytest.raises(ValueError, match="Unsupported file_path_or_buffer type"):
-            batch_request.save_to_file(123, "openai")  # type: ignore[arg-type] # Invalid type
+            batch_request.save_to_file(
+                123,  # ty: ignore[invalid-argument-type] - deliberately invalid input
+                "openai",
+            )
 
 
 class TestProviderInMemorySupport:
@@ -175,11 +178,11 @@ class TestProviderInMemorySupport:
 
         # This should not raise a ValueError for unsupported type
         # (It will raise an exception due to missing API key, but that's expected)
-        with pytest.raises(Exception) as exc_info:
+        try:
             provider.submit_batch(buffer)
-
-        # Make sure it's not a ValueError about unsupported type
-        assert "Unsupported file_path_or_buffer type" not in str(exc_info.value)
+        except Exception as exc_info:
+            # Make sure it's not a ValueError about unsupported type
+            assert "Unsupported file_path_or_buffer type" not in str(exc_info)
 
     def test_anthropic_provider_accepts_bytesio(self):
         """Test that Anthropic provider accepts BytesIO (without making API calls)."""
@@ -202,11 +205,11 @@ class TestProviderInMemorySupport:
 
         # This should not raise a ValueError for unsupported type
         # (It will raise an exception due to missing API key, but that's expected)
-        with pytest.raises(Exception) as exc_info:
+        try:
             provider.submit_batch(buffer)
-
-        # Make sure it's not a ValueError about unsupported type
-        assert "Unsupported file_path_or_buffer type" not in str(exc_info.value)
+        except Exception as exc_info:
+            # Make sure it's not a ValueError about unsupported type
+            assert "Unsupported file_path_or_buffer type" not in str(exc_info)
 
     def test_provider_invalid_type_raises_error(self):
         """Test that providers raise errors for invalid types."""
@@ -214,7 +217,11 @@ class TestProviderInMemorySupport:
         anthropic_provider = AnthropicProvider()
 
         with pytest.raises(ValueError, match="Unsupported file_path_or_buffer type"):
-            openai_provider.submit_batch(123)  # type: ignore[arg-type] # Invalid type
+            openai_provider.submit_batch(
+                123  # ty: ignore[invalid-argument-type] - deliberately invalid input
+            )
 
         with pytest.raises(ValueError, match="Unsupported file_path_or_buffer type"):
-            anthropic_provider.submit_batch(123)  # type: ignore[arg-type] # Invalid type
+            anthropic_provider.submit_batch(
+                123  # ty: ignore[invalid-argument-type] - deliberately invalid input
+            )

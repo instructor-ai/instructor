@@ -40,7 +40,7 @@ class Product(BaseModel):
 
 # This will automatically retry if validation fails
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Product: Pen, Price: -5"}
     ],
@@ -87,7 +87,7 @@ from instructor.core.exceptions import InstructorRetryException
 
 try:
     response = client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[{"role": "user", "content": "Product: Invalid data"}],
         response_model=Product,
         max_retries=3
@@ -172,7 +172,7 @@ class DetailedProduct(BasicProduct):
 try:
     # First get basic fields
     basic = client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[
             {"role": "user", "content": "Product: Mini Pen, Price: $2.50"}
         ],
@@ -181,7 +181,7 @@ try:
 
     # Then get full details with context from the first step
     detailed = client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[
             {"role": "user", "content": f"Provide more details about {basic.name} which costs ${basic.price}"}
         ],

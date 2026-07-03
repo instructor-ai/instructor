@@ -53,7 +53,7 @@ class UserDetail(BaseModel):
 
 
 user: UserDetail = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
@@ -258,7 +258,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 def validator(v):
     statement = "don't say objectionable things"
     resp = client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[
             {
                 "role": "system",
@@ -300,7 +300,7 @@ def validate_chain_of_thought(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
     resp = client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[
             {
                 "role": "system",
@@ -419,7 +419,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         messages=[
             {
                 "role": "user",
@@ -464,7 +464,7 @@ This is where the `max_retries` parameter comes in. It allows the model to self 
 
 ```python
 model = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
     ],

@@ -120,7 +120,7 @@ class Person(BaseModel):
 
 client = instructor.from_provider("openai/gpt-5-nano")
 person = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     response_model=Person,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old"}

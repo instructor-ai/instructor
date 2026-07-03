@@ -23,8 +23,8 @@ def eval_example(
 ):
     eval_ex = EvalExample(tmp_path=tmp_path, pytest_request=request)
     run_live = bool(
-        request.config.getoption("run_doc_examples")
-        or request.config.getoption("update_examples")
+        request.config.getoption("run_doc_examples", default=False)
+        or request.config.getoption("update_examples", default=False)
     )
     if not run_live:
 
@@ -36,5 +36,5 @@ def eval_example(
 
     yield eval_ex
 
-    if request.config.getoption("update_examples"):
+    if request.config.getoption("update_examples", default=False):
         _examples_to_update.extend(eval_ex.to_update)
