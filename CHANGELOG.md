@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Bedrock**: `from_provider("bedrock/...", api_key=...)` now forwards the value as an Amazon Bedrock API key (bearer token) via `AWS_BEARER_TOKEN_BEDROCK`, so Bedrock works with a single `api_key` like other providers instead of requiring SigV4 credentials. ([#2408](https://github.com/567-labs/instructor/issues/2408))
+
+---
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

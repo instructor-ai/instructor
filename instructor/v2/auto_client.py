@@ -969,7 +969,7 @@ def _build_bedrock(
     model_name: str,
     async_client: bool,
     mode: Mode | None,
-    api_key: str | None,  # noqa: ARG001
+    api_key: str | None,
     kwargs: dict[str, Any],
     provider_info: dict[str, str],
 ) -> InstructorType:
@@ -977,6 +977,13 @@ def _build_bedrock(
         import os
         import boto3
         from instructor.v2.providers.bedrock.client import from_bedrock
+
+        # Amazon Bedrock API keys (bearer tokens) are consumed by botocore via the
+        # AWS_BEARER_TOKEN_BEDROCK environment variable (supported since boto3 1.39.0).
+        # When an api_key is supplied explicitly, forward it so Bedrock works with a
+        # single api_key like every other provider, instead of requiring SigV4 creds.
+        if api_key:
+            os.environ["AWS_BEARER_TOKEN_BEDROCK"] = api_key
 
         # Get AWS configuration from environment or kwargs
         if "region" in kwargs:

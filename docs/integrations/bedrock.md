@@ -65,6 +65,25 @@ Or configure using AWS CLI:
 aws configure
 ```
 
+### Using a Bedrock API key
+
+Amazon Bedrock also supports [API keys](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html) (bearer tokens) as a simpler alternative to SigV4 credentials. Pass the key directly to `from_provider`:
+
+```python
+import instructor
+
+client = instructor.from_provider(
+    "bedrock/claude-3-5-sonnet-20241022",
+    api_key="your_bedrock_api_key",
+)
+```
+
+Or set it in the environment, which botocore reads natively:
+
+```bash
+export AWS_BEARER_TOKEN_BEDROCK=your_bedrock_api_key
+```
+
 ## Sync Example
 
 ```python

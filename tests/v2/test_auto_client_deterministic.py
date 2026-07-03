@@ -205,6 +205,70 @@ def test_build_bedrock_chooses_default_mode_from_model_name(
     assert calls[1]["mode"] == Mode.MD_JSON
 
 
+def _stub_bedrock_deps(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
+    """Stub boto3 and from_bedrock, returning the list of from_bedrock kwargs."""
+    boto3_module = ModuleType("boto3")
+
+    def fake_client(_service_name: str, **_kwargs: Any) -> object:
+        return object()
+
+    setattr(boto3_module, "client", fake_client)  # noqa: B010
+    monkeypatch.setitem(__import__("sys").modules, "boto3", boto3_module)
+
+    import instructor.v2.providers.bedrock.client as bedrock_client
+
+    calls: list[dict[str, Any]] = []
+
+    def fake_from_bedrock(_client: Any, **kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        return kwargs
+
+    monkeypatch.setattr(bedrock_client, "from_bedrock", fake_from_bedrock)
+    return calls
+
+
+def test_build_bedrock_forwards_api_key_as_bearer_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("AWS_BEARER_TOKEN_BEDROCK", raising=False)
+    _stub_bedrock_deps(monkeypatch)
+
+    auto_client._build_bedrock(
+        provider="bedrock",
+        model_name="anthropic.claude-3-7-sonnet",
+        async_client=False,
+        mode=None,
+        api_key="bedrock-api-key-abc123",
+        kwargs={},
+        provider_info={"provider": "bedrock", "operation": "initialize"},
+    )
+
+    import os
+
+    assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "bedrock-api-key-abc123"
+
+
+def test_build_bedrock_without_api_key_leaves_bearer_token_untouched(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "preexisting-token")
+    _stub_bedrock_deps(monkeypatch)
+
+    auto_client._build_bedrock(
+        provider="bedrock",
+        model_name="anthropic.claude-3-7-sonnet",
+        async_client=False,
+        mode=None,
+        api_key=None,
+        kwargs={},
+        provider_info={"provider": "bedrock", "operation": "initialize"},
+    )
+
+    import os
+
+    assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "preexisting-token"
+
+
 def test_build_ollama_uses_tool_mode_only_for_tool_capable_models(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
