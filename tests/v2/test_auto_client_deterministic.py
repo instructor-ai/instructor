@@ -205,6 +205,69 @@ def test_build_bedrock_chooses_default_mode_from_model_name(
     assert calls[1]["mode"] == Mode.MD_JSON
 
 
+def test_build_bedrock_api_key_enables_bearer_token_auth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import os
+
+    boto3_module = ModuleType("boto3")
+    setattr(boto3_module, "client", lambda *_args, **_kwargs: object())  # noqa: B010
+    monkeypatch.setitem(__import__("sys").modules, "boto3", boto3_module)
+
+    import instructor.v2.providers.bedrock.client as bedrock_client
+
+    monkeypatch.setattr(
+        bedrock_client, "from_bedrock", lambda _client, **kwargs: kwargs
+    )
+
+    # Ensure the variable is absent but restored to its original state on teardown
+    monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "sentinel")
+    monkeypatch.delenv("AWS_BEARER_TOKEN_BEDROCK")
+
+    auto_client._build_bedrock(
+        provider="bedrock",
+        model_name="anthropic.claude-3-7-sonnet",
+        async_client=False,
+        mode=None,
+        api_key="bedrock-api-key",
+        kwargs={},
+        provider_info={"provider": "bedrock", "operation": "initialize"},
+    )
+
+    assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "bedrock-api-key"
+
+
+def test_build_bedrock_without_api_key_leaves_bearer_token_unset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import os
+
+    boto3_module = ModuleType("boto3")
+    setattr(boto3_module, "client", lambda *_args, **_kwargs: object())  # noqa: B010
+    monkeypatch.setitem(__import__("sys").modules, "boto3", boto3_module)
+
+    import instructor.v2.providers.bedrock.client as bedrock_client
+
+    monkeypatch.setattr(
+        bedrock_client, "from_bedrock", lambda _client, **kwargs: kwargs
+    )
+
+    monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "sentinel")
+    monkeypatch.delenv("AWS_BEARER_TOKEN_BEDROCK")
+
+    auto_client._build_bedrock(
+        provider="bedrock",
+        model_name="anthropic.claude-3-7-sonnet",
+        async_client=False,
+        mode=None,
+        api_key=None,
+        kwargs={},
+        provider_info={"provider": "bedrock", "operation": "initialize"},
+    )
+
+    assert "AWS_BEARER_TOKEN_BEDROCK" not in os.environ
+
+
 def test_build_ollama_uses_tool_mode_only_for_tool_capable_models(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

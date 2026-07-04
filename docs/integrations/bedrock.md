@@ -65,6 +65,29 @@ Or configure using AWS CLI:
 aws configure
 ```
 
+### Bedrock API Key (Bearer Token) Authentication
+
+Instead of AWS credentials, you can authenticate with an [Amazon Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html). Bedrock offers short-term keys (up to 12 hours, recommended for production) and long-term keys (recommended only for exploration).
+
+Pass the key directly via `api_key`:
+
+```python
+import instructor
+
+client = instructor.from_provider(
+    "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
+    api_key="your-bedrock-api-key",
+)
+```
+
+Or set the environment variable that botocore reads natively:
+
+```bash
+export AWS_BEARER_TOKEN_BEDROCK=your-bedrock-api-key
+```
+
+> **Note:** Bearer token authentication requires `boto3>=1.39.0`. When a Bedrock API key is set, it takes precedence over AWS credentials for Bedrock requests.
+
 ## Sync Example
 
 ```python
