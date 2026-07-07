@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **v2 iterable streaming**: `Iterable[Model]` / `IterableModel` streaming (`tasks_from_chunks` / `tasks_from_chunks_async`, used by every provider's streaming path) no longer mistakes a literal `[` inside a string value emitted before the `tasks` array (e.g. a free-text field) for the start of the array. Previously this silently dropped every streamed task with no error.
+
+---
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

@@ -102,9 +102,10 @@ class IterableBase:
         for chunk in json_chunks:
             potential_object += chunk
             if not started:
-                if "[" in chunk:
+                bracket_index = cls._find_unquoted_char(potential_object, "[")
+                if bracket_index != -1:
                     started = True
-                    potential_object = chunk[chunk.find("[") + 1 :]
+                    potential_object = potential_object[bracket_index + 1 :]
 
             while True:
                 task_json, potential_object = cls.get_object(potential_object, 0)
@@ -124,9 +125,10 @@ class IterableBase:
         async for chunk in json_chunks:
             potential_object += chunk
             if not started:
-                if "[" in chunk:
+                bracket_index = cls._find_unquoted_char(potential_object, "[")
+                if bracket_index != -1:
                     started = True
-                    potential_object = chunk[chunk.find("[") + 1 :]
+                    potential_object = potential_object[bracket_index + 1 :]
 
             while True:
                 task_json, potential_object = cls.get_object(potential_object, 0)
@@ -178,6 +180,34 @@ class IterableBase:
             raise ValueError("stream_extractor is required for streaming responses")
         async for chunk in stream_extractor(completion):
             yield chunk
+
+    @staticmethod
+    def _find_unquoted_char(s: str, target: str) -> int:
+        """Find the index of the first occurrence of `target` that is not
+        inside a JSON string literal.
+
+        Used to detect the start of the streamed tasks array ("[") without
+        being fooled by the same character appearing inside a string value
+        emitted earlier in the object (e.g. a free-text field containing a
+        literal "[" before the "tasks" array has actually started).
+        """
+        in_string = False
+        escape_next = False
+        for i, c in enumerate(s):
+            if escape_next:
+                escape_next = False
+            elif c == "\\" and in_string:
+                escape_next = True
+                continue
+            elif c == '"':
+                in_string = not in_string
+
+            if in_string:
+                continue
+
+            if c == target:
+                return i
+        return -1
 
     @staticmethod
     def get_object(s: str, stack: int) -> tuple[str | None, str]:
