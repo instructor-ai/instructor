@@ -11,7 +11,6 @@ from collections.abc import Awaitable
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
 
-from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
@@ -27,6 +26,7 @@ from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
+    from openai import AsyncOpenAI, OpenAI
     from tenacity import AsyncRetrying, Retrying
 
 logger = logging.getLogger("instructor.v2")

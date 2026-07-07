@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
+if TYPE_CHECKING:
+    from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
 
 
 def extract_messages(kwargs: dict[str, Any]) -> Any:

@@ -7,6 +7,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [1.15.5] - 2026-06-28
+
+### Fixed
+- **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))
+- **v2 response models**: Treat `list[A | B]` PEP 604 unions of Pydantic models as iterable response models, matching `list[Union[A, B]]` schema behavior. ([#2377](https://github.com/567-labs/instructor/pull/2377))
+- **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
+
+---
+
 ## [1.15.4] - 2026-06-27
 
 ### Fixed

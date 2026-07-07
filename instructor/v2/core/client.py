@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import openai
-from instructor.v2.core.mode import Mode
-from instructor.v2.core.providers import Provider
-from openai.types.chat import ChatCompletionMessageParam
 from typing import (
+    TYPE_CHECKING,
     TypeVar,
     Callable,
     overload,
@@ -14,6 +11,13 @@ from typing import (
     get_origin,
     get_args,
 )
+
+if TYPE_CHECKING:
+    import openai
+    from openai.types.chat import ChatCompletionMessageParam
+
+from instructor.v2.core.mode import Mode
+from instructor.v2.core.providers import Provider
 from tenacity import (
     AsyncRetrying,
     Retrying,
@@ -412,7 +416,9 @@ class Instructor:
             Mode.RESPONSES_TOOLS,
             Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }:
-            assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
+            import openai as _openai
+
+            assert isinstance(client, (_openai.OpenAI, _openai.AsyncOpenAI))
             self.responses = Response(client=self)
 
     def on(
@@ -758,7 +764,9 @@ class AsyncInstructor(Instructor):
             Mode.RESPONSES_TOOLS,
             Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }:
-            assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
+            import openai as _openai
+
+            assert isinstance(client, (_openai.OpenAI, _openai.AsyncOpenAI))
             self.responses = AsyncResponse(client=self)
 
     async def create(  # type: ignore[override]  # ty: ignore[invalid-method-override]
