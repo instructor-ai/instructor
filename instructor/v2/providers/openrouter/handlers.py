@@ -33,6 +33,7 @@ class OpenRouterJSONSchemaHandler(OpenAIJSONSchemaHandler):
         if response_model is None:
             return None, kwargs
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         return handle_openrouter_structured_outputs(response_model, new_kwargs)
 
     def handle_reask(

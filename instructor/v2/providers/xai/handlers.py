@@ -52,6 +52,7 @@ from instructor.v2.core.json import (
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.messages import copy_messages_for_mutation
 
 
 def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
@@ -398,6 +399,7 @@ class XAIToolsHandler(XAIHandlerBase):
     ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
         """Prepare request with tool definitions for xAI."""
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         if response_model is None:
             return None, new_kwargs
@@ -522,6 +524,7 @@ class XAIParallelToolsHandler(XAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         if new_kwargs.get("stream", False):
             from instructor.v2.core.errors import ConfigurationError
 
@@ -593,6 +596,7 @@ class XAIJSONSchemaHandler(XAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         schema = response_model.model_json_schema()
 
         # Store schema info for xAI SDK's parse() method
@@ -705,7 +709,7 @@ class XAIMDJSONHandler(XAIHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,

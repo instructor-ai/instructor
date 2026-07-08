@@ -19,6 +19,11 @@ before the call and assert it is unchanged afterward.
 The provider lists below are imported directly from the shared OpenAI-compat
 handler module so this test stays in sync with the source registrations
 rather than duplicating them.
+
+Independently-implemented handlers (Mistral, Cohere, Writer, xAI, OpenRouter)
+reproduce the same anti-pattern in their own provider-specific code and were
+previously tracked here as known-broken `xfail` cases. They are now fixed too
+and folded into `FIXED_PAIRS` below.
 """
 
 from __future__ import annotations
@@ -52,8 +57,10 @@ class Answer(BaseModel):
     age: int
 
 
-# (provider, mode) pairs whose shared OpenAI-compat handler classes were
-# patched to stop aliasing `messages`.
+# (provider, mode) pairs whose handlers were patched to stop aliasing
+# `messages`. Covers both the shared OpenAI-compat handler classes and the
+# independently-implemented provider-specific handlers (Mistral, Cohere,
+# Writer, xAI, OpenRouter) that reproduced the same anti-pattern separately.
 FIXED_PAIRS: list[tuple[Provider, Mode]] = [
     *((provider, Mode.TOOLS) for provider in OPENAI_COMPAT_PROVIDERS),
     *((provider, Mode.JSON_SCHEMA) for provider in OPENAI_JSON_SCHEMA_PROVIDERS),
@@ -61,17 +68,18 @@ FIXED_PAIRS: list[tuple[Provider, Mode]] = [
     *((provider, Mode.JSON) for provider in OPENAI_COMPAT_PROVIDERS),
     *((provider, Mode.MD_JSON) for provider in OPENAI_COMPAT_PROVIDERS),
     (Provider.OPENAI, Mode.RESPONSES_TOOLS),
-]
-
-# Independently-implemented handlers that reproduce the same anti-pattern in
-# their own provider-specific code and are not touched by this fix. Tracked
-# here so a future fix flips these from xfail to passing instead of the
-# regression silently going unnoticed.
-KNOWN_STILL_BROKEN_PAIRS: list[tuple[Provider, Mode]] = [
     (Provider.MISTRAL, Mode.TOOLS),
+    (Provider.MISTRAL, Mode.JSON_SCHEMA),
+    (Provider.MISTRAL, Mode.MD_JSON),
     (Provider.COHERE, Mode.JSON_SCHEMA),
+    (Provider.COHERE, Mode.MD_JSON),
     (Provider.WRITER, Mode.TOOLS),
+    (Provider.WRITER, Mode.JSON_SCHEMA),
+    (Provider.WRITER, Mode.MD_JSON),
     (Provider.XAI, Mode.TOOLS),
+    (Provider.XAI, Mode.PARALLEL_TOOLS),
+    (Provider.XAI, Mode.JSON_SCHEMA),
+    (Provider.XAI, Mode.MD_JSON),
     (Provider.OPENROUTER, Mode.JSON_SCHEMA),
 ]
 
@@ -99,26 +107,6 @@ def test_prepare_request_does_not_alias_caller_messages(
     # `new_kwargs["messages"]` into a fresh list while still having mutated
     # the caller's original list/dicts in place before doing so.
     assert caller_messages == original_snapshot
-
-
-@pytest.mark.parametrize(
-    ("provider", "mode"),
-    KNOWN_STILL_BROKEN_PAIRS,
-    ids=[f"{provider.value}-{mode.value}" for provider, mode in KNOWN_STILL_BROKEN_PAIRS],
-)
-@pytest.mark.xfail(
-    reason="Independently-implemented handler still aliases messages; "
-    "tracked in issue #2417 (Category 2/3), not yet fixed.",
-    strict=True,
-)
-def test_known_still_broken_pairs_are_fixed(provider: Provider, mode: Mode) -> None:
-    caller_messages = [{"role": "user", "content": "hi"}]
-    kwargs: dict[str, Any] = {"model": "test", "messages": caller_messages}
-
-    handlers = mode_registry.get_handlers(provider, mode)
-    _, new_kwargs = handlers.request_handler(response_model=Answer, kwargs=kwargs)
-
-    assert new_kwargs["messages"] is not caller_messages
 
 
 def _make_tool_call_response(arguments: str, call_id: str) -> ChatCompletion:
@@ -177,3 +165,62 @@ def test_client_create_does_not_mutate_caller_messages_after_reask() -> None:
     assert result.name == "Ada"
     assert result.age == 37
     assert caller_messages == [{"role": "user", "content": "Ada is 37 years old"}]
+
+
+REASK_MUTATION_PAIRS: list[tuple[Provider, Mode]] = [
+    (Provider.MISTRAL, Mode.TOOLS),
+    (Provider.MISTRAL, Mode.JSON_SCHEMA),
+    (Provider.COHERE, Mode.JSON_SCHEMA),
+    (Provider.WRITER, Mode.TOOLS),
+    (Provider.WRITER, Mode.JSON_SCHEMA),
+    (Provider.XAI, Mode.TOOLS),
+    (Provider.XAI, Mode.PARALLEL_TOOLS),
+    (Provider.XAI, Mode.JSON_SCHEMA),
+    (Provider.OPENROUTER, Mode.JSON_SCHEMA),
+]
+
+
+@pytest.mark.parametrize(
+    ("provider", "mode"),
+    REASK_MUTATION_PAIRS,
+    ids=[f"{provider.value}-{mode.value}" for provider, mode in REASK_MUTATION_PAIRS],
+)
+def test_reask_does_not_mutate_caller_messages(provider: Provider, mode: Mode) -> None:
+    """Simulates the actual retry path (prepare_request -> handle_reask) for
+    provider-specific handlers, since `prepare_request` alone never touches
+    `messages` for these modes -- the append only happens once a reask
+    actually runs, which a prepare_request-only check would miss."""
+    tool_call = ChatCompletionMessageToolCall(
+        id="call_1", type="function", function=Function(name="Answer", arguments='{"name": "Ada"}')
+    )
+    response = ChatCompletion(
+        id="chatcmpl-test",
+        choices=[
+            Choice(
+                index=0,
+                message=ChatCompletionMessage(
+                    role="assistant", content="stub", tool_calls=[tool_call]
+                ),
+                finish_reason="tool_calls",
+                logprobs=None,
+            )
+        ],
+        created=0,
+        model="m",
+        object="chat.completion",
+        usage=CompletionUsage(completion_tokens=1, prompt_tokens=1, total_tokens=2),
+    )
+    exception = ValueError("1 validation error for Answer\nage\n  Field required")
+
+    caller_messages = [{"role": "user", "content": "hi"}]
+    original_snapshot = deepcopy(caller_messages)
+    response_model = Iterable[Answer] if mode is Mode.PARALLEL_TOOLS else Answer
+
+    handlers = mode_registry.get_handlers(provider, mode)
+    _, new_kwargs = handlers.request_handler(
+        response_model=response_model,
+        kwargs={"model": "test", "messages": caller_messages},
+    )
+    handlers.reask_handler(new_kwargs, response, exception)
+
+    assert caller_messages == original_snapshot

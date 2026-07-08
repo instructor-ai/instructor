@@ -21,6 +21,7 @@ from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.messages import copy_messages_for_mutation
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.partial import PartialBase
 
@@ -70,6 +71,8 @@ def _convert_messages_to_cohere_v2(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Clean up kwargs for Cohere V2 format (OpenAI-compatible)."""
     new_kwargs = kwargs.copy()
     new_kwargs.pop("_cohere_client_version", None)
+    if "messages" in new_kwargs:
+        new_kwargs["messages"] = copy_messages_for_mutation(new_kwargs["messages"])
 
     # Rename model_name to model if needed
     if "model_name" in new_kwargs and "model" not in new_kwargs:
