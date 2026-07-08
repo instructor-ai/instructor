@@ -89,6 +89,17 @@ def test_extract_json_from_stream_preserves_triple_backticks_in_plain_string() -
     assert "".join(extract_json_from_stream(chunks)) == '{"code":"```py```"}'
 
 
+def test_extract_json_from_stream_yields_all_objects_in_one_chunk() -> None:
+    # A complete object must not swallow a second object sharing its chunk.
+    chunks = ['{"a":1}{"b":2}']
+    assert "".join(extract_json_from_stream(chunks)) == '{"a":1}{"b":2}'
+
+
+def test_extract_json_from_stream_yields_all_objects_in_fenced_chunk() -> None:
+    chunks = ['```json\n{"a":1}{"b":2}\n```']
+    assert "".join(extract_json_from_stream(chunks)) == '{"a":1}{"b":2}'
+
+
 def test_extract_json_from_stream_preserves_backticks_in_fenced_string() -> None:
     chunks = ["```json\n", '{"code":"`inline`"}', "\n```"]
 

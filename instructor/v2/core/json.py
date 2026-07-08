@@ -117,7 +117,7 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                             yield from buffer
                             buffer = []
                             json_started = False
-                            break
+                            continue
 
                 buffer.append(char)
                 continue
@@ -207,7 +207,7 @@ async def extract_json_from_stream_async(
                                 yield buffered_char
                             buffer = []
                             json_started = False
-                            break
+                            continue
 
                 buffer.append(char)
                 continue
