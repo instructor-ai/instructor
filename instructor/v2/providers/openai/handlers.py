@@ -41,7 +41,11 @@ from instructor.v2.core.json import (
     extract_json_from_stream,
     extract_json_from_stream_async,
 )
-from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    dump_message,
+    merge_consecutive_messages,
+)
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -819,7 +823,7 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
             Make sure to return an instance of the JSON, not the schema itself
             """
         )
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,
@@ -909,7 +913,7 @@ class OpenAIMDJSONHandler(OpenAIHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,

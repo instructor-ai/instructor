@@ -1,9 +1,20 @@
 """Regression tests for the messages= aliasing bug (see GitHub issue #2417).
 
 `client.create()` must treat `messages=` as a read-only input. Internally,
-`prepare_request` must never hand back the caller's own list object (or leave
-the caller's message dicts open to in-place mutation during a reask), because
-`handle_reask` appends retry artifacts onto whatever list it is given.
+`prepare_request` must never hand back the caller's own list object, or
+leave the caller's message dicts open to in-place mutation, because both
+`prepare_request` itself (JSON/MD_JSON's system-message injection) and
+`handle_reask` (the retry path) mutate whatever `messages` list/dicts they
+are handed.
+
+Note on the aliasing check: comparing `new_kwargs["messages"] is not
+caller_messages` alone is not sufficient -- `OpenAIJSONHandler` and
+`OpenAIMDJSONHandler` mutate the *input* list/dicts in place before
+rebuilding `messages` into a genuinely new list via
+`merge_consecutive_messages()`, so an identity check on the final result
+would pass even though the caller's original objects were already
+corrupted. These tests instead snapshot `caller_messages` with `deepcopy`
+before the call and assert it is unchanged afterward.
 
 The provider lists below are imported directly from the shared OpenAI-compat
 handler module so this test stays in sync with the source registrations
@@ -12,6 +23,7 @@ rather than duplicating them.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Iterable
 
 import pytest
@@ -46,6 +58,8 @@ FIXED_PAIRS: list[tuple[Provider, Mode]] = [
     *((provider, Mode.TOOLS) for provider in OPENAI_COMPAT_PROVIDERS),
     *((provider, Mode.JSON_SCHEMA) for provider in OPENAI_JSON_SCHEMA_PROVIDERS),
     *((provider, Mode.PARALLEL_TOOLS) for provider in OPENAI_PARALLEL_TOOL_PROVIDERS),
+    *((provider, Mode.JSON) for provider in OPENAI_COMPAT_PROVIDERS),
+    *((provider, Mode.MD_JSON) for provider in OPENAI_COMPAT_PROVIDERS),
     (Provider.OPENAI, Mode.RESPONSES_TOOLS),
 ]
 
@@ -71,6 +85,7 @@ def test_prepare_request_does_not_alias_caller_messages(
     provider: Provider, mode: Mode
 ) -> None:
     caller_messages = [{"role": "user", "content": "hi"}]
+    original_snapshot = deepcopy(caller_messages)
     kwargs: dict[str, Any] = {"model": "test", "messages": caller_messages}
     response_model = Iterable[Answer] if mode is Mode.PARALLEL_TOOLS else Answer
 
@@ -80,7 +95,10 @@ def test_prepare_request_does_not_alias_caller_messages(
     )
 
     assert new_kwargs["messages"] is not caller_messages
-    assert caller_messages == [{"role": "user", "content": "hi"}]
+    # Deep-content check, not just identity: a handler can rebuild
+    # `new_kwargs["messages"]` into a fresh list while still having mutated
+    # the caller's original list/dicts in place before doing so.
+    assert caller_messages == original_snapshot
 
 
 @pytest.mark.parametrize(
