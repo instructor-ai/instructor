@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **v2 OpenAI handlers**: Stop mutating the caller's `messages` list in place. `prepare_request` for `TOOLS`, `JSON_SCHEMA`, `PARALLEL_TOOLS`, and `RESPONSES_TOOLS` now copies the `messages` list, so validation retries (reask) no longer graft synthetic messages onto the caller's own conversation state. ([#2417](https://github.com/567-labs/instructor/issues/2417))
+
+---
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

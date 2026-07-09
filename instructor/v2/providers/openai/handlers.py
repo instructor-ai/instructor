@@ -607,6 +607,9 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
     ) -> tuple[Any, dict[str, Any]]:
         """Prepare request with tool definitions."""
         new_kwargs = kwargs.copy()
+        # Copy the caller's messages list so validation retries (reask) cannot
+        # mutate the caller's own list in place. See issue #2417.
+        new_kwargs["messages"] = list(new_kwargs.get("messages", []))
 
         if response_model is None:
             return None, new_kwargs
@@ -732,6 +735,10 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        # Copy the caller's messages list so validation retries (reask) cannot
+        # mutate the caller's own list in place. See issue #2417.
+        new_kwargs["messages"] = list(new_kwargs.get("messages", []))
+
         schema = response_model.model_json_schema()
         new_kwargs["response_format"] = {
             "type": "json_schema",
@@ -995,6 +1002,10 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        # Copy the caller's messages list so validation retries (reask) cannot
+        # mutate the caller's own list in place. See issue #2417.
+        new_kwargs["messages"] = list(new_kwargs.get("messages", []))
+
         if new_kwargs.get("stream", False):
             raise ConfigurationError(
                 "stream=True is not supported when using PARALLEL_TOOLS mode"
@@ -1074,6 +1085,9 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         self._register_streaming_from_kwargs(response_model, kwargs)
 
         new_kwargs = kwargs.copy()
+        # Copy the caller's messages list so validation retries (reask) cannot
+        # mutate the caller's own list in place. See issue #2417.
+        new_kwargs["messages"] = list(new_kwargs.get("messages", []))
 
         # Handle max_tokens to max_output_tokens conversion
         if new_kwargs.get("max_tokens") is not None:
