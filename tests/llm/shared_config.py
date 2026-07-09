@@ -76,6 +76,12 @@ PROVIDER_CONFIGS = [
         "PERPLEXITY_API_KEY",
         "openai",  # Perplexity transports over OpenAI-compatible API
     ),
+    (
+        "sarvam/sarvam-30b",
+        instructor.Mode.TOOLS,
+        "SARVAM_API_KEY",
+        "openai",
+    ),
 ]
 
 

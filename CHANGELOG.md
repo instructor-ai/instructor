@@ -7,7 +7,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
-## [1.15.5] - 2026-06-28
+## [Unreleased]
+
+### Added
+- **Sarvam**: First-class `from_sarvam()` and `from_provider("sarvam/...")` support for Sarvam's OpenAI-compatible Indic chat API (`sarvam-30b`, `sarvam-105b`).
+
+### Changed
+- **Sarvam**: Default structured-output mode is `Mode.MD_JSON`.
+---
 
 ### Fixed
 - **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))

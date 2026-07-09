@@ -121,6 +121,15 @@ PROVIDER_CAPABILITIES: dict[str, set[Capability]] = {
         "validation",
         "create_with_completion",
     },
+    "sarvam": {
+        "streaming",
+        "partial_streaming",
+        "iterable_streaming",
+        "list_extraction",
+        "nested_models",
+        "validation",
+        "create_with_completion",
+    },
 }
 
 
