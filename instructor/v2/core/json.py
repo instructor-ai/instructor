@@ -7,7 +7,15 @@ from collections.abc import AsyncGenerator, Generator, Iterable
 
 
 def extract_json_from_codeblock(content: str) -> str:
-    """Extract the first JSON object- or array-like span from a text block."""
+    """Extract the last JSON object- or array-like span from a text block.
+
+    Returns the LAST complete JSON object, not the first. The LLM's own
+    structured output is the authoritative JSON and appears last; JSON that
+    appeared earlier may have originated from user input embedded in the
+    prompt and was referenced in the model's reasoning. Returning the first
+    object allowed prompt-injection to hijack the parsed output.
+    """
+    candidates: list[str] = []
     for start_index, start_char in enumerate(content):
         if start_char not in "{[":
             continue
@@ -40,8 +48,11 @@ def extract_json_from_codeblock(content: str) -> str:
                         json.loads(candidate)
                     except Exception:
                         break
-                    return candidate
+                    candidates.append(candidate)
+                    break
 
+    if candidates:
+        return candidates[-1]
     return content
 
 
