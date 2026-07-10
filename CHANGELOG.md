@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **v2 registry**: Fix thread-safety race condition in `ModeRegistry.get_handlers()` where concurrent first-access to a lazy-loaded mode caused `KeyError`/`RegistryError` for all threads except the winner (49/50 failures in testing). Added double-checked locking with `threading.Lock` around the lazy-load path. ([#2422](https://github.com/567-labs/instructor/issues/2422))
+
+---
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

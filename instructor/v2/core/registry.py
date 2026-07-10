@@ -6,6 +6,7 @@ Supports lazy loading, dynamic registration, and queryable API.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from typing import Callable
 
@@ -80,6 +81,7 @@ class ModeRegistry:
         """Initialize empty registry."""
         self._handlers: dict[tuple[Provider, Mode], ModeHandlers] = {}
         self._lazy_loaders: dict[tuple[Provider, Mode], Callable[[], ModeHandlers]] = {}
+        self._lock = threading.Lock()
 
     def register(
         self,
@@ -110,18 +112,19 @@ class ModeRegistry:
             ConfigurationError: If mode is already registered with different handlers
         """
         mode_key = (provider, mode)
-        if mode_key in self._lazy_loaders:
-            self._lazy_loaders.pop(mode_key, None)
+        with self._lock:
+            if mode_key in self._lazy_loaders:
+                self._lazy_loaders.pop(mode_key, None)
 
-        self._handlers[mode_key] = ModeHandlers(
-            request_handler=request_handler,
-            reask_handler=reask_handler,
-            response_parser=response_parser,
-            stream_extractor=stream_extractor,
-            stream_extractor_async=stream_extractor_async,
-            message_converter=message_converter,
-            template_handler=template_handler,
-        )
+            self._handlers[mode_key] = ModeHandlers(
+                request_handler=request_handler,
+                reask_handler=reask_handler,
+                response_parser=response_parser,
+                stream_extractor=stream_extractor,
+                stream_extractor_async=stream_extractor_async,
+                message_converter=message_converter,
+                template_handler=template_handler,
+            )
 
     def register_lazy(
         self,
@@ -144,10 +147,11 @@ class ModeRegistry:
         from instructor.v2.core.errors import ConfigurationError
 
         mode_key = (provider, mode)
-        if mode_key in self._handlers or mode_key in self._lazy_loaders:
-            raise ConfigurationError(f"Mode {mode_key} is already registered")
+        with self._lock:
+            if mode_key in self._handlers or mode_key in self._lazy_loaders:
+                raise ConfigurationError(f"Mode {mode_key} is already registered")
 
-        self._lazy_loaders[mode_key] = loader
+            self._lazy_loaders[mode_key] = loader
 
     def get_handlers(self, provider: Provider, mode: Mode) -> ModeHandlers:
         """Get all handlers for a mode.
@@ -177,21 +181,31 @@ class ModeRegistry:
         normalized_mode = normalize_mode(provider, mode)
         mode_key = (provider, normalized_mode)
 
-        # Check if already loaded
+        # Fast path: check if already loaded (no lock needed for dict read
+        # in CPython — the GIL makes single dict.__contains__ atomic, and
+        # once a key is in _handlers it's never removed).
         if mode_key in self._handlers:
             return self._handlers[mode_key]
 
-        # Try lazy loading
-        if mode_key in self._lazy_loaders:
-            loader = self._lazy_loaders.pop(mode_key)
-            handlers = loader()
-            self._handlers[mode_key] = handlers
-            return handlers
+        # Slow path: lazy loading requires a lock to prevent a race where
+        # multiple threads concurrently pop the lazy loader entry, leaving
+        # losing threads with no entry in either dict and a permanent KeyError.
+        with self._lock:
+            # Double-checked locking: re-check _handlers inside the lock
+            # in case another thread already resolved it while we waited.
+            if mode_key in self._handlers:
+                return self._handlers[mode_key]
 
-        raise KeyError(
-            f"Mode {mode_key} is not registered. "
-            f"Available modes: {list(self._handlers.keys())}"
-        )
+            if mode_key in self._lazy_loaders:
+                loader = self._lazy_loaders.pop(mode_key)
+                handlers = loader()
+                self._handlers[mode_key] = handlers
+                return handlers
+
+            raise KeyError(
+                f"Mode {mode_key} is not registered. "
+                f"Available modes: {list(self._handlers.keys())}"
+            )
 
     def get_handler(
         self,
