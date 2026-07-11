@@ -7,6 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Citations**: `CitationMixin` now escapes substring quotes before fuzzy-matching them against the context, so quotes containing regex metacharacters (e.g. unbalanced parentheses or brackets) resolve their span instead of raising `regex.error` during validation.
+
+---
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed
