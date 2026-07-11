@@ -6,7 +6,6 @@ cause permanent KeyError/RegistryError for losing threads.
 
 from __future__ import annotations
 
-import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
@@ -14,18 +13,26 @@ import pytest
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.registry import ModeRegistry, ModeHandlers
+from instructor.v2.core.registry import ModeHandlers, ModeRegistry
 
 
 def _make_dummy_handlers() -> ModeHandlers:
     """Create minimal ModeHandlers for testing."""
-    def dummy_request(response_model=None, kwargs=None):
+
+    def dummy_request(_response_model=None, kwargs=None):  # noqa: ARG001
         return kwargs or {}
 
-    def dummy_reask(kwargs=None, response=None, exception=None):
+    def dummy_reask(kwargs=None, _response=None, _exception=None):  # noqa: ARG001
         return kwargs or {}
 
-    def dummy_response(response, response_model=None, validation_context=None, mode=None, stream=None, **kw):
+    def dummy_response(
+        response,
+        _response_model=None,  # noqa: ARG001
+        _validation_context=None,  # noqa: ARG001
+        _mode=None,  # noqa: ARG001
+        _stream=None,  # noqa: ARG001
+        **_kw,  # noqa: ARG001
+    ):
         return response
 
     return ModeHandlers(
@@ -58,25 +65,17 @@ class TestRegistryThreadSafety:
             threading.Event().wait(0.01)
             return _make_dummy_handlers()
 
-        registry.register_lazy(
-            Provider.OPENAI, Mode.TOOLS, slow_loader
-        )
-
-        results: list[tuple[int, str]] = []
-        results_lock = threading.Lock()
+        registry.register_lazy(Provider.OPENAI, Mode.TOOLS, slow_loader)
 
         def check(i: int) -> tuple[int, str]:
             try:
-                handlers = registry.get_handlers(Provider.OPENAI, Mode.TOOLS)
+                registry.get_handlers(Provider.OPENAI, Mode.TOOLS)
                 return (i, "OK")
             except Exception as e:
                 return (i, f"{type(e).__name__}: {str(e)[:80]}")
 
         with ThreadPoolExecutor(max_workers=10) as pool:
-            raw_results = list(pool.map(check, range(50)))
-
-        with results_lock:
-            results = raw_results
+            results = list(pool.map(check, range(50)))
 
         failures = [r for r in results if r[1] != "OK"]
         assert not failures, (
@@ -101,7 +100,12 @@ class TestRegistryThreadSafety:
         registry.register_lazy(Provider.OPENAI, Mode.TOOLS, loader)
 
         with ThreadPoolExecutor(max_workers=10) as pool:
-            list(pool.map(lambda _: registry.get_handlers(Provider.OPENAI, Mode.TOOLS), range(30)))
+            list(
+                pool.map(
+                    lambda _: registry.get_handlers(Provider.OPENAI, Mode.TOOLS),
+                    range(30),
+                )
+            )
 
         assert call_count == 1, (
             f"Loader was called {call_count} times, expected exactly 1. "
@@ -141,7 +145,7 @@ class TestRegistryThreadSafety:
         """Concurrent access to different mode keys should not interfere."""
         registry = ModeRegistry()
 
-        def make_loader(p, m):
+        def make_loader(_p, _m):  # noqa: ARG001
             return lambda: _make_dummy_handlers()
 
         modes = [
