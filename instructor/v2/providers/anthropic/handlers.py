@@ -74,13 +74,12 @@ def combine_system_messages(
         result = [SystemMessage(type="text", text=existing_system)]
         result.extend(new_system)
         return result
-    if isinstance(existing_system, list) and isinstance(new_system, str):
-        new_message = SystemMessage(type="text", text=new_system)
-        result = list(existing_system)
-        result.append(new_message)
-        return result
-
-    return existing_system
+    assert isinstance(existing_system, list)
+    assert isinstance(new_system, str)
+    new_message = SystemMessage(type="text", text=new_system)
+    result = list(existing_system)
+    result.append(new_message)
+    return result
 
 
 def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:

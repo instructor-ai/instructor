@@ -56,6 +56,14 @@ def should_skip_provider_exception(exc: Exception) -> bool:
     """Return True for provider failures caused by local environment setup."""
     if isinstance(exc, (ClientError, ConfigurationError, ImportError)):
         return True
+    if isinstance(exc, ValueError) or (
+        type(exc).__module__.startswith("cohere.") and type(exc).__name__ == "ApiError"
+    ):
+        message = str(exc).lower()
+        return any(
+            marker in message
+            for marker in ("api key", "api_key", "project id is required")
+        )
     if isinstance(exc, InstructorRetryException):
         message = str(exc).lower()
         return any(
@@ -79,6 +87,36 @@ def skip_or_raise_provider_exception(provider_string: str, exc: Exception) -> No
             f"Provider {provider_string} not available in this environment: {exc}"  # ty: ignore[too-many-positional-arguments]
         )
     raise exc
+
+
+@pytest.mark.parametrize(
+    "exception_type, message, should_skip",
+    [
+        ("value", "Missing key inputs argument: provide api_key", True),
+        (
+            "cohere",
+            "The client must be instantiated with CO_API_KEY",
+            True,
+        ),
+        ("value", "Invalid response format", False),
+        (
+            "cohere",
+            "The requested model is unavailable",
+            False,
+        ),
+    ],
+    ids=["google-credentials", "cohere-credentials", "value-error", "api-error"],
+)
+def test_skip_or_raise_provider_exception(exception_type, message, should_skip):
+    if exception_type == "cohere":
+        api_error = pytest.importorskip("cohere.core.api_error").ApiError
+        exc = api_error(body=message)
+    else:
+        exc = ValueError(message)
+    expected = pytest.skip.Exception if should_skip else type(exc)
+
+    with pytest.raises(expected):
+        skip_or_raise_provider_exception("provider/model", exc)
 
 
 @pytest.mark.parametrize("provider_string", PROVIDERS)
