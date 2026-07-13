@@ -105,3 +105,13 @@ datasets = ["datasets>=3.0.1,<5.0.0"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
+
+[tool.mutmut]
+source_paths = ["instructor/"]
+only_mutate = ["instructor/v2/core/retry.py"]
+pytest_add_cli_args_test_selection = [
+    "tests/v2/test_retry_runtime.py",
+    "tests/coverage/test_core_patch_retry_coverage.py",
+]
+pytest_add_cli_args = ["--asyncio-mode=auto", "--tb=short"]
+max_stack_depth = 12
