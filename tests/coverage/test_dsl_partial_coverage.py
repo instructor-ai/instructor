@@ -75,7 +75,7 @@ _build_partial_list = cast(
     vars(partial_module)["_build_partial_list"],
 )
 _unwrap_optional_base_model = cast(
-    Callable[[Any], type[BaseModel] | None],
+    Callable[[Any], Optional[type[BaseModel]]],
     vars(partial_module)["_unwrap_optional_base_model"],
 )
 
