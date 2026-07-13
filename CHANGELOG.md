@@ -18,10 +18,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Gemini/GenAI messages**: Honor an explicit system message for unstructured requests, remove the unsupported raw `system` argument, and reject invalid scalar message content clearly.
 - **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
 - **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
-- **Python 3.9**: Avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
+- **Python 3.9**: Include the required type-evaluation backport in minimal installs, keep overload metadata available, and avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
 
 ### Tests / CI
-- **Coverage and test quality**: Run the complete offline suite across supported Python versions, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response/stream fixtures and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
+- **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
 
 ## [1.15.5] - 2026-06-28
 
