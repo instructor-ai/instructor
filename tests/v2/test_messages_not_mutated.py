@@ -96,7 +96,7 @@ def test_prepare_request_does_not_alias_caller_messages(
     caller_messages = [{"role": "user", "content": "hi"}]
     original_snapshot = deepcopy(caller_messages)
     kwargs: dict[str, Any] = {"model": "test", "messages": caller_messages}
-    response_model = Iterable[Answer] if mode is Mode.PARALLEL_TOOLS else Answer
+    response_model: Any = Iterable[Answer] if mode is Mode.PARALLEL_TOOLS else Answer
 
     handlers = mode_registry.get_handlers(provider, mode)
     _, new_kwargs = handlers.request_handler(
@@ -217,7 +217,7 @@ def test_reask_does_not_mutate_caller_messages(provider: Provider, mode: Mode) -
 
     caller_messages = [{"role": "user", "content": "hi"}]
     original_snapshot = deepcopy(caller_messages)
-    response_model = Iterable[Answer] if mode is Mode.PARALLEL_TOOLS else Answer
+    response_model: Any = Iterable[Answer] if mode is Mode.PARALLEL_TOOLS else Answer
 
     handlers = mode_registry.get_handlers(provider, mode)
     _, new_kwargs = handlers.request_handler(
