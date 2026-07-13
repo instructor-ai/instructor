@@ -60,6 +60,7 @@ OPENAI_COMPAT_PROVIDERS = [
     Provider.DATABRICKS,
     Provider.DEEPSEEK,
     Provider.OPENROUTER,
+    Provider.REQUESTY,
     Provider.GROQ,
     Provider.FIREWORKS,
     Provider.CEREBRAS,
@@ -72,6 +73,7 @@ OPENAI_PARALLEL_TOOL_PROVIDERS = [
     Provider.DATABRICKS,
     Provider.DEEPSEEK,
     Provider.OPENROUTER,
+    Provider.REQUESTY,
     Provider.CEREBRAS,
 ]
 
