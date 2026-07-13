@@ -64,6 +64,16 @@ def _get_model_name(response_model: Any) -> str:
     return getattr(response_model, "__name__", "Model")
 
 
+def extract_gemini_chunk_text(chunk: Any) -> str:
+    try:
+        return chunk.text
+    except (AttributeError, ValueError):
+        part_text = chunk.candidates[0].content.parts[0].text
+        if part_text:
+            return part_text
+        raise
+
+
 def transform_to_gemini_prompt(
     messages_chatgpt: list[ChatCompletionMessageParam],
 ) -> list[dict[str, Any]]:
@@ -347,7 +357,7 @@ def extract_genai_system_message(
     for message in messages:
         if isinstance(message, str):
             continue
-        elif isinstance(message, dict):
+        if isinstance(message, dict):
             if message.get("role") == "system":
                 if isinstance(message.get("content"), str):
                     system_messages += message.get("content", "") + "\n\n"

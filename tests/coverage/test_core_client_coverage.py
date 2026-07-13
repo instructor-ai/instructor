@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import inspect
 from collections.abc import AsyncIterable, Iterable
 from typing import Any, cast, get_args, get_origin
@@ -42,24 +41,6 @@ def hooks_with_handler(label: str, events: list[str]) -> Hooks:
 def assert_combined_hooks(hooks: Hooks, events: list[str]) -> None:
     hooks.emit_completion_response(object())
     assert events[-2:] == ["client", "call"]
-
-
-def test_registry_loader_imports_v2_and_tolerates_an_optional_import_failure(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    imported: list[str] = []
-
-    monkeypatch.setattr(importlib, "import_module", lambda name: imported.append(name))
-    core_client._ensure_registry_loaded()
-    assert imported == ["instructor.v2"]
-
-    def fail_import(name: str) -> None:
-        imported.append(name)
-        raise ImportError("optional provider is unavailable")
-
-    monkeypatch.setattr(importlib, "import_module", fail_import)
-    assert core_client._ensure_registry_loaded() is None
-    assert imported == ["instructor.v2", "instructor.v2"]
 
 
 def test_response_normalizes_input_alias_and_rejects_ambiguous_messages() -> None:

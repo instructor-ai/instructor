@@ -152,11 +152,10 @@ def from_fireworks(
             mode=mode,
             **kwargs,
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.FIREWORKS,
-            mode=mode,
-            **kwargs,
-        )
+    return AsyncInstructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.FIREWORKS,
+        mode=mode,
+        **kwargs,
+    )

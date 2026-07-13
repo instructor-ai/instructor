@@ -21,13 +21,10 @@ from collections.abc import (
     Iterable as TypingIterable,
 )
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, cast, get_origin
+from typing import Any, cast, get_origin
 from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
-
-if TYPE_CHECKING:  # pragma: no cover - typing only
-    pass
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
@@ -198,8 +195,6 @@ class MistralHandlerBase(ModeHandler):
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
             return generator
-        if inspect.isclass(response_model) and issubclass(response_model, PartialBase):
-            return list(generator)
         return list(generator)
 
     def _finalize_parsed_result(

@@ -253,8 +253,8 @@ def from_xai(
             f"xai_sdk.aio.client.Client. Got: {type(client).__name__}"
         )
 
-    # Get handlers from registry
-    handlers = mode_registry.get_handlers(Provider.XAI, mode)
+    # Validate that handlers are registered for this mode
+    mode_registry.get_handlers(Provider.XAI, mode)
 
     # Create async wrapper for xAI's unique API
     async def acreate(
@@ -285,8 +285,7 @@ def from_xai(
         )
 
         if response_model is None:
-            resp = await chat.sample()  # type: ignore[misc]
-            return resp
+            return await chat.sample()  # type: ignore[misc]
 
         if mode == Mode.JSON_SCHEMA:
             if is_stream:
@@ -300,17 +299,15 @@ def from_xai(
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks_async(json_chunks)
-                elif issubclass(rm, PartialBase):
+                if issubclass(rm, PartialBase):
                     return rm.model_from_chunks_async(json_chunks)  # type: ignore
-                else:
-                    raise ValueError(
-                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
-                    )
-            else:
-                raw, parsed = await chat.parse(response_model)  # type: ignore[misc]
-                parsed._raw_response = raw
-                return parsed
-        elif mode == Mode.TOOLS:
+                raise ValueError(
+                    f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
+                )
+            raw, parsed = await chat.parse(response_model)  # type: ignore[misc]
+            parsed._raw_response = raw
+            return parsed
+        if mode == Mode.TOOLS:
             tool_obj = xchat.tool(
                 name=_get_model_name(prepared_model),
                 description=prepared_model.__doc__ or "",
@@ -325,55 +322,51 @@ def from_xai(
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks_async(args)
-                elif issubclass(rm, PartialBase):
+                if issubclass(rm, PartialBase):
                     return rm.model_from_chunks_async(args)  # type: ignore
-                else:
-                    raise ValueError(
-                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
-                    )
-            else:
-                resp = await chat.sample()  # type: ignore[misc]
-                if not resp.tool_calls:  # type: ignore[attr-defined]
-                    # Try to extract from text content
-                    from instructor.v2.core.function_calls import (
-                        _validate_model_from_json,
-                    )
-                    from instructor.v2.core.json import extract_json_from_codeblock
-
-                    text_content: str = ""
-                    if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
-                        text_content = str(resp.text)  # type: ignore[attr-defined]
-                    elif hasattr(resp, "content") and resp.content:  # type: ignore[attr-defined]
-                        content = resp.content  # type: ignore[attr-defined]
-                        if isinstance(content, str):
-                            text_content = content
-                        elif isinstance(content, list) and content:
-                            text_content = str(content[0])
-
-                    if text_content:
-                        json_str = extract_json_from_codeblock(text_content)
-                        model_for_validation = cast(type[Any], prepared_model)
-                        parsed = _validate_model_from_json(
-                            model_for_validation, json_str, None, strict
-                        )
-                        return _finalize_parsed_response(parsed, resp)
-
-                    raise ValueError(
-                        f"No tool calls returned from xAI and no text content available. "
-                        f"Response: {resp}"
-                    )
-
-                args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
+                raise ValueError(
+                    f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
+                )
+            resp = await chat.sample()  # type: ignore[misc]
+            if not resp.tool_calls:  # type: ignore[attr-defined]
+                # Try to extract from text content
                 from instructor.v2.core.function_calls import (
                     _validate_model_from_json,
                 )
+                from instructor.v2.core.json import extract_json_from_codeblock
 
-                model_for_validation = cast(type[Any], prepared_model)
-                parsed = _validate_model_from_json(
-                    model_for_validation, args, None, strict
+                text_content: str = ""
+                if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
+                    text_content = str(resp.text)  # type: ignore[attr-defined]
+                elif hasattr(resp, "content") and resp.content:  # type: ignore[attr-defined]
+                    content = resp.content  # type: ignore[attr-defined]
+                    if isinstance(content, str):
+                        text_content = content
+                    elif isinstance(content, list) and content:
+                        text_content = str(content[0])
+
+                if text_content:
+                    json_str = extract_json_from_codeblock(text_content)
+                    model_for_validation = cast(type[Any], prepared_model)
+                    parsed = _validate_model_from_json(
+                        model_for_validation, json_str, None, strict
+                    )
+                    return _finalize_parsed_response(parsed, resp)
+
+                raise ValueError(
+                    f"No tool calls returned from xAI and no text content available. "
+                    f"Response: {resp}"
                 )
-                return _finalize_parsed_response(parsed, resp)
-        elif mode == Mode.PARALLEL_TOOLS:
+
+            args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
+            from instructor.v2.core.function_calls import (
+                _validate_model_from_json,
+            )
+
+            model_for_validation = cast(type[Any], prepared_model)
+            parsed = _validate_model_from_json(model_for_validation, args, None, strict)
+            return _finalize_parsed_response(parsed, resp)
+        if mode == Mode.PARALLEL_TOOLS:
             for model_type in get_types_array(response_model):  # type: ignore[arg-type]
                 tool_obj = xchat.tool(
                     name=_get_model_name(model_type),
@@ -398,31 +391,30 @@ def from_xai(
                 for tool_call in resp.tool_calls
                 if tool_call.function.name in type_registry
             )
-        else:
-            # MD_JSON mode - use sample() and extract from text
-            resp = await chat.sample()  # type: ignore[misc]
-            from instructor.v2.core.function_calls import _validate_model_from_json
-            from instructor.v2.core.json import extract_json_from_codeblock
+        # MD_JSON mode - use sample() and extract from text
+        resp = await chat.sample()  # type: ignore[misc]
+        from instructor.v2.core.function_calls import _validate_model_from_json
+        from instructor.v2.core.json import extract_json_from_codeblock
 
-            text_content = ""
-            if hasattr(resp, "text") and resp.text:
-                text_content = str(resp.text)
-            elif hasattr(resp, "content") and resp.content:
-                content = resp.content
-                if isinstance(content, str):
-                    text_content = content
-                elif isinstance(content, list) and content:
-                    text_content = str(content[0])
+        text_content = ""
+        if hasattr(resp, "text") and resp.text:
+            text_content = str(resp.text)
+        elif hasattr(resp, "content") and resp.content:
+            content = resp.content
+            if isinstance(content, str):
+                text_content = content
+            elif isinstance(content, list) and content:
+                text_content = str(content[0])
 
-            if text_content:
-                json_str = extract_json_from_codeblock(text_content)
-                model_for_validation = cast(type[Any], prepared_model)
-                parsed = _validate_model_from_json(
-                    model_for_validation, json_str, None, strict
-                )
-                return _finalize_parsed_response(parsed, resp)
+        if text_content:
+            json_str = extract_json_from_codeblock(text_content)
+            model_for_validation = cast(type[Any], prepared_model)
+            parsed = _validate_model_from_json(
+                model_for_validation, json_str, None, strict
+            )
+            return _finalize_parsed_response(parsed, resp)
 
-            raise ValueError(f"Could not extract JSON from xAI response: {resp}")
+        raise ValueError(f"Could not extract JSON from xAI response: {resp}")
 
     # Create sync wrapper for xAI's unique API
     def create(
@@ -453,8 +445,7 @@ def from_xai(
         )
 
         if response_model is None:
-            resp = chat.sample()  # type: ignore[misc]
-            return resp
+            return chat.sample()  # type: ignore[misc]
 
         if mode == Mode.JSON_SCHEMA:
             if is_stream:
@@ -468,17 +459,15 @@ def from_xai(
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(json_chunks)
-                elif issubclass(rm, PartialBase):
+                if issubclass(rm, PartialBase):
                     return cast(Any, rm).model_from_chunks(json_chunks)
-                else:
-                    raise ValueError(
-                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
-                    )
-            else:
-                raw, parsed = chat.parse(response_model)  # type: ignore[misc]
-                parsed._raw_response = raw
-                return parsed
-        elif mode == Mode.TOOLS:
+                raise ValueError(
+                    f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
+                )
+            raw, parsed = chat.parse(response_model)  # type: ignore[misc]
+            parsed._raw_response = raw
+            return parsed
+        if mode == Mode.TOOLS:
             tool_obj = xchat.tool(
                 name=_get_model_name(prepared_model),
                 description=prepared_model.__doc__ or "",
@@ -493,55 +482,51 @@ def from_xai(
                 rm = cast(type[BaseModel], prepared_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(args)
-                elif issubclass(rm, PartialBase):
+                if issubclass(rm, PartialBase):
                     return cast(Any, rm).model_from_chunks(args)
-                else:
-                    raise ValueError(
-                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
-                    )
-            else:
-                resp = chat.sample()  # type: ignore[misc]
-                if not resp.tool_calls:  # type: ignore[attr-defined]
-                    # Try to extract from text content
-                    from instructor.v2.core.function_calls import (
-                        _validate_model_from_json,
-                    )
-                    from instructor.v2.core.json import extract_json_from_codeblock
-
-                    text_content: str = ""
-                    if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
-                        text_content = str(resp.text)  # type: ignore[attr-defined]
-                    elif hasattr(resp, "content") and resp.content:  # type: ignore[attr-defined]
-                        content = resp.content  # type: ignore[attr-defined]
-                        if isinstance(content, str):
-                            text_content = content
-                        elif isinstance(content, list) and content:
-                            text_content = str(content[0])
-
-                    if text_content:
-                        json_str = extract_json_from_codeblock(text_content)
-                        model_for_validation = cast(type[Any], prepared_model)
-                        parsed = _validate_model_from_json(
-                            model_for_validation, json_str, None, strict
-                        )
-                        return _finalize_parsed_response(parsed, resp)
-
-                    raise ValueError(
-                        f"No tool calls returned from xAI and no text content available. "
-                        f"Response: {resp}"
-                    )
-
-                args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
+                raise ValueError(
+                    f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
+                )
+            resp = chat.sample()  # type: ignore[misc]
+            if not resp.tool_calls:  # type: ignore[attr-defined]
+                # Try to extract from text content
                 from instructor.v2.core.function_calls import (
                     _validate_model_from_json,
                 )
+                from instructor.v2.core.json import extract_json_from_codeblock
 
-                model_for_validation = cast(type[Any], prepared_model)
-                parsed = _validate_model_from_json(
-                    model_for_validation, args, None, strict
+                text_content: str = ""
+                if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
+                    text_content = str(resp.text)  # type: ignore[attr-defined]
+                elif hasattr(resp, "content") and resp.content:  # type: ignore[attr-defined]
+                    content = resp.content  # type: ignore[attr-defined]
+                    if isinstance(content, str):
+                        text_content = content
+                    elif isinstance(content, list) and content:
+                        text_content = str(content[0])
+
+                if text_content:
+                    json_str = extract_json_from_codeblock(text_content)
+                    model_for_validation = cast(type[Any], prepared_model)
+                    parsed = _validate_model_from_json(
+                        model_for_validation, json_str, None, strict
+                    )
+                    return _finalize_parsed_response(parsed, resp)
+
+                raise ValueError(
+                    f"No tool calls returned from xAI and no text content available. "
+                    f"Response: {resp}"
                 )
-                return _finalize_parsed_response(parsed, resp)
-        elif mode == Mode.PARALLEL_TOOLS:
+
+            args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
+            from instructor.v2.core.function_calls import (
+                _validate_model_from_json,
+            )
+
+            model_for_validation = cast(type[Any], prepared_model)
+            parsed = _validate_model_from_json(model_for_validation, args, None, strict)
+            return _finalize_parsed_response(parsed, resp)
+        if mode == Mode.PARALLEL_TOOLS:
             for model_type in get_types_array(response_model):  # type: ignore[arg-type]
                 tool_obj = xchat.tool(
                     name=_get_model_name(model_type),
@@ -566,31 +551,30 @@ def from_xai(
                 for tool_call in resp.tool_calls
                 if tool_call.function.name in type_registry
             )
-        else:
-            # MD_JSON mode - use sample() and extract from text
-            resp = chat.sample()  # type: ignore[misc]
-            from instructor.v2.core.function_calls import _validate_model_from_json
-            from instructor.v2.core.json import extract_json_from_codeblock
+        # MD_JSON mode - use sample() and extract from text
+        resp = chat.sample()  # type: ignore[misc]
+        from instructor.v2.core.function_calls import _validate_model_from_json
+        from instructor.v2.core.json import extract_json_from_codeblock
 
-            text_content = ""
-            if hasattr(resp, "text") and resp.text:
-                text_content = str(resp.text)
-            elif hasattr(resp, "content") and resp.content:
-                content = resp.content
-                if isinstance(content, str):
-                    text_content = content
-                elif isinstance(content, list) and content:
-                    text_content = str(content[0])
+        text_content = ""
+        if hasattr(resp, "text") and resp.text:
+            text_content = str(resp.text)
+        elif hasattr(resp, "content") and resp.content:
+            content = resp.content
+            if isinstance(content, str):
+                text_content = content
+            elif isinstance(content, list) and content:
+                text_content = str(content[0])
 
-            if text_content:
-                json_str = extract_json_from_codeblock(text_content)
-                model_for_validation = cast(type[Any], prepared_model)
-                parsed = _validate_model_from_json(
-                    model_for_validation, json_str, None, strict
-                )
-                return _finalize_parsed_response(parsed, resp)
+        if text_content:
+            json_str = extract_json_from_codeblock(text_content)
+            model_for_validation = cast(type[Any], prepared_model)
+            parsed = _validate_model_from_json(
+                model_for_validation, json_str, None, strict
+            )
+            return _finalize_parsed_response(parsed, resp)
 
-            raise ValueError(f"Could not extract JSON from xAI response: {resp}")
+        raise ValueError(f"Could not extract JSON from xAI response: {resp}")
 
     # Return sync or async instructor
     if isinstance(client, AsyncClient):
@@ -601,11 +585,10 @@ def from_xai(
             mode=mode,
             **kwargs,
         )
-    else:
-        return Instructor(
-            client=client,
-            create=create,
-            provider=Provider.XAI,
-            mode=mode,
-            **kwargs,
-        )
+    return Instructor(
+        client=client,
+        create=create,
+        provider=Provider.XAI,
+        mode=mode,
+        **kwargs,
+    )

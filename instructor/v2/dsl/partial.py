@@ -108,12 +108,11 @@ def process_potential_object(potential_object, partial_mode, partial_model, **kw
     if root_complete and has_data and original_model is not None:
         # Root object is complete with data - validate against original model
         return original_model.model_validate(parsed, **validation_kwargs)
-    else:
-        # Object is incomplete or empty - build instance using model_construct (no validation)
-        model_for_construct = (
-            original_model if original_model is not None else partial_model
-        )
-        return _build_partial_object(parsed, model_for_construct, tracker, "", **kwargs)
+    # Object is incomplete or empty - build instance using model_construct (no validation)
+    model_for_construct = (
+        original_model if original_model is not None else partial_model
+    )
+    return _build_partial_object(parsed, model_for_construct, tracker, "", **kwargs)
 
 
 def _build_partial_object(
@@ -245,22 +244,21 @@ def _process_generic_arg(
             return _subscript_type(Union, modified_nested_args)
 
         return arg_origin[modified_nested_args]
+    if isinstance(arg, type) and issubclass(arg, BaseModel):
+        # Prevent infinite recursion for self-referential models
+        if arg in _processing_models:
+            return arg  # Already processing this model, return unwrapped
+        _processing_models.add(arg)
+        try:
+            return (
+                _make_partial_type(arg, make_fields_optional=True)
+                if make_fields_optional
+                else Partial[arg]
+            )
+        finally:
+            _processing_models.discard(arg)
     else:
-        if isinstance(arg, type) and issubclass(arg, BaseModel):
-            # Prevent infinite recursion for self-referential models
-            if arg in _processing_models:
-                return arg  # Already processing this model, return unwrapped
-            _processing_models.add(arg)
-            try:
-                return (
-                    _make_partial_type(arg, make_fields_optional=True)
-                    if make_fields_optional
-                    else Partial[arg]
-                )
-            finally:
-                _processing_models.discard(arg)
-        else:
-            return arg
+        return arg
 
 
 def _subscript_type(origin: Any, args: Any) -> Any:

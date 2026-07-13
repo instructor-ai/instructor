@@ -264,7 +264,10 @@ def test_iterable_model_supports_custom_names_union_names_and_forward_refs() -> 
 
     assert named.__name__ == "IterableQueuedEmail"
     assert named.__doc__ == "Queued email jobs"
-    assert union.__name__ == "IterableUnion"
+    expected_union_name = (
+        "IterableEmailJobOrSmsJob" if sys.version_info < (3, 10) else "IterableUnion"
+    )
+    assert union.__name__ == expected_union_name
     assert forward_ref.__name__ == "IterableEmailJob"
     assert forward_ref.model_fields["tasks"].annotation == list["EmailJob"]
 

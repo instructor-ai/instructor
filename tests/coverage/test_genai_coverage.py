@@ -306,16 +306,21 @@ def test_parse_genai_tools_ignores_thought_parts_and_validates_function_call() -
 
 
 class MissingTextChunk:
-    def __init__(self, fallback_text: str | None) -> None:
+    def __init__(
+        self,
+        fallback_text: str | None,
+        text_error: type[Exception] = ValueError,
+    ) -> None:
         self.candidates = [
             SimpleNamespace(
                 content=SimpleNamespace(parts=[SimpleNamespace(text=fallback_text)])
             )
         ]
+        self.text_error = text_error
 
     @property
     def text(self) -> str:
-        raise RuntimeError("text accessor failed")
+        raise self.text_error("text accessor failed")
 
 
 def test_streaming_extractors_handle_tools_text_fallback_and_bad_chunks() -> None:
@@ -343,8 +348,14 @@ def test_streaming_extractors_handle_tools_text_fallback_and_bad_chunks() -> Non
             [object(), SimpleNamespace(text='{"answer": 9}'), MissingTextChunk("tail")]
         )
     ) == ['{"answer": 9}', "tail"]
-    with pytest.raises(RuntimeError, match="text accessor failed"):
+    with pytest.raises(ValueError, match="text accessor failed"):
         list(json_handler.extract_streaming_json([MissingTextChunk(None)]))
+    with pytest.raises(RuntimeError, match="text accessor failed"):
+        list(
+            json_handler.extract_streaming_json(
+                [MissingTextChunk("must not mask an internal error", RuntimeError)]
+            )
+        )
 
 
 @pytest.mark.asyncio
@@ -388,11 +399,20 @@ async def test_async_streaming_extractors_handle_tools_text_fallback_and_bad_chu
 
     assert tool_chunks == [json.dumps({"answer": 10})]
     assert json_chunks == ['{"answer": 11}', "tail"]
-    with pytest.raises(RuntimeError, match="text accessor failed"):
+    with pytest.raises(ValueError, match="text accessor failed"):
         [
             item
             async for item in json_handler.extract_streaming_json_async(
                 async_items([MissingTextChunk(None)])
+            )
+        ]
+    with pytest.raises(RuntimeError, match="text accessor failed"):
+        [
+            item
+            async for item in json_handler.extract_streaming_json_async(
+                async_items(
+                    [MissingTextChunk("must not mask an internal error", RuntimeError)]
+                )
             )
         ]
 

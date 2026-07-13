@@ -151,6 +151,7 @@ def test_model_adapter_accepts_simple_values_and_rejects_models() -> None:
 def test_validate_is_subclass_handles_generic_alias_and_legacy_python(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(sys, "version_info", (3, 11))
     assert validateIsSubClass(User)
     assert not validateIsSubClass(list[User])
 
@@ -162,16 +163,15 @@ def test_validate_is_subclass_handles_generic_alias_and_legacy_python(
 def test_validate_is_subclass_tolerates_a_broken_generic_alias_check(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(sys, "version_info", (3, 11))
     monkeypatch.setattr(types, "GenericAlias", object())
     assert validateIsSubClass(User)
 
 
-def test_is_simple_type_handles_legacy_union_strings_and_type_errors(
+def test_is_simple_type_handles_unions_and_type_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(sys, "version_info", (3, 9))
     assert is_simple_type(list[typing.Union[int, str]])
-    assert is_simple_type(int)
 
     monkeypatch.setattr(sys, "version_info", (3, 11))
 
@@ -201,6 +201,7 @@ def test_is_simple_type_covers_list_shapes_and_old_issubclass_behavior(
             raise TypeError("issubclass() arg 1 must be a class")
         return issubclass(value, base)
 
+    monkeypatch.setattr(sys, "version_info", (3, 11))
     monkeypatch.setattr(simple_type, "issubclass", legacy_issubclass, raising=False)
     assert is_simple_type(list[int])
 

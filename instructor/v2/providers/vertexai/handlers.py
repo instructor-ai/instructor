@@ -331,8 +331,6 @@ class VertexAIHandlerBase(ModeHandler):
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
             return generator
-        if inspect.isclass(response_model) and issubclass(response_model, PartialBase):
-            return list(generator)
         return list(generator)
 
     def _finalize(

@@ -42,13 +42,6 @@ class Answer(BaseModel):
     answer: float
 
 
-class User(BaseModel):
-    """User model for testing."""
-
-    name: str
-    age: int
-
-
 # ============================================================================
 # Mock Response Classes for Cohere
 # ============================================================================

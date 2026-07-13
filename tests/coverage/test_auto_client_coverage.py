@@ -12,7 +12,11 @@ import pytest
 from instructor import AsyncInstructor, Instructor, Mode
 from instructor.v2 import auto_client
 from instructor.v2.core.errors import ConfigurationError
-from tests.coverage.client_cleanup import close_idle_event_loop, close_provider_client
+from tests.coverage.client_cleanup import (
+    clear_proxy_environment,
+    close_idle_event_loop,
+    close_provider_client,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -30,14 +34,9 @@ def isolated_provider_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[N
         "GOOGLE_API_KEY",
         "MISTRAL_API_KEY",
         "PERPLEXITY_API_KEY",
-        "ALL_PROXY",
-        "all_proxy",
-        "HTTP_PROXY",
-        "http_proxy",
-        "HTTPS_PROXY",
-        "https_proxy",
     ):
         monkeypatch.delenv(name, raising=False)
+    clear_proxy_environment(monkeypatch)
 
     monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", "test-access-key")

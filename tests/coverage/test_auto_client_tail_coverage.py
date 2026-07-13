@@ -4,19 +4,22 @@ import builtins
 import importlib
 import logging
 import sys
-import warnings
 from collections.abc import Iterator
 from contextlib import AbstractContextManager, nullcontext
 from functools import partial
 from typing import Any
 
 import pytest
-from pydantic.warnings import PydanticDeprecatedSince20
 
 from instructor import Mode
 from instructor.v2 import auto_client
 from instructor.v2.core.errors import ConfigurationError
-from tests.coverage.client_cleanup import close_idle_event_loop, close_provider_client
+from tests.coverage.client_cleanup import (
+    clear_proxy_environment,
+    close_idle_event_loop,
+    close_provider_client,
+    ignore_fireworks_pydantic_warning,
+)
 
 
 def provider_info(provider: str) -> dict[str, str]:
@@ -32,10 +35,8 @@ def expected_provider_deprecation(provider: str) -> AbstractContextManager[Any]:
 
 
 @pytest.fixture(autouse=True)
-def clear_proxy_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    for name in ("ALL_PROXY", "HTTP_PROXY", "HTTPS_PROXY"):
-        monkeypatch.delenv(name, raising=False)
-        monkeypatch.delenv(name.lower(), raising=False)
+def isolated_provider_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    clear_proxy_environment(monkeypatch)
 
     yield
 
@@ -78,13 +79,7 @@ def test_cloud_sdk_builders_forward_real_client_model_and_options(
     factory_name: str,
     async_client: bool,
 ) -> None:
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=r"Pydantic V1 style `@validator` validators are deprecated\..*",
-            category=PydanticDeprecatedSince20,
-            module=r"fireworks\.client\.image_api",
-        )
+    with ignore_fireworks_pydantic_warning():
         sdk = importlib.import_module(sdk_module)
         factory = importlib.import_module(factory_module)
     seen: dict[str, Any] = {}
@@ -630,13 +625,7 @@ def test_tail_builder_factory_failure_is_logged_and_propagated(
     module_name: str,
     factory_name: str,
 ) -> None:
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=r"Pydantic V1 style `@validator` validators are deprecated\..*",
-            category=PydanticDeprecatedSince20,
-            module=r"fireworks\.client\.image_api",
-        )
+    with ignore_fireworks_pydantic_warning():
         module = importlib.import_module(module_name)
 
     if provider == "vertexai":

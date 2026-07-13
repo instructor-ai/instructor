@@ -64,8 +64,7 @@ def get_types_array(typehint: type[Iterable[T]]) -> tuple[type[T], ...]:
 
     if is_union_type(typehint):
         # works for Iterable[Union[int, str]], Iterable[int | str]
-        the_types = get_args(get_args(typehint)[0])
-        return the_types
+        return get_args(get_args(typehint)[0])
 
     # works for Iterable[int]
     return get_args(typehint)

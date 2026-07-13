@@ -4,7 +4,6 @@ import builtins
 import importlib
 import json
 import runpy
-import warnings
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any
@@ -13,7 +12,6 @@ import pytest
 import httpx
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
-from pydantic.warnings import PydanticDeprecatedSince20
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.errors import (
@@ -34,6 +32,12 @@ from instructor.v2.providers.writer.handlers import (
     reask_writer_tools,
 )
 from tests.coverage._openai import chat_completion, tool_call
+from tests.coverage.client_cleanup import (
+    clear_proxy_environment,
+    close_async_provider_client,
+    close_provider_client,
+    ignore_fireworks_pydantic_warning,
+)
 
 
 class User(BaseModel):
@@ -140,13 +144,7 @@ def test_provider_package_stays_importable_when_its_client_import_fails(
 
 
 def load_provider_module(provider: str) -> ModuleType:
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=r"Pydantic V1 style `@validator` validators are deprecated\..*",
-            category=PydanticDeprecatedSince20,
-            module=r"fireworks\.client\.image_api",
-        )
+    with ignore_fireworks_pydantic_warning():
         module = importlib.import_module(f"instructor.v2.providers.{provider}.client")
     return module
 
@@ -161,18 +159,6 @@ def response_payload(provider: str, model: str) -> dict[str, Any]:
     if provider == "writer":
         payload["choices"][0]["message"]["content"] = ""
     return payload
-
-
-def clear_proxy_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in (
-        "ALL_PROXY",
-        "all_proxy",
-        "HTTP_PROXY",
-        "http_proxy",
-        "HTTPS_PROXY",
-        "https_proxy",
-    ):
-        monkeypatch.delenv(name, raising=False)
 
 
 def sync_sdk_client(
@@ -298,11 +284,7 @@ def test_sync_provider_factory_patches_realistic_chat_completion(
         assert len(seen) == 1
         assert_tools_request(seen[0], provider_value, "sync-model")
     finally:
-        if provider == "fireworks":
-            sdk_client._client_v1.close()
-            sdk_client._image_client_v1.close()
-        else:
-            sdk_client.close()
+        close_provider_client(sdk_client)
 
 
 @pytest.mark.asyncio
@@ -375,12 +357,7 @@ async def test_async_provider_factory_patches_realistic_chat_completion(
         else:
             assert len(seen) == 1
     finally:
-        if provider == "fireworks":
-            sdk_client._client_v1._client.close()
-            sdk_client._image_client_v1._client.close()
-            await sdk_client.aclose()
-        else:
-            await sdk_client.close()
+        await close_async_provider_client(sdk_client)
 
 
 @pytest.mark.parametrize(("provider", "provider_value"), PROVIDERS)
@@ -404,11 +381,7 @@ def test_provider_factories_reject_wrong_client_and_unsupported_mode(
         assert exc.value.provider == provider_value.value
         assert Mode.TOOLS.value in exc.value.valid_modes
     finally:
-        if provider == "fireworks":
-            sdk_client._client_v1.close()
-            sdk_client._image_client_v1.close()
-        else:
-            sdk_client.close()
+        close_provider_client(sdk_client)
 
 
 def test_writer_reask_recovers_message_shapes_without_openai_model_dump() -> None:

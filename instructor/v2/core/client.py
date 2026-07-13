@@ -4,7 +4,6 @@ from typing import (
     TYPE_CHECKING,
     TypeVar,
     Callable,
-    overload,
     Literal,
     Any,
     cast,
@@ -23,22 +22,12 @@ from tenacity import (
     Retrying,
 )
 from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator, Coroutine
-from typing_extensions import Self
+from typing_extensions import Self, overload
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.core.hooks import Hooks, HookName
 
 
 T = TypeVar("T")
-
-
-def _ensure_registry_loaded() -> None:
-    """Ensure v2 handlers are imported so the registry is populated."""
-    try:
-        import importlib
-
-        importlib.import_module("instructor.v2")
-    except Exception:
-        return
 
 
 class _ResponseBase:

@@ -79,6 +79,20 @@ class NameOnlyFunctionCall:
         return {"name": "Answer"}
 
 
+class UnexpectedFunctionCallError:
+    args = None
+
+    @classmethod
+    def to_dict(cls, _call: UnexpectedFunctionCallError) -> dict[str, Any]:
+        raise RuntimeError("unexpected conversion failure")
+
+
+class UnexpectedCompletionError:
+    @property
+    def candidates(self) -> list[Any]:
+        raise RuntimeError("unexpected candidate failure")
+
+
 class Part:
     def __init__(
         self,
@@ -339,6 +353,15 @@ def test_gemini_parsers_handle_strict_json_and_blocked_or_bad_tool_responses() -
         handlers.parse_gemini_tools(Answer, broken_args)
     assert args_error.value.mode == "GEMINI_TOOLS"
     assert args_error.value.raw_response is broken_args
+
+    with pytest.raises(RuntimeError, match="unexpected candidate failure"):
+        handlers.parse_gemini_tools(Answer, UnexpectedCompletionError())
+
+    with pytest.raises(RuntimeError, match="unexpected conversion failure"):
+        handlers.parse_gemini_tools(
+            Answer,
+            Completion(function_call=UnexpectedFunctionCallError()),
+        )
 
 
 def test_gemini_handlers_prepare_expected_tool_and_json_requests(

@@ -24,12 +24,11 @@ def get_provider(provider_name: str) -> BatchProvider:
         if OpenAIProvider is None:
             raise ValueError("OpenAI is not installed")
         return OpenAIProvider()
-    elif provider_name == "anthropic":
+    if provider_name == "anthropic":
         if AnthropicProvider is None:
             raise ValueError("Anthropic is not installed")
         return AnthropicProvider()
-    else:
-        raise ValueError(f"Unsupported provider: {provider_name}")
+    raise ValueError(f"Unsupported provider: {provider_name}")
 
 
 __all__ = ["BatchProvider", "OpenAIProvider", "AnthropicProvider", "get_provider"]
