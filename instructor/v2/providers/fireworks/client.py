@@ -126,9 +126,9 @@ def from_fireworks(
     if isinstance(client, AsyncFireworks):
         # Fireworks async client uses acreate method
         async def async_create(*args: Any, **create_kwargs: Any) -> Any:
+            create_kwargs.setdefault("stream", False)
             if create_kwargs.get("stream"):
-                # For streaming, await to get the async generator
-                return await client.chat.completions.acreate(*args, **create_kwargs)
+                return client.chat.completions.acreate(*args, **create_kwargs)
             return await client.chat.completions.acreate(*args, **create_kwargs)
 
         create = async_create
@@ -152,11 +152,10 @@ def from_fireworks(
             mode=mode,
             **kwargs,
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.FIREWORKS,
-            mode=mode,
-            **kwargs,
-        )
+    return AsyncInstructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.FIREWORKS,
+        mode=mode,
+        **kwargs,
+    )

@@ -64,6 +64,16 @@ def _get_model_name(response_model: Any) -> str:
     return getattr(response_model, "__name__", "Model")
 
 
+def extract_gemini_chunk_text(chunk: Any) -> str:
+    try:
+        return chunk.text
+    except (AttributeError, ValueError):
+        part_text = chunk.candidates[0].content.parts[0].text
+        if part_text:
+            return part_text
+        raise
+
+
 def transform_to_gemini_prompt(
     messages_chatgpt: list[ChatCompletionMessageParam],
 ) -> list[dict[str, Any]]:
@@ -104,9 +114,7 @@ def transform_to_gemini_prompt(
     if system_prompt:
         if messages_gemini:
             first_message = messages_gemini[0]
-            parts = first_message.get("parts")
-            if isinstance(parts, list):
-                parts.insert(0, f"*{system_prompt}*")
+            first_message["parts"].insert(0, f"*{system_prompt}*")
         else:
             messages_gemini.append({"role": "user", "parts": [f"*{system_prompt}*"]})
 
@@ -166,15 +174,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
                     transformed.update(actual_type)
                     transformed["nullable"] = True
                 else:
-                    types_in_union = []
-                    for item in value:
-                        if isinstance(item, dict) and "type" in item:
-                            types_in_union.append(item["type"])
-
-                    if set(types_in_union) == {"string", "number"}:
-                        transformed[key] = transform_schema_node(value)
-                    else:
-                        transformed[key] = transform_schema_node(value)
+                    transformed[key] = transform_schema_node(value)
             else:
                 transformed[key] = transform_schema_node(value)
 
@@ -357,7 +357,7 @@ def extract_genai_system_message(
     for message in messages:
         if isinstance(message, str):
             continue
-        elif isinstance(message, dict):
+        if isinstance(message, dict):
             if message.get("role") == "system":
                 if isinstance(message.get("content"), str):
                     system_messages += message.get("content", "") + "\n\n"
@@ -437,6 +437,10 @@ def convert_to_genai_messages(
                         parts=content_parts,
                     )
                 )
+            else:
+                raise ValueError(
+                    f"Unsupported content type: {type(message['content'])}"
+                )
         else:
             raise ValueError(f"Unsupported message type: {type(message)}")
 
@@ -459,10 +463,11 @@ def handle_genai_message_conversion(
     )
 
     base_config: dict[str, Any] = {}
-    if "system" not in new_kwargs:
+    system_message = new_kwargs.pop("system", None)
+    if system_message is None:
         system_message = extract_genai_system_message(messages)
-        if system_message:
-            base_config["system_instruction"] = system_message
+    if system_message:
+        base_config["system_instruction"] = system_message
 
     # Fold `generation_config`, `safety_settings` and `thinking_config` into `config` the same
     # way the structured-output path does. Otherwise these would be passed as raw keyword

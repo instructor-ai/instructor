@@ -4,7 +4,6 @@ from typing import (
     TYPE_CHECKING,
     TypeVar,
     Callable,
-    overload,
     Literal,
     Any,
     cast,
@@ -23,22 +22,12 @@ from tenacity import (
     Retrying,
 )
 from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator, Coroutine
-from typing_extensions import Self
+from typing_extensions import Self, overload
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.core.hooks import Hooks, HookName
 
 
 T = TypeVar("T")
-
-
-def _ensure_registry_loaded() -> None:
-    """Ensure v2 handlers are imported so the registry is populated."""
-    try:
-        import importlib
-
-        importlib.import_module("instructor.v2")
-    except Exception:
-        return
 
 
 class _ResponseBase:
@@ -101,7 +90,7 @@ class Response(_ResponseBase):
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
 
-        create = cast(Callable[..., T | Any], self.client.create)
+        create = cast(Callable[..., Any], self.client.create)
         return create(
             response_model=response_model,
             context=context,
@@ -260,7 +249,7 @@ class AsyncResponse(_ResponseBase):
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
 
-        create = cast(Callable[..., Awaitable[T | Any]], self.client.create)
+        create = cast(Callable[..., Awaitable[Any]], self.client.create)
         return await create(
             response_model=response_model,
             context=context,
@@ -906,8 +895,7 @@ def from_openai(
     client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    pass
+) -> Instructor: ...
 
 
 @overload
@@ -915,8 +903,7 @@ def from_openai(
     client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor:
-    pass
+) -> AsyncInstructor: ...
 
 
 def from_openai(

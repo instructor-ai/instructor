@@ -1,17 +1,24 @@
 import functools
 
 from openai import AsyncOpenAI, OpenAI
+import pytest
 
 import instructor
 from instructor.utils import is_async
 
 
 def test_patch_completes_successfully():
-    instructor.patch(OpenAI())
+    with OpenAI(api_key="test-key") as client:
+        instructor.patch(client)
 
 
-def test_apatch_completes_successfully():
-    instructor.apatch(AsyncOpenAI())
+@pytest.mark.asyncio
+async def test_apatch_completes_successfully():
+    async with AsyncOpenAI(api_key="test-key") as client:
+        with pytest.warns(
+            DeprecationWarning, match="apatch is deprecated, use patch instead"
+        ):
+            instructor.apatch(client)
 
 
 def test_is_async_returns_true_if_function_is_async():

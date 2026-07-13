@@ -295,8 +295,6 @@ class ValidationError(InstructorError):
         - InstructorRetryException: Raised when validation fails repeatedly
     """
 
-    pass
-
 
 class ProviderError(InstructorError):
     """Exception raised for provider-specific errors.
@@ -369,8 +367,6 @@ class ConfigurationError(InstructorError):
         ```
     """
 
-    pass
-
 
 class ModeError(InstructorError):
     """Exception raised when an invalid mode is used for a provider.
@@ -440,8 +436,6 @@ class ClientError(InstructorError):
             print(f"Client error: {e}")
         ```
     """
-
-    pass
 
 
 class AsyncValidationError(ValueError, InstructorError):

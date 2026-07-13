@@ -104,8 +104,7 @@ def patch_v2(
 
     if func_is_async:
         return _create_async_wrapper(func, provider, mode, default_model)
-    else:
-        return _create_sync_wrapper(func, provider, mode, default_model)
+    return _create_sync_wrapper(func, provider, mode, default_model)
 
 
 @overload

@@ -38,6 +38,21 @@ def test_extract_json_from_codeblock_handles_even_backslashes_before_quote() -> 
     assert extract_json_from_codeblock(content) == '{"path":"C:\\\\","name":"Ada"}'
 
 
+def test_extract_json_from_codeblock_returns_last_top_level_candidate() -> None:
+    content = (
+        'The user supplied {"is_verified":true}. '
+        'The result is {"person":{"name":"Ada"}}.'
+    )
+
+    assert extract_json_from_codeblock(content) == '{"person":{"name":"Ada"}}'
+
+
+def test_extract_json_from_codeblock_preserves_nested_candidate() -> None:
+    content = 'prefix {"person":{"name":"Ada"}} suffix'
+
+    assert extract_json_from_codeblock(content) == '{"person":{"name":"Ada"}}'
+
+
 def test_extract_json_from_stream_handles_plain_json() -> None:
     assert "".join(extract_json_from_stream(["before ", '{"a":', "1}", " after"])) == (
         '{"a":1}'
@@ -89,6 +104,17 @@ def test_extract_json_from_stream_preserves_triple_backticks_in_plain_string() -
     assert "".join(extract_json_from_stream(chunks)) == '{"code":"```py```"}'
 
 
+def test_extract_json_from_stream_yields_all_objects_in_one_chunk() -> None:
+    # A complete object must not swallow a second object sharing its chunk.
+    chunks = ['{"a":1}{"b":2}']
+    assert "".join(extract_json_from_stream(chunks)) == '{"a":1}{"b":2}'
+
+
+def test_extract_json_from_stream_yields_all_objects_in_fenced_chunk() -> None:
+    chunks = ['```json\n{"a":1}{"b":2}\n```']
+    assert "".join(extract_json_from_stream(chunks)) == '{"a":1}{"b":2}'
+
+
 def test_extract_json_from_stream_preserves_backticks_in_fenced_string() -> None:
     chunks = ["```json\n", '{"code":"`inline`"}', "\n```"]
 
@@ -128,6 +154,16 @@ async def test_extract_json_from_stream_async_handles_array_root() -> None:
         "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
         == '[{"a":1}]'
     )
+
+
+@pytest.mark.asyncio
+async def test_extract_json_from_stream_async_yields_all_objects_in_chunk() -> None:
+    async def chunks():
+        yield '{"a":1}{"b":2}'
+
+    assert "".join(
+        [chunk async for chunk in extract_json_from_stream_async(chunks())]
+    ) == ('{"a":1}{"b":2}')
 
 
 @pytest.mark.asyncio

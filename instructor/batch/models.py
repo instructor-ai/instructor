@@ -238,12 +238,11 @@ class BatchJobInfo(BaseModel):
                 # Handle different timestamp format variations
                 if isinstance(timestamp_value, datetime):
                     return timestamp_value
-                elif isinstance(timestamp_value, str):
+                if isinstance(timestamp_value, str):
                     return datetime.fromisoformat(
                         timestamp_value.replace("Z", "+00:00")
                     )
-                else:
-                    return None
+                return None
             except (ValueError, AttributeError):
                 return None
 

@@ -79,14 +79,16 @@ def upload_new_pdf_file(
     client = Client()
     file = client.files.upload(file=file_path)
     while file.state != FileState.ACTIVE:
-        time.sleep(retry_delay)
-        file = client.files.get(name=file.name)  # type: ignore
-        if max_retries > 0:
-            max_retries -= 1
-        else:
+        file_name = file.name
+        if file_name is None:
+            raise ValueError("Cannot poll a pending GenAI file without a file name")
+        if max_retries <= 0:
             raise Exception(
                 "Max retries reached. File upload has been started but is still pending"
             )
+        time.sleep(retry_delay)
+        file = client.files.get(name=file_name)
+        max_retries -= 1
     return cls(source=file.uri, media_type=file.mime_type, data=None)
 
 

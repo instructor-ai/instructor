@@ -22,8 +22,6 @@ class RegistryError(ConfigurationError):
     or mode/provider compatibility in the v2 registry.
     """
 
-    pass
-
 
 class ValidationContextError(ConfigurationError):
     """Exception raised for validation context configuration errors.
@@ -31,8 +29,6 @@ class ValidationContextError(ConfigurationError):
     Raised when there are conflicting or invalid validation context
     parameters passed to patched functions.
     """
-
-    pass
 
 
 class RegistryValidationMixin:

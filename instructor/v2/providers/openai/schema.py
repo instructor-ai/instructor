@@ -23,9 +23,12 @@ def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
             if "description" not in parameters["properties"][name]:
                 parameters["properties"][name]["description"] = description
 
-    parameters["required"] = sorted(
-        k for k, v in parameters["properties"].items() if "default" not in v
-    )
+    # Reuse Pydantic's own required set, which excludes any field that has a
+    # default -- whether that default is a plain value (``default=``) or a
+    # ``default_factory=``. Deriving it from the presence of a ``"default"``
+    # key in each property missed default_factory fields (whose defaults are
+    # never emitted into the JSON schema) and wrongly marked them required.
+    parameters["required"] = sorted(schema.get("required", []))
 
     if "description" not in schema:
         schema["description"] = (

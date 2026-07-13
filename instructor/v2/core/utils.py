@@ -27,7 +27,7 @@ class classproperty(Generic[R_co]):
     def __init__(self, method: Callable[[Any], R_co]) -> None:
         self.cproperty = method
 
-    def __get__(self, instance: object, cls: type[Any]) -> R_co:
+    def __get__(self, _instance: object, cls: type[Any]) -> R_co:
         return self.cproperty(cls)
 
 
