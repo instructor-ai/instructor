@@ -39,7 +39,17 @@ def image_to_openai(image: Any, mode: Mode) -> dict[str, Any]:
 def audio_to_openai(audio: Any, mode: Mode) -> dict[str, Any]:
     if mode in RESPONSES_MODES:
         raise ValueError("OpenAI Responses doesn't support audio")
-    return {"type": "input_audio", "input_audio": {"data": audio.data, "format": "wav"}}
+    # OpenAI Chat Completions `input_audio` only accepts "wav" or "mp3", so pick
+    # the format from the audio's media type instead of assuming WAV; otherwise
+    # an mp3 (media_type "audio/mpeg") is sent mislabeled as "wav".
+    media_type = (getattr(audio, "media_type", "") or "").lower()
+    audio_format = (
+        "mp3" if media_type in {"audio/mp3", "audio/mpeg", "audio/mpga"} else "wav"
+    )
+    return {
+        "type": "input_audio",
+        "input_audio": {"data": audio.data, "format": audio_format},
+    }
 
 
 def pdf_to_openai(pdf: Any, mode: Mode) -> dict[str, Any]:

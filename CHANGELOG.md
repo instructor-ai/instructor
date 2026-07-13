@@ -24,6 +24,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
 - **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
 - **Python 3.9**: Include the required type-evaluation backport in minimal installs, keep overload metadata available, and avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
+- **OpenAI**: Send the correct `input_audio.format` for audio content by deriving it from the audio's media type (e.g. mp3) instead of always sending `"wav"`, so non-WAV audio is no longer mislabeled. ([#2415](https://github.com/567-labs/instructor/pull/2415))
 
 ### Tests / CI
 - **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.

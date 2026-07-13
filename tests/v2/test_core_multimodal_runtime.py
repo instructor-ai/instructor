@@ -218,3 +218,15 @@ def test_audio_from_path_normalizes_windows_wav_and_aac_mime_types(
 
     assert wav_audio.media_type == "audio/wav"
     assert aac_audio.media_type == "audio/aac"
+
+
+def test_audio_to_openai_format_follows_media_type() -> None:
+    from instructor.v2.providers.openai.multimodal import audio_to_openai
+
+    # OpenAI Chat Completions `input_audio` only accepts "wav" or "mp3", so the
+    # format must follow the audio's media type rather than always being "wav".
+    mp3 = Audio(source="clip.mp3", media_type="audio/mpeg", data="ZmFrZQ==")
+    assert audio_to_openai(mp3, Mode.TOOLS)["input_audio"]["format"] == "mp3"
+
+    wav = Audio(source="clip.wav", media_type="audio/wav", data="ZmFrZQ==")
+    assert audio_to_openai(wav, Mode.TOOLS)["input_audio"]["format"] == "wav"
