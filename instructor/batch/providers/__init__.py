@@ -10,8 +10,12 @@ import importlib.util
 
 if importlib.util.find_spec("openai") is not None:
     from .openai import OpenAIProvider
+else:
+    OpenAIProvider = None
 if importlib.util.find_spec("anthropic") is not None:
     from .anthropic import AnthropicProvider
+else:
+    AnthropicProvider = None
 
 
 def get_provider(provider_name: str) -> BatchProvider:

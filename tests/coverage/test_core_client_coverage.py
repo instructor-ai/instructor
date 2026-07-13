@@ -1,14 +1,24 @@
 from __future__ import annotations
 
 import importlib
-from collections.abc import Iterable
-from typing import Any, get_args, get_origin, get_overloads
+import inspect
+from collections.abc import AsyncIterable, Iterable
+from typing import Any, cast, get_args, get_origin
 
+import httpx
+import openai
 import pytest
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, PrivateAttr
+from typing_extensions import get_overloads
 
 from instructor.v2.core import client as core_client
-from instructor.v2.core.client import AsyncInstructor, Instructor, Response
+from instructor.v2.core.client import (
+    AsyncInstructor,
+    AsyncResponse,
+    Instructor,
+    Response,
+)
 from instructor.v2.core.hooks import HookName, Hooks
 from instructor.v2.core.mode import Mode
 
@@ -18,7 +28,9 @@ class User(BaseModel):
     _raw_response: Any = PrivateAttr(default=None)
 
 
-MESSAGES = [{"role": "user", "content": "Return a user"}]
+MESSAGES: list[ChatCompletionMessageParam] = [
+    {"role": "user", "content": "Return a user"}
+]
 
 
 def hooks_with_handler(label: str, events: list[str]) -> Hooks:
@@ -212,7 +224,7 @@ async def test_async_client_forwards_defaults_and_dispatches_iterable_response()
         messages=MESSAGES,
         hooks=call_hooks,
     )
-    iterable = [item async for item in stream]
+    iterable = [item async for item in cast(AsyncIterable[User], stream)]
 
     assert parsed.model_dump() == {"name": "Ada"}
     assert iterable == [User(name="Ada"), User(name="Grace")]
@@ -290,6 +302,208 @@ async def test_async_streaming_and_completion_helpers_preserve_models_and_hooks(
         assert_combined_hooks(call["hooks"], events)
 
 
+def test_sync_response_facade_normalizes_input_and_forwards_each_helper() -> None:
+    received: list[dict[str, Any]] = []
+    raw = object()
+
+    def create(**kwargs: Any) -> Any:
+        received.append(kwargs)
+        if kwargs.get("stream"):
+            return iter([User(name="Ada"), User(name="Grace")])
+        result = User(name="Ada")
+        result._raw_response = raw
+        return result
+
+    client = Instructor(client=None, create=create, model="offline-model")
+    response = Response(client)
+
+    parsed = response.create(
+        input="Return Ada",
+        response_model=User,
+        max_retries=1,
+        strict=False,
+        context={"source": "sync"},
+    )
+    with_completion, completion = response.create_with_completion(
+        input="Return Ada and the raw response",
+        response_model=User,
+        max_retries=2,
+    )
+    iterable = list(
+        response.create_iterable(
+            input="Return two users",
+            response_model=User,
+            max_retries=3,
+        )
+    )
+    partial = list(
+        response.create_partial(
+            input="Stream two users",
+            response_model=User,
+            max_retries=4,
+        )
+    )
+
+    assert parsed.model_dump() == {"name": "Ada"}
+    assert with_completion.model_dump() == {"name": "Ada"}
+    assert completion is raw
+    assert iterable == [User(name="Ada"), User(name="Grace")]
+    assert partial == [User(name="Ada"), User(name="Grace")]
+    assert [call["messages"][0]["content"] for call in received] == [
+        "Return Ada",
+        "Return Ada and the raw response",
+        "Return two users",
+        "Stream two users",
+    ]
+    assert [call["max_retries"] for call in received] == [1, 2, 3, 4]
+    assert received[0]["strict"] is False
+    assert received[0]["context"] == {"source": "sync"}
+    assert received[2]["stream"] is True
+    assert received[3]["stream"] is True
+    assert all(call["hooks"] is client.hooks for call in received)
+    assert all(call["model"] == "offline-model" for call in received)
+
+
+@pytest.mark.asyncio
+async def test_async_response_facade_normalizes_input_and_forwards_each_helper() -> (
+    None
+):
+    received: list[dict[str, Any]] = []
+    raw = object()
+
+    async def create(**kwargs: Any) -> Any:
+        received.append(kwargs)
+        if kwargs.get("stream"):
+
+            async def stream() -> Any:
+                yield User(name="Ada")
+                yield User(name="Grace")
+
+            return stream()
+        result = User(name="Ada")
+        result._raw_response = raw
+        return result
+
+    client = AsyncInstructor(client=None, create=create, model="offline-model")
+    response = AsyncResponse(client)
+
+    parsed = await response.create(
+        input="Return Ada",
+        response_model=User,
+        max_retries=1,
+        strict=False,
+        context={"source": "async"},
+    )
+    with_completion, completion = await response.create_with_completion(
+        input="Return Ada and the raw response",
+        response_model=User,
+        max_retries=2,
+    )
+    iterable_stream = await response.create_iterable(
+        input="Return two users",
+        response_model=User,
+        max_retries=3,
+    )
+    iterable = [item async for item in iterable_stream]
+    partial = [
+        item
+        async for item in response.create_partial(
+            input="Stream two users",
+            response_model=User,
+            max_retries=4,
+        )
+    ]
+
+    assert parsed.model_dump() == {"name": "Ada"}
+    assert with_completion.model_dump() == {"name": "Ada"}
+    assert completion is raw
+    assert iterable == [User(name="Ada"), User(name="Grace")]
+    assert partial == [User(name="Ada"), User(name="Grace")]
+    assert [call["messages"][0]["content"] for call in received] == [
+        "Return Ada",
+        "Return Ada and the raw response",
+        "Return two users",
+        "Stream two users",
+    ]
+    assert [call["max_retries"] for call in received] == [1, 2, 3, 4]
+    assert received[0]["strict"] is False
+    assert received[0]["context"] == {"source": "async"}
+    assert received[2]["stream"] is True
+    assert received[3]["stream"] is True
+    assert all(call["hooks"] is client.hooks for call in received)
+    assert all(call["model"] == "offline-model" for call in received)
+
+
+def test_client_hook_helpers_register_remove_and_clear_handlers() -> None:
+    events: list[str] = []
+
+    def on_response(_response: Any) -> None:
+        events.append("response")
+
+    def on_error(_error: Any) -> None:
+        events.append("error")
+
+    client = Instructor(client=None, create=lambda **_kwargs: User(name="Ada"))
+
+    client.on("completion:response", on_response)
+    client.hooks.emit_completion_response(object())
+    client.off("completion:response", on_response)
+    client.hooks.emit_completion_response(object())
+    assert events == ["response"]
+
+    client.on(HookName.COMPLETION_RESPONSE, on_response)
+    client.on(HookName.COMPLETION_ERROR, on_error)
+    client.clear(HookName.COMPLETION_RESPONSE)
+    client.hooks.emit_completion_response(object())
+    client.hooks.emit_completion_error(RuntimeError("offline failure"))
+    assert events == ["response", "error"]
+
+    client.clear()
+    client.hooks.emit_completion_error(RuntimeError("another failure"))
+    assert events == ["response", "error"]
+
+
+def test_response_mode_attaches_a_sync_response_facade_without_network() -> None:
+    transport = httpx.MockTransport(
+        lambda request: httpx.Response(503, request=request)
+    )
+    with openai.OpenAI(
+        api_key="offline-key",
+        base_url="https://offline.invalid/v1",
+        http_client=httpx.Client(transport=transport),
+    ) as native_client:
+        client = Instructor(
+            client=native_client,
+            create=lambda **_kwargs: User(name="Ada"),
+            mode=Mode.RESPONSES_TOOLS,
+        )
+
+        assert isinstance(client.responses, Response)
+        assert client.responses.client is client
+
+
+@pytest.mark.asyncio
+async def test_response_mode_attaches_an_async_response_facade_without_network() -> (
+    None
+):
+    transport = httpx.MockTransport(
+        lambda request: httpx.Response(503, request=request)
+    )
+    async with openai.AsyncOpenAI(
+        api_key="offline-key",
+        base_url="https://offline.invalid/v1",
+        http_client=httpx.AsyncClient(transport=transport),
+    ) as native_client:
+        client = AsyncInstructor(
+            client=native_client,
+            create=lambda **_kwargs: User(name="Ada"),
+            mode=Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        )
+
+        assert isinstance(client.responses, AsyncResponse)
+        assert client.responses.client is client
+
+
 def test_openai_compat_wrapper_delegates_and_keeps_its_sync_async_overloads(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -297,7 +511,7 @@ def test_openai_compat_wrapper_delegates_and_keeps_its_sync_async_overloads(
 
     received: list[dict[str, Any]] = []
     expected = object()
-    source_client = object()
+    source_client = cast(openai.OpenAI, object())
 
     monkeypatch.setattr(
         openai_client,
@@ -319,7 +533,12 @@ def test_openai_compat_wrapper_delegates_and_keeps_its_sync_async_overloads(
 
     overloads = get_overloads(core_client.from_openai)
     assert len(overloads) == 2
-    assert all(overload(source_client) is None for overload in overloads)
+    assert [
+        tuple(inspect.signature(overload).parameters) for overload in overloads
+    ] == [
+        ("client", "mode", "kwargs"),
+        ("client", "mode", "kwargs"),
+    ]
 
 
 @pytest.mark.parametrize("async_client", [True, False, None])
@@ -335,23 +554,39 @@ def test_litellm_compat_wrapper_preserves_explicit_and_inferred_client_modes(
     def completion(**_kwargs: Any) -> object:
         return object()
 
+    async def async_completion(**_kwargs: Any) -> object:
+        return object()
+
     monkeypatch.setattr(
         litellm_client,
         "from_litellm",
         lambda **kwargs: received.append(kwargs) or expected,
     )
 
-    assert (
-        core_client.from_litellm(
-            completion,
+    if async_client is True:
+        wrapped = core_client.from_litellm(
+            async_completion,
             mode=Mode.JSON,
-            async_client=async_client,
+            async_client=True,
             model="local-model",
         )
-        is expected
-    )
+    elif async_client is False:
+        wrapped = core_client.from_litellm(
+            completion,
+            mode=Mode.JSON,
+            async_client=False,
+            model="local-model",
+        )
+    else:
+        wrapped = core_client.from_litellm(
+            completion,
+            mode=Mode.JSON,
+            model="local-model",
+        )
+    assert wrapped is expected
     forwarded = received.pop()
-    assert forwarded["completion"] is completion
+    expected_completion = async_completion if async_client is True else completion
+    assert forwarded["completion"] is expected_completion
     assert forwarded["mode"] is Mode.JSON
     assert forwarded["model"] == "local-model"
     if async_client is None:

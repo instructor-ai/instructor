@@ -7,6 +7,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Mistral/Vertex AI partial streaming**: Avoid forwarding iterable-only parser arguments into completed `Partial` responses, preventing final Pydantic validation errors for sync and async streams.
+- **Batch providers**: Handle missing optional SDKs safely, validate OpenAI batch input before client setup, report exhausted output-file retries clearly, and remove unreachable fallbacks.
+- **OpenAI/Writer tools**: Raise clear response-parsing errors for completions with no choices or tool calls instead of leaking attribute and index errors.
+- **Fireworks streaming**: Keep non-streaming async calls non-streaming and return streaming async generators without incorrectly awaiting them.
+- **GenAI uploads**: Respect `max_retries=0` without an unwanted sleep or polling request, allow recovery on the final permitted retry, and report nameless pending uploads clearly before polling.
+- **Gemini/GenAI messages**: Honor an explicit system message for unstructured requests, remove the unsupported raw `system` argument, and reject invalid scalar message content clearly.
+- **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
+- **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
+- **Python 3.9**: Avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
+
+### Tests / CI
+- **Coverage and test quality**: Run the complete offline suite across supported Python versions, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response/stream fixtures and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

@@ -4,16 +4,24 @@ import builtins
 import importlib
 import json
 import runpy
+import warnings
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
+import httpx
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
+from pydantic.warnings import PydanticDeprecatedSince20
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
-from instructor.v2.core.errors import ClientError, IncompleteOutputException, ModeError
+from instructor.v2.core.errors import (
+    ClientError,
+    IncompleteOutputException,
+    ModeError,
+    ResponseParsingError,
+)
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.dsl.iterable import IterableModel
@@ -25,6 +33,7 @@ from instructor.v2.providers.writer.handlers import (
     reask_writer_json,
     reask_writer_tools,
 )
+from tests.coverage._openai import chat_completion, tool_call
 
 
 class User(BaseModel):
@@ -43,47 +52,15 @@ PROVIDERS = [
 
 
 def tool_response() -> ChatCompletion:
-    return ChatCompletion.model_validate(
-        {
-            "id": "chatcmpl-provider-test",
-            "object": "chat.completion",
-            "created": 1,
-            "model": "test-model",
-            "choices": [
-                {
-                    "index": 0,
-                    "finish_reason": "tool_calls",
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            {
-                                "id": "call-user",
-                                "type": "function",
-                                "function": {
-                                    "name": "User",
-                                    "arguments": json.dumps({"name": "Ada", "age": 37}),
-                                },
-                            }
-                        ],
-                    },
-                }
-            ],
-            "usage": {
-                "prompt_tokens": 8,
-                "completion_tokens": 4,
-                "total_tokens": 12,
-            },
-        }
+    return chat_completion(
+        tool_calls=[tool_call("User", {"name": "Ada", "age": 37}, "call-user")],
+        finish_reason="tool_calls",
+        usage=True,
     )
 
 
 def text_response(content: str) -> ChatCompletion:
-    response = tool_response()
-    response.choices[0].finish_reason = "stop"
-    response.choices[0].message.content = content
-    response.choices[0].message.tool_calls = None
-    return response
+    return chat_completion(content=content, usage=True)
 
 
 def run_with_blocked_import(
@@ -162,58 +139,110 @@ def test_provider_package_stays_importable_when_its_client_import_fails(
     assert namespace["__all__"] == [f"from_{provider}"]
 
 
-def install_sdk_shaped_clients(
-    monkeypatch: pytest.MonkeyPatch, provider: str
-) -> tuple[ModuleType, type[Any], type[Any]]:
-    module = importlib.import_module(f"instructor.v2.providers.{provider}.client")
-
-    class SyncClient:
-        def __init__(self) -> None:
-            self.calls: list[dict[str, Any]] = []
-            create = self.create
-            if provider == "writer":
-                self.chat = SimpleNamespace(chat=create)
-            else:
-                self.chat = SimpleNamespace(completions=SimpleNamespace(create=create))
-
-        def create(self, **kwargs: Any) -> ChatCompletion:
-            self.calls.append(kwargs)
-            return tool_response()
-
-    class AsyncClient:
-        def __init__(self) -> None:
-            self.calls: list[dict[str, Any]] = []
-            if provider == "writer":
-                self.chat = SimpleNamespace(chat=self.create)
-            elif provider == "fireworks":
-                self.chat = SimpleNamespace(
-                    completions=SimpleNamespace(acreate=self.create)
-                )
-            else:
-                self.chat = SimpleNamespace(
-                    completions=SimpleNamespace(create=self.create)
-                )
-
-        async def create(self, **kwargs: Any) -> ChatCompletion | str:
-            self.calls.append(kwargs)
-            if kwargs.get("stream"):
-                return "stream-handle"
-            return tool_response()
-
-    if provider == "groq":
-        monkeypatch.setattr(
-            module, "groq", SimpleNamespace(Groq=SyncClient, AsyncGroq=AsyncClient)
+def load_provider_module(provider: str) -> ModuleType:
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"Pydantic V1 style `@validator` validators are deprecated\..*",
+            category=PydanticDeprecatedSince20,
+            module=r"fireworks\.client\.image_api",
         )
-    else:
-        names = {
-            "cerebras": ("Cerebras", "AsyncCerebras"),
-            "fireworks": ("Fireworks", "AsyncFireworks"),
-            "writer": ("Writer", "AsyncWriter"),
-        }[provider]
-        monkeypatch.setattr(module, names[0], SyncClient)
-        monkeypatch.setattr(module, names[1], AsyncClient)
+        module = importlib.import_module(f"instructor.v2.providers.{provider}.client")
+    return module
 
-    return module, SyncClient, AsyncClient
+
+def response_payload(provider: str, model: str) -> dict[str, Any]:
+    payload = tool_response().model_dump(mode="json", exclude_none=True)
+    payload.update(
+        model=model,
+        system_fingerprint="coverage-fingerprint",
+        time_info={},
+    )
+    if provider == "writer":
+        payload["choices"][0]["message"]["content"] = ""
+    return payload
+
+
+def clear_proxy_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in (
+        "ALL_PROXY",
+        "all_proxy",
+        "HTTP_PROXY",
+        "http_proxy",
+        "HTTPS_PROXY",
+        "https_proxy",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
+def sync_sdk_client(
+    monkeypatch: pytest.MonkeyPatch,
+    provider: str,
+    http_client: httpx.Client,
+) -> tuple[ModuleType, Any]:
+    clear_proxy_environment(monkeypatch)
+    module = load_provider_module(provider)
+    kwargs = {
+        "api_key": "test-key",
+        "base_url": f"https://{provider}.invalid"
+        + ("/v1" if provider == "fireworks" else ""),
+    }
+
+    if provider == "cerebras":
+        return module, module.Cerebras(
+            **kwargs,
+            http_client=http_client,
+            warm_tcp_connection=False,
+            _strict_response_validation=True,
+        )
+    if provider == "groq":
+        return module, module.groq.Groq(
+            **kwargs, http_client=http_client, _strict_response_validation=True
+        )
+    if provider == "writer":
+        return module, module.Writer(
+            **kwargs, http_client=http_client, _strict_response_validation=True
+        )
+
+    client = module.Fireworks(**kwargs)
+    client._client_v1._client.close()
+    client._client_v1._client = http_client
+    return module, client
+
+
+async def async_sdk_client(
+    monkeypatch: pytest.MonkeyPatch,
+    provider: str,
+    http_client: httpx.AsyncClient,
+) -> tuple[ModuleType, Any]:
+    clear_proxy_environment(monkeypatch)
+    module = load_provider_module(provider)
+    kwargs = {
+        "api_key": "test-key",
+        "base_url": f"https://{provider}.invalid"
+        + ("/v1" if provider == "fireworks" else ""),
+    }
+
+    if provider == "cerebras":
+        return module, module.AsyncCerebras(
+            **kwargs,
+            http_client=http_client,
+            warm_tcp_connection=False,
+            _strict_response_validation=True,
+        )
+    if provider == "groq":
+        return module, module.groq.AsyncGroq(
+            **kwargs, http_client=http_client, _strict_response_validation=True
+        )
+    if provider == "writer":
+        return module, module.AsyncWriter(
+            **kwargs, http_client=http_client, _strict_response_validation=True
+        )
+
+    client = module.AsyncFireworks(**kwargs)
+    await client._client_v1._async_client.aclose()
+    client._client_v1._async_client = http_client
+    return module, client
 
 
 def assert_tools_request(call: dict[str, Any], provider: Provider, model: str) -> None:
@@ -234,21 +263,46 @@ def assert_tools_request(call: dict[str, Any], provider: Provider, model: str) -
 def test_sync_provider_factory_patches_realistic_chat_completion(
     monkeypatch: pytest.MonkeyPatch, provider: str, provider_value: Provider
 ) -> None:
-    module, sync_type, _ = install_sdk_shaped_clients(monkeypatch, provider)
-    sdk_client = sync_type()
+    seen: list[dict[str, Any]] = []
 
-    client = getattr(module, f"from_{provider}")(
-        sdk_client, mode=Mode.TOOLS, model="sync-model"
-    )
-    parsed = client.create(User, MESSAGES, max_retries=0)
+    def handle(request: httpx.Request) -> httpx.Response:
+        assert request.url.host == f"{provider}.invalid"
+        assert (
+            request.url.path
+            == {
+                "cerebras": "/v1/chat/completions",
+                "fireworks": "/v1/chat/completions",
+                "groq": "/openai/v1/chat/completions",
+                "writer": "/v1/chat",
+            }[provider]
+        )
+        body = json.loads(request.content)
+        seen.append(body)
+        return httpx.Response(200, json=response_payload(provider, body["model"]))
 
-    assert isinstance(client, Instructor)
-    assert client.client is sdk_client
-    assert client.provider is provider_value
-    assert client.mode is Mode.TOOLS
-    assert isinstance(parsed, User)
-    assert parsed.model_dump() == {"name": "Ada", "age": 37}
-    assert_tools_request(sdk_client.calls[0], provider_value, "sync-model")
+    http_client = httpx.Client(transport=httpx.MockTransport(handle), trust_env=False)
+    module, sdk_client = sync_sdk_client(monkeypatch, provider, http_client)
+
+    try:
+        client = getattr(module, f"from_{provider}")(
+            sdk_client, mode=Mode.TOOLS, model="sync-model"
+        )
+        parsed = client.create(User, MESSAGES, max_retries=0)
+
+        assert isinstance(client, Instructor)
+        assert client.client is sdk_client
+        assert client.provider is provider_value
+        assert client.mode is Mode.TOOLS
+        assert isinstance(parsed, User)
+        assert parsed.model_dump() == {"name": "Ada", "age": 37}
+        assert len(seen) == 1
+        assert_tools_request(seen[0], provider_value, "sync-model")
+    finally:
+        if provider == "fireworks":
+            sdk_client._client_v1.close()
+            sdk_client._image_client_v1.close()
+        else:
+            sdk_client.close()
 
 
 @pytest.mark.asyncio
@@ -256,44 +310,105 @@ def test_sync_provider_factory_patches_realistic_chat_completion(
 async def test_async_provider_factory_patches_realistic_chat_completion(
     monkeypatch: pytest.MonkeyPatch, provider: str, provider_value: Provider
 ) -> None:
-    module, _, async_type = install_sdk_shaped_clients(monkeypatch, provider)
-    sdk_client = async_type()
+    seen: list[dict[str, Any]] = []
 
-    client = getattr(module, f"from_{provider}")(
-        sdk_client, mode=Mode.TOOLS, model="async-model"
+    async def handle(request: httpx.Request) -> httpx.Response:
+        assert request.url.host == f"{provider}.invalid"
+        assert (
+            request.url.path
+            == {
+                "cerebras": "/v1/chat/completions",
+                "fireworks": "/v1/chat/completions",
+                "groq": "/openai/v1/chat/completions",
+                "writer": "/v1/chat",
+            }[provider]
+        )
+        body = json.loads(request.content)
+        seen.append(body)
+        if body.get("stream"):
+            chunk = {
+                "id": "chatcmpl-stream-coverage",
+                "object": "chat.completion.chunk",
+                "created": 1,
+                "model": body["model"],
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "stop",
+                        "delta": {"role": "assistant", "content": "streamed"},
+                    }
+                ],
+            }
+            return httpx.Response(
+                200,
+                headers={"content-type": "text/event-stream"},
+                text=f"data: {json.dumps(chunk)}\n\ndata: [DONE]\n\n",
+            )
+        return httpx.Response(200, json=response_payload(provider, body["model"]))
+
+    http_client = httpx.AsyncClient(
+        transport=httpx.MockTransport(handle), trust_env=False
     )
-    parsed = await client.create(User, MESSAGES, max_retries=0)
+    module, sdk_client = await async_sdk_client(monkeypatch, provider, http_client)
 
-    assert isinstance(client, AsyncInstructor)
-    assert client.client is sdk_client
-    assert client.provider is provider_value
-    assert client.mode is Mode.TOOLS
-    assert isinstance(parsed, User)
-    assert parsed.model_dump() == {"name": "Ada", "age": 37}
-    assert_tools_request(sdk_client.calls[0], provider_value, "async-model")
+    try:
+        client = getattr(module, f"from_{provider}")(
+            sdk_client, mode=Mode.TOOLS, model="async-model"
+        )
+        parsed = await client.create(User, MESSAGES, max_retries=0)
 
-    if provider == "fireworks":
-        stream = await client.create(None, MESSAGES, max_retries=0, stream=True)
-        assert stream == "stream-handle"
-        assert sdk_client.calls[1]["stream"] is True
-        assert sdk_client.calls[1]["model"] == "async-model"
+        assert isinstance(client, AsyncInstructor)
+        assert client.client is sdk_client
+        assert client.provider is provider_value
+        assert client.mode is Mode.TOOLS
+        assert isinstance(parsed, User)
+        assert parsed.model_dump() == {"name": "Ada", "age": 37}
+        assert_tools_request(seen[0], provider_value, "async-model")
+
+        if provider == "fireworks":
+            stream = await client.create(None, MESSAGES, max_retries=0, stream=True)
+            chunks = [chunk async for chunk in stream]
+            assert len(chunks) == 1
+            assert chunks[0].choices[0].delta.content == "streamed"
+            assert seen[1]["stream"] is True
+            assert seen[1]["model"] == "async-model"
+        else:
+            assert len(seen) == 1
+    finally:
+        if provider == "fireworks":
+            sdk_client._client_v1._client.close()
+            sdk_client._image_client_v1._client.close()
+            await sdk_client.aclose()
+        else:
+            await sdk_client.close()
 
 
 @pytest.mark.parametrize(("provider", "provider_value"), PROVIDERS)
 def test_provider_factories_reject_wrong_client_and_unsupported_mode(
     monkeypatch: pytest.MonkeyPatch, provider: str, provider_value: Provider
 ) -> None:
-    module, sync_type, _ = install_sdk_shaped_clients(monkeypatch, provider)
+    module, sdk_client = sync_sdk_client(
+        monkeypatch, provider, httpx.Client(trust_env=False)
+    )
     factory = getattr(module, f"from_{provider}")
 
-    with pytest.raises(ClientError, match="Client must be an instance.*Got: object"):
-        factory(object(), mode=Mode.TOOLS)
-    with pytest.raises(ModeError) as exc:
-        factory(sync_type(), mode=Mode.RESPONSES_TOOLS)
+    try:
+        with pytest.raises(
+            ClientError, match="Client must be an instance.*Got: object"
+        ):
+            factory(object(), mode=Mode.TOOLS)
+        with pytest.raises(ModeError) as exc:
+            factory(sdk_client, mode=Mode.RESPONSES_TOOLS)
 
-    assert exc.value.mode == Mode.RESPONSES_TOOLS.value
-    assert exc.value.provider == provider_value.value
-    assert Mode.TOOLS.value in exc.value.valid_modes
+        assert exc.value.mode == Mode.RESPONSES_TOOLS.value
+        assert exc.value.provider == provider_value.value
+        assert Mode.TOOLS.value in exc.value.valid_modes
+    finally:
+        if provider == "fireworks":
+            sdk_client._client_v1.close()
+            sdk_client._image_client_v1.close()
+        else:
+            sdk_client.close()
 
 
 def test_writer_reask_recovers_message_shapes_without_openai_model_dump() -> None:
@@ -352,6 +467,36 @@ def test_writer_tools_helper_and_length_error_keep_writer_contract() -> None:
     assert exc.value.last_completion is incomplete
 
 
+@pytest.mark.parametrize(
+    ("response", "message"),
+    [
+        pytest.param(object(), "No choices in Writer response", id="missing-choices"),
+        pytest.param(
+            SimpleNamespace(choices=[]),
+            "No choices in Writer response",
+            id="empty-choices",
+        ),
+        pytest.param(
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        finish_reason="stop", message=SimpleNamespace(tool_calls=[])
+                    )
+                ]
+            ),
+            "No tool calls in Writer response",
+            id="empty-tool-calls",
+        ),
+    ],
+)
+def test_writer_tools_rejects_malformed_responses(response: Any, message: str) -> None:
+    with pytest.raises(ResponseParsingError, match=message) as error:
+        WriterToolsHandler().parse_response(response, User)
+
+    assert error.value.mode == Mode.TOOLS.value
+    assert error.value.raw_response is response
+
+
 def test_writer_md_json_handles_multimodal_system_prompt_and_empty_messages() -> None:
     handler = WriterMDJSONHandler()
     multimodal = {
@@ -364,6 +509,7 @@ def test_writer_md_json_handles_multimodal_system_prompt_and_empty_messages() ->
     model, multimodal_kwargs = handler.prepare_request(User, multimodal)
     _, empty_kwargs = handler.prepare_request(User, {"messages": []})
 
+    assert model is not None
     assert issubclass(model, User)
     assert multimodal_kwargs["messages"][0]["role"] == "system"
     assert multimodal_kwargs["messages"][0]["content"][0]["text"].startswith(
@@ -415,6 +561,7 @@ def test_writer_handler_modes_prepare_parse_and_reask(
             ]
         },
     )
+    assert model is not None
     parsed = handler.parse_response(response, model, strict=True)
     reasked = handler.handle_reask(
         {"messages": list(MESSAGES)}, response, ValueError("age must be present")
@@ -475,6 +622,7 @@ def test_writer_handlers_parse_streaming_structured_output(
     prepared_model, kwargs = handler.prepare_request(
         iterable_user, {"messages": list(MESSAGES), "stream": True}
     )
+    assert prepared_model is not None
     chunk = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(**delta))])
 
     parsed = handler.parse_response([chunk], prepared_model)

@@ -188,6 +188,30 @@ def test_tools_reask_without_tool_invocation_adds_plain_correction() -> None:
     ]
 
 
+def test_tools_reask_without_content_adds_plain_correction() -> None:
+    original = {"messages": [{"role": "user", "content": [{"text": "extract"}]}]}
+    response = {"output": {"message": {"role": "assistant"}}}
+
+    result = reask_bedrock_tools(original, response, ValueError("value is required"))
+
+    assert result["messages"] == [
+        {"role": "user", "content": [{"text": "extract"}]},
+        {"role": "assistant"},
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": (
+                        "Validation Error due to no tool invocation:\n"
+                        "value is required\n"
+                        "Recall the function correctly, fix the errors"
+                    )
+                }
+            ],
+        },
+    ]
+
+
 @pytest.mark.parametrize(
     ("part", "message"),
     [
@@ -222,6 +246,19 @@ def test_openai_data_image_uses_filename_when_mime_type_is_missing() -> None:
     )
 
     assert result == {"image": {"format": "png", "source": {"bytes": b"image-bytes"}}}
+
+
+def test_openai_data_image_without_mime_or_known_filename_defaults_to_jpeg() -> None:
+    result = _openai_image_part_to_bedrock(
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": "data:;charset=utf-8;name=scan;base64,aW1hZ2UtYnl0ZXM="
+            },
+        }
+    )
+
+    assert result == {"image": {"format": "jpeg", "source": {"bytes": b"image-bytes"}}}
 
 
 def test_content_conversion_keeps_native_cache_and_string_parts() -> None:
@@ -260,6 +297,14 @@ def test_prepare_converse_handles_native_system_without_messages() -> None:
     }
 
 
+def test_prepare_converse_drops_an_empty_native_system_list() -> None:
+    result = _prepare_bedrock_converse_kwargs_internal(
+        {"system": [], "model": "model-a"}
+    )
+
+    assert result == {"modelId": "model-a"}
+
+
 @pytest.mark.parametrize(
     ("stop_kwargs", "expected"),
     [
@@ -277,6 +322,40 @@ def test_prepare_converse_maps_stop_variants(
 
     assert result["inferenceConfig"]["stopSequences"] == expected
     assert result["messages"] == [{"role": "user", "content": [{"text": "go"}]}]
+
+
+def test_prepare_converse_drops_an_unset_stop_value() -> None:
+    result = _prepare_bedrock_converse_kwargs_internal(
+        {"messages": [{"role": "user", "content": "go"}], "stop": None}
+    )
+
+    assert result == {"messages": [{"role": "user", "content": [{"text": "go"}]}]}
+
+
+def test_prepare_converse_keeps_existing_model_specific_top_k() -> None:
+    result = _prepare_bedrock_converse_kwargs_internal(
+        {
+            "top_k": 12,
+            "additionalModelRequestFields": {"top_k": 7, "custom": "keep"},
+            "messages": [{"role": "user", "content": "go"}],
+        }
+    )
+
+    assert result == {
+        "additionalModelRequestFields": {"top_k": 7, "custom": "keep"},
+        "messages": [{"role": "user", "content": [{"text": "go"}]}],
+    }
+
+
+def test_prepare_converse_maps_inference_values_without_messages() -> None:
+    result = _prepare_bedrock_converse_kwargs_internal(
+        {"modelId": "model-a", "temperature": 0.3}
+    )
+
+    assert result == {
+        "modelId": "model-a",
+        "inferenceConfig": {"temperature": 0.3},
+    }
 
 
 def test_prepare_converse_merges_camel_case_inference_values_and_non_dict_messages() -> (

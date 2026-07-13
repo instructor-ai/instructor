@@ -11,6 +11,7 @@ from instructor.cache import (
     BaseCache,
     DiskCache,
     load_cached_response,
+    make_cache_key,
     store_cached_response,
 )
 from pydantic import BaseModel
@@ -18,6 +19,23 @@ from pydantic import BaseModel
 
 class User(BaseModel):
     name: str
+
+
+def test_cache_key_without_response_model_is_stable_and_schema_independent() -> None:
+    messages = [{"role": "user", "content": "hello"}]
+
+    without_schema = make_cache_key(
+        messages=messages, model="local", response_model=None, mode="json"
+    )
+    repeated = make_cache_key(
+        messages=messages, model="local", response_model=None, mode="json"
+    )
+    with_schema = make_cache_key(
+        messages=messages, model="local", response_model=User, mode="json"
+    )
+
+    assert without_schema == repeated
+    assert without_schema != with_schema
 
 
 class MemoryCache(BaseCache):

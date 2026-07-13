@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,17 @@ from instructor.v2.core.multimodal import (
 )
 
 
+@pytest.fixture(autouse=True)
+def clear_url_caches() -> Iterator[None]:
+    Image.from_url.cache_clear()
+    Image.url_to_base64.cache_clear()
+    PDF.from_url.cache_clear()
+    yield
+    Image.from_url.cache_clear()
+    Image.url_to_base64.cache_clear()
+    PDF.from_url.cache_clear()
+
+
 def response(body: bytes, media_type: str, status: int = 200) -> requests.Response:
     result = requests.Response()
     result.status_code = status
@@ -37,8 +49,6 @@ def test_image_gcs_loading_and_autodetection(monkeypatch: pytest.MonkeyPatch) ->
         return response(body, "image/png")
 
     monkeypatch.setattr(requests, "get", get)
-    Image.from_url.cache_clear()
-
     direct = Image.from_gs_url("gs://pictures/photo.png", timeout=7)
     detected = Image.autodetect("gs://pictures/photo.png")
     via_url = Image.from_url("gs://pictures/photo.png")
@@ -76,7 +86,6 @@ def test_image_gcs_rejects_invalid_sources_and_failures(
 def test_image_url_errors_missing_path_and_unsupported_data_uri(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    Image.from_url.cache_clear()
     monkeypatch.setattr(
         requests,
         "head",
@@ -107,6 +116,32 @@ def test_image_path_probe_falls_back_to_raw_base64(
     assert image.data == encoded
 
 
+@pytest.mark.parametrize(
+    ("body", "media_type"),
+    [
+        (b"GIF87aimage", "image/gif"),
+        (b"GIF89aimage", "image/gif"),
+        (b"RIFF\x00\x00\x00\x00WEBPimage", "image/webp"),
+    ],
+)
+def test_image_raw_base64_detects_supported_signatures(
+    body: bytes, media_type: str
+) -> None:
+    encoded = base64.b64encode(body).decode()
+
+    image = Image.from_raw_base64(encoded)
+
+    assert image.media_type == media_type
+    assert image.source == image.data == encoded
+
+
+def test_image_raw_base64_rejects_non_webp_riff_data() -> None:
+    encoded = base64.b64encode(b"RIFF\x00\x00\x00\x00WAVEaudio").decode()
+
+    with pytest.raises(ValueError, match="Invalid or unsupported base64 image data"):
+        Image.from_raw_base64(encoded)
+
+
 def test_image_url_to_base64_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
@@ -115,8 +150,6 @@ def test_image_url_to_base64_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
         return response(b"image-bytes", "image/png")
 
     monkeypatch.setattr(requests, "get", get)
-    Image.url_to_base64.cache_clear()
-
     first = Image.url_to_base64("https://example.test/photo.png")
     second = Image.url_to_base64("https://example.test/photo.png")
 
@@ -214,8 +247,6 @@ def test_pdf_autodetects_gcs_path_and_raw_base64(
     monkeypatch.setattr(
         requests, "get", lambda *_args, **_kwargs: response(body, "application/pdf")
     )
-    PDF.from_url.cache_clear()
-
     gcs = PDF.autodetect("gs://reports/report.pdf")
     gcs_from_url = PDF.from_url("gs://reports/report.pdf")
     local = PDF.autodetect(pdf_path)
@@ -224,6 +255,32 @@ def test_pdf_autodetects_gcs_path_and_raw_base64(
     expected = base64.b64encode(body).decode()
     assert gcs.data == gcs_from_url.data == local.data == raw.data == expected
     assert {gcs.media_type, local.media_type, raw.media_type} == {"application/pdf"}
+
+
+def test_pdf_autodetects_url_from_response_media_type(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, bool]] = []
+
+    def head(url: str, allow_redirects: bool = False) -> requests.Response:
+        calls.append((url, allow_redirects))
+        return response(b"", "application/pdf")
+
+    monkeypatch.setattr(requests, "head", head)
+
+    pdf = PDF.autodetect("https://example.test/reports/latest")
+
+    assert pdf.source == "https://example.test/reports/latest"
+    assert pdf.media_type == "application/pdf"
+    assert pdf.data is None
+    assert calls == [("https://example.test/reports/latest", True)]
+
+
+def test_pdf_rejects_raw_base64_with_non_pdf_content() -> None:
+    encoded = base64.b64encode(b"plain text, not a PDF").decode()
+
+    with pytest.raises(ValueError, match="Invalid or unsupported base64 PDF data"):
+        PDF.from_raw_base64(encoded)
 
 
 @pytest.mark.parametrize(
@@ -284,7 +341,6 @@ def test_pdf_gcs_rejects_invalid_sources_and_failures(
 
 
 def test_pdf_url_errors_and_serialization(monkeypatch: pytest.MonkeyPatch) -> None:
-    PDF.from_url.cache_clear()
     monkeypatch.setattr(
         requests,
         "head",
@@ -426,3 +482,24 @@ def test_convert_messages_keeps_typed_and_mixed_content_and_detects_single_image
             }
         ],
     }
+
+
+def test_convert_messages_keeps_a_single_detected_image() -> None:
+    image = Image(
+        source="data:image/png;base64,iVBORw0KGgo=",
+        media_type="image/png",
+        data="iVBORw0KGgo=",
+    )
+    messages: list[dict[str, Any]] = [{"role": "user", "content": image}]
+
+    assert convert_messages(messages, Mode.TOOLS, autodetect_images=True) == [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "data:image/png;base64,iVBORw0KGgo="},
+                }
+            ],
+        }
+    ]

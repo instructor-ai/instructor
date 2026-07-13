@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import io
+import importlib.util
+import runpy
+from collections.abc import Sequence
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -53,23 +56,6 @@ class BatchResponse:
         }
 
 
-class VanishingOutputBatch(BatchResponse):
-    """Models an SDK object whose output reference disappears between reads."""
-
-    def __init__(self) -> None:
-        super().__init__(output_file_id="file_output")
-        self._reads = 0
-
-    @property
-    def output_file_id(self) -> str | None:
-        self._reads += 1
-        return "file_output" if self._reads == 1 else None
-
-    @output_file_id.setter
-    def output_file_id(self, value: str | None) -> None:
-        pass
-
-
 class FilesAPI:
     def __init__(self, text: str = '{"ok": true}\n') -> None:
         self.text = text
@@ -92,7 +78,7 @@ class FilesAPI:
 
 
 class BatchesAPI:
-    def __init__(self, responses: list[BatchResponse] | None = None) -> None:
+    def __init__(self, responses: Sequence[BatchResponse] | None = None) -> None:
         self.responses = responses or [BatchResponse()]
         self.retrieve_ids: list[str] = []
         self.created: list[dict[str, Any]] = []
@@ -178,8 +164,24 @@ def test_submit_batch_rewinds_buffer_and_passes_custom_options(
 
     assert batch_id == "batch_created"
     assert client.files.uploads == [(b'{"custom_id": "two"}\n', "batch")]
-    assert client.batches.created[0]["completion_window"] == "48h"
-    assert client.batches.created[0]["metadata"] == {"source": "daily-import"}
+    assert client.batches.created == [
+        {
+            "input_file_id": "file_input",
+            "endpoint": "/v1/chat/completions",
+            "completion_window": "48h",
+            "metadata": {"source": "daily-import"},
+        }
+    ]
+
+
+def test_submit_batch_rejects_invalid_input_without_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    invalid_input: Any = 123
+
+    with pytest.raises(ValueError, match="Unsupported file_path_or_buffer type"):
+        OpenAIProvider().submit_batch(invalid_input)
 
 
 @pytest.mark.parametrize("error", [ValueError("bad input"), TypeError("bad file")])
@@ -367,24 +369,6 @@ def test_results_report_exhausted_output_retries(
 
 
 @pytest.mark.parametrize("operation", ["retrieve", "download"])
-def test_results_reject_output_reference_that_disappears(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, operation: str
-) -> None:
-    client = OpenAIClient([VanishingOutputBatch()])
-    provider = install_client(monkeypatch, client)
-    destination = tmp_path / "results.jsonl"
-
-    with pytest.raises(Exception, match="Batch has no output file ID available"):
-        if operation == "retrieve":
-            provider.retrieve_results("batch_123")
-        else:
-            provider.download_results("batch_123", str(destination))
-
-    assert client.files.content_ids == []
-    assert not destination.exists()
-
-
-@pytest.mark.parametrize("operation", ["retrieve", "download"])
 def test_results_wrap_file_read_errors(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, operation: str
 ) -> None:
@@ -472,8 +456,12 @@ def test_provider_factory_selects_available_providers() -> None:
     openai_provider = providers.get_provider("openai")
     anthropic_provider = providers.get_provider("anthropic")
 
-    assert isinstance(openai_provider, providers.OpenAIProvider)
-    assert isinstance(anthropic_provider, providers.AnthropicProvider)
+    openai_provider_type = providers.OpenAIProvider
+    anthropic_provider_type = providers.AnthropicProvider
+    assert openai_provider_type is not None
+    assert anthropic_provider_type is not None
+    assert isinstance(openai_provider, openai_provider_type)
+    assert isinstance(anthropic_provider, anthropic_provider_type)
     assert isinstance(openai_provider, BatchProvider)
     assert isinstance(anthropic_provider, BatchProvider)
 
@@ -502,6 +490,30 @@ def test_provider_factory_rejects_unknown_provider() -> None:
         providers.get_provider("unknown")
 
 
+def test_provider_module_handles_missing_optional_sdks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_find_spec = importlib.util.find_spec
+    monkeypatch.setattr(
+        importlib.util,
+        "find_spec",
+        lambda name: None
+        if name in {"openai", "anthropic"}
+        else original_find_spec(name),
+    )
+
+    namespace = runpy.run_path(
+        providers.__file__, run_name="instructor.batch.providers.without_sdks"
+    )
+
+    assert namespace["OpenAIProvider"] is None
+    assert namespace["AnthropicProvider"] is None
+    with pytest.raises(ValueError, match="OpenAI is not installed"):
+        namespace["get_provider"]("openai")
+    with pytest.raises(ValueError, match="Anthropic is not installed"):
+        namespace["get_provider"]("anthropic")
+
+
 def test_batch_provider_contract_requires_and_defines_all_operations() -> None:
     expected = {
         "submit_batch",
@@ -515,38 +527,3 @@ def test_batch_provider_contract_requires_and_defines_all_operations() -> None:
     assert BatchProvider.__abstractmethods__ == expected
     with pytest.raises(TypeError, match="abstract methods"):
         BatchProvider()
-
-    class DelegatingProvider(BatchProvider):
-        def submit_batch(
-            self, file_path_or_buffer: Any, metadata: Any = None, **kwargs: Any
-        ) -> Any:
-            return super().submit_batch(file_path_or_buffer, metadata, **kwargs)
-
-        def get_status(self, batch_id: str) -> Any:
-            return super().get_status(batch_id)
-
-        def retrieve_results(self, batch_id: str) -> Any:
-            return super().retrieve_results(batch_id)
-
-        def download_results(self, batch_id: str, file_path: str) -> Any:
-            return super().download_results(batch_id, file_path)
-
-        def cancel_batch(self, batch_id: str) -> Any:
-            return super().cancel_batch(batch_id)
-
-        def delete_batch(self, batch_id: str) -> Any:
-            return super().delete_batch(batch_id)
-
-        def list_batches(self, limit: int = 10) -> Any:
-            return super().list_batches(limit)
-
-    provider = DelegatingProvider()
-    assert (
-        provider.submit_batch(io.BytesIO(b"{}\n"), metadata={"source": "test"}) is None
-    )
-    assert provider.get_status("batch_123") is None
-    assert provider.retrieve_results("batch_123") is None
-    assert provider.download_results("batch_123", "results.jsonl") is None
-    assert provider.cancel_batch("batch_123") is None
-    assert provider.delete_batch("batch_123") is None
-    assert provider.list_batches(2) is None

@@ -4,7 +4,7 @@ import builtins
 import sys
 from collections.abc import AsyncGenerator, Generator, Iterable
 from types import ModuleType, SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from google.genai import types
@@ -73,6 +73,12 @@ class BrokenFunctionCall:
         raise ValueError("invalid function-call payload")
 
 
+class NameOnlyFunctionCall:
+    @classmethod
+    def to_dict(cls, _call: NameOnlyFunctionCall) -> dict[str, Any]:
+        return {"name": "Answer"}
+
+
 class Part:
     def __init__(
         self,
@@ -127,17 +133,17 @@ def _install_legacy_types(monkeypatch: pytest.MonkeyPatch) -> None:
             self.parameters = parameters
 
     glm = ModuleType("google.ai.generativelanguage")
-    glm.FunctionCall = FunctionCall
-    glm.FunctionResponse = FunctionResponse
-    glm.Part = Part
+    vars(glm)["FunctionCall"] = FunctionCall
+    vars(glm)["FunctionResponse"] = FunctionResponse
+    vars(glm)["Part"] = Part
 
     google_ai = ModuleType("google.ai")
-    google_ai.generativelanguage = glm
+    vars(google_ai)["generativelanguage"] = glm
 
     legacy_types = ModuleType("google.generativeai.types")
-    legacy_types.FunctionDeclaration = FunctionDeclaration
+    vars(legacy_types)["FunctionDeclaration"] = FunctionDeclaration
     legacy = ModuleType("google.generativeai")
-    legacy.types = legacy_types
+    vars(legacy)["types"] = legacy_types
 
     monkeypatch.setitem(sys.modules, "google.ai", google_ai)
     monkeypatch.setitem(sys.modules, "google.ai.generativelanguage", glm)
@@ -301,6 +307,7 @@ def test_gemini_reask_messages_preserve_bad_arguments_and_validation_error(
 def test_gemini_parsers_handle_strict_json_and_blocked_or_bad_tool_responses() -> None:
     strict_response = Completion(text='```json\n{"value": 3}\n```')
     parsed = handlers.parse_gemini_json(Answer, strict_response, strict=True)
+    assert isinstance(parsed, Answer)
     assert parsed.value == 3
 
     with pytest.raises(ValidationError, match="valid integer"):
@@ -315,7 +322,9 @@ def test_gemini_parsers_handle_strict_json_and_blocked_or_bad_tool_responses() -
     assert blocked_error.value.raw_response is blocked
 
     fallback = Completion(function_call=DictOnlyFunctionCall())
-    assert handlers.parse_gemini_tools(Answer, fallback, strict=False).value == 11
+    fallback_result = handlers.parse_gemini_tools(Answer, fallback, strict=False)
+    assert isinstance(fallback_result, Answer)
+    assert fallback_result.value == 11
 
     missing_call = SimpleNamespace(candidates=[])
     with pytest.raises(ResponseParsingError, match="No tool call found") as call_error:
@@ -373,7 +382,7 @@ def test_gemini_stream_extractors_keep_valid_chunks_and_skip_incomplete_chunks()
     tool_handler = handlers.GeminiToolsHandler()
     tool_chunks = [
         Completion(function_call=FunctionCall(args={"value": 1})),
-        Completion(function_call=SimpleNamespace()),
+        Completion(function_call=NameOnlyFunctionCall()),
         SimpleNamespace(),
     ]
     assert list(tool_handler.extract_streaming_json(tool_chunks)) == ['{"value": 1}']
@@ -401,7 +410,7 @@ async def test_gemini_async_stream_extractors_keep_valid_chunks_and_skip_incompl
 
     tool_chunks = [
         Completion(function_call=FunctionCall(args={"value": 1})),
-        Completion(function_call=SimpleNamespace()),
+        Completion(function_call=NameOnlyFunctionCall()),
         SimpleNamespace(),
     ]
     assert [
@@ -490,11 +499,13 @@ def test_gemini_stream_parser_supports_custom_models_and_unwraps_simple_types() 
     )
     assert [item.value for item in streamed] == [5]
 
-    adapted = ModelAdapter[int]
+    adapted = cast(type[BaseModel], ModelAdapter[int])
     assert handler.parse_response(Completion(text='{"content": 6}'), adapted) == 6
     parsed = handler.parse_response(Completion(text='{"value": 8}'), Answer)
     assert parsed.value == 8
     assert parsed._raw_response.text == '{"value": 8}'
+    raw_result = {"value": 9}
+    assert handler._finalize(Answer, Completion(), raw_result) is raw_result
 
 
 def test_gemini_schema_mapping_handles_enums_optional_and_supported_unions() -> None:
@@ -555,8 +566,8 @@ def test_gemini_safety_defaults_fall_back_to_legacy_sdk_or_none(
         BLOCK_ONLY_HIGH = "high"
 
     legacy_module = ModuleType("google.generativeai.types")
-    legacy_module.HarmCategory = LegacyCategory
-    legacy_module.HarmBlockThreshold = LegacyThreshold
+    vars(legacy_module)["HarmCategory"] = LegacyCategory
+    vars(legacy_module)["HarmBlockThreshold"] = LegacyThreshold
 
     def import_with_legacy(
         name: str,
@@ -626,21 +637,75 @@ def test_gemini_model_schema_and_generation_config_accept_compatibility_shapes()
     assert inherited["labels"] == {"suite": "coverage"}
     assert "cached_content" not in inherited
 
+    with_null_token_limit = utils.update_genai_kwargs(
+        {"generation_config": {"max_tokens": None, "temperature": 0.25}}, {}
+    )
+    assert "max_output_tokens" not in with_null_token_limit
+    assert with_null_token_limit["temperature"] == 0.25
+
+    default_thresholds = utils.update_genai_kwargs({"safety_settings": ()}, {})
+    assert default_thresholds["safety_settings"]
+    assert all(
+        setting["threshold"] is types.HarmBlockThreshold.OFF
+        for setting in default_thresholds["safety_settings"]
+    )
+
+    legacy_kwargs = utils.update_gemini_kwargs(
+        {"generation_config": {"max_tokens": None, "temperature": 0.5}}
+    )
+    assert "contents" not in legacy_kwargs
+    assert "max_output_tokens" not in legacy_kwargs["generation_config"]
+    assert legacy_kwargs["generation_config"]["temperature"] == 0.5
+
 
 def test_genai_message_conversion_rejects_invalid_roles_parts_and_message_types() -> (
     None
 ):
     assert (
         utils.extract_genai_system_message(
-            [
-                "raw prompt",
-                {"role": "system", "content": "rules"},
-                {"role": "user", "content": "hi"},
-            ]
+            cast(
+                list[dict[str, Any]],
+                [
+                    "raw prompt",
+                    {"role": "system", "content": "rules"},
+                    {"role": "user", "content": "hi"},
+                ],
+            )
         )
         == "rules\n\n"
     )
     assert utils.transform_to_gemini_prompt([]) == []
+    assert utils.transform_to_gemini_prompt(
+        cast(
+            Any,
+            [
+                {"role": "system", "content": None},
+                {
+                    "role": "system",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": "image.png"}},
+                        {"type": "text", "text": 42},
+                        {"type": "text", "text": "use integers"},
+                    ],
+                },
+                {"role": "user", "content": "extract 4"},
+            ],
+        )
+    ) == [{"role": "user", "parts": ["*use integers*", "extract 4"]}]
+    assert (
+        utils.extract_genai_system_message(
+            cast(
+                list[dict[str, Any]],
+                [
+                    42,
+                    {"role": "system", "content": None},
+                    {"role": "system", "content": ["use integers", object()]},
+                    {"role": "user", "content": "extract 4"},
+                ],
+            )
+        )
+        == "use integers\n\n"
+    )
     assert (
         utils.convert_to_genai_messages(
             [
@@ -661,8 +726,11 @@ def test_genai_message_conversion_rejects_invalid_roles_parts_and_message_types(
     with pytest.raises(ValueError, match="Unsupported content item type"):
         utils.convert_to_genai_messages([{"role": "user", "content": [object()]}])
 
+    with pytest.raises(ValueError, match="Unsupported content type"):
+        utils.convert_to_genai_messages([{"role": "user", "content": 42}])
+
     with pytest.raises(ValueError, match="Unsupported message type"):
-        utils.convert_to_genai_messages([42])
+        utils.convert_to_genai_messages([cast(Any, 42)])
 
 
 def test_gemini_request_helpers_support_unstructured_requests_and_reject_model_override() -> (
@@ -715,6 +783,21 @@ def test_genai_request_helpers_cover_unstructured_streaming_and_config_inheritan
     assert unstructured["contents"][0].parts[0].text == "hello"
     assert unstructured["config"].max_output_tokens == 16
 
+    _, explicit_system = utils.handle_genai_structured_outputs(
+        None,
+        {
+            "system": "use the explicit instructions",
+            "messages": [
+                {"role": "system", "content": "ignore these instructions"},
+                {"role": "user", "content": "hello"},
+            ],
+        },
+    )
+    assert explicit_system["config"].system_instruction == (
+        "use the explicit instructions"
+    )
+    assert "system" not in explicit_system
+
     structured_model, structured = utils.handle_genai_structured_outputs(
         Answer,
         {
@@ -723,6 +806,7 @@ def test_genai_request_helpers_cover_unstructured_streaming_and_config_inheritan
             "config": {"thinking_config": {"thinking_budget": 32}},
         },
     )
+    assert structured_model is not None
     assert issubclass(structured_model, PartialBase)
     assert structured["config"].response_mime_type == "application/json"
     assert structured["config"].response_schema is structured_model
@@ -737,6 +821,7 @@ def test_genai_request_helpers_cover_unstructured_streaming_and_config_inheritan
             "config": {"thinking_config": {"thinking_budget": 64}},
         },
     )
+    assert tool_model is not None
     assert issubclass(tool_model, PartialBase)
     declaration = tool_request["config"].tools[0].function_declarations[0]
     assert declaration.name == tool_model.__name__
@@ -778,6 +863,32 @@ def test_genai_request_helpers_preserve_cached_content_and_system_messages_from_
     assert tool_request["config"].system_instruction is None
     assert tool_request["config"].tools is None
     assert tool_request["contents"][0].parts[0].text == "extract a value"
+
+    cached_only = SimpleNamespace(cached_content="cachedContents/session-2")
+    _, structured_cached_only = utils.handle_genai_structured_outputs(
+        Answer, {"messages": messages.copy(), "config": cached_only}
+    )
+    _, tools_cached_only = utils.handle_genai_tools(
+        Answer, {"messages": messages.copy(), "config": cached_only}
+    )
+    assert structured_cached_only["config"].cached_content == "cachedContents/session-2"
+    assert structured_cached_only["config"].thinking_config is None
+    assert tools_cached_only["config"].cached_content == "cachedContents/session-2"
+    assert tools_cached_only["config"].thinking_config is None
+
+    thinking_only = SimpleNamespace(
+        thinking_config=types.ThinkingConfig(thinking_budget=12)
+    )
+    _, structured_thinking_only = utils.handle_genai_structured_outputs(
+        Answer, {"messages": messages.copy(), "config": thinking_only}
+    )
+    _, tools_thinking_only = utils.handle_genai_tools(
+        Answer, {"messages": messages.copy(), "config": thinking_only}
+    )
+    assert structured_thinking_only["config"].cached_content is None
+    assert structured_thinking_only["config"].thinking_config.thinking_budget == 12
+    assert tools_thinking_only["config"].cached_content is None
+    assert tools_thinking_only["config"].thinking_config.thinking_budget == 12
 
 
 def test_gemini_compatibility_helpers_keep_vertex_passthrough_and_genai_reask() -> None:

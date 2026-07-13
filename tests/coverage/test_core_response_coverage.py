@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import importlib
 import json
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import Callable
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import pytest
-from openai.types.chat import ChatCompletion, ChatCompletionChunk
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, ValidationError
 from typing_extensions import TypedDict
 
@@ -18,6 +18,7 @@ from instructor.v2.core.registry import ModeRegistry
 from instructor.v2.core.response import (
     _ensure_registry_loaded,
     _redact_kwargs,
+    handle_response_model,
     is_typed_dict,
     process_response,
     process_response_async,
@@ -27,6 +28,8 @@ from instructor.v2.dsl.parallel import ParallelBase
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.dsl.response_list import ListResponse
 from instructor.v2.dsl.simple_type import AdapterBase
+from tests.coverage._openai import chat_completion, tool_call, tool_chunks
+from tests.coverage._streams import async_items
 
 
 class User(BaseModel):
@@ -58,88 +61,6 @@ class IntegerAdapter(AdapterBase):
     content: int
 
 
-def _chat_completion(
-    *,
-    content: str | None = None,
-    tool_calls: list[dict[str, Any]] | None = None,
-) -> ChatCompletion:
-    message: dict[str, Any] = {"role": "assistant", "content": content}
-    if tool_calls is not None:
-        message["tool_calls"] = tool_calls
-    return ChatCompletion.model_validate(
-        {
-            "id": "chatcmpl-coverage",
-            "object": "chat.completion",
-            "created": 1_700_000_000,
-            "model": "gpt-4.1-mini",
-            "choices": [
-                {
-                    "index": 0,
-                    "finish_reason": "tool_calls" if tool_calls else "stop",
-                    "message": message,
-                }
-            ],
-        }
-    )
-
-
-def _tool_call(name: str, arguments: dict[str, Any] | str) -> dict[str, Any]:
-    return {
-        "id": f"call-{name.lower()}",
-        "type": "function",
-        "function": {
-            "name": name,
-            "arguments": arguments
-            if isinstance(arguments, str)
-            else json.dumps(arguments),
-        },
-    }
-
-
-def _tool_chunks(*parts: str) -> list[ChatCompletionChunk]:
-    chunks = []
-    for index, part in enumerate(parts):
-        chunks.append(
-            ChatCompletionChunk.model_validate(
-                {
-                    "id": "chatcmpl-stream-coverage",
-                    "object": "chat.completion.chunk",
-                    "created": 1_700_000_000,
-                    "model": "gpt-4.1-mini",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "finish_reason": "stop"
-                            if index == len(parts) - 1
-                            else None,
-                            "delta": {
-                                "tool_calls": [
-                                    {
-                                        "index": 0,
-                                        "id": "call-user",
-                                        "type": "function",
-                                        "function": {
-                                            "name": "User",
-                                            "arguments": part,
-                                        },
-                                    }
-                                ]
-                            },
-                        }
-                    ],
-                }
-            )
-        )
-    return chunks
-
-
-async def _async_chunks(
-    chunks: list[ChatCompletionChunk],
-) -> AsyncGenerator[ChatCompletionChunk, None]:
-    for chunk in chunks:
-        yield chunk
-
-
 def _install_parser(
     monkeypatch: pytest.MonkeyPatch,
     parser: Callable[..., Any],
@@ -152,8 +73,9 @@ def _install_parser(
         return response_model, kwargs
 
     def reask_handler(
-        kwargs: dict[str, Any], _response: Any, _exception: Exception
+        kwargs: dict[str, Any], response: Any, exception: Exception
     ) -> dict[str, Any]:
+        del response, exception
         return kwargs
 
     registry.register(
@@ -202,7 +124,7 @@ def test_registry_load_failure_is_best_effort(
 
 @pytest.mark.asyncio
 async def test_raw_response_is_returned_unchanged_sync_and_async() -> None:
-    raw = _chat_completion(content='{"name": "Ada", "age": 36}')
+    raw = chat_completion(content='{"name": "Ada", "age": 36}')
 
     assert process_response(raw, response_model=None, stream=False) is raw
     assert await process_response_async(raw, response_model=None) is raw
@@ -210,7 +132,7 @@ async def test_raw_response_is_returned_unchanged_sync_and_async() -> None:
 
 @pytest.mark.asyncio
 async def test_standard_tool_response_attaches_raw_completion_sync_and_async() -> None:
-    raw = _chat_completion(tool_calls=[_tool_call("User", {"name": "Ada", "age": 36})])
+    raw = chat_completion(tool_calls=[tool_call("User", {"name": "Ada", "age": 36})])
 
     sync_result = process_response(
         raw, response_model=User, stream=False, mode=Mode.TOOLS
@@ -227,7 +149,7 @@ async def test_standard_tool_response_attaches_raw_completion_sync_and_async() -
 
 @pytest.mark.asyncio
 async def test_invalid_tool_arguments_raise_validation_error_sync_and_async() -> None:
-    raw = _chat_completion(tool_calls=[_tool_call("User", '{"name": "Ada"}')])
+    raw = chat_completion(tool_calls=[tool_call("User", '{"name": "Ada"}')])
 
     with pytest.raises(ValidationError, match="age"):
         process_response(raw, response_model=User, stream=False, mode=Mode.TOOLS)
@@ -240,7 +162,7 @@ async def test_invalid_tool_arguments_raise_validation_error_sync_and_async() ->
 
 @pytest.mark.asyncio
 async def test_unsupported_provider_surfaces_registry_error_sync_and_async() -> None:
-    raw = _chat_completion(content='{"name": "Ada", "age": 36}')
+    raw = chat_completion(content='{"name": "Ada", "age": 36}')
 
     with pytest.raises(KeyError, match="not registered"):
         process_response(
@@ -272,14 +194,14 @@ async def test_non_choice_iterable_response_becomes_list_response_sync_and_async
     )
 
     sync_result = process_response(
-        raw,
+        cast(Any, raw),
         response_model=UsersEnvelope,
         stream=False,
         strict=True,
         mode=Mode.JSON,
     )
     async_result = await process_response_async(
-        raw,
+        cast(Any, raw),
         response_model=UsersEnvelope,
         stream=False,
         strict=True,
@@ -297,9 +219,9 @@ async def test_non_choice_iterable_response_becomes_list_response_sync_and_async
 @pytest.mark.asyncio
 async def test_iterable_completion_list_is_wrapped_sync_and_async() -> None:
     response_model = IterableModel(User)
-    raw = _chat_completion(
+    raw = chat_completion(
         tool_calls=[
-            _tool_call(
+            tool_call(
                 response_model.__name__,
                 {"tasks": [{"name": "Ada", "age": 36}, {"name": "Lin", "age": 29}]},
             )
@@ -325,13 +247,13 @@ async def test_iterable_completion_list_is_wrapped_sync_and_async() -> None:
 @pytest.mark.asyncio
 async def test_partial_sync_stream_is_preserved_by_sync_and_async_conversion() -> None:
     response_model = Partial[User]
-    chunks = _tool_chunks('{"name": "Ad', 'a", "age": 36}')
+    chunks = tool_chunks('{"name": "Ad', 'a", "age": 36}')
 
     sync_result = process_response(
-        chunks, response_model=response_model, stream=True, mode=Mode.TOOLS
+        cast(Any, chunks), response_model=response_model, stream=True, mode=Mode.TOOLS
     )
     async_result = await process_response_async(
-        chunks, response_model=response_model, stream=True, mode=Mode.TOOLS
+        cast(Any, chunks), response_model=response_model, stream=True, mode=Mode.TOOLS
     )
 
     assert [item.name for item in sync_result] == ["Ad", "Ada"]
@@ -343,15 +265,15 @@ async def test_partial_sync_stream_is_preserved_by_sync_and_async_conversion() -
 @pytest.mark.asyncio
 async def test_async_iterable_stream_remains_an_async_generator() -> None:
     response_model = IterableModel(User)
-    raw = _async_chunks(
-        _tool_chunks(
+    raw = async_items(
+        tool_chunks(
             '{"tasks": [{"name": "Ada", "age": 36},',
             ' {"name": "Lin", "age": 29}]}',
         )
     )
 
     result = await process_response_async(
-        raw, response_model=response_model, stream=True, mode=Mode.TOOLS
+        cast(Any, raw), response_model=response_model, stream=True, mode=Mode.TOOLS
     )
     users = [user async for user in result]
 
@@ -362,10 +284,12 @@ async def test_async_iterable_stream_remains_an_async_generator() -> None:
 async def test_custom_iterable_parser_is_wrapped_sync_and_async(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    raw = _chat_completion(content='{"tasks": [{"name": "Ada", "age": 36}]}')
+    raw = chat_completion(content='{"tasks": [{"name": "Ada", "age": 36}]}')
 
     def parser(*, response: ChatCompletion, **_kwargs: Any) -> UsersEnvelope:
-        return UsersEnvelope.model_validate_json(response.choices[0].message.content)
+        content = response.choices[0].message.content
+        assert content is not None
+        return UsersEnvelope.model_validate_json(content)
 
     _install_parser(monkeypatch, parser)
 
@@ -396,10 +320,10 @@ async def test_custom_iterable_parser_is_wrapped_sync_and_async(
 async def test_custom_parallel_parser_preserves_results_and_raw_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    raw = _chat_completion(
+    raw = chat_completion(
         tool_calls=[
-            _tool_call("User", {"name": "Ada", "age": 36}),
-            _tool_call("User", {"name": "Lin", "age": 29}),
+            tool_call("User", {"name": "Ada", "age": 36}, "call-ada"),
+            tool_call("User", {"name": "Lin", "age": 29}, "call-lin"),
         ]
     )
     response_model = ParallelBase(User)
@@ -414,14 +338,14 @@ async def test_custom_parallel_parser_preserves_results_and_raw_response(
 
     sync_result = process_response(
         raw,
-        response_model=response_model,
+        response_model=cast(Any, response_model),
         stream=False,
         mode=Mode.JSON,
         provider=Provider.UNKNOWN,
     )
     async_result = await process_response_async(
         raw,
-        response_model=response_model,
+        response_model=cast(Any, response_model),
         stream=False,
         mode=Mode.JSON,
         provider=Provider.UNKNOWN,
@@ -438,10 +362,12 @@ async def test_custom_parallel_parser_preserves_results_and_raw_response(
 async def test_custom_adapter_parser_returns_simple_value_sync_and_async(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    raw = _chat_completion(content='{"content": 42}')
+    raw = chat_completion(content='{"content": 42}')
 
     def parser(*, response: ChatCompletion, **_kwargs: Any) -> IntegerAdapter:
-        return IntegerAdapter.model_validate_json(response.choices[0].message.content)
+        content = response.choices[0].message.content
+        assert content is not None
+        return IntegerAdapter.model_validate_json(content)
 
     _install_parser(monkeypatch, parser)
 
@@ -465,6 +391,57 @@ async def test_custom_adapter_parser_returns_simple_value_sync_and_async(
         )
         == 42
     )
+
+
+@pytest.mark.asyncio
+async def test_custom_parser_can_return_native_mapping_sync_and_async(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    raw = chat_completion(content='{"name": "Ada", "age": 36}')
+
+    def parser(*, response: ChatCompletion, **_kwargs: Any) -> dict[str, Any]:
+        content = response.choices[0].message.content
+        assert content is not None
+        return json.loads(content)
+
+    _install_parser(monkeypatch, parser)
+
+    expected = {"name": "Ada", "age": 36}
+    assert (
+        process_response(
+            raw,
+            response_model=User,
+            stream=False,
+            mode=Mode.JSON,
+            provider=Provider.UNKNOWN,
+        )
+        == expected
+    )
+    assert (
+        await process_response_async(
+            raw,
+            response_model=User,
+            stream=False,
+            mode=Mode.JSON,
+            provider=Provider.UNKNOWN,
+        )
+        == expected
+    )
+
+
+def test_handle_response_model_without_schema_preserves_request_kwargs() -> None:
+    messages = [{"role": "user", "content": "Hello"}]
+
+    response_model, kwargs = handle_response_model(
+        None,
+        mode=Mode.TOOLS,
+        provider=Provider.OPENAI,
+        messages=messages,
+    )
+
+    assert response_model is None
+    assert kwargs == {"messages": messages}
+    assert kwargs["messages"] is not messages
 
 
 def test_is_typed_dict_distinguishes_typed_dicts_from_other_inputs() -> None:

@@ -1,17 +1,14 @@
-from collections.abc import AsyncGenerator, Generator, Iterable
+from collections.abc import AsyncGenerator, Callable, Generator, Iterable
 from enum import Enum
-from typing import Any
+from typing import Any, Optional, Protocol, Union, cast
+import typing
 
 import pytest
 from pydantic import BaseModel
 
 from instructor.v2.dsl.json_tracker import JsonCompleteness
-from instructor.v2.dsl.partial import (
-    Partial,
-    PartialBase,
-    _build_partial_list,
-    _build_partial_object,
-)
+from instructor.v2.dsl.partial import Partial, PartialBase
+import instructor.v2.dsl.partial as partial_module
 
 
 class State(str, Enum):
@@ -25,10 +22,58 @@ class Item(BaseModel):
 
 
 class Envelope(BaseModel):
-    optional_note: str | None
-    metadata: dict[str, str | int]
+    optional_note: Optional[str]
+    metadata: dict[str, Union[str, int]]
     featured: Item
     items: list[Item]
+
+
+class LooseEnvelope(BaseModel):
+    metadata: dict
+    values: typing.List  # noqa: UP006
+    counts: list[int]
+
+
+class EnvelopeStream(Protocol):
+    @classmethod
+    def model_from_chunks(
+        cls, json_chunks: Iterable[Any], **kwargs: Any
+    ) -> Generator[Envelope, None, None]: ...
+
+    @classmethod
+    def model_from_chunks_async(
+        cls, json_chunks: AsyncGenerator[Any, None], **kwargs: Any
+    ) -> AsyncGenerator[Envelope, None]: ...
+
+    @classmethod
+    def from_streaming_response(
+        cls,
+        completion: Iterable[Any],
+        stream_extractor: Optional[
+            Callable[[Iterable[Any]], Generator[str, None, None]]
+        ],
+    ) -> Generator[Envelope, None, None]: ...
+
+    @classmethod
+    def from_streaming_response_async(
+        cls,
+        completion: AsyncGenerator[Any, None],
+        stream_extractor: Optional[
+            Callable[[AsyncGenerator[Any, None]], AsyncGenerator[str, None]]
+        ],
+    ) -> AsyncGenerator[Envelope, None]: ...
+
+
+_build_partial_object = cast(
+    Callable[[Any, type[BaseModel], JsonCompleteness, str], Any],
+    vars(partial_module)["_build_partial_object"],
+)
+_build_partial_list = cast(
+    Callable[
+        [list[Any], Optional[type[BaseModel]], str, JsonCompleteness, str], list[Any]
+    ],
+    vars(partial_module)["_build_partial_list"],
+)
 
 
 class TextChunk:
@@ -85,7 +130,8 @@ def test_partial_builder_recurses_into_open_nested_model_and_handles_scalars() -
         {"featured": {"number": "12", "state": "pen"}}, Envelope, tracker, ""
     )
 
-    assert result.featured.model_dump() == {"number": "12", "state": "pen"}
+    assert result.featured.number == "12"
+    assert result.featured.state == "pen"
     assert result.optional_note is None
     assert result.metadata is None
     assert result.items is None
@@ -109,8 +155,24 @@ def test_partial_list_preserves_untyped_and_unknown_fields() -> None:
     ]
 
 
+def test_partial_builder_preserves_bare_containers_and_complete_scalar_items() -> None:
+    tracker = JsonCompleteness()
+    tracker.analyze('{"metadata":{"source":"stream"},"values":["raw"],"counts":[1]}')
+
+    result = _build_partial_object(
+        {"metadata": {"source": "stream"}, "values": ["raw"], "counts": [1]},
+        LooseEnvelope,
+        tracker,
+        "",
+    )
+
+    assert result.metadata == {"source": "stream"}
+    assert result.values == ["raw"]
+    assert result.counts == [1]
+
+
 def test_sync_stream_accepts_string_like_chunks_and_skips_bad_chunks() -> None:
-    partial_envelope = Partial[Envelope]
+    partial_envelope = cast(type[EnvelopeStream], Partial[Envelope])
     values = list(
         partial_envelope.model_from_chunks(
             [
@@ -135,6 +197,29 @@ def test_sync_stream_accepts_string_like_chunks_and_skips_bad_chunks() -> None:
     )
 
 
+def test_sync_partial_stream_handles_empty_incomplete_and_unbound_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    partial_envelope = cast(type[EnvelopeStream], Partial[Envelope])
+    assert list(partial_envelope.model_from_chunks([])) == []
+
+    incomplete = list(partial_envelope.model_from_chunks(['{"optional_note":"open']))
+    assert len(incomplete) == 1
+    assert incomplete[0].optional_note == "open"
+
+    monkeypatch.setattr(partial_envelope, "_original_model", None)
+    complete = list(
+        partial_envelope.model_from_chunks(
+            [
+                '{"optional_note":"complete","metadata":{},'
+                '"featured":{"number":1,"state":"ready"},"items":[]}'
+            ]
+        )
+    )
+    assert len(complete) == 1
+    assert complete[0].optional_note == "complete"
+
+
 @pytest.mark.asyncio
 async def test_async_stream_accepts_string_like_chunks_and_skips_bad_chunks() -> None:
     async def chunks() -> AsyncGenerator[Any, None]:
@@ -146,7 +231,7 @@ async def test_async_stream_accepts_string_like_chunks_and_skips_bad_chunks() ->
             '"items":[{"number":5,"state":"ready"}]}'
         )
 
-    partial_envelope = Partial[Envelope]
+    partial_envelope = cast(type[EnvelopeStream], Partial[Envelope])
     values = [
         value async for value in partial_envelope.model_from_chunks_async(chunks())
     ]
@@ -161,8 +246,44 @@ async def test_async_stream_accepts_string_like_chunks_and_skips_bad_chunks() ->
     )
 
 
+@pytest.mark.asyncio
+async def test_async_partial_stream_handles_empty_incomplete_and_unbound_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def chunks(*values: str) -> AsyncGenerator[str, None]:
+        for value in values:
+            yield value
+
+    partial_envelope = cast(type[EnvelopeStream], Partial[Envelope])
+    assert [
+        value async for value in partial_envelope.model_from_chunks_async(chunks())
+    ] == []
+
+    incomplete = [
+        value
+        async for value in partial_envelope.model_from_chunks_async(
+            chunks('{"optional_note":"open')
+        )
+    ]
+    assert len(incomplete) == 1
+    assert incomplete[0].optional_note == "open"
+
+    monkeypatch.setattr(partial_envelope, "_original_model", None)
+    complete = [
+        value
+        async for value in partial_envelope.model_from_chunks_async(
+            chunks(
+                '{"optional_note":"complete","metadata":{},'
+                '"featured":{"number":1,"state":"ready"},"items":[]}'
+            )
+        )
+    ]
+    assert len(complete) == 1
+    assert complete[0].optional_note == "complete"
+
+
 def test_sync_streaming_response_requires_and_uses_an_extractor() -> None:
-    partial_envelope = Partial[Envelope]
+    partial_envelope = cast(type[EnvelopeStream], Partial[Envelope])
     with pytest.raises(ValueError, match="stream_extractor is required"):
         list(partial_envelope.from_streaming_response([], None))
 
@@ -191,7 +312,7 @@ def test_sync_streaming_response_requires_and_uses_an_extractor() -> None:
 
 @pytest.mark.asyncio
 async def test_async_streaming_response_requires_and_uses_an_extractor() -> None:
-    partial_envelope = Partial[Envelope]
+    partial_envelope = cast(type[EnvelopeStream], Partial[Envelope])
 
     async def empty() -> AsyncGenerator[str, None]:
         if False:
@@ -261,14 +382,47 @@ async def test_async_json_extractor_delegates_and_rejects_a_missing_extractor() 
         [chunk async for chunk in PartialBase.extract_json_async(completion(), None)]
 
 
+@pytest.mark.asyncio
+async def test_async_responses_extractor_ignores_unhandled_events() -> None:
+    from openai.types.responses import (
+        ResponseFunctionCallArgumentsDeltaEvent,
+        ResponseReasoningSummaryTextDeltaEvent,
+    )
+
+    from instructor.v2.core.mode import Mode
+
+    async def events() -> AsyncGenerator[Any, None]:
+        yield ResponseReasoningSummaryTextDeltaEvent(
+            delta="thinking",
+            item_id="reasoning-1",
+            output_index=0,
+            sequence_number=1,
+            summary_index=0,
+            type="response.reasoning_summary_text.delta",
+        )
+        yield object()
+        yield ResponseFunctionCallArgumentsDeltaEvent(
+            delta='{"ok":true}',
+            item_id="call-1",
+            output_index=1,
+            sequence_number=2,
+            type="response.function_call_arguments.delta",
+        )
+
+    assert [
+        chunk
+        async for chunk in PartialBase.extract_json_async(
+            events(), Mode.RESPONSES_TOOLS
+        )
+    ] == ['{"ok":true}']
+
+
 def test_partial_rejects_direct_use_and_wraps_a_recursive_model() -> None:
     with pytest.raises(TypeError, match="Cannot instantiate abstract Partial class"):
-        Partial()
+        cast(Callable[[], object], Partial)()
 
     with pytest.raises(TypeError, match="Cannot subclass .*Partial"):
-
-        class InvalidPartial(Partial):
-            pass
+        type("InvalidPartial", (cast(type, Partial),), {})
 
     class RecursiveNode(BaseModel):
         child: "RecursiveNode"

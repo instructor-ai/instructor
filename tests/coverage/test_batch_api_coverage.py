@@ -1,5 +1,7 @@
 """Coverage for the public batch parsing, request, and result APIs."""
 
+from __future__ import annotations
+
 import io
 import json
 from datetime import datetime, timezone
@@ -39,6 +41,19 @@ class TypelessResponse(BaseModel):
     @classmethod
     def model_json_schema(cls, *_args, **_kwargs) -> dict:
         return {"properties": {"value": {"type": "string"}}, "required": ["value"]}
+
+
+class RestrictedResponse(BaseModel):
+    value: str
+
+    @classmethod
+    def model_json_schema(cls, *_args, **_kwargs) -> dict:
+        return {
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {"value": {"type": "string"}, "forbidden": False},
+            "required": ["value"],
+        }
 
 
 def test_legacy_batch_job_parses_provider_results_and_preserves_errors(
@@ -139,6 +154,62 @@ def test_legacy_batch_job_parses_provider_results_and_preserves_errors(
     ]
     assert errors[:3] == [invalid_model, malformed_content, unsupported_shape]
     assert errors[3] == {"error": "Failed to parse JSON", "raw_line": "{not-valid-json"}
+
+
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    [
+        (
+            {
+                "response": {
+                    "body": {
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": {"ignored": True},
+                                    "tool_calls": [
+                                        {
+                                            "function": {
+                                                "arguments": '{"name":"Ada","age":36}'
+                                            }
+                                        }
+                                    ],
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {"name": "Ada", "age": 36},
+        ),
+        (
+            {"response": {"body": {"choices": [{"message": {"role": "assistant"}}]}}},
+            None,
+        ),
+        ({"result": {"message": {"content": []}}}, None),
+        (
+            {"result": {"message": {"content": [{"type": "image", "source": {}}]}}},
+            None,
+        ),
+        (
+            {
+                "result": {
+                    "message": {
+                        "content": [
+                            {"type": "image", "source": {}},
+                            {"type": "text", "text": '{"name":"Lin","age":28}'},
+                        ]
+                    }
+                }
+            },
+            {"name": "Lin", "age": 28},
+        ),
+    ],
+)
+def test_legacy_batch_job_handles_empty_unknown_and_mixed_content_blocks(
+    payload: dict, expected: dict | None
+) -> None:
+    assert BatchJob._extract_structured_data(payload) == expected
 
 
 def test_openai_batch_job_info_normalizes_status_timestamps_counts_and_error() -> None:
@@ -299,6 +370,22 @@ def test_openai_batch_request_makes_nested_array_and_definition_schemas_strict()
     assert schema["$defs"]["Person"]["additionalProperties"] is False
 
 
+def test_openai_batch_request_preserves_boolean_property_schema() -> None:
+    request = BatchRequest[RestrictedResponse](
+        custom_id="restricted-1",
+        messages=[{"role": "user", "content": "Extract the value."}],
+        response_model=RestrictedResponse,
+        model="gpt-4o-mini",
+    )
+
+    schema = request.to_openai_format()["body"]["response_format"]["json_schema"][
+        "schema"
+    ]
+
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["forbidden"] is False
+
+
 def test_anthropic_batch_request_extracts_system_message_and_completes_schema() -> None:
     request = BatchRequest[TypelessResponse](
         custom_id="anthropic-1",
@@ -323,6 +410,21 @@ def test_anthropic_batch_request_extracts_system_message_and_completes_schema() 
         "properties": {"value": {"type": "string"}},
         "required": ["value"],
     }
+
+
+def test_anthropic_batch_request_preserves_explicit_additional_properties() -> None:
+    request = BatchRequest[RestrictedResponse](
+        custom_id="anthropic-restricted-1",
+        messages=[{"role": "user", "content": "Extract the value."}],
+        response_model=RestrictedResponse,
+        model="claude-sonnet",
+    )
+
+    schema = request.to_anthropic_format()["params"]["tools"][0]["input_schema"]
+
+    assert schema["type"] == "object"
+    assert schema["additionalProperties"] is True
+    assert schema["properties"]["forbidden"] is False
 
 
 def test_batch_request_rejects_an_unsupported_provider() -> None:

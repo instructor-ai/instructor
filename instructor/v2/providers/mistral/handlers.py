@@ -179,21 +179,21 @@ class MistralHandlerBase(ModeHandler):
             task_parser = streaming_model.tasks_from_task_list_chunks
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
+            if task_parser is not None:
+                parse_kwargs["task_parser"] = (
+                    streaming_model.tasks_from_task_list_chunks_async
+                )
             return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
-                task_parser=(
-                    streaming_model.tasks_from_task_list_chunks_async
-                    if task_parser is not None
-                    else None
-                ),
                 **parse_kwargs,
             )
 
+        if task_parser is not None:
+            parse_kwargs["task_parser"] = task_parser
         generator = streaming_model.from_streaming_response(
             response,
             stream_extractor=self.extract_streaming_json,
-            task_parser=task_parser,
             **parse_kwargs,
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):

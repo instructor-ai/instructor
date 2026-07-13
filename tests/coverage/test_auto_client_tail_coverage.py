@@ -3,18 +3,43 @@ from __future__ import annotations
 import builtins
 import importlib
 import logging
+import sys
 import warnings
+from collections.abc import Iterator
+from contextlib import AbstractContextManager, nullcontext
+from functools import partial
 from typing import Any
 
 import pytest
+from pydantic.warnings import PydanticDeprecatedSince20
 
 from instructor import Mode
 from instructor.v2 import auto_client
 from instructor.v2.core.errors import ConfigurationError
+from tests.coverage.client_cleanup import close_idle_event_loop, close_provider_client
 
 
 def provider_info(provider: str) -> dict[str, str]:
     return {"provider": provider, "operation": "initialize"}
+
+
+def expected_provider_deprecation(provider: str) -> AbstractContextManager[Any]:
+    if provider in {"vertexai", "generative-ai"}:
+        return pytest.warns(
+            DeprecationWarning, match=rf"The '{provider}' provider is deprecated\."
+        )
+    return nullcontext()
+
+
+@pytest.fixture(autouse=True)
+def clear_proxy_environment(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    for name in ("ALL_PROXY", "HTTP_PROXY", "HTTPS_PROXY"):
+        monkeypatch.delenv(name, raising=False)
+        monkeypatch.delenv(name.lower(), raising=False)
+
+    yield
+
+    close_idle_event_loop()
 
 
 @pytest.mark.parametrize(
@@ -43,6 +68,7 @@ def provider_info(provider: str) -> dict[str, str]:
 @pytest.mark.parametrize("async_client", [False, True])
 def test_cloud_sdk_builders_forward_real_client_model_and_options(
     monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
     provider: str,
     builder: Any,
     sdk_module: str,
@@ -52,11 +78,21 @@ def test_cloud_sdk_builders_forward_real_client_model_and_options(
     factory_name: str,
     async_client: bool,
 ) -> None:
-    sdk = importlib.import_module(sdk_module)
-    factory = importlib.import_module(factory_module)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"Pydantic V1 style `@validator` validators are deprecated\..*",
+            category=PydanticDeprecatedSince20,
+            module=r"fireworks\.client\.image_api",
+        )
+        sdk = importlib.import_module(sdk_module)
+        factory = importlib.import_module(factory_module)
     seen: dict[str, Any] = {}
 
     def capture(client: object, **kwargs: Any) -> dict[str, Any]:
+        request.addfinalizer(
+            partial(close_provider_client, client, async_client=async_client)
+        )
         seen["client"] = client
         seen["kwargs"] = kwargs
         return {"provider": provider, **kwargs}
@@ -94,7 +130,8 @@ def test_vertexai_builder_initializes_project_and_forwards_mode(
     credentials = AnonymousCredentials()
     initialized: dict[str, Any] = {}
     seen: dict[str, Any] = {}
-    real_init = vertexai.init
+    vertex_model = object()
+    model_names: list[str] = []
 
     def capture(client: object, **kwargs: Any) -> dict[str, Any]:
         seen["client"] = client
@@ -103,13 +140,15 @@ def test_vertexai_builder_initializes_project_and_forwards_mode(
 
     def initialize(**kwargs: Any) -> None:
         initialized.update(kwargs)
-        real_init(**kwargs)
+
+    def create_model(model_name: str) -> object:
+        model_names.append(model_name)
+        return vertex_model
 
     monkeypatch.setattr(vertexai, "init", initialize)
+    monkeypatch.setattr(generative_models, "GenerativeModel", create_model)
     monkeypatch.setattr(instructor, "from_vertexai", capture)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        warnings.simplefilter("ignore", UserWarning)
+    with expected_provider_deprecation("vertexai"):
         result = auto_client._build_vertexai(
             provider="vertexai",
             model_name="gemini-test",
@@ -130,15 +169,15 @@ def test_vertexai_builder_initializes_project_and_forwards_mode(
         "location": "europe-west1",
         "credentials": credentials,
     }
-    assert isinstance(seen["client"], generative_models.GenerativeModel)
+    assert model_names == ["gemini-test"]
+    assert seen["client"] is vertex_model
     assert result == {"use_async": async_client, "mode": Mode.JSON, "max_tokens": 23}
 
 
 def test_vertexai_builder_requires_project(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
+    with expected_provider_deprecation("vertexai"):
         with pytest.raises(ValueError, match="Project ID is required for Vertex AI"):
             auto_client._build_vertexai(
                 provider="vertexai",
@@ -167,8 +206,7 @@ def test_generative_ai_builder_uses_environment_key_and_forwards_options(
 
     monkeypatch.setenv("GOOGLE_API_KEY", "environment-key")
     monkeypatch.setattr(genai_client, "from_genai", capture)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
+    with expected_provider_deprecation("generative-ai"):
         result = auto_client._build_generative_ai(
             provider="generative-ai",
             model_name="gemini-test",
@@ -211,6 +249,7 @@ def test_generative_ai_builder_uses_environment_key_and_forwards_options(
 @pytest.mark.parametrize("async_client", [False, True])
 def test_openai_compatible_tail_builders_use_environment_and_custom_url(
     monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
     provider: str,
     builder: Any,
     factory_module: str,
@@ -225,6 +264,9 @@ def test_openai_compatible_tail_builders_use_environment_and_custom_url(
     calls: list[tuple[object, dict[str, Any]]] = []
 
     def capture(client: object, **kwargs: Any) -> dict[str, Any]:
+        request.addfinalizer(
+            partial(close_provider_client, client, async_client=async_client)
+        )
         calls.append((client, kwargs))
         return kwargs
 
@@ -258,6 +300,7 @@ def test_openai_compatible_tail_builders_use_environment_and_custom_url(
         "mode": Mode.TOOLS,
         "max_tokens": 41,
     }
+    assert isinstance(calls[1][0], expected_type)
     assert calls[1][0].api_key == "explicit-key"
     assert str(calls[1][0].base_url) == "https://compatible.invalid/v1/"
     assert custom_result == {
@@ -293,7 +336,9 @@ def test_openai_compatible_tail_builders_require_api_key(
 
 @pytest.mark.parametrize("async_client", [False, True])
 def test_ollama_builder_forwards_mode_url_and_real_client(
-    monkeypatch: pytest.MonkeyPatch, async_client: bool
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+    async_client: bool,
 ) -> None:
     import openai
     import instructor.v2.providers.openai.client as openai_client
@@ -301,6 +346,9 @@ def test_ollama_builder_forwards_mode_url_and_real_client(
     calls: list[tuple[object, dict[str, Any]]] = []
 
     def capture(client: object, **kwargs: Any) -> dict[str, Any]:
+        request.addfinalizer(
+            partial(close_provider_client, client, async_client=async_client)
+        )
         calls.append((client, kwargs))
         return kwargs
 
@@ -333,40 +381,72 @@ def test_ollama_builder_forwards_mode_url_and_real_client(
         "mode": Mode.TOOLS,
         "max_tokens": 47,
     }
+    assert isinstance(calls[1][0], expected_type)
     assert str(calls[1][0].base_url) == "http://localhost:11434/v1/"
     assert json_result == {"model": "phi-mini", "mode": Mode.JSON}
 
 
 @pytest.mark.parametrize("async_client", [False, True])
 @pytest.mark.asyncio
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="xai-sdk requires Python 3.10+")
 async def test_xai_builder_forwards_real_client_and_mode(
     monkeypatch: pytest.MonkeyPatch, async_client: bool
 ) -> None:
+    import grpc
     from xai_sdk.aio.client import Client as AsyncClient
     from xai_sdk.sync.client import Client as SyncClient
     import instructor.v2.providers.xai.client as xai_client
 
     seen: dict[str, Any] = {}
+    channels: list[Any] = []
+
+    if async_client:
+        create_channel = grpc.aio.secure_channel
+
+        def track_channel(*args: Any, **kwargs: Any) -> Any:
+            channel = create_channel(*args, **kwargs)
+            channels.append(channel)
+            return channel
+
+        monkeypatch.setattr(grpc.aio, "secure_channel", track_channel)
+    else:
+        create_channel = grpc.secure_channel
+
+        def track_channel(*args: Any, **kwargs: Any) -> Any:
+            channel = create_channel(*args, **kwargs)
+            channels.append(channel)
+            return channel
+
+        monkeypatch.setattr(grpc, "secure_channel", track_channel)
 
     def capture(client: object, **kwargs: Any) -> dict[str, Any]:
         seen["client"] = client
         return kwargs
 
     monkeypatch.setattr(xai_client, "from_xai", capture)
-    result = auto_client._build_xai(
-        provider="xai",
-        model_name="grok-test",
-        async_client=async_client,
-        mode=Mode.JSON,
-        api_key="test-key",
-        kwargs={"max_tokens": 53},
-        provider_info=provider_info("xai"),
-    )
+    try:
+        result = auto_client._build_xai(
+            provider="xai",
+            model_name="grok-test",
+            async_client=async_client,
+            mode=Mode.JSON,
+            api_key="test-key",
+            kwargs={"max_tokens": 53},
+            provider_info=provider_info("xai"),
+        )
 
-    assert isinstance(seen["client"], AsyncClient if async_client else SyncClient)
-    assert result == {"model": "grok-test", "mode": Mode.JSON, "max_tokens": 53}
+        assert isinstance(seen["client"], AsyncClient if async_client else SyncClient)
+        assert result == {"model": "grok-test", "mode": Mode.JSON, "max_tokens": 53}
+        assert len(channels) == 1
+    finally:
+        for channel in channels:
+            if async_client:
+                await channel.close()
+            else:
+                channel.close()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="xai-sdk requires Python 3.10+")
 def test_xai_builder_reports_unavailable_factory(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -472,8 +552,7 @@ def test_tail_builder_missing_dependency_has_actionable_error(
         return real_import(name, globals_, locals_, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", guarded_import)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
+    with expected_provider_deprecation(provider):
         with pytest.raises(ConfigurationError, match=message):
             builder(
                 provider=provider,
@@ -518,11 +597,14 @@ FACTORY_FAILURES = [
         "instructor.v2.providers.openai.client",
         "from_deepseek",
     ),
-    (
+    pytest.param(
         "xai",
         auto_client._build_xai,
         "instructor.v2.providers.xai.client",
         "from_xai",
+        marks=pytest.mark.skipif(
+            sys.version_info < (3, 10), reason="xai-sdk requires Python 3.10+"
+        ),
     ),
     (
         "openrouter",
@@ -548,15 +630,30 @@ def test_tail_builder_factory_failure_is_logged_and_propagated(
     module_name: str,
     factory_name: str,
 ) -> None:
-    module = importlib.import_module(module_name)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"Pydantic V1 style `@validator` validators are deprecated\..*",
+            category=PydanticDeprecatedSince20,
+            module=r"fireworks\.client\.image_api",
+        )
+        module = importlib.import_module(module_name)
 
-    def fail(_client: object, **_kwargs: Any) -> None:
+    if provider == "vertexai":
+        import vertexai
+        import vertexai.generative_models as generative_models
+
+        monkeypatch.setattr(vertexai, "init", lambda **_kwargs: None)
+        monkeypatch.setattr(
+            generative_models, "GenerativeModel", lambda _name: object()
+        )
+
+    def fail(client: object, **_kwargs: Any) -> None:
+        close_provider_client(client)
         raise RuntimeError("provider factory failed")
 
     monkeypatch.setattr(module, factory_name, fail)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        warnings.simplefilter("ignore", UserWarning)
+    with expected_provider_deprecation(provider):
         with caplog.at_level(logging.ERROR, logger="instructor.auto_client"):
             with pytest.raises(RuntimeError, match="provider factory failed"):
                 builder(

@@ -5,9 +5,13 @@ import runpy
 from collections.abc import Iterable
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Union, cast
 
 import pytest
+
+pytest.importorskip("xai_sdk")
+
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 from xai_sdk import chat as xchat
 from xai_sdk.aio.client import Client as XAIAsyncClient
@@ -33,7 +37,7 @@ class Reason(BaseModel):
     reason: str
 
 
-MESSAGES = [
+MESSAGES: list[ChatCompletionMessageParam] = [
     {"role": "system", "content": "Be precise"},
     {"role": "user", "content": "Return an answer"},
 ]
@@ -42,7 +46,7 @@ MESSAGES = [
 def tool_call(name: str, arguments: str, tool_id: str = "call-1") -> Any:
     return xchat.chat_pb2.ToolCall(
         id=tool_id,
-        function=xchat.chat_pb2.FunctionCall(name=name, arguments=arguments),
+        function={"name": name, "arguments": arguments},
     )
 
 
@@ -118,12 +122,12 @@ class ChatFactory:
 
 class OfflineSyncClient(XAISyncClient):
     def __init__(self, factory: ChatFactory) -> None:
-        self.chat = factory
+        object.__setattr__(self, "chat", factory)
 
 
 class OfflineAsyncClient(XAIAsyncClient):
     def __init__(self, factory: ChatFactory) -> None:
-        self.chat = factory
+        object.__setattr__(self, "chat", factory)
 
 
 def sync_client(
@@ -183,7 +187,11 @@ def test_package_import_falls_back_when_client_cannot_load(
 def test_message_schema_and_finalize_helpers_cover_real_runtime_models() -> None:
     assert xai_client._get_model_schema(object()) == {}
     assert xai_client._get_model_name(object()) == "Model"
-    assert xai_client._add_md_json_instructions(MESSAGES, object()) == MESSAGES
+    raw_messages = [
+        {"role": "system", "content": "Be precise"},
+        {"role": "user", "content": "Return an answer"},
+    ]
+    assert xai_client._add_md_json_instructions(raw_messages, object()) == raw_messages
 
     converted = xai_client._convert_messages(
         [
@@ -203,16 +211,17 @@ def test_message_schema_and_finalize_helpers_cover_real_runtime_models() -> None
         xai_client._convert_messages([{"role": "developer", "content": "rules"}])
 
     raw = object()
-    iterable_model = prepare_response_model(list[Answer])
+    iterable_model = cast(type[BaseModel], prepare_response_model(list[Answer]))
     assert iterable_model is not None
     iterable = iterable_model.model_validate({"tasks": [{"answer": 1}]})
     finalized = xai_client._finalize_parsed_response(iterable, raw)
     assert [item.model_dump() for item in finalized] == [{"answer": 1}]
 
-    adapter_model = prepare_response_model(int)
+    adapter_model = cast(type[BaseModel], prepare_response_model(int))
     assert adapter_model is not None
     adapter = adapter_model.model_validate({"content": 7})
     assert xai_client._finalize_parsed_response(adapter, raw) == 7
+    assert xai_client._finalize_parsed_response({"answer": 8}, raw) == {"answer": 8}
 
 
 def test_tool_argument_deltas_skip_missing_and_repeated_values() -> None:
@@ -263,7 +272,7 @@ def test_factory_rejects_unsupported_modes_and_invalid_client_types() -> None:
     assert "tool_call" in str(unsupported.value)
 
     with pytest.raises(ClientError, match="Got: object"):
-        xai_client.from_xai(object(), mode=Mode.TOOLS)
+        xai_client.from_xai(cast(Any, object()), mode=Mode.TOOLS)
 
 
 def test_sync_unstructured_request_converts_messages_and_filters_instructor_args() -> (
@@ -271,7 +280,7 @@ def test_sync_unstructured_request_converts_messages_and_filters_instructor_args
 ):
     raw = SimpleNamespace(content="plain answer")
     wrapped, factory = sync_client(
-        SyncChat(sampled=raw), mode=Mode.XAI_TOOLS, temperature=0.25
+        SyncChat(sampled=raw), mode=Mode.TOOLS, temperature=0.25
     )
 
     result = wrapped.create(
@@ -304,7 +313,7 @@ async def test_async_unstructured_request_converts_messages_and_filters_instruct
 ):
     raw = SimpleNamespace(content="plain answer")
     wrapped, factory = async_client(
-        AsyncChat(sampled=raw), mode=Mode.XAI_TOOLS, temperature=0.25
+        AsyncChat(sampled=raw), mode=Mode.TOOLS, temperature=0.25
     )
 
     result = await wrapped.create(
@@ -339,7 +348,7 @@ def test_sync_json_schema_parse_attaches_raw_response() -> None:
     result = wrapped.create(response_model=Answer, messages=MESSAGES, model="grok")
 
     assert result.model_dump() == {"answer": 7}
-    assert result._raw_response is raw
+    assert cast(Any, result)._raw_response is raw
     assert chat.parse_shapes == [Answer]
     assert factory.calls[0]["model"] == "grok"
 
@@ -355,7 +364,7 @@ async def test_async_json_schema_parse_attaches_raw_response() -> None:
     )
 
     assert result.model_dump() == {"answer": 7}
-    assert result._raw_response is raw
+    assert cast(Any, result)._raw_response is raw
     assert chat.parse_shapes == [Answer]
     assert factory.calls[0]["model"] == "grok"
 
@@ -538,7 +547,7 @@ def test_sync_tools_fall_back_to_text_or_content(response: Any) -> None:
     result = wrapped.create(response_model=Answer, messages=MESSAGES, model="grok")
 
     assert result.model_dump() == {"answer": 7}
-    assert result._raw_response is response
+    assert cast(Any, result)._raw_response is response
 
 
 @pytest.mark.asyncio
@@ -558,7 +567,7 @@ async def test_async_tools_fall_back_to_text_or_content(response: Any) -> None:
     )
 
     assert result.model_dump() == {"answer": 7}
-    assert result._raw_response is response
+    assert cast(Any, result)._raw_response is response
 
 
 def test_sync_tools_raise_when_no_arguments_or_text_are_available() -> None:
@@ -578,6 +587,31 @@ async def test_async_tools_raise_when_no_arguments_or_text_are_available() -> No
 
     with pytest.raises(ValueError, match="No tool calls returned from xAI"):
         await wrapped.create(response_model=Answer, messages=MESSAGES, model="grok")
+
+
+@pytest.mark.parametrize(
+    ("chat", "client_factory"),
+    [
+        (
+            SyncChat(sampled=SimpleNamespace(tool_calls=[], content={"answer": 7})),
+            sync_client,
+        ),
+        (
+            AsyncChat(sampled=SimpleNamespace(tool_calls=[], content={"answer": 7})),
+            async_client,
+        ),
+    ],
+)
+@pytest.mark.asyncio
+async def test_tools_reject_unsupported_content_objects(
+    chat: SyncChat | AsyncChat, client_factory: Any
+) -> None:
+    wrapped, _ = client_factory(chat, mode=Mode.TOOLS)
+
+    with pytest.raises(ValueError, match="No tool calls returned from xAI"):
+        result = wrapped.create(response_model=Answer, messages=MESSAGES, model="grok")
+        if isinstance(wrapped, AsyncInstructor):
+            await result
 
 
 def test_sync_tools_stream_iterable_partial_and_reject_plain_models() -> None:
@@ -716,7 +750,7 @@ def test_sync_parallel_tools_register_each_schema_and_ignore_unknown_calls() -> 
 
     results = list(
         wrapped.create_fn(
-            response_model=Iterable[Answer | Reason],
+            response_model=Iterable[Union[Answer, Reason]],
             messages=MESSAGES,
             model="grok",
         )
@@ -744,7 +778,7 @@ async def test_async_parallel_tools_register_each_schema_and_ignore_unknown_call
     wrapped, _ = async_client(chat, mode=Mode.PARALLEL_TOOLS)
 
     iterator = await wrapped.create_fn(
-        response_model=Iterable[Answer | Reason], messages=MESSAGES, model="grok"
+        response_model=Iterable[Union[Answer, Reason]], messages=MESSAGES, model="grok"
     )
     results = list(iterator)
 
@@ -764,15 +798,15 @@ async def test_async_parallel_tools_register_each_schema_and_ignore_unknown_call
     ],
 )
 def test_sync_md_json_extracts_all_supported_content_shapes(
-    response: Any, messages: list[dict[str, str]]
+    response: Any, messages: list[ChatCompletionMessageParam]
 ) -> None:
     chat = SyncChat(sampled=response)
-    wrapped, factory = sync_client(chat, mode=Mode.XAI_JSON)
+    wrapped, factory = sync_client(chat, mode=Mode.MD_JSON)
 
     result = wrapped.create(response_model=Answer, messages=messages, model="grok")
 
     assert result.model_dump() == {"answer": 7}
-    assert result._raw_response is response
+    assert cast(Any, result)._raw_response is response
     assert wrapped.mode is Mode.MD_JSON
     system = factory.calls[0]["messages"][0]
     assert system.role == xchat.system("instructions").role
@@ -790,17 +824,17 @@ def test_sync_md_json_extracts_all_supported_content_shapes(
     ],
 )
 async def test_async_md_json_extracts_all_supported_content_shapes(
-    response: Any, messages: list[dict[str, str]]
+    response: Any, messages: list[ChatCompletionMessageParam]
 ) -> None:
     chat = AsyncChat(sampled=response)
-    wrapped, factory = async_client(chat, mode=Mode.XAI_JSON)
+    wrapped, factory = async_client(chat, mode=Mode.MD_JSON)
 
     result = await wrapped.create(
         response_model=Answer, messages=messages, model="grok"
     )
 
     assert result.model_dump() == {"answer": 7}
-    assert result._raw_response is response
+    assert cast(Any, result)._raw_response is response
     assert wrapped.mode is Mode.MD_JSON
     system = factory.calls[0]["messages"][0]
     assert system.role == xchat.system("instructions").role
@@ -825,3 +859,37 @@ async def test_async_md_json_raises_when_the_response_has_no_json_content() -> N
 
     with pytest.raises(ValueError, match="Could not extract JSON from xAI response"):
         await wrapped.create(response_model=Answer, messages=MESSAGES, model="grok")
+
+
+@pytest.mark.parametrize(
+    ("chat", "client_factory"),
+    [
+        (SyncChat(sampled=SimpleNamespace(content={"answer": 7})), sync_client),
+        (AsyncChat(sampled=SimpleNamespace(content={"answer": 7})), async_client),
+    ],
+)
+@pytest.mark.asyncio
+async def test_md_json_rejects_unsupported_content_objects(
+    chat: SyncChat | AsyncChat, client_factory: Any
+) -> None:
+    wrapped, _ = client_factory(chat, mode=Mode.MD_JSON)
+
+    with pytest.raises(ValueError, match="Could not extract JSON from xAI response"):
+        result = wrapped.create(response_model=Answer, messages=MESSAGES, model="grok")
+        if isinstance(wrapped, AsyncInstructor):
+            await result
+
+
+@pytest.mark.parametrize(
+    ("deprecated_mode", "replacement"),
+    [(Mode.XAI_TOOLS, Mode.TOOLS), (Mode.XAI_JSON, Mode.MD_JSON)],
+)
+def test_deprecated_xai_modes_warn_and_normalize(
+    deprecated_mode: Mode, replacement: Mode
+) -> None:
+    with pytest.warns(
+        DeprecationWarning, match=f"Use Mode\\.{replacement.name} instead"
+    ):
+        wrapped, _ = sync_client(SyncChat(), mode=deprecated_mode)
+
+    assert wrapped.mode is replacement

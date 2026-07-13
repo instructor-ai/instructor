@@ -2,9 +2,11 @@ import importlib
 import json
 import logging
 import warnings
-from typing import get_args
+from collections.abc import Iterator
+from typing import Any, Literal, cast, get_args
 
 import pytest
+from openai import OpenAI
 from pydantic import BaseModel
 
 from instructor.distil import (
@@ -32,9 +34,9 @@ class RecordingHandler(logging.Handler):
 
 class RecordingCompletions:
     def __init__(self) -> None:
-        self.calls: list[dict] = []
+        self.calls: list[dict[str, Any]] = []
 
-    def create(self, **kwargs):
+    def create(self, **kwargs: Any) -> BaseModel:
         self.calls.append(kwargs)
         return kwargs["response_model"](name="dispatched", age=41)
 
@@ -43,6 +45,28 @@ class RecordingClient:
     def __init__(self) -> None:
         self.completions = RecordingCompletions()
         self.chat = self
+
+
+@pytest.fixture(autouse=True)
+def restore_distil_state() -> Iterator[None]:
+    names = (
+        "coverage.distil.messages",
+        "coverage.distil.raw",
+        "coverage.distil.dispatch",
+        "coverage.distil.invalid",
+        "coverage.distil.kwargs",
+    )
+    loggers = [logging.getLogger(name) for name in names]
+    state = [(logger.handlers[:], logger.level, logger.propagate) for logger in loggers]
+    format_function.cache_clear()
+
+    yield
+
+    format_function.cache_clear()
+    for logger, (handlers, level, propagate) in zip(loggers, state):
+        logger.handlers[:] = handlers
+        logger.setLevel(level)
+        logger.propagate = propagate
 
 
 def lookup_user(user_id: int, region: str = "us") -> UserRecord:
@@ -63,7 +87,6 @@ def test_distil_function_formatters_keep_signature_source_and_help_text() -> Non
 
     assert get_signature_from_fn(lookup_without_doc).endswith("\n")
 
-    format_function.cache_clear()
     formatted = format_function(lookup_user)
     assert "def lookup_user(" in formatted
     assert "Look up a user in a region." in formatted
@@ -91,7 +114,7 @@ def test_distil_decorator_tracks_message_and_raw_training_examples() -> None:
         name="coverage.distil.messages",
         id="messages-id",
         log_handlers=[message_handler],
-        openai_client=RecordingClient(),
+        openai_client=cast(OpenAI, RecordingClient()),
     )
     message_instructions.logger.setLevel(logging.INFO)
     message_instructions.logger.propagate = False
@@ -116,12 +139,14 @@ def test_distil_decorator_tracks_message_and_raw_training_examples() -> None:
         log_handlers=[raw_handler],
         finetune_format=FinetuneFormat.RAW,
         include_code_body=True,
-        openai_client=RecordingClient(),
+        openai_client=cast(OpenAI, RecordingClient()),
     )
     raw_instructions.logger.setLevel(logging.INFO)
     raw_instructions.logger.propagate = False
 
-    raw_decorated = raw_instructions.distil(name="find_user")(lookup_user)
+    raw_decorated = raw_instructions.distil(
+        name="find_user", fine_tune_format=FinetuneFormat.RAW
+    )(lookup_user)
     raw_result = raw_decorated(3)
 
     assert raw_result == UserRecord(name="us-3", age=3)
@@ -137,7 +162,9 @@ def test_distil_decorator_tracks_message_and_raw_training_examples() -> None:
 def test_distil_dispatch_sends_model_schema_and_never_calls_original() -> None:
     client = RecordingClient()
     instructions = Instructions(
-        name="coverage.distil.dispatch", openai_client=client, include_code_body=True
+        name="coverage.distil.dispatch",
+        openai_client=cast(OpenAI, client),
+        include_code_body=True,
     )
 
     @instructions.distil(name="fetch", mode="dispatch", model="gpt-4o-mini")
@@ -158,11 +185,12 @@ def test_distil_dispatch_sends_model_schema_and_never_calls_original() -> None:
 
 def test_distil_rejects_invalid_modes_and_return_models() -> None:
     instructions = Instructions(
-        name="coverage.distil.invalid", openai_client=RecordingClient()
+        name="coverage.distil.invalid",
+        openai_client=cast(OpenAI, RecordingClient()),
     )
 
     with pytest.raises(AssertionError, match="Must be in"):
-        instructions.distil(mode="unknown")
+        instructions.distil(mode=cast(Literal["distil", "dispatch"], "unknown"))
 
     def returns_number() -> int:
         return 1
@@ -173,7 +201,8 @@ def test_distil_rejects_invalid_modes_and_return_models() -> None:
 
 def test_distil_openai_kwargs_handle_empty_calls_and_keyword_only_calls() -> None:
     instructions = Instructions(
-        name="coverage.distil.kwargs", openai_client=RecordingClient()
+        name="coverage.distil.kwargs",
+        openai_client=cast(OpenAI, RecordingClient()),
     )
 
     empty = instructions.openai_kwargs("lookup", lookup_without_doc, (), {}, UserRecord)
@@ -183,7 +212,9 @@ def test_distil_openai_kwargs_handle_empty_calls_and_keyword_only_calls() -> Non
 
     assert empty["messages"][1]["content"] == "Return `lookup()`"
     assert keywords["messages"][1]["content"] == 'Return `lookup(region="apac")`'
-    assert "def lookup_without_doc(" in empty["messages"][0]["content"]
+    system_content = empty["messages"][0]["content"]
+    assert isinstance(system_content, str)
+    assert "def lookup_without_doc(" in system_content
 
 
 def test_legacy_type_and_dsl_modules_keep_their_v2_exports() -> None:

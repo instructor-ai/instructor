@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import builtins
 import inspect
-from collections.abc import AsyncGenerator, Iterable
+from collections.abc import Iterable
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Literal, Union, cast
 
 import anthropic
 import pytest
@@ -28,11 +28,14 @@ from instructor.v2.providers.anthropic.handlers import (
     AnthropicParallelToolsHandler,
     AnthropicStructuredOutputsHandler,
     AnthropicToolsHandler,
+    SystemMessage,
     combine_system_messages,
     extract_system_messages,
     process_messages_for_anthropic,
     serialize_message_content,
 )
+from tests.coverage._openai import chat_completion
+from tests.coverage._streams import async_items
 
 
 class User(BaseModel):
@@ -44,7 +47,12 @@ class Job(BaseModel):
     title: str
 
 
-def message(*content: Any, stop_reason: str = "end_turn") -> Message:
+def message(
+    *content: Any,
+    stop_reason: Literal[
+        "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn", "refusal"
+    ] = "end_turn",
+) -> Message:
     return Message(
         id="msg_local",
         content=list(content),
@@ -67,13 +75,8 @@ def chunk(**delta: Any) -> SimpleNamespace:
     return SimpleNamespace(delta=SimpleNamespace(**delta))
 
 
-async def chunks(*items: Any) -> AsyncGenerator[Any, None]:
-    for item in items:
-        yield item
-
-
 def test_system_messages_combine_all_supported_shapes_and_reject_invalid() -> None:
-    text = {"type": "text", "text": "second"}
+    text: SystemMessage = {"type": "text", "text": "second"}
 
     assert combine_system_messages(None, "first") == "first"
     assert combine_system_messages("first", "second") == "first\n\nsecond"
@@ -88,7 +91,9 @@ def test_system_messages_combine_all_supported_shapes_and_reject_invalid() -> No
     ]
 
     with pytest.raises(ValueError, match="System messages must be strings or lists"):
-        combine_system_messages(1, "valid")  # type: ignore[arg-type]
+        combine_system_messages(cast(Any, 1), "valid")
+    with pytest.raises(ValueError, match="System messages must be strings or lists"):
+        combine_system_messages(None, cast(Any, 1))
 
 
 def test_extract_system_messages_handles_empty_blocks_and_reports_bad_content() -> None:
@@ -238,18 +243,27 @@ async def test_async_stream_extractors_accept_sdk_shaped_deltas_and_skip_events(
     tools = [
         value
         async for value in AnthropicParallelToolsHandler().extract_streaming_json_async(
-            chunks(chunk(partial_json="["), object(), chunk(partial_json="]"))
+            async_items([chunk(partial_json="["), object(), chunk(partial_json="]")])
         )
     ]
     text = [
         value
         async for value in AnthropicStructuredOutputsHandler().extract_streaming_json_async(
-            chunks(chunk(text="{"), chunk(text=""), object(), chunk(text="}"))
+            async_items([chunk(text="{"), chunk(text=""), object(), chunk(text="}")])
         )
     ]
 
     assert tools == ["[", "]"]
     assert text == ["{", "}"]
+
+    ignored_handler = AnthropicJSONHandler()
+    ignored_handler.mode = Mode.MD_JSON
+    assert [
+        value
+        async for value in ignored_handler.extract_streaming_json_async(
+            async_items([chunk(text="ignored")])
+        )
+    ] == []
 
 
 def test_convert_messages_uses_the_correct_anthropic_mode(
@@ -320,7 +334,7 @@ async def test_async_streaming_parse_returns_the_model_async_generator() -> None
     handler.mark_streaming_model(iterable_model, True)
 
     result = handler.parse_response(
-        chunks(chunk(partial_json='{"tasks":[{"name":"Ada"}]}')),
+        async_items([chunk(partial_json='{"tasks":[{"name":"Ada"}]}')]),
         iterable_model,
         validation_context={"request": "async"},
         strict=True,
@@ -333,7 +347,7 @@ async def test_async_streaming_parse_returns_the_model_async_generator() -> None
 def test_streaming_protocol_model_and_result_finalization_keep_expected_values() -> (
     None
 ):
-    class StreamingProtocol:
+    class StreamingProtocol(BaseModel):
         @classmethod
         def from_streaming_response(cls, response: Any, **kwargs: Any) -> Iterable[str]:
             assert response == ["chunk"]
@@ -354,11 +368,9 @@ def test_streaming_protocol_model_and_result_finalization_keep_expected_values()
     assert handler._finalize_parsed_result(iterable_model, raw, parsed_iterable) == [
         User(name="Ada")
     ]
-    adapter = ModelAdapter[str](content="plain value")
-    assert (
-        handler._finalize_parsed_result(ModelAdapter[str], raw, adapter)
-        == "plain value"
-    )
+    adapter_model = cast(type[BaseModel], ModelAdapter[str])
+    adapter = adapter_model(content="plain value")
+    assert handler._finalize_parsed_result(adapter_model, raw, adapter) == "plain value"
     parsed = User(name="Ada")
     assert handler._finalize_parsed_result(User, raw, parsed) is parsed
     assert parsed._raw_response is raw
@@ -382,6 +394,7 @@ def test_tools_prepare_request_serializes_messages_selects_tools_and_respects_ch
         },
     )
 
+    assert request_model is not None
     assert request_model.__name__ == "User"
     assert request_model.model_fields.keys() == User.model_fields.keys()
     assert request["system"] == [
@@ -408,22 +421,23 @@ def test_tools_prepare_request_serializes_messages_selects_tools_and_respects_ch
     assert passthrough["tool_choice"] == {"type": "auto"}
 
     adapted, simple = handler.prepare_request(
-        str,
+        cast(Any, str),
         {
             "messages": [{"role": "user", "content": "say hello"}],
             "tool_choice": {"type": "any"},
         },
     )
+    assert adapted is not None
     assert adapted.__name__ == "Response"
     assert simple["tools"][0]["name"] == "Response"
     assert simple["tool_choice"] == {"type": "any"}
 
 
 def test_tools_prepare_parallel_and_thinking_requests_use_auto_choice() -> None:
-    parallel_type = Iterable[User | Job]
+    parallel_type = Iterable[Union[User, Job]]
     handler = AnthropicToolsHandler()
     returned, request = handler.prepare_request(
-        parallel_type,
+        cast(Any, parallel_type),
         {"messages": [{"role": "user", "content": "find both"}]},
     )
 
@@ -449,13 +463,15 @@ def test_tools_reask_handles_missing_response_text_only_and_old_sdk_blocks() -> 
     exception = ValueError("name is required")
 
     missing = handler.handle_reask(
-        {"messages": [{"role": "user", "content": "extract"}]}, None, exception
+        {"messages": [{"role": "user", "content": "extract"}]},
+        cast(Any, None),
+        exception,
     )
     assert missing["messages"][-1] == {
         "role": "user",
         "content": "Validation Error found:\nname is required\nRecall the function correctly, fix the errors",
     }
-    no_content = handler.handle_reask({"messages": []}, object(), exception)
+    no_content = handler.handle_reask({"messages": []}, cast(Any, object()), exception)
     assert "name is required" in no_content["messages"][-1]["content"]
 
     text_only = handler.handle_reask(
@@ -474,7 +490,7 @@ def test_tools_reask_handles_missing_response_text_only_and_old_sdk_blocks() -> 
             return {"type": "tool_use", "id": self.id, "name": "User", "input": {}}
 
     old_response = SimpleNamespace(content=[OlderToolBlock()])
-    old = handler.handle_reask({"messages": []}, old_response, exception)
+    old = handler.handle_reask({"messages": []}, cast(Any, old_response), exception)
     result_block = old["messages"][-1]["content"][0]
     assert old["messages"][0]["content"][0]["id"] == "toolu_old"
     assert result_block["tool_use_id"] == "toolu_old"
@@ -498,12 +514,15 @@ def test_tools_parse_single_parallel_invalid_and_incomplete_responses() -> None:
     assert response.usage.output_tokens == 7
 
     parallel_response = message(
+        TextBlock(type="text", text="calling multiple tools"),
         tool("User", {"name": "Ada"}, "toolu_one"),
         tool("Unknown", {"ignored": True}, "toolu_two"),
         tool("Job", {"title": "Engineer"}, "toolu_three"),
         stop_reason="tool_use",
     )
-    assert list(handler.parse_response(parallel_response, Iterable[User | Job])) == [
+    assert list(
+        handler.parse_response(parallel_response, cast(Any, Iterable[Union[User, Job]]))
+    ) == [
         User(name="Ada"),
         Job(title="Engineer"),
     ]
@@ -514,14 +533,15 @@ def test_tools_parse_single_parallel_invalid_and_incomplete_responses() -> None:
         handler.parse_response(
             message(tool("User", {"name": "Ada"}), stop_reason="max_tokens"), User
         )
+    assert isinstance(incomplete.value.last_completion, Message)
     assert incomplete.value.last_completion.stop_reason == "max_tokens"
 
 
 def test_parallel_tools_prepare_reask_and_parse_real_tool_blocks() -> None:
     handler = AnthropicParallelToolsHandler()
-    parallel_type = Iterable[User | Job]
+    parallel_type = Iterable[Union[User, Job]]
     returned, request = handler.prepare_request(
-        parallel_type,
+        cast(Any, parallel_type),
         {
             "system": "existing",
             "messages": [
@@ -542,7 +562,9 @@ def test_parallel_tools_prepare_reask_and_parse_real_tool_blocks() -> None:
     assert handler.prepare_request(None, {"messages": []}) == (None, {"messages": []})
 
     with pytest.raises(ConfigurationError, match="stream=True is not supported"):
-        handler.prepare_request(parallel_type, {"messages": [], "stream": True})
+        handler.prepare_request(
+            cast(Any, parallel_type), {"messages": [], "stream": True}
+        )
 
     response = message(
         TextBlock(type="text", text="two calls"),
@@ -593,24 +615,11 @@ def test_json_prepare_reask_and_parse_anthropic_and_openai_shaped_responses() ->
         "name": "Ada"
     }
 
-    openai_response = SimpleNamespace(
-        choices=[
-            SimpleNamespace(
-                finish_reason="stop",
-                message=SimpleNamespace(content='{"name":"Grace"}'),
-            )
-        ]
-    )
+    openai_response = chat_completion(content='{"name":"Grace"}')
     assert handler.parse_response(openai_response, User, strict=True).model_dump() == {
         "name": "Grace"
     }
-    exhausted = SimpleNamespace(
-        choices=[
-            SimpleNamespace(
-                finish_reason="length", message=SimpleNamespace(content="{")
-            )
-        ]
-    )
+    exhausted = chat_completion(content="{", finish_reason="length")
     with pytest.raises(IncompleteOutputException) as incomplete:
         handler.parse_response(exhausted, User)
     assert incomplete.value.last_completion is exhausted.choices[0]
@@ -642,6 +651,7 @@ def test_json_parse_reports_invalid_incomplete_and_textless_anthropic_responses(
             ),
             User,
         )
+    assert isinstance(incomplete.value.last_completion, Message)
     assert incomplete.value.last_completion.stop_reason == "max_tokens"
     with pytest.raises(ResponseParsingError, match="No text content in response"):
         handler.parse_response(message(tool("User", {"name": "Ada"})), User)
@@ -774,6 +784,7 @@ def test_structured_reask_and_parse_validates_text_and_reports_refusals() -> Non
             ),
             User,
         )
+    assert isinstance(incomplete.value.last_completion, Message)
     assert incomplete.value.last_completion.stop_reason == "max_tokens"
     with pytest.raises(
         ResponseParsingError,

@@ -140,8 +140,8 @@ def test_response_list_preserves_raw_response_on_slices_and_alias() -> None:
 
 
 def test_model_adapter_accepts_simple_values_and_rejects_models() -> None:
-    adapted = ModelAdapter[int]
-    assert adapted.model_validate({"content": 7}).content == 7
+    adapted = typing.cast(type[BaseModel], ModelAdapter[int])
+    assert adapted.model_validate({"content": 7}).model_dump() == {"content": 7}
     assert adapted.model_json_schema()["properties"]["content"]["type"] == "integer"
 
     with pytest.raises(AssertionError, match="Only simple types are supported"):
@@ -171,6 +171,7 @@ def test_is_simple_type_handles_legacy_union_strings_and_type_errors(
 ) -> None:
     monkeypatch.setattr(sys, "version_info", (3, 9))
     assert is_simple_type(list[typing.Union[int, str]])
+    assert is_simple_type(int)
 
     monkeypatch.setattr(sys, "version_info", (3, 11))
 
@@ -186,7 +187,7 @@ def test_is_simple_type_covers_list_shapes_and_old_issubclass_behavior(
 ) -> None:
     assert is_simple_type(list[typing.Union[int, str]])
     assert not is_simple_type(list[User])
-    assert is_simple_type(list[int | str])
+    assert is_simple_type(list[object]) is hasattr(object, "__or__")
     assert is_simple_type(typing.List)  # noqa: UP006
 
     monkeypatch.setattr(simple_type, "hasattr", lambda *_: False, raising=False)
@@ -196,6 +197,8 @@ def test_is_simple_type_covers_list_shapes_and_old_issubclass_behavior(
     def legacy_issubclass(value: object, base: type) -> bool:
         if value is int:
             raise TypeError("legacy generic alias")
+        if not isinstance(value, type):
+            raise TypeError("issubclass() arg 1 must be a class")
         return issubclass(value, base)
 
     monkeypatch.setattr(simple_type, "issubclass", legacy_issubclass, raising=False)
@@ -208,10 +211,16 @@ def test_is_simple_type_handles_legacy_iterable_origins(
     original_get_origin = typing.get_origin
     union_iterable = typing.Iterable[typing.Union[int, str]]
     simple_iterable = typing.Iterable[int]
+    literal_iterable = typing.Iterable[typing.Literal["one"]]
     bare_iterable = typing.Iterable
 
     def legacy_get_origin(value: object) -> object:
-        if value in {union_iterable, simple_iterable, bare_iterable}:
+        if value in {
+            union_iterable,
+            simple_iterable,
+            literal_iterable,
+            bare_iterable,
+        }:
             return typing.Iterable
         return original_get_origin(value)
 
@@ -221,6 +230,7 @@ def test_is_simple_type_handles_legacy_iterable_origins(
 
     monkeypatch.setattr(simple_type, "hasattr", lambda *_: False, raising=False)
     assert is_simple_type(simple_iterable)
+    assert not is_simple_type(literal_iterable)
     assert not is_simple_type(bare_iterable)
 
 

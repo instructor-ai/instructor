@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import runpy
 import sys
-from collections.abc import AsyncGenerator, Iterable
+from collections.abc import Iterable
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Union, cast
 
 import pytest
+
+pytest.importorskip("xai_sdk")
+
 from pydantic import BaseModel, ValidationError
 
 import instructor.v2.core.decorators as decorators
@@ -18,6 +21,7 @@ from instructor.v2.dsl.parallel import ParallelBase
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.dsl.simple_type import ModelAdapter
 from instructor.v2.providers.xai import handlers
+from tests.coverage._streams import async_items
 
 
 class Answer(BaseModel):
@@ -54,11 +58,6 @@ def _chunk(
     if wrapped:
         return SimpleNamespace(choices=[SimpleNamespace(delta=delta)])
     return SimpleNamespace(delta=delta)
-
-
-async def _async_chunks(chunks: list[Any]) -> AsyncGenerator[Any, None]:
-    for chunk in chunks:
-        yield chunk
 
 
 def test_optional_xai_sdk_import_has_a_clear_runtime_error(
@@ -241,6 +240,14 @@ def test_sync_stream_extractors_handle_content_fences_and_cumulative_tool_deltas
         "".join(markdown_handler.extract_streaming_json(markdown_stream))
         == '{"answer": 6.0}'
     )
+    assert (
+        list(
+            handlers.XAIParallelToolsHandler().extract_streaming_json(
+                [_chunk(content='{"answer": 6.0}')]
+            )
+        )
+        == []
+    )
 
 
 @pytest.mark.asyncio
@@ -273,25 +280,31 @@ async def test_async_stream_extractors_handle_content_fences_and_cumulative_tool
     tool_chunks = [
         chunk
         async for chunk in tool_handler.extract_streaming_json_async(
-            _async_chunks(tool_stream)
+            async_items(tool_stream)
         )
     ]
     schema_chunks = [
         chunk
         async for chunk in schema_handler.extract_streaming_json_async(
-            _async_chunks(schema_stream)
+            async_items(schema_stream)
         )
     ]
     markdown_chunks = [
         chunk
         async for chunk in markdown_handler.extract_streaming_json_async(
-            _async_chunks(markdown_stream)
+            async_items(markdown_stream)
         )
     ]
 
     assert "".join(tool_chunks) == '{"answer": 7.0}'
     assert "".join(schema_chunks) == '{"answer": 8.0}'
     assert "".join(markdown_chunks) == '{"answer": 9.0}'
+    assert [
+        chunk
+        async for chunk in handlers.XAIParallelToolsHandler().extract_streaming_json_async(
+            async_items([_chunk(content='{"answer": 9.0}')])
+        )
+    ] == []
 
 
 def test_tools_streaming_parser_returns_complete_iterable_items_with_validation_options() -> (
@@ -300,6 +313,7 @@ def test_tools_streaming_parser_returns_complete_iterable_items_with_validation_
     handler = handlers.XAIToolsHandler()
     users = IterableModel(User)
     prepared, request = handler.prepare_request(users, {"stream": True})
+    assert prepared is not None
     stream = [
         _chunk(
             tool_calls=[
@@ -335,13 +349,14 @@ async def test_json_schema_streaming_parser_returns_complete_async_iterable_item
     handler = handlers.XAIJSONSchemaHandler()
     users = IterableModel(User)
     prepared, request = handler.prepare_request(users, {"stream": True})
+    assert prepared is not None
     stream = [
         _chunk(content='{"tasks": [{"name": "Ada"'),
         _chunk(content=', "age": 31}, {"name": "Lin", "age": 29}]}'),
     ]
 
     parsed = handler.parse_response(
-        _async_chunks(stream),
+        async_items(stream),
         prepared,
         validation_context={"request_id": "xai-async"},
         strict=True,
@@ -361,6 +376,7 @@ def test_markdown_streaming_parser_returns_partial_updates_and_a_complete_answer
         partial_answer,
         {"messages": [{"role": "user", "content": "2 + 2?"}], "stream": True},
     )
+    assert prepared is not None
     stream = [
         _chunk(content="```json\n"),
         _chunk(content='{"answer": 4'),
@@ -387,7 +403,7 @@ async def test_async_partial_parser_and_custom_sync_stream_model_use_the_stream_
     partial_answer = Partial[Answer]
     async_result = handler._parse_streaming_response(
         partial_answer,
-        _async_chunks([_chunk(content='{"answer": 1'), _chunk(content="2.0}")]),
+        async_items([_chunk(content='{"answer": 1'), _chunk(content="2.0}")]),
         validation_context={"request_id": "partial"},
         strict=True,
     )
@@ -418,18 +434,35 @@ async def test_async_partial_parser_and_custom_sync_stream_model_use_the_stream_
     assert [item.answer for item in sync_result] == [13.0]
 
 
+@pytest.mark.asyncio
+async def test_streaming_iterables_allow_empty_streams_without_validation_options() -> (
+    None
+):
+    handler = handlers.XAIJSONSchemaHandler()
+    users = IterableModel(User)
+
+    sync_result = handler._parse_streaming_response(
+        users, [], validation_context=None, strict=None
+    )
+    async_result = handler._parse_streaming_response(
+        users, async_items([]), validation_context=None, strict=False
+    )
+
+    assert list(sync_result) == []
+    assert [item async for item in async_result] == []
+
+
 def test_finalize_unwraps_iterable_parallel_and_simple_type_results() -> None:
     handler = handlers.XAIToolsHandler()
     users = IterableModel(User)
     parsed_users = users(tasks=[User(name="Ada", age=31), User(name="Lin", age=29)])
     parallel = ParallelBase(Answer, User)
-    adapted = ModelAdapter[int](content=42)
+    adapter_model = cast(type[BaseModel], ModelAdapter[int])
+    adapted = adapter_model(content=42)
 
     iterable_result = handler._finalize_parsed_result(users, object(), parsed_users)
     parallel_result = handler._finalize_parsed_result(parallel, object(), ["kept"])
-    adapted_result = handler._finalize_parsed_result(
-        ModelAdapter[int], object(), adapted
-    )
+    adapted_result = handler._finalize_parsed_result(adapter_model, object(), adapted)
 
     assert isinstance(parsed_users, IterableBase)
     assert [(item.name, item.age) for item in iterable_result] == [
@@ -438,13 +471,16 @@ def test_finalize_unwraps_iterable_parallel_and_simple_type_results() -> None:
     ]
     assert parallel_result == ["kept"]
     assert adapted_result == 42
+    assert handler._finalize_parsed_result(Answer, object(), {"answer": 4.0}) == {
+        "answer": 4.0
+    }
 
 
 def test_parallel_tools_build_schemas_parse_known_calls_and_skip_unknown_calls() -> (
     None
 ):
     handler = handlers.XAIParallelToolsHandler()
-    model = Iterable[Answer | User]
+    model = cast(type[BaseModel], Iterable[Union[Answer, User]])
     request = {"messages": [{"role": "user", "content": "answer and user"}]}
 
     no_model, unchanged = handler.prepare_request(None, request)
@@ -480,7 +516,7 @@ def test_parallel_tools_build_schemas_parse_known_calls_and_skip_unknown_calls()
 
 def test_parallel_tools_reject_streaming_and_reask_with_the_failed_response() -> None:
     handler = handlers.XAIParallelToolsHandler()
-    model = Iterable[Answer | User]
+    model = cast(type[BaseModel], Iterable[Union[Answer, User]])
     response = SimpleNamespace(tool_calls=[_tool_call("Answer", '{"answer": "bad"}')])
 
     with pytest.raises(ConfigurationError, match="stream=True is not supported"):
@@ -526,6 +562,30 @@ def test_schema_and_markdown_parsers_accept_remaining_content_shapes_and_reject_
             Answer,
             strict=True,
         )
+
+
+@pytest.mark.parametrize(
+    ("handler", "match"),
+    [
+        (handlers.XAIToolsHandler(), "No tool calls returned from xAI"),
+        (handlers.XAIJSONSchemaHandler(), "Could not parse xAI response"),
+        (handlers.XAIMDJSONHandler(), "Could not extract JSON from xAI response"),
+    ],
+)
+def test_response_handlers_reject_unsupported_content_objects(
+    handler: Any, match: str
+) -> None:
+    response = SimpleNamespace(tool_calls=[], text=None, content={"answer": 4.0})
+
+    with pytest.raises(ValueError, match=match):
+        handler.parse_response(response, Answer)
+
+
+def test_json_schema_handler_rejects_an_unparsed_sdk_tuple() -> None:
+    raw = SimpleNamespace(id="raw-xai-response")
+
+    with pytest.raises(ValueError, match="Could not parse xAI response"):
+        handlers.XAIJSONSchemaHandler().parse_response((raw, {"answer": 4.0}), Answer)
 
 
 def test_markdown_request_preserves_multimodal_system_text_and_handles_empty_messages() -> (

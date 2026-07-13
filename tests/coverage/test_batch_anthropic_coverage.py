@@ -73,6 +73,7 @@ class RecordingBatches:
         self.listed = tuple(listed)
         self.failures = failures or {}
         self.created_requests = None
+        self.create_count = 0
         self.retrieved_ids = []
         self.result_ids = []
         self.cancelled_ids = []
@@ -84,6 +85,7 @@ class RecordingBatches:
 
     def create(self, *, requests):
         self._raise_if_needed("create")
+        self.create_count += 1
         self.created_requests = requests
         return self.batch
 
@@ -146,6 +148,7 @@ def test_submit_file_parses_jsonl_and_reports_ignored_metadata(
 
     assert batch_id == "batch_file"
     assert batches.created_requests == [first, second]
+    assert batches.create_count == 1
     assert "Ignoring: {'source': 'nightly'}" in capsys.readouterr().out
 
 
@@ -158,6 +161,7 @@ def test_submit_bytesio_uses_beta_batches_and_rewinds_buffer(monkeypatch):
 
     assert AnthropicProvider().submit_batch(buffer) == "batch_buffer"
     assert batches.created_requests == [payload]
+    assert batches.create_count == 1
 
 
 @pytest.mark.parametrize(
@@ -347,6 +351,28 @@ def test_download_results_wraps_results_stream_failure(monkeypatch, tmp_path):
     assert isinstance(exc.value.__cause__, OSError)
 
 
+@pytest.mark.parametrize("operation", ["retrieve", "download"])
+def test_results_allow_older_batches_without_request_counts(
+    monkeypatch, tmp_path, operation
+):
+    result = make_result("one", "First answer")
+    batch = SimpleNamespace(id="older_batch", processing_status="ended")
+    batches = RecordingBatches(batch=batch, results=[result])
+    install_client(monkeypatch, batches)
+    destination = tmp_path / "results.jsonl"
+
+    if operation == "retrieve":
+        assert AnthropicProvider().retrieve_results("older_batch") == (
+            result.model_dump_json()
+        )
+    else:
+        AnthropicProvider().download_results("older_batch", str(destination))
+        assert destination.read_text() == f"{result.model_dump_json()}\n"
+
+    assert batches.retrieved_ids == ["older_batch"]
+    assert batches.result_ids == ["older_batch"]
+
+
 @pytest.mark.parametrize("beta", [False, True])
 def test_cancel_batch_returns_complete_sdk_payload(monkeypatch, beta):
     batch = make_batch(status="in_progress", processing=2)
@@ -404,7 +430,9 @@ def test_list_batches_converts_sdk_batches_to_normalized_job_info(monkeypatch, b
         ("batch_active", BatchStatus.PROCESSING, "in_progress"),
     ]
     assert jobs[1].request_counts.total == 3
-    assert jobs[0].files.results_url.endswith("/results")
+    results_url = jobs[0].files.results_url
+    assert results_url is not None
+    assert results_url.endswith("/results")
     assert batches.list_limits == [2]
 
 

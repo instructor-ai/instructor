@@ -1,8 +1,9 @@
 from importlib import import_module
 from types import SimpleNamespace
-from typing import Annotated, ClassVar
+from typing import Annotated, ClassVar, cast
 
 import pytest
+from openai import OpenAI
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -12,6 +13,7 @@ from pydantic import (
 )
 
 import instructor.v2 as instructor_v2
+from instructor.v2.core.client import Instructor
 from instructor.v2.core.validators import Validator
 from instructor.v2.validation import (
     ASYNC_MODEL_VALIDATOR_KEY,
@@ -45,6 +47,7 @@ async def test_async_field_validators_keep_fields_and_use_pydantic_context():
     @async_field_validator("value", "fallback")
     async def add_suffix(cls, value: str, info: ValidationInfo) -> str:
         assert cls is ValidationInput
+        assert isinstance(info.context, dict)
         return value + info.context["suffix"]
 
     fields, original, needs_info = getattr(add_suffix, ASYNC_VALIDATOR_KEY)
@@ -88,6 +91,7 @@ async def test_async_model_validators_keep_callable_and_use_pydantic_context():
 
     @async_model_validator()
     async def append_suffix(model: ValidationInput, info: ValidationInfo):
+        assert isinstance(info.context, dict)
         return model.model_copy(update={"value": model.value + info.context["suffix"]})
 
     original, needs_info = getattr(append_suffix, ASYNC_MODEL_VALIDATOR_KEY)
@@ -106,6 +110,7 @@ async def test_async_model_validators_keep_callable_and_use_pydantic_context():
 
 def test_async_model_validator_rejects_invalid_signatures():
     async def too_many(model: ValidationInput, info: ValidationInfo, extra: str):
+        assert isinstance(info.context, dict)
         return model.model_copy(
             update={"value": model.value + info.context["suffix"] + extra}
         )
@@ -115,6 +120,7 @@ def test_async_model_validator_rejects_invalid_signatures():
     assert not hasattr(too_many, ASYNC_MODEL_VALIDATOR_KEY)
 
     async def wrong_name(model: ValidationInput, context: ValidationInfo):
+        assert isinstance(context.context, dict)
         return model.model_copy(
             update={"value": model.value + context.context["suffix"]}
         )
@@ -154,7 +160,7 @@ def make_validation_model(response: Validator, *, allow_override: bool):
     client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
     validator = llm_validator(
         "must be lowercase",
-        client=client,
+        client=cast(Instructor, client),
         allow_override=allow_override,
         model="test-model",
         temperature=0.25,
@@ -257,7 +263,7 @@ def test_openai_moderation_allows_unflagged_text_through_pydantic():
     client = SimpleNamespace(moderations=moderations)
 
     class Message(BaseModel):
-        value: Annotated[str, AfterValidator(openai_moderation(client))]
+        value: Annotated[str, AfterValidator(openai_moderation(cast(OpenAI, client)))]
 
     assert Message.model_validate({"value": "hello"}).value == "hello"
     assert moderations.inputs == ["hello"]
@@ -273,7 +279,7 @@ def test_openai_moderation_reports_only_flagged_categories_through_pydantic():
     client = SimpleNamespace(moderations=moderations)
 
     class Message(BaseModel):
-        value: Annotated[str, AfterValidator(openai_moderation(client))]
+        value: Annotated[str, AfterValidator(openai_moderation(cast(OpenAI, client)))]
 
     with pytest.raises(ValidationError) as exc_info:
         Message.model_validate({"value": "unsafe text"})
@@ -294,9 +300,11 @@ def test_v2_rejects_an_unknown_public_attribute():
     )
 
 
-def test_v2_loads_and_caches_public_attributes_and_modules():
-    instructor_v2.__dict__.pop("Mode", None)
-    instructor_v2.__dict__.pop("providers", None)
+def test_v2_loads_and_caches_public_attributes_and_modules(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delitem(instructor_v2.__dict__, "Mode", raising=False)
+    monkeypatch.delitem(instructor_v2.__dict__, "providers", raising=False)
 
     mode = instructor_v2.__getattr__("Mode")
     providers = instructor_v2.__getattr__("providers")

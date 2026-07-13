@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator, Iterable
+from collections.abc import Iterable
 from types import SimpleNamespace
-from typing import Any, Union
+from typing import Any, Union, cast
 
 import pytest
-from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from openai.types.responses import ResponseFunctionCallArgumentsDeltaEvent
+from openai.types.chat import ChatCompletionChunk
+from openai.types.responses import (
+    ResponseFunctionCallArgumentsDeltaEvent,
+    ResponseFunctionToolCall,
+    ResponseOutputMessage,
+    ResponseOutputText,
+)
 from pydantic import BaseModel
 
 from instructor.v2.core.errors import (
@@ -32,6 +37,8 @@ from instructor.v2.providers.openai.handlers import (
     reask_default,
     reask_responses_tools,
 )
+from tests.coverage._openai import chat_chunk, chat_completion, tool_call
+from tests.coverage._streams import async_items
 
 
 class User(BaseModel):
@@ -42,67 +49,25 @@ class Search(BaseModel):
     query: str
 
 
-def chat_completion(
-    *,
-    content: str | None = None,
-    tool_calls: list[dict[str, Any]] | None = None,
-    function_call: dict[str, Any] | None = None,
-    refusal: str | None = None,
-    finish_reason: str = "stop",
-) -> ChatCompletion:
-    message: dict[str, Any] = {"role": "assistant", "content": content}
-    if tool_calls is not None:
-        message["tool_calls"] = tool_calls
-    if function_call is not None:
-        message["function_call"] = function_call
-    if refusal is not None:
-        message["refusal"] = refusal
-    return ChatCompletion.model_validate(
-        {
-            "id": "chatcmpl-test",
-            "object": "chat.completion",
-            "created": 1,
-            "model": "gpt-test",
-            "choices": [
-                {
-                    "index": 0,
-                    "finish_reason": finish_reason,
-                    "message": message,
-                }
-            ],
-        }
-    )
-
-
-def tool_call(name: str, arguments: str, call_id: str = "call_1") -> dict[str, Any]:
-    return {
-        "id": call_id,
-        "type": "function",
-        "function": {"name": name, "arguments": arguments},
-    }
-
-
-def chat_chunk(delta: dict[str, Any]) -> ChatCompletionChunk:
-    return ChatCompletionChunk.model_validate(
-        {
-            "id": "chatcmpl-test",
-            "object": "chat.completion.chunk",
-            "created": 1,
-            "model": "gpt-test",
-            "choices": [{"index": 0, "finish_reason": None, "delta": delta}],
-        }
-    )
-
-
 def base_handler(mode: Mode) -> OpenAIHandlerBase:
     handler = OpenAIToolsHandler()
     handler.mode = mode
     return handler
 
 
-async def as_async(items: list[Any]) -> AsyncIterator[Any]:
-    for item in items:
-        yield item
+def response_deltas(
+    item_id: str, *deltas: str
+) -> list[ResponseFunctionCallArgumentsDeltaEvent]:
+    return [
+        ResponseFunctionCallArgumentsDeltaEvent(
+            delta=delta,
+            item_id=item_id,
+            output_index=0,
+            sequence_number=index,
+            type="response.function_call_arguments.delta",
+        )
+        for index, delta in enumerate(deltas, start=1)
+    ]
 
 
 def test_responses_tool_filter_accepts_legacy_items_and_formats_missing_details() -> (
@@ -137,6 +102,53 @@ def test_reask_default_keeps_assistant_message_before_correction() -> None:
     }
 
 
+def test_tools_reask_preserves_assistant_calls_and_adds_one_tool_error_per_call() -> (
+    None
+):
+    response = chat_completion(
+        tool_calls=[
+            tool_call("User", '{"name":3}', "call_user"),
+            tool_call("Search", '{"query":4}', "call_search"),
+        ]
+    )
+
+    result = OpenAIToolsHandler().handle_reask(
+        {"messages": [{"role": "user", "content": "extract both values"}]},
+        response,
+        ValueError("invalid fields"),
+    )
+
+    assert result["messages"] == [
+        {"role": "user", "content": "extract both values"},
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                tool_call("User", '{"name":3}', "call_user").model_dump(),
+                tool_call("Search", '{"query":4}', "call_search").model_dump(),
+            ],
+        },
+        {
+            "role": "tool",
+            "tool_call_id": "call_user",
+            "name": "User",
+            "content": (
+                "Validation Error found:\ninvalid fields\n"
+                "Recall the function correctly, fix the errors"
+            ),
+        },
+        {
+            "role": "tool",
+            "tool_call_id": "call_search",
+            "name": "Search",
+            "content": (
+                "Validation Error found:\ninvalid fields\n"
+                "Recall the function correctly, fix the errors"
+            ),
+        },
+    ]
+
+
 def test_responses_reask_uses_legacy_arguments_without_inventing_call_details() -> None:
     response = SimpleNamespace(output=[SimpleNamespace(arguments='{"name": 3}')])
 
@@ -166,6 +178,23 @@ def test_streaming_flags_ignore_none_non_classes_and_non_streaming_models() -> N
     assert handler._consume_streaming_flag(None) is False
     assert handler._consume_streaming_flag(ParallelBase(User)) is False
     assert handler._consume_streaming_flag(iterable_user) is False
+
+
+def test_responses_tools_replaces_non_dict_text_format_and_preserves_options() -> None:
+    original_text = {"format": "json_object", "verbosity": "low"}
+
+    _, kwargs = OpenAIResponsesToolsHandler().prepare_request(
+        User, {"text": original_text}
+    )
+
+    assert kwargs["text"] is not original_text
+    assert kwargs["text"]["verbosity"] == "low"
+    assert kwargs["text"]["format"] == {
+        "type": "json_schema",
+        "name": "User",
+        "strict": True,
+        "schema": kwargs["tools"][0]["parameters"],
+    }
 
 
 @pytest.mark.parametrize(
@@ -247,6 +276,38 @@ def test_sync_responses_stream_extractor_only_yields_argument_delta_events() -> 
     ) == ['{"name":"Ada"}']
 
 
+@pytest.mark.parametrize(
+    ("mode", "delta"),
+    [
+        (Mode.FUNCTIONS, {"function_call": {"name": "User", "arguments": ""}}),
+        (Mode.JSON, {"content": ""}),
+        (Mode.TOOLS, {"tool_calls": []}),
+        (
+            Mode.TOOLS,
+            {
+                "tool_calls": [
+                    {
+                        "index": 0,
+                        "id": "call_1",
+                        "type": "function",
+                        "function": {"name": "User", "arguments": None},
+                    }
+                ]
+            },
+        ),
+        (Mode.COHERE_JSON_SCHEMA, {"content": '{"name":"ignored"}'}),
+    ],
+)
+def test_sync_stream_extractor_ignores_empty_and_unsupported_deltas(
+    mode: Mode, delta: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        Mode, "warn_mode_functions_deprecation", staticmethod(lambda: None)
+    )
+
+    assert list(base_handler(mode).extract_streaming_json([chat_chunk(delta)])) == []
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("mode", "valid_chunk", "expected"),
@@ -300,7 +361,7 @@ async def test_async_stream_extractor_handles_chat_delta_modes_and_bad_chunks(
     result = [
         part
         async for part in base_handler(mode).extract_streaming_json_async(
-            as_async(chunks)
+            async_items(chunks)
         )
     ]
     if mode is Mode.MD_JSON:
@@ -326,9 +387,47 @@ async def test_async_responses_stream_extractor_only_yields_argument_delta_event
         async for part in base_handler(
             Mode.RESPONSES_TOOLS
         ).extract_streaming_json_async(
-            as_async([SimpleNamespace(type="response.output_text.delta"), event])
+            async_items([SimpleNamespace(type="response.output_text.delta"), event])
         )
     ] == ['{"name":"Ada"}']
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("mode", "delta"),
+    [
+        (Mode.FUNCTIONS, {"function_call": {"name": "User", "arguments": ""}}),
+        (Mode.JSON, {"content": ""}),
+        (Mode.TOOLS, {"tool_calls": []}),
+        (
+            Mode.TOOLS,
+            {
+                "tool_calls": [
+                    {
+                        "index": 0,
+                        "id": "call_1",
+                        "type": "function",
+                        "function": {"name": "User", "arguments": None},
+                    }
+                ]
+            },
+        ),
+        (Mode.COHERE_JSON_SCHEMA, {"content": '{"name":"ignored"}'}),
+    ],
+)
+async def test_async_stream_extractor_ignores_empty_and_unsupported_deltas(
+    mode: Mode, delta: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        Mode, "warn_mode_functions_deprecation", staticmethod(lambda: None)
+    )
+
+    assert [
+        part
+        async for part in base_handler(mode).extract_streaming_json_async(
+            async_items([chat_chunk(delta)])
+        )
+    ] == []
 
 
 def test_parse_streaming_response_forwards_context_strict_and_mode() -> None:
@@ -394,7 +493,7 @@ def test_parse_streaming_response_falls_back_when_signature_is_unavailable(
 @pytest.mark.asyncio
 async def test_parse_streaming_response_returns_async_iterable_results() -> None:
     iterable_user = IterableModel(User)
-    chunks = as_async([chat_chunk({"content": '{"tasks":[{"name":"Ada"}]}'})])
+    chunks = async_items([chat_chunk({"content": '{"tasks":[{"name":"Ada"}]}'})])
 
     result = base_handler(Mode.JSON)._parse_streaming_response(
         iterable_user, chunks, validation_context=None, strict=None
@@ -409,7 +508,7 @@ def test_finalize_parsed_result_handles_parallel_iterable_adapter_and_base_model
     handler = OpenAIToolsHandler()
     response = chat_completion(content="unused")
     iterable_user = IterableModel(User)
-    adapter = ModelAdapter[str]
+    adapter = cast(type[BaseModel], ModelAdapter[str])
     parallel = ParallelBase(User, Search)
 
     assert handler._finalize_parsed_result(
@@ -419,19 +518,22 @@ def test_finalize_parsed_result_handles_parallel_iterable_adapter_and_base_model
     ) == [User(name="Ada")]
     assert handler._finalize_parsed_result(parallel, response, ("kept",)) == ("kept",)
     assert (
-        handler._finalize_parsed_result(adapter, response, adapter(content="ok"))
+        handler._finalize_parsed_result(
+            adapter, response, adapter.model_validate({"content": "ok"})
+        )
         == "ok"
     )
     parsed_user = User(name="Ada")
     assert handler._finalize_parsed_result(User, response, parsed_user) is parsed_user
     assert parsed_user._raw_response is response
+    assert handler._finalize_parsed_result(User, response, "already parsed") == (
+        "already parsed"
+    )
 
 
 def test_extract_tool_call_json_supports_legacy_and_serializable_arguments() -> None:
     handler = OpenAIToolsHandler()
-    legacy = chat_completion(
-        function_call={"name": "User", "arguments": '{"name":"Ada"}'}
-    )
+    legacy = chat_completion(function_call=("User", '{"name":"Ada"}'))
     dict_response = SimpleNamespace(
         choices=[
             SimpleNamespace(
@@ -566,6 +668,20 @@ def test_tools_prepare_strict_schema_and_parse_incomplete_output() -> None:
         )
 
 
+def test_tools_handler_reports_an_empty_choices_response() -> None:
+    response = chat_completion(
+        tool_calls=[tool_call("User", '{"name":"Ada"}')]
+    ).model_copy(update={"choices": []})
+
+    with pytest.raises(ResponseParsingError, match="No choices in OpenAI response") as (
+        error
+    ):
+        OpenAIToolsHandler().parse_response(response, User)
+
+    assert error.value.mode == Mode.TOOLS.value
+    assert error.value.raw_response is response
+
+
 @pytest.mark.parametrize(
     "handler",
     [OpenAIJSONSchemaHandler(), OpenAIJSONHandler(), OpenAIMDJSONHandler()],
@@ -575,6 +691,26 @@ def test_json_handlers_reject_incomplete_output(handler: OpenAIHandlerBase) -> N
         handler.parse_response(
             chat_completion(content="{", finish_reason="length"), User
         )
+
+
+@pytest.mark.parametrize(
+    "handler",
+    [OpenAIJSONSchemaHandler(), OpenAIJSONHandler(), OpenAIMDJSONHandler()],
+)
+def test_json_handlers_report_an_empty_choices_response(
+    handler: OpenAIHandlerBase,
+) -> None:
+    response = chat_completion(content='{"name":"Ada"}').model_copy(
+        update={"choices": []}
+    )
+
+    with pytest.raises(ResponseParsingError, match="No choices in OpenAI response") as (
+        error
+    ):
+        handler.parse_response(response, User)
+
+    assert error.value.mode == handler.mode.value
+    assert error.value.raw_response is response
 
 
 def test_json_schema_stream_parses_iterable_and_partial_models() -> None:
@@ -636,7 +772,7 @@ def test_json_prompt_handlers_consume_registered_streaming_model(
 
 def test_parallel_tools_prepare_handles_none_streaming_and_model_union() -> None:
     handler = OpenAIParallelToolsHandler()
-    response_model = Iterable[Union[User, Search]]
+    response_model = cast(type[BaseModel], Iterable[Union[User, Search]])
 
     assert handler.prepare_request(None, {"messages": []}) == (None, {"messages": []})
     with pytest.raises(ConfigurationError, match="stream=True is not supported"):
@@ -653,7 +789,7 @@ def test_parallel_tools_parse_valid_calls_and_report_empty_or_incomplete_output(
     None
 ):
     handler = OpenAIParallelToolsHandler()
-    response_model = Iterable[Union[User, Search]]
+    response_model = cast(type[BaseModel], Iterable[Union[User, Search]])
     valid = chat_completion(
         tool_calls=[
             tool_call("User", '{"name":"Ada"}', "call_user"),
@@ -672,6 +808,13 @@ def test_parallel_tools_parse_valid_calls_and_report_empty_or_incomplete_output(
     ) == [User(name="Ada"), Search(query="python")]
     with pytest.raises(ResponseParsingError, match="No tool calls in response"):
         handler.parse_response(chat_completion(tool_calls=[]), response_model)
+    empty_response = chat_completion(tool_calls=[]).model_copy(update={"choices": []})
+    with pytest.raises(ResponseParsingError, match="No choices in OpenAI response") as (
+        error
+    ):
+        handler.parse_response(empty_response, response_model)
+    assert error.value.mode == Mode.PARALLEL_TOOLS.value
+    assert error.value.raw_response is empty_response
     with pytest.raises(IncompleteOutputException):
         handler.parse_response(
             chat_completion(tool_calls=[], finish_reason="length"), response_model
@@ -682,6 +825,7 @@ def test_responses_tools_converts_max_tokens_and_falls_back_to_chat_tool_call() 
     handler = OpenAIResponsesToolsHandler()
 
     prepared, kwargs = handler.prepare_request(User, {"max_tokens": 64})
+    assert prepared is not None
     parsed = handler.parse_response(
         chat_completion(tool_calls=[tool_call("User", '{"name":"Ada"}')]),
         prepared,
@@ -695,3 +839,93 @@ def test_responses_tools_converts_max_tokens_and_falls_back_to_chat_tool_call() 
     assert "max_tokens" not in kwargs
     assert parsed.model_dump() == {"name": "Ada"}
     assert parsed._raw_response.choices[0].message.tool_calls[0].function.name == "User"
+
+
+def test_responses_tools_falls_back_when_output_is_empty_or_has_no_tool_call() -> None:
+    handler = OpenAIResponsesToolsHandler()
+    message = ResponseOutputMessage(
+        id="msg_1",
+        content=[
+            ResponseOutputText(
+                annotations=[],
+                text="No structured output was emitted.",
+                type="output_text",
+            )
+        ],
+        role="assistant",
+        status="completed",
+        type="message",
+    )
+
+    for output in ([], [message]):
+        response = chat_completion(
+            tool_calls=[tool_call("User", '{"name":"Ada"}')]
+        ).model_copy(update={"output": output})
+
+        parsed = handler.parse_response(response, User)
+
+        assert parsed == User(name="Ada")
+        assert parsed._raw_response is response
+
+
+def test_responses_tools_skips_an_empty_call_and_parses_the_next_call(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    empty = ResponseFunctionToolCall(
+        arguments="",
+        call_id="call_empty",
+        name="User",
+        type="function_call",
+    )
+    valid = ResponseFunctionToolCall(
+        arguments='{"name":"Ada"}',
+        call_id="call_valid",
+        name="User",
+        type="function_call",
+    )
+    response = SimpleNamespace(output=[empty, valid])
+
+    with caplog.at_level("WARNING", logger="instructor"):
+        parsed = OpenAIResponsesToolsHandler().parse_response(response, User)
+
+    assert parsed == User(name="Ada")
+    assert parsed._raw_response is response
+    assert len(caplog.records) == 1
+    assert "tool 'User' returned empty arguments" in caplog.records[0].message
+
+
+def test_responses_tools_streams_iterable_and_partial_models() -> None:
+    iterable_user = IterableModel(User)
+    partial_user = Partial[User]
+
+    iterable_events = response_deltas("fc_iterable", '{"tasks":[', '{"name":"Ada"}]}')
+    partial_events = response_deltas("fc_partial", '{"name":', '"Ada"}')
+
+    handler = OpenAIResponsesToolsHandler()
+    iterable_result = handler.parse_response(
+        iterable_events, iterable_user, stream=True
+    )
+    partial_result = handler.parse_response(partial_events, partial_user, stream=True)
+
+    assert list(iterable_result) == [User(name="Ada")]
+    assert partial_result[-1] == User(name="Ada")
+
+
+@pytest.mark.asyncio
+async def test_responses_tools_streams_async_iterable_and_partial_models() -> None:
+    iterable_user = IterableModel(User)
+    partial_user = Partial[User]
+
+    iterable_events = response_deltas("fc_iterable", '{"tasks":[', '{"name":"Ada"}]}')
+    partial_events = response_deltas("fc_partial", '{"name":', '"Ada"}')
+
+    handler = OpenAIResponsesToolsHandler()
+    iterable_result = handler.parse_response(
+        async_items(iterable_events), iterable_user, stream=True
+    )
+    partial_result = handler.parse_response(
+        async_items(partial_events), partial_user, stream=True
+    )
+
+    assert [item async for item in iterable_result] == [User(name="Ada")]
+    assert [item async for item in partial_result][-1] == User(name="Ada")

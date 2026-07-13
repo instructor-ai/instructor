@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.errors import IncompleteOutputException
+from instructor.v2.core.errors import IncompleteOutputException, ResponseParsingError
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.messages import dump_message, merge_consecutive_messages
@@ -178,12 +178,25 @@ class WriterToolsHandler(WriterHandlerBase):
                 strict,
             )
         # Check for truncated output
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
+        choices = getattr(response, "choices", None)
+        if not choices:
+            raise ResponseParsingError(
+                "No choices in Writer response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        if choices[0].finish_reason == "length":
+            raise IncompleteOutputException(last_completion=response)
 
         # Extract JSON from tool call
-        tool_call = response.choices[0].message.tool_calls[0]
+        tool_calls = choices[0].message.tool_calls
+        if not tool_calls:
+            raise ResponseParsingError(
+                "No tool calls in Writer response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        tool_call = tool_calls[0]
         json_str = tool_call.function.arguments
 
         return response_model.model_validate_json(

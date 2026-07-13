@@ -21,6 +21,8 @@ from instructor.v2.providers.openai.schema import (
 class TestModel(BaseModel):
     """A test model for schema generation."""
 
+    __test__ = False
+
     name: str = Field(description="The name of the user")
     age: int = Field(description="The age of the user")
     email: Optional[str] = Field(default=None, description="The email address")
@@ -34,6 +36,8 @@ class TestModelWithDocstring(BaseModel):
         age: Age in years
         tags: List of tags
     """
+
+    __test__ = False
 
     name: str
     age: int

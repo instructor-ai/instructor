@@ -4,12 +4,13 @@ import builtins
 import json
 import runpy
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import openai
 import pytest
 import requests
+from openai.types.responses import Response
 from pydantic import BaseModel, Field
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
@@ -28,6 +29,7 @@ from instructor.v2.providers.openai.multimodal import (
     pdf_to_openai,
 )
 from instructor.v2.providers.openai.schema import generate_openai_schema
+from instructor.v2.providers.openai.templating import process_message
 from instructor.v2.providers.openrouter.client import from_openrouter
 from instructor.v2.providers.perplexity.client import from_perplexity
 
@@ -54,7 +56,7 @@ def test_openai_sync_response_mapping_uses_real_sdk_types() -> None:
         seen.append(body)
         return httpx.Response(200, json=_response_payload(body["model"]))
 
-    http_client = httpx.Client(transport=httpx.MockTransport(handle))
+    http_client = httpx.Client(transport=httpx.MockTransport(handle), trust_env=False)
     client = openai.OpenAI(
         api_key="test-key",
         base_url="https://openai.invalid/v1",
@@ -66,7 +68,7 @@ def test_openai_sync_response_mapping_uses_real_sdk_types() -> None:
         messages, client, model="gpt-test-sync", metadata={"lane": "sync"}
     )
 
-    assert isinstance(response, openai.types.responses.Response)
+    assert isinstance(response, Response)
     assert response.id == "resp_coverage"
     assert seen == [
         {
@@ -88,7 +90,9 @@ async def test_openai_async_response_mapping_uses_real_sdk_types() -> None:
         seen.append(body)
         return httpx.Response(200, json=_response_payload(body["model"]))
 
-    http_client = httpx.AsyncClient(transport=httpx.MockTransport(handle))
+    http_client = httpx.AsyncClient(
+        transport=httpx.MockTransport(handle), trust_env=False
+    )
     client = openai.AsyncOpenAI(
         api_key="test-key",
         base_url="https://openai.invalid/v1",
@@ -100,7 +104,7 @@ async def test_openai_async_response_mapping_uses_real_sdk_types() -> None:
         messages, client, model="gpt-test-async", metadata={"lane": "async"}
     )
 
-    assert isinstance(response, openai.types.responses.Response)
+    assert isinstance(response, Response)
     assert response.model == "gpt-test-async"
     assert seen == [
         {
@@ -113,7 +117,11 @@ async def test_openai_async_response_mapping_uses_real_sdk_types() -> None:
 
 
 def test_openai_factory_rejects_an_unregistered_mode() -> None:
-    client = openai.OpenAI(api_key="test-key", base_url="https://openai.invalid/v1")
+    client = openai.OpenAI(
+        api_key="test-key",
+        base_url="https://openai.invalid/v1",
+        http_client=httpx.Client(trust_env=False),
+    )
 
     with pytest.raises(ModeError) as error:
         from_openai(client, mode=Mode.GEMINI_TOOLS)
@@ -126,7 +134,7 @@ def test_openai_factory_rejects_an_unregistered_mode() -> None:
 
 def test_openai_factory_rejects_an_invalid_client() -> None:
     with pytest.raises(ClientError, match="Got: object") as error:
-        from_openai(object(), mode=Mode.TOOLS)  # type: ignore[arg-type]
+        from_openai(cast(openai.OpenAI, object()), mode=Mode.TOOLS)
 
     assert "OpenAI, AsyncOpenAI" in str(error.value)
 
@@ -134,10 +142,14 @@ def test_openai_factory_rejects_an_invalid_client() -> None:
 @pytest.mark.asyncio
 async def test_openai_compatible_wrappers_keep_provider_mode_and_client() -> None:
     sync_client = openai.OpenAI(
-        api_key="test-key", base_url="https://openrouter.invalid/api/v1"
+        api_key="test-key",
+        base_url="https://openrouter.invalid/api/v1",
+        http_client=httpx.Client(trust_env=False),
     )
     async_client = openai.AsyncOpenAI(
-        api_key="test-key", base_url="https://perplexity.invalid"
+        api_key="test-key",
+        base_url="https://perplexity.invalid",
+        http_client=httpx.AsyncClient(trust_env=False),
     )
 
     openrouter = from_openrouter(
@@ -160,10 +172,14 @@ async def test_openai_compatible_wrappers_keep_provider_mode_and_client() -> Non
 @pytest.mark.asyncio
 async def test_openai_response_wrappers_normalize_the_inbuilt_tools_mode() -> None:
     sync_client = openai.OpenAI(
-        api_key="test-key", base_url="https://openai.invalid/v1"
+        api_key="test-key",
+        base_url="https://openai.invalid/v1",
+        http_client=httpx.Client(trust_env=False),
     )
     async_client = openai.AsyncOpenAI(
-        api_key="test-key", base_url="https://openai.invalid/v1"
+        api_key="test-key",
+        base_url="https://openai.invalid/v1",
+        http_client=httpx.AsyncClient(trust_env=False),
     )
 
     sync_instructor = from_openai(
@@ -292,6 +308,39 @@ def test_openai_schema_merges_only_missing_parameter_descriptions() -> None:
     )
     assert "unknown" not in properties
     assert schema["parameters"]["required"] == ["name", "nickname"]
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        {"role": "user"},
+        {"role": "user", "content": [{"type": "text", "text": "{{ name }}"}]},
+    ],
+)
+def test_openai_templating_leaves_non_string_content_unchanged(
+    message: dict[str, Any],
+) -> None:
+    calls: list[str] = []
+
+    def apply_template(text: str, _context: dict[str, Any]) -> str:
+        calls.append(text)
+        return "rendered"
+
+    assert process_message(message, {"name": "Ada"}, apply_template) is message
+    assert calls == []
+
+
+def test_openai_templating_renders_string_content_in_place() -> None:
+    message = {"role": "user", "content": "Hello {{ name }}"}
+    contexts: list[dict[str, Any]] = []
+
+    def apply_template(text: str, context: dict[str, Any]) -> str:
+        contexts.append(context)
+        return text.replace("{{ name }}", context["name"])
+
+    assert process_message(message, {"name": "Ada"}, apply_template) is message
+    assert message["content"] == "Hello Ada"
+    assert contexts == [{"name": "Ada"}]
 
 
 def test_openai_schema_supplies_a_description_when_the_model_has_no_help_text() -> None:

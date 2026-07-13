@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import builtins
 import runpy
-from collections.abc import AsyncGenerator, Iterable
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Union, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from mistralai import Mistral
 from mistralai.models import (
     AssistantMessage,
     ChatCompletionChoice,
@@ -37,6 +38,7 @@ from instructor.v2.providers.mistral.handlers import (
     MistralToolsHandler,
 )
 from instructor.v2.providers.mistral.multimodal import pdf_to_mistral
+from tests.coverage._streams import async_items
 
 
 class User(BaseModel):
@@ -96,11 +98,6 @@ def event(
     )
 
 
-async def async_events(items: list[Any]) -> AsyncGenerator[Any, None]:
-    for item in items:
-        yield item
-
-
 class FakeMistral:
     def __init__(self) -> None:
         self.chat = MagicMock()
@@ -157,12 +154,27 @@ def test_from_mistral_rejects_bad_mode_and_client(
     monkeypatch.setattr(mistral_client, "Mistral", FakeMistral)
 
     with pytest.raises(ModeError) as mode_error:
-        mistral_client.from_mistral(FakeMistral(), mode=Mode.ANTHROPIC_JSON)
+        mistral_client.from_mistral(
+            cast(Mistral, FakeMistral()), mode=Mode.ANTHROPIC_JSON
+        )
     assert "anthropic_json" in str(mode_error.value)
     assert Provider.MISTRAL.value in str(mode_error.value)
 
     with pytest.raises(ClientError, match="Got: object"):
-        mistral_client.from_mistral(object(), mode=Mode.TOOLS)
+        mistral_client.from_mistral(cast(Mistral, object()), mode=Mode.TOOLS)
+
+
+def test_from_mistral_warns_for_deprecated_tools_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(mistral_client, "Mistral", FakeMistral)
+
+    with pytest.warns(DeprecationWarning, match="Use Mode.TOOLS instead"):
+        client = mistral_client.from_mistral(
+            cast(Mistral, FakeMistral()), mode=Mode.MISTRAL_TOOLS
+        )
+
+    assert client.mode is Mode.TOOLS
 
 
 def test_sync_client_routes_completion_retry_and_stream(
@@ -182,11 +194,14 @@ def test_sync_client_routes_completion_retry_and_stream(
     sdk.chat.stream.return_value = [
         event(tool_calls=[]),
         event(tool_calls=[tool_call("PartialUser", '{"name":"Ada"', "partial-1")]),
-        event(tool_calls=[tool_call("PartialUser", ',"age":36', "partial-2")]),
+        event(tool_calls=[tool_call("PartialUser", ',"age":36}', "partial-2")]),
     ]
 
     client = mistral_client.from_mistral(
-        sdk, mode=Mode.MISTRAL_TOOLS, model="mistral-small-latest", temperature=0.2
+        cast(Mistral, sdk),
+        mode=Mode.TOOLS,
+        model="mistral-small-latest",
+        temperature=0.2,
     )
     result = client.create(
         response_model=User,
@@ -202,7 +217,7 @@ def test_sync_client_routes_completion_retry_and_stream(
 
     assert isinstance(result, User)
     assert result.model_dump() == {"name": "Ada", "age": 36}
-    assert result._raw_response is valid_response
+    assert cast(Any, result)._raw_response is valid_response
     assert sdk.chat.complete.call_count == 2
     retry_kwargs = sdk.chat.complete.call_args_list[1].kwargs
     assert retry_kwargs["model"] == "mistral-small-latest"
@@ -233,19 +248,19 @@ async def test_async_client_routes_completion_retry_and_stream(
         ),
         valid_response,
     ]
-    sdk.chat.stream_async.return_value = async_events(
+    sdk.chat.stream_async.return_value = async_items(
         [
             event(tool_calls=[]),
             event(
                 tool_calls=[tool_call("PartialUser", '{"name":"Grace"', "partial-1")]
             ),
-            event(tool_calls=[tool_call("PartialUser", ',"age":40', "partial-2")]),
+            event(tool_calls=[tool_call("PartialUser", ',"age":40}', "partial-2")]),
         ]
     )
 
     client = mistral_client.from_mistral(
-        sdk,
-        mode=Mode.MISTRAL_TOOLS,
+        cast(Mistral, sdk),
+        mode=Mode.TOOLS,
         use_async=True,
         model="mistral-small-latest",
         temperature=0.1,
@@ -265,7 +280,7 @@ async def test_async_client_routes_completion_retry_and_stream(
 
     assert isinstance(result, User)
     assert result.model_dump() == {"name": "Grace", "age": 40}
-    assert result._raw_response is valid_response
+    assert cast(Any, result)._raw_response is valid_response
     assert sdk.chat.complete_async.await_count == 2
     retry_kwargs = sdk.chat.complete_async.await_args_list[1].kwargs
     assert retry_kwargs["model"] == "mistral-small-latest"
@@ -286,8 +301,10 @@ def test_streaming_flags_and_sync_extractors_skip_empty_and_bad_chunks() -> None
 
     tools.mark_streaming_model(None, True)
     tools.mark_streaming_model(users, False)
+    tools.mark_streaming_model(User, True)
     assert tools._consume_streaming_flag(None) is False
-    assert tools._consume_streaming_flag(object()) is False
+    assert tools._consume_streaming_flag(cast(type[BaseModel], object())) is False
+    assert tools._consume_streaming_flag(User) is False
     tools.mark_streaming_model(users, True)
     assert tools._consume_streaming_flag(users) is True
     assert tools._consume_streaming_flag(users) is False
@@ -329,12 +346,12 @@ async def test_async_extractors_skip_empty_and_bad_chunks() -> None:
     ]
     assert [
         chunk
-        async for chunk in tools.extract_streaming_json_async(async_events(tool_chunks))
+        async for chunk in tools.extract_streaming_json_async(async_items(tool_chunks))
     ] == ['{"tasks":[]}']
     assert [
         chunk
         async for chunk in schema.extract_streaming_json_async(
-            async_events([object(), event(content='{"answer":2}')])
+            async_items([object(), event(content='{"answer":2}')])
         )
     ] == ['{"answer":2}']
     assert (
@@ -342,7 +359,7 @@ async def test_async_extractors_skip_empty_and_bad_chunks() -> None:
             [
                 chunk
                 async for chunk in markdown.extract_streaming_json_async(
-                    async_events(
+                    async_items(
                         [
                             object(),
                             event(content="```json\n"),
@@ -362,7 +379,10 @@ def test_parallel_tool_request_and_response_support_multiple_models() -> None:
     model = Iterable[Union[User, Answer]]
     original = {"messages": [{"role": "user", "content": "Extract all results"}]}
 
-    returned_model, request = handler.prepare_request(model, original)
+    returned_model, request = handler.prepare_request(
+        cast(type[BaseModel], model), original
+    )
+    assert returned_model is not None
     parsed = list(
         handler.parse_response(
             response(
@@ -388,7 +408,7 @@ def test_parallel_tool_request_and_response_support_multiple_models() -> None:
 def test_tools_streaming_iterable_parser_uses_task_list_chunks() -> None:
     handler = MistralToolsHandler()
     model, request = handler.prepare_request(
-        Iterable[User],
+        cast(type[BaseModel], Iterable[User]),
         {"messages": [{"role": "user", "content": "Extract users"}], "stream": True},
     )
     stream = [
@@ -404,6 +424,7 @@ def test_tools_streaming_iterable_parser_uses_task_list_chunks() -> None:
         ),
     ]
 
+    assert model is not None
     parsed = list(
         handler.parse_response(
             stream, model, validation_context={"request_id": "stream"}, strict=True
@@ -420,10 +441,10 @@ def test_tools_streaming_iterable_parser_uses_task_list_chunks() -> None:
 async def test_tools_streaming_iterable_parser_supports_async_streams() -> None:
     handler = MistralToolsHandler()
     model, _ = handler.prepare_request(
-        Iterable[User],
+        cast(type[BaseModel], Iterable[User]),
         {"messages": [{"role": "user", "content": "Extract users"}], "stream": True},
     )
-    stream = async_events(
+    stream = async_items(
         [
             event(tool_calls=[]),
             event(
@@ -438,6 +459,7 @@ async def test_tools_streaming_iterable_parser_supports_async_streams() -> None:
         ]
     )
 
+    assert model is not None
     parsed = [
         item
         async for item in handler.parse_response(
@@ -451,7 +473,8 @@ async def test_tools_streaming_iterable_parser_supports_async_streams() -> None:
     assert parsed == [User(name="Ada", age=36), User(name="Grace", age=40)]
 
 
-def test_json_and_markdown_streaming_partial_models_and_empty_messages() -> None:
+@pytest.mark.asyncio
+async def test_json_and_markdown_streaming_partial_models_and_empty_messages() -> None:
     schema = MistralJSONSchemaHandler()
     markdown = MistralMDJSONHandler()
     partial_user = Partial[User]
@@ -470,32 +493,66 @@ def test_json_and_markdown_streaming_partial_models_and_empty_messages() -> None
         partial_user, {"messages": [], "stream": True}
     )
 
+    assert schema_model is not None
+    assert markdown_model is not None
+    schema_stream = [event(content='{"name":"Ada"'), event(content=',"age":36}')]
+    markdown_stream = [
+        event(content="```json\n"),
+        event(content='{"name":"Grace","age":40}'),
+        event(content="\n```"),
+    ]
     schema_items = schema.parse_response(
-        [event(content='{"name":"Ada"'), event(content=',"age":36')],
+        schema_stream,
         schema_model,
         validation_context={"request_id": "schema"},
         strict=True,
     )
     markdown_items = markdown.parse_response(
-        [
-            event(content="```json\n"),
-            event(content='{"name":"Grace","age":40'),
-        ],
+        markdown_stream,
         markdown_model,
         validation_context={"request_id": "markdown"},
         strict=True,
     )
+    async_schema_model, _ = schema.prepare_request(
+        partial_user,
+        {"messages": [{"role": "user", "content": "Extract Ada"}], "stream": True},
+    )
+    async_markdown_model, _ = markdown.prepare_request(
+        partial_user,
+        {"messages": [{"role": "user", "content": "Extract Grace"}], "stream": True},
+    )
+    assert async_schema_model is not None
+    assert async_markdown_model is not None
+    async_schema_items = [
+        item
+        async for item in schema.parse_response(
+            async_items(schema_stream),
+            async_schema_model,
+            validation_context={"request_id": "async-schema"},
+            strict=True,
+        )
+    ]
+    async_markdown_items = [
+        item
+        async for item in markdown.parse_response(
+            async_items(markdown_stream),
+            async_markdown_model,
+            validation_context={"request_id": "async-markdown"},
+        )
+    ]
 
     assert "response_format" in schema_request
     assert "tools" not in schema_request
     assert "tool_choice" not in schema_request
     assert schema_items[-1].name == "Ada"
     assert schema_items[-1].age == 36
+    assert async_schema_items[-1].model_dump() == {"name": "Ada", "age": 36}
     assert markdown_request["messages"][0]["role"] == "system"
     assert "json_schema" in markdown_request["messages"][0]["content"]
     assert markdown_request["messages"][-1]["role"] == "user"
     assert markdown_items[-1].name == "Grace"
     assert markdown_items[-1].age == 40
+    assert async_markdown_items[-1].model_dump() == {"name": "Grace", "age": 40}
 
 
 def test_streaming_extension_and_parsed_result_variants() -> None:
@@ -523,8 +580,8 @@ def test_streaming_extension_and_parsed_result_variants() -> None:
     iterable_model = IterableModel(User)
     iterable_result = iterable_model(tasks=[User(name="Ada", age=36)])
     parallel_model = ParallelBase(User, Answer)
-    adapter_model = ModelAdapter[int]
-    adapter_result = adapter_model(content=7)
+    adapter_model = cast(type[BaseModel], ModelAdapter[int])
+    adapter_result = adapter_model.model_validate({"content": 7})
     marker = response(content='{"answer": 2.5}')
 
     assert parsed_stream == [StreamingAnswer(answer=2.5)]
@@ -536,9 +593,26 @@ def test_streaming_extension_and_parsed_result_variants() -> None:
         is parsed_stream
     )
     assert handler._finalize_parsed_result(adapter_model, marker, adapter_result) == 7
+    assert handler._finalize_parsed_result(Answer, marker, {"answer": 2.5}) == {
+        "answer": 2.5
+    }
     answer = Answer(answer=2.5)
     assert handler._finalize_parsed_result(Answer, marker, answer) is answer
     assert answer._raw_response is marker
+
+
+@pytest.mark.parametrize(
+    "handler",
+    [MistralToolsHandler(), MistralJSONSchemaHandler(), MistralMDJSONHandler()],
+)
+def test_mistral_parsers_reject_responses_without_choices(
+    handler: MistralToolsHandler | MistralJSONSchemaHandler | MistralMDJSONHandler,
+) -> None:
+    empty_response = response(content='{"name":"Ada","age":36}')
+    empty_response.choices = []
+
+    with pytest.raises(IndexError, match="list index out of range"):
+        handler.parse_response(empty_response, User)
 
 
 def test_mistral_message_conversion_and_pdf_rules() -> None:

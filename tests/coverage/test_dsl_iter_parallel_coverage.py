@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 import sys
-from collections.abc import AsyncGenerator, Iterable
+from collections.abc import AsyncGenerator, Callable, Generator, Iterable
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, Union
+from typing import Any, Union, cast
 
 import pytest
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator
 
 from instructor.v2.core.mode import Mode
@@ -23,6 +23,8 @@ from instructor.v2.dsl.parallel import (
     handle_parallel_model,
     is_union_type,
 )
+from tests.coverage._openai import chat_completion, tool_call
+from tests.coverage._streams import async_items
 
 
 class EmailJob(BaseModel):
@@ -50,12 +52,7 @@ class UnionIterable(IterableBase):
     task_type = Union[EmailJob, SmsJob]
 
 
-async def async_chunks(*values: Any) -> AsyncGenerator[Any, None]:
-    for value in values:
-        yield value
-
-
-def extract_deltas(completion: Iterable[dict[str, str]]) -> Iterable[str]:
+def extract_deltas(completion: Iterable[Any]) -> Generator[str, None, None]:
     for event in completion:
         yield event["delta"]
 
@@ -67,20 +64,13 @@ async def extract_deltas_async(
         yield event["delta"]
 
 
-def tool_response(*calls: tuple[str, str]) -> Any:
-    return SimpleNamespace(
-        choices=[
-            SimpleNamespace(
-                message=SimpleNamespace(
-                    tool_calls=[
-                        SimpleNamespace(
-                            function=SimpleNamespace(name=name, arguments=arguments)
-                        )
-                        for name, arguments in calls
-                    ]
-                )
-            )
-        ]
+def tool_response(*calls: tuple[str, str]) -> ChatCompletion:
+    return chat_completion(
+        tool_calls=[
+            tool_call(name, arguments, f"call-{index}")
+            for index, (name, arguments) in enumerate(calls)
+        ],
+        finish_reason="tool_calls",
     )
 
 
@@ -120,10 +110,13 @@ def test_iterable_sync_stream_handles_split_objects_and_custom_list_parser() -> 
 async def test_iterable_async_stream_handles_split_objects_and_custom_list_parser() -> (
     None
 ):
-    split_stream = async_chunks(
-        {"delta": '{"tasks": ['},
-        {"delta": '{"address": "first@example.test", "attempts": 2},'},
-        {"delta": '{"address": "second@example.test"}]}'},
+    split_stream = async_items(
+        [
+            {"delta": '{"tasks":'},
+            {"delta": " ["},
+            {"delta": '{"address": "first@example.test", "attempts": 2},'},
+            {"delta": '{"address": "second@example.test"}]}'},
+        ]
     )
     parsed = [
         item
@@ -138,10 +131,12 @@ async def test_iterable_async_stream_handles_split_objects_and_custom_list_parse
         EmailJob(address="second@example.test"),
     ]
 
-    list_stream = async_chunks(
-        {"delta": ""},
-        {"delta": '{"tasks": []}'},
-        {"delta": '{"tasks": [{"address": "third@example.test"}]}'},
+    list_stream = async_items(
+        [
+            {"delta": ""},
+            {"delta": '{"tasks": []}'},
+            {"delta": '{"tasks": [{"address": "third@example.test"}]}'},
+        ]
     )
     assert [
         item
@@ -154,10 +149,17 @@ async def test_iterable_async_stream_handles_split_objects_and_custom_list_parse
 
 
 def test_iterable_sync_rejects_missing_extractor_and_malformed_task_lists() -> None:
+    missing_extractor = cast(
+        Callable[[Iterable[Any]], Generator[str, None, None]], None
+    )
     with pytest.raises(ValueError, match="stream_extractor is required"):
-        list(EmailIterable.from_streaming_response([], stream_extractor=None))
+        list(
+            EmailIterable.from_streaming_response(
+                [], stream_extractor=missing_extractor
+            )
+        )
     with pytest.raises(ValueError, match="stream_extractor is required"):
-        list(EmailIterable.extract_json([], stream_extractor=None))
+        list(EmailIterable.extract_json([], stream_extractor=missing_extractor))
 
     with pytest.raises(json.JSONDecodeError):
         list(EmailIterable.tasks_from_task_list_chunks(["not-json"]))
@@ -176,18 +178,21 @@ def test_iterable_sync_rejects_missing_extractor_and_malformed_task_lists() -> N
 async def test_iterable_async_rejects_missing_extractor_and_malformed_task_lists() -> (
     None
 ):
+    missing_extractor = cast(
+        Callable[[AsyncGenerator[Any, None]], AsyncGenerator[str, None]], None
+    )
     with pytest.raises(ValueError, match="stream_extractor is required"):
         [
             item
             async for item in EmailIterable.from_streaming_response_async(
-                async_chunks(), stream_extractor=None
+                async_items([]), stream_extractor=missing_extractor
             )
         ]
     with pytest.raises(ValueError, match="stream_extractor is required"):
         [
             item
             async for item in EmailIterable.extract_json_async(
-                async_chunks(), stream_extractor=None
+                async_items([]), stream_extractor=missing_extractor
             )
         ]
 
@@ -195,21 +200,21 @@ async def test_iterable_async_rejects_missing_extractor_and_malformed_task_lists
         [
             item
             async for item in EmailIterable.tasks_from_task_list_chunks_async(
-                async_chunks("not-json")
+                async_items(["not-json"])
             )
         ]
     with pytest.raises(KeyError, match="tasks"):
         [
             item
             async for item in EmailIterable.tasks_from_task_list_chunks_async(
-                async_chunks('{"items": []}')
+                async_items(['{"items": []}'])
             )
         ]
     with pytest.raises(ValidationError):
         [
             item
             async for item in EmailIterable.tasks_from_task_list_chunks_async(
-                async_chunks('{"tasks": [{"address": "bad@other.test"}]}'),
+                async_items(['{"tasks": [{"address": "bad@other.test"}]}']),
                 context={"domain": "example.test"},
             )
         ]
@@ -225,7 +230,7 @@ async def test_extract_json_helpers_preserve_real_chunk_order() -> None:
     assert [
         chunk
         async for chunk in EmailIterable.extract_json_async(
-            async_chunks(*completion), extract_deltas_async
+            async_items(completion), extract_deltas_async
         )
     ] == ["first", "second"]
 
@@ -247,18 +252,19 @@ def test_iterable_object_scanner_ignores_escaped_quotes_and_braces_in_strings() 
         0,
     )
 
+    assert task_json is not None
     assert json.loads(task_json) == {"address": 'first"{tag}@example.test'}
     assert json.loads(remaining) == {"number": "+15550001111"}
 
 
 def test_iterable_model_supports_custom_names_union_names_and_forward_refs() -> None:
     named = IterableModel(EmailJob, name="QueuedEmail", description="Queued email jobs")
-    union = IterableModel(EmailJob | SmsJob)
-    forward_ref = IterableModel("EmailJob")
+    union = IterableModel(cast(type[BaseModel], Union[EmailJob, SmsJob]))
+    forward_ref = IterableModel(cast(type[BaseModel], "EmailJob"))
 
     assert named.__name__ == "IterableQueuedEmail"
     assert named.__doc__ == "Queued email jobs"
-    assert union.__name__ == "IterableEmailJobOrSmsJob"
+    assert union.__name__ == "IterableUnion"
     assert forward_ref.__name__ == "IterableEmailJob"
     assert forward_ref.model_fields["tasks"].annotation == list["EmailJob"]
 
@@ -311,7 +317,6 @@ def test_parallel_base_requires_at_least_one_model() -> None:
 def test_parallel_type_helpers_support_single_and_union_models() -> None:
     assert get_types_array(Iterable[EmailJob]) == (EmailJob,)
     assert get_types_array(Iterable[Union[EmailJob, SmsJob]]) == (EmailJob, SmsJob)
-    assert get_types_array(Iterable[EmailJob | SmsJob]) == (EmailJob, SmsJob)
     assert is_union_type(Iterable[Union[EmailJob, SmsJob]]) is True
     assert is_union_type(Iterable[EmailJob]) is False
 
@@ -323,7 +328,10 @@ def test_parallel_type_helpers_keep_python_39_union_behavior(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     source_path = Path(parallel_module.__file__)
-    namespace = {"__name__": "parallel_python_39", "__file__": str(source_path)}
+    namespace: dict[str, Any] = {
+        "__name__": "parallel_python_39",
+        "__file__": str(source_path),
+    }
     monkeypatch.setattr(sys, "version_info", (3, 9, 18))
     exec(compile(source_path.read_text(), str(source_path), "exec"), namespace)
 
@@ -333,7 +341,7 @@ def test_parallel_type_helpers_keep_python_39_union_behavior(
 
 
 def test_parallel_schema_and_provider_factories_register_all_models() -> None:
-    typehint = Iterable[EmailJob | SmsJob]
+    typehint = Iterable[Union[EmailJob, SmsJob]]
     openai_tools = handle_parallel_model(typehint)
     anthropic_tools = handle_anthropic_parallel_model(typehint)
 

@@ -101,7 +101,7 @@ class Response(_ResponseBase):
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
 
-        create = cast(Callable[..., T | Any], self.client.create)
+        create = cast(Callable[..., Any], self.client.create)
         return create(
             response_model=response_model,
             context=context,
@@ -260,7 +260,7 @@ class AsyncResponse(_ResponseBase):
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
 
-        create = cast(Callable[..., Awaitable[T | Any]], self.client.create)
+        create = cast(Callable[..., Awaitable[Any]], self.client.create)
         return await create(
             response_model=response_model,
             context=context,
@@ -906,8 +906,7 @@ def from_openai(
     client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    pass
+) -> Instructor: ...
 
 
 @overload
@@ -915,8 +914,7 @@ def from_openai(
     client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor:
-    pass
+) -> AsyncInstructor: ...
 
 
 def from_openai(

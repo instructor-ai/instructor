@@ -181,13 +181,11 @@ class Image(BaseModel):
                 img_type = "webp"
 
             if img_type:
-                media_type = f"image/{img_type}"
-                if media_type in VALID_MIME_TYPES:
-                    return cls(
-                        source=data,
-                        media_type=media_type,
-                        data=data,
-                    )
+                return cls(
+                    source=data,
+                    media_type=f"image/{img_type}",
+                    data=data,
+                )
             raise ValueError(f"Unsupported image type: {img_type}")
         except Exception as e:
             raise ValueError(f"Invalid or unsupported base64 image data") from e

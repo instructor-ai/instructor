@@ -1,5 +1,7 @@
 """Focused tests for the public batch processor API and result parsing."""
 
+from __future__ import annotations
+
 import io
 import json
 from pathlib import Path
@@ -126,6 +128,23 @@ def test_create_batch_file_replaces_existing_contents_and_serializes_requests(
     assert "Created batch file" in capsys.readouterr().out
 
 
+def test_create_batch_file_creates_a_new_output_file(
+    provider: RecordingProvider, tmp_path: Path
+) -> None:
+    del provider
+    batch_file = tmp_path / "new-requests.jsonl"
+    processor = BatchProcessor("openai/gpt-4.1-mini", Person)
+
+    returned = processor.create_batch_from_messages(
+        [[{"role": "user", "content": "Ada is 36"}]], str(batch_file)
+    )
+
+    assert returned == str(batch_file)
+    request = json.loads(batch_file.read_text())
+    assert request["custom_id"] == "request-0"
+    assert request["body"]["messages"] == [{"role": "user", "content": "Ada is 36"}]
+
+
 def test_create_batch_buffer_is_readable_from_start(
     provider: RecordingProvider, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -200,6 +219,24 @@ def test_provider_operations_forward_arguments_and_parse_downloaded_results(
         "id": "batch-123",
         "deleted": True,
     }
+    assert provider.calls == [
+        (
+            "submit",
+            (
+                request_buffer,
+                {"description": "Instructor batch job"},
+                {"completion_window": "24h"},
+            ),
+        ),
+        ("submit", ("requests.jsonl", {"team": "search"}, {})),
+        ("status", "batch-123"),
+        ("list", 2),
+        ("retrieve", "batch-123"),
+        ("download", ("batch-123", str(results_file))),
+        ("retrieve", "batch-123"),
+        ("cancel", "batch-123"),
+        ("delete", "batch-123"),
+    ]
 
 
 def test_openai_results_distinguish_success_validation_extraction_and_json_errors(
@@ -273,7 +310,8 @@ def test_anthropic_results_support_tool_use_and_text_fallback(
     )
 
     assert len(results) == 2
-    assert all(isinstance(result, BatchSuccess) for result in results)
+    assert isinstance(results[0], BatchSuccess)
+    assert isinstance(results[1], BatchSuccess)
     assert results[0].custom_id == "tool"
     assert results[0].result == Person(name="Ada", age=36)
     assert results[1].custom_id == "text"
@@ -340,6 +378,31 @@ def test_extract_returns_none_for_missing_malformed_or_unknown_provider_response
         )
         is None
     )
+    assert anthropic._extract_from_response({"result": {"type": "succeeded"}}) is None
+    assert (
+        anthropic._extract_from_response(
+            {
+                "result": {
+                    "type": "succeeded",
+                    "message": {"content": [{"type": "image", "source": {}}]},
+                }
+            }
+        )
+        is None
+    )
+    assert anthropic._extract_from_response(
+        {
+            "result": {
+                "type": "succeeded",
+                "message": {
+                    "content": [
+                        {"type": "image", "source": {}},
+                        {"type": "text", "text": '{"name":"Ada","age":36}'},
+                    ]
+                },
+            }
+        }
+    ) == {"name": "Ada", "age": 36}
     assert (
         openai._extract_from_response({"response": {"body": {"choices": []}}}) is None
     )

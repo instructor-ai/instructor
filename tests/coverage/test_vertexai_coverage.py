@@ -6,9 +6,9 @@ import builtins
 import importlib
 import runpy
 import sys
-from collections.abc import AsyncGenerator, Iterable
+from collections.abc import Iterable
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Union, cast
 
 import pytest
 import vertexai.generative_models as gm
@@ -19,10 +19,14 @@ from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.errors import ClientError, ModeError
 from instructor.v2.core.providers import Provider
 from instructor.v2.dsl.iterable import IterableModel
-from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.partial import Partial
 from instructor.v2.dsl.simple_type import ModelAdapter
 from instructor.v2.providers.vertexai import handlers, templating
-from instructor.v2.providers.vertexai.parallel import VertexAIParallelModel
+from instructor.v2.providers.vertexai.parallel import (
+    VertexAIParallelBase,
+    VertexAIParallelModel,
+)
+from tests.coverage._streams import async_items
 
 vertex_client = importlib.import_module("instructor.v2.providers.vertexai.client")
 
@@ -56,11 +60,6 @@ def _response(*parts: Any, text: str = "") -> SimpleNamespace:
         text=text,
         candidates=[SimpleNamespace(content=SimpleNamespace(parts=list(parts)))],
     )
-
-
-async def _async_chunks(chunks: list[Any]) -> AsyncGenerator[Any, None]:
-    for chunk in chunks:
-        yield chunk
 
 
 def test_vertexai_lazy_exports_resolve_and_unknown_exports_fail(
@@ -104,7 +103,7 @@ def test_vertexai_client_validates_mode_and_client_type() -> None:
     assert Mode.TOOLS.value in unsupported.value.valid_modes
 
     with pytest.raises(ClientError, match="Got: object"):
-        vertex_client.from_vertexai(object(), mode=Mode.TOOLS)
+        vertex_client.from_vertexai(cast(gm.GenerativeModel, object()), mode=Mode.TOOLS)
 
 
 def test_vertexai_client_selects_and_patches_sync_and_async_methods(
@@ -161,7 +160,7 @@ def test_vertexai_handler_import_errors_explain_optional_dependency(
 
 
 def test_vertexai_tools_build_one_declaration_per_parallel_model() -> None:
-    tool = handlers._create_vertexai_tool(Iterable[Weather | Score])
+    tool = handlers._create_vertexai_tool(Iterable[Union[Weather, Score]])
     declarations = tool._raw_tool.function_declarations
 
     assert [declaration.name for declaration in declarations] == ["Weather", "Score"]
@@ -179,7 +178,7 @@ def test_vertexai_handlers_prepare_tool_json_and_parallel_requests() -> None:
     json_model, json_request = json_handler.prepare_request(Weather, request)
     no_model, untouched = parallel_handler.prepare_request(None, request)
     parallel_model, parallel_request = parallel_handler.prepare_request(
-        Iterable[Weather], request
+        cast(type[BaseModel], Iterable[Weather]), request
     )
 
     assert tool_model is Weather
@@ -197,6 +196,7 @@ def test_vertexai_handlers_prepare_tool_json_and_parallel_requests() -> None:
     )
     assert no_model is None
     assert untouched == request
+    assert isinstance(parallel_model, VertexAIParallelBase)
     assert list(parallel_model.registry) == ["Weather"]
     assert (
         parallel_request["tools"][0]._raw_tool.function_declarations[0].name
@@ -222,7 +222,8 @@ def test_vertexai_handlers_parse_reask_and_finalize_responses() -> None:
         strict=True,
     )
     adapted = tools_handler.parse_response(
-        _response(_part(name="Response", args={"content": 7})), ModelAdapter[int]
+        _response(_part(name="Response", args={"content": 7})),
+        cast(type[BaseModel], ModelAdapter[int]),
     )
     tool_retry = tools_handler.handle_reask({"contents": []}, tool_response, error)
     json_retry = json_handler.handle_reask({"contents": []}, json_response, error)
@@ -265,13 +266,13 @@ async def test_vertexai_async_stream_extractors_skip_empty_chunks() -> None:
     tool_chunks = [
         chunk
         async for chunk in tools_handler.extract_streaming_json_async(
-            _async_chunks(tool_stream)
+            async_items(tool_stream)
         )
     ]
     json_chunks = [
         chunk
         async for chunk in json_handler.extract_streaming_json_async(
-            _async_chunks(json_stream)
+            async_items(json_stream)
         )
     ]
 
@@ -299,43 +300,32 @@ async def test_vertexai_streaming_parsers_return_sync_and_async_iterable_items()
         strict=True,
     )
     async_tools = tools_handler.parse_response(
-        _async_chunks(tool_stream),
+        async_items(tool_stream),
         weather_list,
         stream=True,
         validation_context={"request_id": "async-tool"},
         strict=True,
     )
     async_json = json_handler.parse_response(
-        _async_chunks(json_stream),
+        async_items(json_stream),
         weather_list,
         stream=True,
         validation_context={"request_id": "async-json"},
         strict=True,
     )
+    default_json = json_handler.parse_response(json_stream, weather_list, stream=True)
 
     assert [item.city for item in sync_tools] == ["Paris", "London"]
     assert [item.city async for item in async_tools] == ["Paris", "London"]
     assert [item.city async for item in async_json] == ["Tokyo"]
+    assert [item.city for item in default_json] == ["Tokyo"]
 
 
-def test_vertexai_streaming_parser_materializes_partial_and_custom_models() -> None:
+@pytest.mark.asyncio
+async def test_vertexai_streaming_parser_materializes_partial_and_custom_models() -> (
+    None
+):
     handler = handlers.VertexAIJSONHandler()
-
-    class StreamingPartial(BaseModel, PartialBase[Weather]):
-        city: str
-
-        @classmethod
-        def from_streaming_response(
-            cls,
-            completion: Iterable[Any],
-            stream_extractor: Any,
-            task_parser: Any = None,
-            **kwargs: Any,
-        ) -> Iterable[Weather]:
-            assert task_parser is None
-            assert kwargs == {"context": {"request_id": "partial"}, "strict": True}
-            payload = "".join(stream_extractor(completion))
-            yield Weather.model_validate_json(payload, **kwargs)
 
     class StreamingWeather(BaseModel):
         city: str
@@ -345,21 +335,31 @@ def test_vertexai_streaming_parser_materializes_partial_and_custom_models() -> N
             cls,
             completion: Iterable[Any],
             stream_extractor: Any,
-            task_parser: Any = None,
             **kwargs: Any,
         ) -> Iterable[StreamingWeather]:
-            assert task_parser is None
             assert kwargs == {"context": {"request_id": "custom"}, "strict": False}
             payload = "".join(stream_extractor(completion))
             yield cls.model_validate_json(payload, **kwargs)
 
     partial = handler.parse_response(
-        [_response(_part(text='{"city":"Paris"}'))],
-        StreamingPartial,
+        [_response(_part(text='{"city":"Par')), _response(_part(text='is"}'))],
+        Partial[Weather],
         stream=True,
         validation_context={"request_id": "partial"},
         strict=True,
     )
+    async_partial = [
+        item
+        async for item in handler.parse_response(
+            async_items(
+                [_response(_part(text='{"city":"Lon')), _response(_part(text='don"}'))]
+            ),
+            Partial[Weather],
+            stream=True,
+            validation_context={"request_id": "async-partial"},
+            strict=True,
+        )
+    ]
     custom = handler._parse_streaming(
         StreamingWeather,
         [_response(_part(text='{"city":"Oslo"}'))],
@@ -368,7 +368,8 @@ def test_vertexai_streaming_parser_materializes_partial_and_custom_models() -> N
     )
 
     assert isinstance(partial, list)
-    assert [item.city for item in partial] == ["Paris"]
+    assert [item.city for item in partial] == ["Par", "Paris"]
+    assert async_partial[-1].model_dump() == {"city": "London"}
     assert isinstance(custom, list)
     assert [item.city for item in custom] == ["Oslo"]
 
@@ -376,7 +377,7 @@ def test_vertexai_streaming_parser_materializes_partial_and_custom_models() -> N
 def test_vertexai_parallel_parsers_validate_known_calls_and_skip_empty_candidates() -> (
     None
 ):
-    model = VertexAIParallelModel(Iterable[Weather | Score])
+    model = VertexAIParallelModel(Iterable[Union[Weather, Score]])
     response = SimpleNamespace(
         candidates=[
             SimpleNamespace(content=None),
@@ -384,6 +385,8 @@ def test_vertexai_parallel_parsers_validate_known_calls_and_skip_empty_candidate
             SimpleNamespace(
                 content=SimpleNamespace(
                     parts=[
+                        SimpleNamespace(text="No function call was requested."),
+                        SimpleNamespace(function_call=None),
                         _part(name="Weather", args={"city": "Paris"}),
                         _part(name="Ignored", args={"other": True}),
                         _part(name="Score", args={"value": 9}),

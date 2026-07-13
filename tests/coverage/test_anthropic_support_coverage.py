@@ -8,8 +8,10 @@ import runpy
 from collections.abc import Iterable
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Union, cast
 
+import anthropic
+import httpx
 import pytest
 from anthropic.types import Usage
 from pydantic import BaseModel, ValidationInfo, field_validator
@@ -20,7 +22,7 @@ from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.providers import anthropic as anthropic_provider
 from instructor.v2.providers.anthropic import client as anthropic_client
-from instructor.v2.providers.anthropic import multimodal
+from instructor.v2.providers.anthropic import multimodal, templating
 from instructor.v2.providers.anthropic.parallel import (
     AnthropicParallelModel,
     handle_parallel_model,
@@ -67,38 +69,30 @@ def test_optional_anthropic_imports_fail_cleanly(
         assert namespace["__all__"] == ["from_anthropic"]
 
 
-def test_anthropic_factory_validates_mode_and_client(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    class SyncClient:
-        pass
-
-    class AsyncClient:
-        pass
-
-    sdk = SimpleNamespace(
-        Anthropic=SyncClient,
-        AsyncAnthropic=AsyncClient,
-        AnthropicBedrock=type("AnthropicBedrock", (), {}),
-        AnthropicVertex=type("AnthropicVertex", (), {}),
-        AsyncAnthropicBedrock=type("AsyncAnthropicBedrock", (), {}),
-        AsyncAnthropicVertex=type("AsyncAnthropicVertex", (), {}),
+def test_anthropic_factory_validates_mode_and_client() -> None:
+    client = anthropic.Anthropic(
+        api_key="test-key",
+        base_url="https://anthropic.invalid",
+        http_client=httpx.Client(trust_env=False),
     )
-    monkeypatch.setattr(anthropic_client, "anthropic", sdk)
 
     with pytest.raises(ModeError) as error:
-        anthropic_client.from_anthropic(SyncClient(), mode=Mode.TOOLS_STRICT)
+        anthropic_client.from_anthropic(client, mode=Mode.TOOLS_STRICT)
     assert error.value.mode == Mode.TOOLS_STRICT.value
     assert error.value.provider == Provider.ANTHROPIC.value
     assert Mode.TOOLS.value in error.value.valid_modes
 
     with pytest.raises(ClientError, match="Got: object") as error:
-        anthropic_client.from_anthropic(object(), mode=Mode.TOOLS)
-    assert "SyncClient" in str(error.value)
+        anthropic_client.from_anthropic(
+            cast(anthropic.Anthropic, object()), mode=Mode.TOOLS
+        )
+    assert "Anthropic" in str(error.value)
     assert "AsyncAnthropicVertex" in str(error.value)
+    client.close()
 
 
-def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
+@pytest.mark.asyncio
+async def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     regular_sync = lambda **_kwargs: {"source": "sync"}
@@ -107,23 +101,19 @@ def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
     async def regular_async(**_kwargs: Any) -> dict[str, str]:
         return {"source": "async"}
 
-    class SyncClient:
-        messages = SimpleNamespace(create=regular_sync)
-        beta = SimpleNamespace(messages=SimpleNamespace(create=beta_sync))
-
-    class AsyncClient:
-        messages = SimpleNamespace(create=regular_async)
-        beta = SimpleNamespace(messages=SimpleNamespace(create=regular_async))
-
-    sdk = SimpleNamespace(
-        Anthropic=SyncClient,
-        AsyncAnthropic=AsyncClient,
-        AnthropicBedrock=type("AnthropicBedrock", (), {}),
-        AnthropicVertex=type("AnthropicVertex", (), {}),
-        AsyncAnthropicBedrock=type("AsyncAnthropicBedrock", (), {}),
-        AsyncAnthropicVertex=type("AsyncAnthropicVertex", (), {}),
+    sync_client = anthropic.Anthropic(
+        api_key="test-key",
+        base_url="https://anthropic.invalid",
+        http_client=httpx.Client(trust_env=False),
     )
-    monkeypatch.setattr(anthropic_client, "anthropic", sdk)
+    raw_async = anthropic.AsyncAnthropic(
+        api_key="test-key",
+        base_url="https://anthropic.invalid",
+        http_client=httpx.AsyncClient(trust_env=False),
+    )
+    monkeypatch.setattr(sync_client.messages, "create", regular_sync)
+    monkeypatch.setattr(sync_client.beta.messages, "create", beta_sync)
+    monkeypatch.setattr(raw_async.messages, "create", regular_async)
     patch_calls: list[dict[str, Any]] = []
 
     def fake_patch(**kwargs: Any) -> Any:
@@ -133,14 +123,14 @@ def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
     monkeypatch.setattr(anthropic_client, "patch_v2", fake_patch)
     with pytest.warns(DeprecationWarning, match="ANTHROPIC_JSON is deprecated"):
         sync = anthropic_client.from_anthropic(
-            SyncClient(),
+            sync_client,
             mode=Mode.ANTHROPIC_JSON,
             beta=True,
             model="claude-sync",
             temperature=0,
         )
     async_client = anthropic_client.from_anthropic(
-        AsyncClient(), mode=Mode.TOOLS, model="claude-async", max_tokens=512
+        raw_async, mode=Mode.TOOLS, model="claude-async", max_tokens=512
     )
 
     assert isinstance(sync, Instructor)
@@ -167,6 +157,8 @@ def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
             "default_model": "claude-async",
         },
     ]
+    sync_client.close()
+    await raw_async.close()
 
 
 def test_anthropic_multimodal_encodes_remote_image_and_local_pdf(
@@ -281,7 +273,7 @@ class Reminder(BaseModel):
 
 
 def test_anthropic_parallel_schema_and_response_filtering() -> None:
-    typehint = Iterable[Contact | Reminder]
+    typehint = Iterable[Union[Contact, Reminder]]
     schemas = handle_parallel_model(typehint)
 
     assert [schema["name"] for schema in schemas] == ["Contact", "Reminder"]
@@ -311,6 +303,37 @@ def test_anthropic_parallel_schema_and_response_filtering() -> None:
     ) == [Contact(name="Ada", score=7), Reminder(text="Send notes")]
     assert list(parser.from_response(None, Mode.PARALLEL_TOOLS)) == []
     assert list(parser.from_response(object(), Mode.PARALLEL_TOOLS)) == []
+
+
+def test_anthropic_templating_renders_only_text_blocks() -> None:
+    calls: list[tuple[str, dict[str, Any]]] = []
+
+    def apply_template(value: str, context: dict[str, Any]) -> str:
+        calls.append((value, context))
+        return value.replace("{{ name }}", context["name"])
+
+    context = {"name": "Ada"}
+    message: dict[str, Any] = {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Hello {{ name }}"},
+            {"type": "image", "source": {"type": "url", "url": "image.invalid"}},
+            {"type": "text", "text": 42},
+            "plain text",
+        ],
+    }
+
+    assert templating.process_message(message, context, apply_template) is message
+    assert message["content"] == [
+        {"type": "text", "text": "Hello Ada"},
+        {"type": "image", "source": {"type": "url", "url": "image.invalid"}},
+        {"type": "text", "text": 42},
+        "plain text",
+    ]
+    assert calls == [("Hello {{ name }}", context)]
+    assert templating.process_message({"role": "user"}, context, apply_template) == {
+        "role": "user"
+    }
 
 
 def test_anthropic_usage_initializes_and_accumulates_sdk_usage() -> None:

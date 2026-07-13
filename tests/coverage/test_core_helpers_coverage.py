@@ -5,11 +5,13 @@ from __future__ import annotations
 import builtins
 import json
 import logging
+import threading
 import warnings
-from typing import Any
+from typing import Any, cast
 
 import pytest
 import vertexai.generative_models as gm
+from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletionMessage
 from openai.types.chat.chat_completion_message import FunctionCall
 from pydantic import BaseModel, ValidationError
@@ -17,6 +19,7 @@ from pydantic import BaseModel, ValidationError
 from instructor.v2.core import mode as mode_module
 from instructor.v2.core import usage, utils
 from instructor.v2.core.json import (
+    extract_json_from_codeblock,
     extract_json_from_stream,
     extract_json_from_stream_async,
 )
@@ -26,6 +29,12 @@ from instructor.v2.core.providers import Provider
 from instructor.v2.core.templating import handle_templating, process_message
 
 pytestmark = pytest.mark.unit
+
+
+def test_extract_json_from_codeblock_recovers_after_unclosed_object() -> None:
+    content = 'broken {"incomplete": true then {"name":"Ada"} suffix'
+
+    assert extract_json_from_codeblock(content) == '{"name":"Ada"}'
 
 
 @pytest.mark.parametrize(
@@ -80,8 +89,7 @@ def test_dump_message_joins_text_and_refusal_content_before_function_call() -> N
         tool_calls=None,
     )
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", message="Pydantic serializer warnings:.*")
+    with pytest.warns(UserWarning, match="Pydantic serializer warnings:"):
         result = dump_message(message)
 
     assert result["role"] == "assistant"
@@ -90,6 +98,21 @@ def test_dump_message_joins_text_and_refusal_content_before_function_call() -> N
         + json.dumps({"arguments": '{"id":7}', "name": "lookup"})
     )
     assert "tool_calls" not in result
+
+
+def test_dump_message_appends_function_call_to_text_content() -> None:
+    message = ChatCompletionMessage(
+        role="assistant",
+        content="Looking up the account. ",
+        function_call=FunctionCall(name="lookup", arguments='{"id":7}'),
+    )
+
+    result = dump_message(message)
+
+    assert result["content"] == (
+        "Looking up the account. "
+        + json.dumps({"arguments": '{"id":7}', "name": "lookup"})
+    )
 
 
 def test_merge_consecutive_messages_checks_tail_for_non_string_content() -> None:
@@ -188,8 +211,15 @@ def test_process_message_templates_vertex_text_and_preserves_binary_part() -> No
         ],
     )
 
-    result = process_message(message, {"name": "Ada"}, Provider.VERTEXAI)
+    with pytest.warns(
+        DeprecationWarning,
+        match="The argument `including_default_value_fields` has been removed",
+    ):
+        result = process_message(
+            cast(dict[str, Any], message), {"name": "Ada"}, Provider.VERTEXAI
+        )
 
+    assert isinstance(result, gm.Content)
     assert result.role == "user"
     assert result.parts[0].text == "Hello Ada"
     assert result.parts[1].mime_type == "application/octet-stream"
@@ -215,8 +245,97 @@ def test_handle_templating_accepts_empty_message_shapes(kwargs: Any) -> None:
     assert result is not kwargs
 
 
+def test_handle_templating_uses_contents_when_messages_are_empty() -> None:
+    kwargs = {
+        "messages": [],
+        "contents": [{"role": "user", "content": "Hello {{ name }}"}],
+    }
+
+    result = handle_templating(
+        kwargs,
+        Mode.TOOLS,
+        provider=Provider.OPENAI,
+        context={"name": "Ada"},
+    )
+
+    assert result == {
+        "messages": [],
+        "contents": [{"role": "user", "content": "Hello Ada"}],
+    }
+    assert kwargs["contents"][0]["content"] == "Hello {{ name }}"
+
+
+def test_handle_templating_preserves_uncopyable_metadata_and_nested_input() -> None:
+    guard = threading.Lock()
+    kwargs = {
+        "messages": [
+            {
+                "role": "user",
+                "content": "Hello {{ name }}",
+                "metadata": {"guard": guard},
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Nested {{ name }}",
+                        "metadata": {"guard": guard},
+                    },
+                    guard,
+                ],
+            },
+            {"role": "user", "parts": ["Part {{ name }}", guard]},
+        ]
+    }
+
+    result = handle_templating(
+        kwargs,
+        Mode.TOOLS,
+        provider=Provider.OPENAI,
+        context={"name": "Ada"},
+    )
+
+    assert result["messages"][0]["content"] == "Hello Ada"
+    assert result["messages"][0]["metadata"]["guard"] is guard
+    assert result["messages"][1]["content"][0]["text"] == "Nested Ada"
+    assert result["messages"][1]["content"][0]["metadata"]["guard"] is guard
+    assert result["messages"][1]["content"][1] is guard
+    assert result["messages"][2]["parts"] == ["Part Ada", guard]
+    assert kwargs["messages"][0]["content"] == "Hello {{ name }}"
+    original_content = kwargs["messages"][1]["content"]
+    assert isinstance(original_content[0], dict)
+    assert original_content[0]["text"] == "Nested {{ name }}"
+    assert kwargs["messages"][2]["parts"][0] == "Part {{ name }}"
+
+
+def test_handle_templating_does_not_mutate_cohere_chat_history() -> None:
+    guard = threading.Lock()
+    kwargs = {
+        "message": "Hello {{ name }}",
+        "chat_history": [
+            {"message": "Previous {{ name }}", "metadata": {"guard": guard}}
+        ],
+    }
+
+    result = handle_templating(
+        kwargs,
+        Mode.TOOLS,
+        provider=Provider.COHERE,
+        context={"name": "Ada"},
+    )
+
+    assert result["message"] == "Hello Ada"
+    assert result["chat_history"][0]["message"] == "Previous Ada"
+    assert result["chat_history"][0]["metadata"]["guard"] is guard
+    assert kwargs["message"] == "Hello {{ name }}"
+    assert kwargs["chat_history"][0]["message"] == "Previous {{ name }}"
+
+
 def test_update_total_usage_accepts_missing_response() -> None:
-    assert usage.update_total_usage(None, object()) is None
+    total_usage = CompletionUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+
+    assert usage.update_total_usage(None, total_usage) is None
 
 
 def test_update_total_usage_tolerates_missing_optional_anthropic_support(
@@ -236,7 +355,9 @@ def test_update_total_usage_tolerates_missing_optional_anthropic_support(
     monkeypatch.setattr(builtins, "__import__", import_without_anthropic_usage)
     caplog.set_level(logging.DEBUG, logger="instructor")
 
-    assert usage.update_total_usage(response, object()) is response
+    total_usage = CompletionUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+
+    assert usage.update_total_usage(response, total_usage) is response
     assert "No compatible response.usage found" in caplog.text
 
 
@@ -251,7 +372,7 @@ def test_disable_pydantic_error_url_removes_only_help_url(
     monkeypatch.setattr(utils, "_validation_error_original_str", None)
 
     with pytest.raises(ValidationError) as caught:
-        RequiresCount(count="not-a-number")
+        RequiresCount.model_validate({"count": "not-a-number"})
 
     before = str(caught.value)
     assert "https://errors.pydantic.dev" in before

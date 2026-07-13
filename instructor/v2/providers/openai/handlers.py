@@ -547,7 +547,14 @@ class OpenAIHandlerBase(ModeHandler):
 
     def _extract_tool_call_json(self, response: Any) -> str:
         """Extract JSON from tool call response."""
-        message = response.choices[0].message
+        choices = getattr(response, "choices", None)
+        if not choices:
+            raise ResponseParsingError(
+                "No choices in OpenAI response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        message = choices[0].message
         refusal = getattr(message, "refusal", None)
         if refusal is not None:
             raise AssertionError(f"Unable to generate a response due to {refusal}")
@@ -588,7 +595,14 @@ class OpenAIHandlerBase(ModeHandler):
 
     def _extract_text_content(self, response: Any) -> str:
         """Extract text content from response."""
-        return response.choices[0].message.content or ""
+        choices = getattr(response, "choices", None)
+        if not choices:
+            raise ResponseParsingError(
+                "No choices in OpenAI response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        return choices[0].message.content or ""
 
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.TOOLS)
@@ -1029,16 +1043,22 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
     ) -> Any:
         """Parse parallel tool response."""
         # Check for incomplete output
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
+        choices = getattr(response, "choices", None)
+        if not choices:
+            raise ResponseParsingError(
+                "No choices in OpenAI response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        if choices[0].finish_reason == "length":
+            raise IncompleteOutputException(last_completion=response)
 
         # Extract model types from response_model
         the_types = get_types_array(response_model)  # type: ignore[arg-type]
         type_registry = {t.__name__: t for t in the_types}
 
         results = []
-        tool_calls = response.choices[0].message.tool_calls
+        tool_calls = choices[0].message.tool_calls
         if not tool_calls:
             raise ResponseParsingError(
                 "No tool calls in response",
