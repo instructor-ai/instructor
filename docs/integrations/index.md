@@ -51,6 +51,7 @@ Learn how to integrate Instructor with various AI model providers. These compreh
 
     [:octicons-arrow-right-16: LiteLLM](./litellm.md)
     [:octicons-arrow-right-16: OpenRouter](./openrouter.md)
+    [:octicons-arrow-right-16: DaoXE](./daoxe.md)
 
 </div>
 
@@ -179,5 +180,3 @@ If you need assistance with a specific integration:
 2. Browse the [examples](../examples/index.md) and [cookbooks](../examples/index.md)
 3. Search existing [GitHub issues](https://github.com/jxnl/instructor/issues)
 4. Join our [Discord community](https://discord.gg/bD9YE9JArw)
-
-- [DaoXE](daoxe.md) — multi-model multi-protocol OpenAI-compatible gateway
