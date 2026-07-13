@@ -10,6 +10,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
+- **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
+- **v2 schemas**: Treat fields with Pydantic `default_factory` values as optional in generated OpenAI tool schemas.
+- **v2 partial streaming**: Build model instances for present `Optional[BaseModel]` fields during incomplete streams instead of exposing raw dictionaries.
+- **v2 iterable unions**: Generate stable member-derived names such as `IterableAOrB` for both `Union[A, B]` and `A | B` response models.
 - **Mistral/Vertex AI partial streaming**: Avoid forwarding iterable-only parser arguments into completed `Partial` responses, preventing final Pydantic validation errors for sync and async streams.
 - **Batch providers**: Handle missing optional SDKs safely, validate OpenAI batch input before client setup, report exhausted output-file retries clearly, and remove unreachable fallbacks.
 - **OpenAI/Writer tools**: Raise clear response-parsing errors for completions with no choices or tool calls instead of leaking attribute and index errors.

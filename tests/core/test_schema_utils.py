@@ -151,6 +151,25 @@ def test_required_fields_generation():
     assert "email" not in required
 
 
+def test_default_factory_fields_not_required():
+    """Fields with a default_factory have a default and must not be required."""
+
+    class ModelWithFactory(BaseModel):
+        name: str
+        items: list[str] = Field(default_factory=list)
+        tags: dict[str, str] = Field(default_factory=dict)
+
+    schema = generate_openai_schema(ModelWithFactory)
+    required = schema["parameters"]["required"]
+
+    # Only ``name`` has no default; the default_factory fields are optional.
+    assert required == ["name"]
+    # And it should agree with Pydantic's own required set.
+    assert set(required) == set(
+        ModelWithFactory.model_json_schema().get("required", [])
+    )
+
+
 def test_field_descriptions():
     """Test that field descriptions are preserved."""
     schema = generate_openai_schema(TestModel)

@@ -7,15 +7,35 @@ from collections.abc import AsyncGenerator, Generator, Iterable
 
 
 def extract_json_from_codeblock(content: str) -> str:
-    """Extract the first JSON object- or array-like span from a text block."""
-    for start_index, start_char in enumerate(content):
-        if start_char not in "{[":
-            continue
+    """Extract the last JSON object- or array-like span from a text block.
+
+    Returns the LAST complete JSON object, not the first. The LLM's own
+    structured output is the authoritative JSON and appears last; JSON that
+    appeared earlier may have originated from user input embedded in the
+    prompt and was referenced in the model's reasoning. Returning the first
+    object allowed prompt-injection to hijack the parsed output.
+    """
+    candidates: list[str] = []
+    search_index = 0
+    while search_index < len(content):
+        start_index = next(
+            (
+                index
+                for index in range(search_index, len(content))
+                if content[index] in "{["
+            ),
+            None,
+        )
+        if start_index is None:
+            break
+
+        start_char = content[start_index]
 
         end_stack = ["}" if start_char == "{" else "]"]
         in_string = False
         escape_next = False
 
+        candidate_found = False
         for end_index in range(start_index + 1, len(content)):
             char = content[end_index]
 
@@ -40,8 +60,16 @@ def extract_json_from_codeblock(content: str) -> str:
                         json.loads(candidate)
                     except Exception:
                         break
-                    return candidate
+                    candidates.append(candidate)
+                    search_index = end_index + 1
+                    candidate_found = True
+                    break
 
+        if not candidate_found:
+            search_index = start_index + 1
+
+    if candidates:
+        return candidates[-1]
     return content
 
 
@@ -117,7 +145,7 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                             yield from buffer
                             buffer = []
                             json_started = False
-                            break
+                            continue
 
                 buffer.append(char)
                 continue
@@ -207,7 +235,7 @@ async def extract_json_from_stream_async(
                                 yield buffered_char
                             buffer = []
                             json_started = False
-                            break
+                            continue
 
                 buffer.append(char)
                 continue

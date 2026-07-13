@@ -44,6 +44,27 @@ UNION_ORIGINS = (Union, UNION_TYPE) if UNION_TYPE is not None else (Union,)
 _processing_models: set[type] = set()
 
 
+def _unwrap_optional_base_model(annotation: Any) -> type[BaseModel] | None:
+    """Return the BaseModel subclass for a type annotation, unwrapping Optional[T].
+
+    Handles:
+    - Direct BaseModel subclass  →  returns it as-is
+    - ``Optional[T]`` / ``Union[T, None]`` where T is a BaseModel  →  returns T
+    - Arbitrary ``Union`` with multiple non-None args  →  returns None (ambiguous)
+    - Any other annotation  →  returns None
+    """
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return annotation
+    origin = get_origin(annotation)
+    if origin in UNION_ORIGINS:
+        non_none_args = [arg for arg in get_args(annotation) if arg is not type(None)]
+        if len(non_none_args) == 1:
+            arg = non_none_args[0]
+            if isinstance(arg, type) and issubclass(arg, BaseModel):
+                return arg
+    return None
+
+
 class MakeFieldsOptional:
     pass
 
@@ -149,15 +170,17 @@ def _build_partial_object(
         field_type = field_info.annotation if field_info else None
 
         if field_complete and field_type is not None:
-            if isinstance(field_type, type) and issubclass(field_type, BaseModel):
-                result[field_name] = field_type.model_validate(field_value, **kwargs)
+            _base_model = _unwrap_optional_base_model(field_type)
+            if _base_model is not None:
+                result[field_name] = _base_model.model_validate(field_value, **kwargs)
                 continue
 
         if isinstance(field_value, dict):
-            nested_model = None
-            if field_type is not None and isinstance(field_type, type):
-                if issubclass(field_type, BaseModel):
-                    nested_model = field_type
+            nested_model = (
+                _unwrap_optional_base_model(field_type)
+                if field_type is not None
+                else None
+            )
 
             if nested_model:
                 result[field_name] = _build_partial_object(
@@ -213,10 +236,10 @@ def _build_partial_list(
         item_path = f"{path}[{i}]"
         item_complete = tracker.is_path_complete(item_path)
 
-        if item_complete and item_type and isinstance(item_type, type):
-            if issubclass(item_type, BaseModel) and isinstance(item, dict):
-                result.append(item_type.model_validate(item, **kwargs))
-                continue
+        _item_model = _unwrap_optional_base_model(item_type) if item_type else None
+        if item_complete and _item_model is not None and isinstance(item, dict):
+            result.append(_item_model.model_validate(item, **kwargs))
+            continue
 
         result.append(item)
 

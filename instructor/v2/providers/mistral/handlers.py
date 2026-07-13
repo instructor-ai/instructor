@@ -40,7 +40,11 @@ from instructor.v2.core.json import (
     extract_json_from_stream_async,
 )
 from instructor.v2.providers.openai.schema import generate_openai_schema
-from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    dump_message,
+    merge_consecutive_messages,
+)
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
@@ -247,6 +251,7 @@ class MistralToolsHandler(MistralHandlerBase):
     ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
         """Prepare request with tool definitions."""
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         if response_model is None:
             return None, new_kwargs
@@ -389,6 +394,7 @@ class MistralJSONSchemaHandler(MistralHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         # Use Mistral's helper to create response format
         from mistralai.extra import response_format_from_pydantic_model
@@ -495,7 +501,7 @@ class MistralMDJSONHandler(MistralHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,

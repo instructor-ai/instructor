@@ -41,7 +41,11 @@ from instructor.v2.core.json import (
     extract_json_from_stream,
     extract_json_from_stream_async,
 )
-from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    dump_message,
+    merge_consecutive_messages,
+)
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -619,6 +623,7 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
     ) -> tuple[Any, dict[str, Any]]:
         """Prepare request with tool definitions."""
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         if response_model is None:
             return None, new_kwargs
@@ -744,6 +749,7 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         schema = response_model.model_json_schema()
         new_kwargs["response_format"] = {
             "type": "json_schema",
@@ -829,7 +835,7 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
             Make sure to return an instance of the JSON, not the schema itself
             """
         )
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,
@@ -919,7 +925,7 @@ class OpenAIMDJSONHandler(OpenAIHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,
@@ -1007,6 +1013,7 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         if new_kwargs.get("stream", False):
             raise ConfigurationError(
                 "stream=True is not supported when using PARALLEL_TOOLS mode"
@@ -1092,6 +1099,7 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         self._register_streaming_from_kwargs(response_model, kwargs)
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         # Handle max_tokens to max_output_tokens conversion
         if new_kwargs.get("max_tokens") is not None:

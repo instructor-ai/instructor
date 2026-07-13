@@ -20,7 +20,11 @@ from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import IncompleteOutputException, ResponseParsingError
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.providers.openai.schema import generate_openai_schema
-from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    dump_message,
+    merge_consecutive_messages,
+)
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.providers.openai.handlers import OpenAIHandlerBase
 
@@ -142,6 +146,7 @@ class WriterToolsHandler(WriterHandlerBase):
         self._register_streaming_from_kwargs(response_model, kwargs)
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         schema = generate_openai_schema(response_model)
 
         new_kwargs["tools"] = [{"type": "function", "function": schema}]
@@ -241,7 +246,7 @@ class WriterMDJSONHandler(WriterHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,
@@ -322,6 +327,7 @@ class WriterJSONSchemaHandler(WriterHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         self._register_streaming_from_kwargs(response_model, new_kwargs)
         return handle_writer_json(response_model, new_kwargs)
 
