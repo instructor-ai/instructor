@@ -74,6 +74,10 @@ _build_partial_list = cast(
     ],
     vars(partial_module)["_build_partial_list"],
 )
+_unwrap_optional_base_model = cast(
+    Callable[[Any], type[BaseModel] | None],
+    vars(partial_module)["_unwrap_optional_base_model"],
+)
 
 
 class TextChunk:
@@ -87,6 +91,10 @@ class TextChunk:
 class UnprintableChunk:
     def __str__(self) -> str:
         raise ValueError("cannot render chunk")
+
+
+def test_optional_base_model_unwrap_rejects_optional_scalars() -> None:
+    assert _unwrap_optional_base_model(Optional[int]) is None
 
 
 def test_partial_builder_validates_complete_nested_values_and_keeps_open_values() -> (

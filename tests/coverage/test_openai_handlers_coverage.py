@@ -738,12 +738,16 @@ def test_json_prompt_handlers_extend_list_system_content_and_create_system_messa
     list_messages = [
         {"role": "system", "content": [{"type": "text", "text": "Extract users."}]}
     ]
+    string_messages = [{"role": "system", "content": "Extract users."}]
 
     _, with_list = handler.prepare_request(User, {"messages": list_messages})
+    _, with_string = handler.prepare_request(User, {"messages": string_messages})
     _, without_messages = handler.prepare_request(User, {"messages": []})
 
     assert "Extract users." in with_list["messages"][0]["content"][0]["text"]
     assert "json_schema" in with_list["messages"][0]["content"][0]["text"]
+    assert "Extract users." in with_string["messages"][0]["content"]
+    assert "json_schema" in with_string["messages"][0]["content"]
     assert without_messages["messages"][0]["role"] == "system"
     assert "User" in without_messages["messages"][0]["content"]
     if isinstance(handler, OpenAIMDJSONHandler):
