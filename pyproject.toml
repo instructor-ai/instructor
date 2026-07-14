@@ -22,6 +22,7 @@ dependencies = [
     "jiter>=0.6.1,<0.15",
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
+    "regex>=2023.0.0",
 ]
 name = "instructor"
 version = "1.15.5"
