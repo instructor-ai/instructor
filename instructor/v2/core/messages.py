@@ -83,6 +83,8 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
     for message in messages:
         role = message.get("role", "user")
         new_content = message.get("content", "")
+        if new_content is None:
+            new_content = ""
         if not flat_string and isinstance(new_content, str):
             new_content = [{"type": "text", "text": new_content}]
 
