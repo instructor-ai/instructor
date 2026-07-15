@@ -18,6 +18,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Mistral/Vertex AI partial streaming**: Avoid forwarding iterable-only parser arguments into completed `Partial` responses, preventing final Pydantic validation errors for sync and async streams.
 - **Batch providers**: Handle missing optional SDKs safely, validate OpenAI batch input before client setup, report exhausted output-file retries clearly, and remove unreachable fallbacks.
 - **OpenAI/Writer tools**: Raise clear response-parsing errors for completions with no choices or tool calls instead of leaking attribute and index errors.
+- **v2 OpenAI tools reask**: Fall back to a plain user correction when a `Mode.TOOLS` response contains no tool calls (for example, OpenAI-compatible providers that ignore forced `tool_choice`, or a model that answers in prose) instead of iterating `None` and raising `TypeError` during reask.
 - **Fireworks streaming**: Keep non-streaming async calls non-streaming and return streaming async generators without incorrectly awaiting them.
 - **GenAI uploads**: Respect `max_retries=0` without an unwanted sleep or polling request, allow recovery on the final permitted retry, and report nameless pending uploads clearly before polling.
 - **Gemini/GenAI messages**: Honor an explicit system message for unstructured requests, remove the unsupported raw `system` argument, and reject invalid scalar message content clearly.
