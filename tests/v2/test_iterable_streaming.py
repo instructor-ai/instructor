@@ -54,3 +54,21 @@ def test_iterable_tasks_from_chunks_handles_braces_inside_strings() -> None:
         User(name="Alice", bio="happy :}"),
         User(name="Bob", bio="plain"),
     ]
+
+
+class Admin(BaseModel):
+    role: str
+
+
+def test_extract_cls_task_type_supports_pep604_union() -> None:
+    # `Iterable[User | Admin]` (PEP 604 union) exposes `types.UnionType` as its
+    # origin, which the extractor used to miss (it only checked `is Union`),
+    # falling through to `UnionType.model_validate_json` and raising
+    # AttributeError. The union naming path already handles both forms.
+    iterable_model = cast(Any, IterableModel(User | Admin))
+
+    user = iterable_model.extract_cls_task_type('{"name": "Alice", "bio": "hi"}')
+    assert user == User(name="Alice", bio="hi")
+
+    admin = iterable_model.extract_cls_task_type('{"role": "owner"}')
+    assert admin == Admin(role="owner")
