@@ -1023,6 +1023,7 @@ def _build_bedrock(
             client,
             mode=default_mode,
             async_client=async_client,
+            model=model_name,
             **kwargs,
         )
         logger.info(
