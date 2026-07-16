@@ -648,7 +648,11 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
             new_kwargs["tools"] = handle_parallel_model(cast(Any, response_model))
             new_kwargs["tool_choice"] = "auto"
         else:
-            schema = generate_openai_schema(response_model)
+            # Shallow-copy to avoid mutating the lru_cache return value.
+            # generate_openai_schema caches the same dict object; writing
+            # "strict" into it would permanently affect every future call for
+            # this model, even when strict=False.
+            schema = dict(generate_openai_schema(response_model))
 
             # Check for strict parameter
             use_strict = new_kwargs.pop("strict", False)

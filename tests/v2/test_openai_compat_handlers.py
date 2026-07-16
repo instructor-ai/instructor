@@ -139,3 +139,34 @@ def test_legacy_modes_remain_accepted(provider: Provider) -> None:
     for legacy_mode in spec.legacy_modes:
         assert normalize_mode(provider, legacy_mode) != legacy_mode
         assert mode_registry.is_registered(provider, legacy_mode)
+
+
+def test_strict_mode_does_not_pollute_schema_cache() -> None:
+    """strict=True must not permanently corrupt the lru_cache for subsequent calls.
+
+    generate_openai_schema uses lru_cache, so it returns the same dict object on
+    every call. If the TOOLS handler writes "strict" directly into that dict, all
+    future calls for the same model (even without strict=True) receive a schema
+    that already carries "strict": True. The fix is a shallow copy before mutation.
+    """
+
+    class StrictCacheModel(BaseModel):
+        x: int
+
+    handler = _handlers(Provider.OPENAI, Mode.TOOLS)
+
+    # First call with strict=True.
+    _, result_strict = handler.request_handler(
+        StrictCacheModel,
+        {"messages": [{"role": "user", "content": "test"}], "strict": True},
+    )
+    assert result_strict["tools"][0]["function"].get("strict") is True
+
+    # Second call WITHOUT strict=True must not inherit the mutation.
+    _, result_plain = handler.request_handler(
+        StrictCacheModel,
+        {"messages": [{"role": "user", "content": "test"}]},
+    )
+    assert "strict" not in result_plain["tools"][0]["function"], (
+        "lru_cache was poisoned: 'strict' key survived a non-strict call"
+    )
