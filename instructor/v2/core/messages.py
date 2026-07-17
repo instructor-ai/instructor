@@ -38,6 +38,23 @@ def copy_messages_for_mutation(messages: list[dict[str, Any]]) -> list[dict[str,
     return copied
 
 
+def isolate_retry_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Return kwargs with a shallow copy of the messages/contents/chat_history list.
+
+    Reask handlers append/extend that list in place during the retry loop (see
+    `copy_messages_for_mutation` above for the equivalent problem one layer up, in
+    `prepare_request`). Passing the caller-facing kwargs dict straight into the retry
+    loop means those mutations land on the exact same list object the caller passed
+    in, which corrupts any code that reads it again afterward, e.g. computing a cache
+    key from it both before and after the retry loop runs.
+    """
+    for key_name in ("messages", "contents", "chat_history"):
+        value = kwargs.get(key_name)
+        if isinstance(value, list):
+            return {**kwargs, key_name: list(value)}
+    return kwargs
+
+
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     ret: ChatCompletionMessageParam = {
         "role": message.role,

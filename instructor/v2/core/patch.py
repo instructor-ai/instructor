@@ -20,6 +20,7 @@ from instructor.v2.core.templating import handle_templating
 from instructor.v2.core.utils import is_async
 from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
+from instructor.v2.core.messages import isolate_retry_kwargs
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 
@@ -247,7 +248,9 @@ def _create_sync_wrapper(
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
-        # Use v2 retry logic with registry handlers
+        # Use v2 retry logic with registry handlers. Pass an isolated copy of the
+        # messages list so reask-handler mutations during the retry loop can't leak
+        # back into new_kwargs, which is read again below for the cache store key.
         response = retry_sync_v2(
             func=func,
             response_model=response_model,
@@ -256,7 +259,7 @@ def _create_sync_wrapper(
             context=context,
             max_retries=max_retries,
             args=args,
-            kwargs=new_kwargs,
+            kwargs=isolate_retry_kwargs(new_kwargs),
             strict=strict,
             hooks=hooks,
         )
@@ -359,7 +362,9 @@ def _create_async_wrapper(
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
-        # Use v2 retry logic with registry handlers
+        # Use v2 retry logic with registry handlers. Pass an isolated copy of the
+        # messages list so reask-handler mutations during the retry loop can't leak
+        # back into new_kwargs, which is read again below for the cache store key.
         response = await retry_async_v2(
             func=func,
             response_model=response_model,
@@ -368,7 +373,7 @@ def _create_async_wrapper(
             context=context,
             max_retries=max_retries,
             args=args,
-            kwargs=new_kwargs,
+            kwargs=isolate_retry_kwargs(new_kwargs),
             strict=strict,
             hooks=hooks,
         )
