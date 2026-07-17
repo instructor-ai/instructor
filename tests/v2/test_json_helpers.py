@@ -121,6 +121,24 @@ def test_extract_json_from_stream_preserves_backticks_in_fenced_string() -> None
     assert "".join(extract_json_from_stream(chunks)) == '{"code":"`inline`"}'
 
 
+def test_extract_json_from_stream_discards_non_json_brace_span_before_payload() -> None:
+    # MD_JSON prompts often produce a prose preamble before the actual payload,
+    # and that preamble can itself contain a balanced pair of braces that is not
+    # JSON (e.g. a parenthetical aside). A naive bracket-matching scan treats that
+    # span as "the JSON" once it balances and emits it verbatim, so the real
+    # payload that follows gets appended onto invalid JSON instead of replacing
+    # it. The extractor should recognize the span isn't valid JSON, drop it, and
+    # keep scanning for the real payload.
+    chunks = [
+        "I'll pull out the fields now. ",
+        "{Note: keeping the original casing} ",
+        "Here is the result: ",
+        '{"name":"Ada","age":30}',
+    ]
+
+    assert "".join(extract_json_from_stream(chunks)) == '{"name":"Ada","age":30}'
+
+
 @pytest.mark.asyncio
 async def test_extract_json_from_stream_async_preserves_backticks_in_string() -> None:
     async def chunks():
@@ -175,4 +193,21 @@ async def test_extract_json_from_stream_async_handles_even_backslashes() -> None
     assert (
         "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
         == '{"path":"C:\\\\","name":"Ada"}'
+    )
+
+
+@pytest.mark.asyncio
+async def test_extract_json_from_stream_async_discards_non_json_brace_span_before_payload() -> None:
+    async def chunks():
+        for chunk in [
+            "I'll pull out the fields now. ",
+            "{Note: keeping the original casing} ",
+            "Here is the result: ",
+            '{"name":"Ada","age":30}',
+        ]:
+            yield chunk
+
+    assert (
+        "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
+        == '{"name":"Ada","age":30}'
     )

@@ -142,9 +142,21 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                         delimiter_stack.pop()
                         if not delimiter_stack:
                             buffer.append(char)
-                            yield from buffer
+                            candidate = "".join(buffer)
                             buffer = []
                             json_started = False
+                            try:
+                                json.loads(candidate)
+                            except ValueError:
+                                # The bracket-balanced span we just closed
+                                # isn't actually valid JSON - e.g. a
+                                # brace-delimited aside in the model's prose
+                                # that happened to appear before the real
+                                # payload. Discard it and keep scanning
+                                # instead of emitting it as if it were the
+                                # extracted JSON.
+                                continue
+                            yield from candidate
                             continue
 
                 buffer.append(char)
@@ -231,10 +243,19 @@ async def extract_json_from_stream_async(
                         delimiter_stack.pop()
                         if not delimiter_stack:
                             buffer.append(char)
-                            for buffered_char in buffer:
-                                yield buffered_char
+                            candidate = "".join(buffer)
                             buffer = []
                             json_started = False
+                            try:
+                                json.loads(candidate)
+                            except ValueError:
+                                # See the matching comment in
+                                # extract_json_from_stream - discard
+                                # bracket-balanced spans that aren't
+                                # actually valid JSON and keep scanning.
+                                continue
+                            for buffered_char in candidate:
+                                yield buffered_char
                             continue
 
                 buffer.append(char)
