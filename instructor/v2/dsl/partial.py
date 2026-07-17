@@ -439,13 +439,18 @@ class PartialBase(Generic[T_Model]):
             yield obj
 
         # Final validation: only validate if the JSON is structurally complete
-        # If JSON is incomplete (stream ended mid-object), skip validation
+        # If JSON is incomplete (stream ended mid-object), skip validation.
+        # Validate the accumulated JSON itself rather than a
+        # model_dump(exclude_none=True) round-trip, which would strip fields
+        # the model legitimately returned as null and make required-but-nullable
+        # fields fail re-validation as "missing".
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                if is_json_complete(potential_object.strip() or "{}"):
+                json_str = potential_object.strip() or "{}"
+                if is_json_complete(json_str):
                     original_model.model_validate(
-                        final_obj.model_dump(exclude_none=True), **kwargs
+                        from_json(json_str.encode()), **kwargs
                     )
 
     @classmethod
@@ -474,13 +479,18 @@ class PartialBase(Generic[T_Model]):
             yield obj
 
         # Final validation: only validate if the JSON is structurally complete
-        # If JSON is incomplete (stream ended mid-object), skip validation
+        # If JSON is incomplete (stream ended mid-object), skip validation.
+        # Validate the accumulated JSON itself rather than a
+        # model_dump(exclude_none=True) round-trip, which would strip fields
+        # the model legitimately returned as null and make required-but-nullable
+        # fields fail re-validation as "missing".
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                if is_json_complete(potential_object.strip() or "{}"):
+                json_str = potential_object.strip() or "{}"
+                if is_json_complete(json_str):
                     original_model.model_validate(
-                        final_obj.model_dump(exclude_none=True), **kwargs
+                        from_json(json_str.encode()), **kwargs
                     )
 
     @staticmethod
