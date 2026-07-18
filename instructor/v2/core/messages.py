@@ -47,12 +47,18 @@ def isolate_retry_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     loop means those mutations land on the exact same list object the caller passed
     in, which corrupts any code that reads it again afterward, e.g. computing a cache
     key from it both before and after the retry loop runs.
+
+    Each of the three candidate keys is isolated independently rather than stopping
+    at the first match, so a kwargs dict carrying more than one of them (not used by
+    any current provider, but not precluded by the shape of kwargs either) doesn't
+    leave the others aliased to the caller's list.
     """
+    isolated = dict(kwargs)
     for key_name in ("messages", "contents", "chat_history"):
-        value = kwargs.get(key_name)
+        value = isolated.get(key_name)
         if isinstance(value, list):
-            return {**kwargs, key_name: list(value)}
-    return kwargs
+            isolated[key_name] = list(value)
+    return isolated
 
 
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
