@@ -10,6 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **v2 caching**: Isolate retry-bound `kwargs` so reask-handler mutations to `messages` cannot leak back into the caller's `new_kwargs` and cause the cache lookup/store keys to diverge after any retry. Without this fix, `cache=` silently stops caching any request that needed at least one reask. ([#2454](https://github.com/567-labs/instructor/issues/2454))
 - **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
 - **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
 - **v2 schemas**: Treat fields with Pydantic `default_factory` values as optional in generated OpenAI tool schemas.
@@ -79,7 +80,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 - **Hooks**: `completion:error` and `completion:last_attempt` handlers now receive `attempt_number`, `max_attempts`, and `is_last_attempt` as keyword arguments. Old-style handlers remain fully backward-compatible.
-- **Anthropic**: `from_provider("anthropic/...")` now sets a `User-Agent: instructor/<version>` header on the Anthropic client
+- **Anthropic**: `from_provider("anthropic/...")` now sets a `User-agent: instructor/<version>` header on the Anthropic client
 
 ### Fixed
 - **Anthropic usage**: Initialize usage correctly for `ANTHROPIC_REASONING_TOOLS` and `ANTHROPIC_PARALLEL_TOOLS` modes — previously fell through to OpenAI usage tracking with wrong field names

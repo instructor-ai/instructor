@@ -177,6 +177,36 @@ def apatch(
     return patch(client, mode=mode, provider=provider)
 
 
+def _isolate_kwargs_for_retry(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of `kwargs` whose top-level ``messages``/``contents``/
+    ``chat_history`` list is a fresh object, so retry-loop mutations are
+    not observable through the caller's `new_kwargs`.
+
+    Reask handlers in the registry do ``kwargs = kwargs.copy()`` (a shallow
+    copy) and then mutate the shared ``messages`` list in place via
+    ``.extend()`` / ``.append()`` to append validation-feedback turns for
+    the next retry attempt. That is correct behavior *inside* the retry
+    loop, but it must not leak back to the outer `new_kwargs` in the patch
+    wrapper: the cache store key is computed from `new_kwargs["messages"]`
+    *after* `retry_sync_v2` / `retry_async_v2` returns, and if that list
+    has been mutated to include the reask turns it no longer matches the
+    cache lookup key computed *before* the retry -- silently breaking
+    caching for any request that needed at least one retry (issue #2454).
+
+    Only the list container is copied; the individual message dicts
+    inside it are shared. This is sufficient because reask handlers only
+    append/extend new dicts -- they do not mutate existing entries -- and
+    the cache key is computed from the JSON serialization of the list,
+    which is invariant to whether the dicts are aliased or not.
+    """
+    isolated = dict(kwargs)
+    for key in ("messages", "contents", "chat_history"):
+        value = isolated.get(key)
+        if isinstance(value, list):
+            isolated[key] = list(value)
+    return isolated
+
+
 def _create_sync_wrapper(
     func: Callable[..., Any],
     provider: Provider,
@@ -247,7 +277,16 @@ def _create_sync_wrapper(
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
-        # Use v2 retry logic with registry handlers
+        # Use v2 retry logic with registry handlers.
+        #
+        # Pass an isolated copy of `new_kwargs` so reask handlers (which do
+        # `kwargs = kwargs.copy()` -- a shallow copy -- and then mutate the
+        # shared `messages` list in place via `.extend()` / `.append()`)
+        # cannot leak those mutations back to `new_kwargs`. The cache
+        # store key below is recomputed from `new_kwargs["messages"]` after
+        # the retry returns, and must match the lookup key above; if the
+        # reask turns were observable here the cache would silently miss on
+        # every request that needed a retry. See issue #2454.
         response = retry_sync_v2(
             func=func,
             response_model=response_model,
@@ -256,7 +295,7 @@ def _create_sync_wrapper(
             context=context,
             max_retries=max_retries,
             args=args,
-            kwargs=new_kwargs,
+            kwargs=_isolate_kwargs_for_retry(new_kwargs),
             strict=strict,
             hooks=hooks,
         )
@@ -359,7 +398,16 @@ def _create_async_wrapper(
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
-        # Use v2 retry logic with registry handlers
+        # Use v2 retry logic with registry handlers.
+        #
+        # Pass an isolated copy of `new_kwargs` so reask handlers (which do
+        # `kwargs = kwargs.copy()` -- a shallow copy -- and then mutate the
+        # shared `messages` list in place via `.extend()` / `.append()`)
+        # cannot leak those mutations back to `new_kwargs`. The cache store
+        # key below is recomputed from `new_kwargs["messages"]` after the
+        # retry returns, and must match the lookup key above; if the reask
+        # turns were observable here the cache would silently miss on every
+        # request that needed a retry. See issue #2454.
         response = await retry_async_v2(
             func=func,
             response_model=response_model,
@@ -368,7 +416,7 @@ def _create_async_wrapper(
             context=context,
             max_retries=max_retries,
             args=args,
-            kwargs=new_kwargs,
+            kwargs=_isolate_kwargs_for_retry(new_kwargs),
             strict=strict,
             hooks=hooks,
         )
