@@ -80,7 +80,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 - **Hooks**: `completion:error` and `completion:last_attempt` handlers now receive `attempt_number`, `max_attempts`, and `is_last_attempt` as keyword arguments. Old-style handlers remain fully backward-compatible.
-- **Anthropic**: `from_provider("anthropic/...")` now sets a `User-agent: instructor/<version>` header on the Anthropic client
+- **Anthropic**: `from_provider("anthropic/...")` now sets a `User-Agent: instructor/<version>` header on the Anthropic client
 
 ### Fixed
 - **Anthropic usage**: Initialize usage correctly for `ANTHROPIC_REASONING_TOOLS` and `ANTHROPIC_PARALLEL_TOOLS` modes — previously fell through to OpenAI usage tracking with wrong field names
