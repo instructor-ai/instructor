@@ -85,7 +85,7 @@ class CitationMixin(BaseModel):
 
         errs_ = 0
         s = regex.search(f"({minor}){{e<={errs_}}}", major)
-        while s is None and errs_ <= errs:
+        while s is None and errs_ < errs:
             errs_ += 1
             s = regex.search(f"({minor}){{e<={errs_}}}", major)
 
