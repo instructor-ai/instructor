@@ -189,7 +189,7 @@ class BatchProcessor(Generic[T]):
                 custom_id = data.get("custom_id", "unknown")
                 extracted_data = self._extract_from_response(data)
 
-                if extracted_data:
+                if extracted_data is not None:
                     try:
                         # Parse into response model
                         result = self.response_model(**extracted_data)
