@@ -376,6 +376,89 @@ def test_update_gemini_kwargs_applies_safety_defaults(
     assert result["safety_settings"][harassment] == 1
 
 
+def test_update_gemini_kwargs_does_not_mutate_caller_generation_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: #2465 — shallow-copy must not leak nested-dict mutation
+    back to the caller's `generation_config`. Reusing the same options dict
+    across a retry previously changed accepted parameter names in
+    caller-dependent ways."""
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+
+    caller_generation_config = {"max_tokens": 5, "temperature": 0.7}
+    snapshot_before = dict(caller_generation_config)
+
+    utils.update_gemini_kwargs(
+        {"generation_config": caller_generation_config, "messages": []}
+    )
+
+    assert caller_generation_config == snapshot_before
+
+
+def test_update_gemini_kwargs_does_not_mutate_caller_safety_settings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: #2465 — the `default_safety_thresholds` fill loop must
+    not mutate the caller's `safety_settings` dict. Same shallow-copy
+    mutation leak class as `generation_config`."""
+    monkeypatch.setattr(
+        utils,
+        "_default_safety_thresholds",
+        lambda: {"HARM_CATEGORY_HATE_SPEECH": 2},
+    )
+
+    caller_safety_settings: dict[str, int] = {"HARM_CATEGORY_HARASSMENT": 1}
+    snapshot_before = dict(caller_safety_settings)
+
+    utils.update_gemini_kwargs(
+        {"messages": [], "safety_settings": caller_safety_settings}
+    )
+
+    assert caller_safety_settings == snapshot_before
+
+
+def test_update_gemini_kwargs_returns_result_with_translated_keys(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Guards against an over-broad fix that breaks the translation itself:
+    the returned `result["generation_config"]` must still carry the
+    Gemini-style key."""
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+
+    result = utils.update_gemini_kwargs(
+        {"generation_config": {"max_tokens": 32, "n": 2}, "messages": []}
+    )
+
+    assert result["generation_config"]["max_output_tokens"] == 32
+    assert result["generation_config"]["candidate_count"] == 2
+    assert "max_tokens" not in result["generation_config"]
+    assert "n" not in result["generation_config"]
+
+
+def test_update_gemini_kwargs_handles_missing_generation_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Edge case: caller passes no `generation_config` key. Must not raise
+    and must not synthesize an empty dict into the caller's kwargs."""
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+
+    result = utils.update_gemini_kwargs({"messages": []})
+
+    assert "generation_config" not in result
+
+
+def test_update_gemini_kwargs_handles_empty_generation_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Edge case: `generation_config={}`. Must return an empty dict, not
+    raise on a missing-key lookup."""
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+
+    result = utils.update_gemini_kwargs({"generation_config": {}, "messages": []})
+
+    assert result["generation_config"] == {}
+
+
 def test_handle_gemini_json_rejects_model_kwarg() -> None:
     with pytest.raises(ConfigurationError, match="must be set while patching"):
         utils.handle_gemini_json(Answer, {"messages": [], "model": "gemini-pro"})

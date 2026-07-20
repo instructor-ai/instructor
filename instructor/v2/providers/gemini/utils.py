@@ -322,7 +322,12 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     result = kwargs.copy()
 
     if "generation_config" in result:
-        gen_config = result["generation_config"]
+        # Shallow-copy the nested dict so the caller's `generation_config`
+        # is treated as read-only: `dict.copy()` only copies the outer dict,
+        # so mutating the nested one leaks back to the caller and silently
+        # changes accepted parameter names on retry (#2465).
+        gen_config = {**result["generation_config"]}
+        result["generation_config"] = gen_config
 
         for openai_key, gemini_key in _OPENAI_TO_GEMINI_MAP.items():
             if openai_key in gen_config:
@@ -338,7 +343,10 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         result.setdefault("safety_settings", {})
         return result
 
-    safety_settings = result.get("safety_settings", {})
+    # Same shallow-copy defense for `safety_settings`: the defaults-fill loop
+    # below writes back through this dict reference, so copy it first to keep
+    # the caller's object unchanged (same bug class as `generation_config`).
+    safety_settings = {**result.get("safety_settings", {})}
     result["safety_settings"] = safety_settings
 
     for category, threshold in default_safety_thresholds.items():
