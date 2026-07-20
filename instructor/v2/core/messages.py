@@ -45,11 +45,9 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if (
-        hasattr(message, "function_call")
-        and message.function_call is not None
-        and ret["content"]
-    ):
+    if hasattr(message, "function_call") and message.function_call is not None:
+        # Preserve legacy function calls even when content is None/empty
+        # (common for pure tool/function responses) — see #2464.
         if not isinstance(ret["content"], str):
             response_message = ""
             for content_message in ret["content"]:
@@ -59,7 +57,9 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
                     elif content_message.get("type") == "refusal":
                         response_message += content_message.get("refusal", "")
             ret["content"] = response_message
-        ret["content"] += json.dumps(message.model_dump()["function_call"])
+        ret["content"] = (ret["content"] or "") + json.dumps(
+            message.model_dump()["function_call"]
+        )
     return ret
 
 

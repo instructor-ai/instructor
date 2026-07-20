@@ -322,7 +322,10 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     result = kwargs.copy()
 
     if "generation_config" in result:
-        gen_config = result["generation_config"]
+        # Shallow-copy the nested dict so OpenAI-key rewrites don't mutate the
+        # caller's generation_config object (#2465).
+        gen_config = dict(result["generation_config"])
+        result["generation_config"] = gen_config
 
         for openai_key, gemini_key in _OPENAI_TO_GEMINI_MAP.items():
             if openai_key in gen_config:
