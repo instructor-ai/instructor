@@ -66,8 +66,12 @@ class CitationMixin(BaseModel):
         if info.context is None:
             return self
 
-        # Get the context from the info
+        # Get the context from the info. Callers may pass a validation_context
+        # dict without a "context" key (or with a non-string value); treat that
+        # as "no source text" rather than crashing in regex.search (#2459).
         text_chunks = info.context.get("context", None)
+        if not isinstance(text_chunks, str):
+            return self
 
         # Get the spans of the substring_phrase in the context
         spans = list(self.get_spans(text_chunks))
