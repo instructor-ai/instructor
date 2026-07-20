@@ -177,6 +177,23 @@ def apatch(
     return patch(client, mode=mode, provider=provider)
 
 
+def _retry_kwargs_copy(new_kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Return kwargs for the retry layer that isolate mutable message lists.
+
+    Reask handlers shallow-copy kwargs then mutate the nested ``messages``/
+    ``contents``/``chat_history`` list in place. Without isolating those
+    lists here, the outer ``new_kwargs`` used for the post-retry cache *store*
+    key would pick up reask turns and diverge from the pre-retry *lookup* key
+    (#2454).
+    """
+    retry_kwargs = dict(new_kwargs)
+    for key in ("messages", "contents", "chat_history"):
+        value = retry_kwargs.get(key)
+        if isinstance(value, list):
+            retry_kwargs[key] = list(value)
+    return retry_kwargs
+
+
 def _create_sync_wrapper(
     func: Callable[..., Any],
     provider: Provider,
@@ -247,7 +264,8 @@ def _create_sync_wrapper(
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
-        # Use v2 retry logic with registry handlers
+        # Use v2 retry logic with registry handlers. Isolate nested message
+        # lists so reask mutations cannot poison the cache-store key (#2454).
         response = retry_sync_v2(
             func=func,
             response_model=response_model,
@@ -256,7 +274,7 @@ def _create_sync_wrapper(
             context=context,
             max_retries=max_retries,
             args=args,
-            kwargs=new_kwargs,
+            kwargs=_retry_kwargs_copy(new_kwargs),
             strict=strict,
             hooks=hooks,
         )
@@ -359,7 +377,8 @@ def _create_async_wrapper(
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
-        # Use v2 retry logic with registry handlers
+        # Use v2 retry logic with registry handlers. Isolate nested message
+        # lists so reask mutations cannot poison the cache-store key (#2454).
         response = await retry_async_v2(
             func=func,
             response_model=response_model,
@@ -368,7 +387,7 @@ def _create_async_wrapper(
             context=context,
             max_retries=max_retries,
             args=args,
-            kwargs=new_kwargs,
+            kwargs=_retry_kwargs_copy(new_kwargs),
             strict=strict,
             hooks=hooks,
         )
