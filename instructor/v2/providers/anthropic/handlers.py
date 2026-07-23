@@ -402,6 +402,11 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                 new_kwargs["tool_choice"] = {
                     "type": "tool",
                     "name": getattr(response_model, "__name__", "response"),
+                    # Without this, Anthropic may still emit multiple tool_use
+                    # blocks for the same forced tool, which the single-model
+                    # parser then rejects even though the model's response was
+                    # otherwise valid.
+                    "disable_parallel_tool_use": True,
                 }
 
         return response_model, new_kwargs
