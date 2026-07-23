@@ -241,6 +241,12 @@ def _build_partial_list(
             result.append(_item_model.model_validate(item, **kwargs))
             continue
 
+        if _item_model is not None and isinstance(item, dict):
+            result.append(
+                _build_partial_object(item, _item_model, tracker, item_path, **kwargs)
+            )
+            continue
+
         result.append(item)
 
     return result

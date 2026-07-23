@@ -127,7 +127,14 @@ def test_partial_builder_validates_complete_nested_values_and_keeps_open_values(
     assert result.metadata == {"source": "stream", "attempt": 2}
     assert result.featured == Item(number=7, state=State.READY)
     assert result.items[0] == Item(number=8, state=State.PENDING)
-    assert result.items[1] == {"number": "9", "state": "rea"}
+    # Open (incomplete) list items are recursed into partial model instances,
+    # consistent with how a singular open nested field is handled (see
+    # test_partial_builder_recurses_into_open_nested_model_and_handles_scalars):
+    # unvalidated/partial values are kept, but the item stays a typed instance
+    # instead of degrading to a raw dict.
+    assert isinstance(result.items[1], Item)
+    assert result.items[1].number == "9"
+    assert result.items[1].state == "rea"
 
 
 def test_partial_builder_recurses_into_open_nested_model_and_handles_scalars() -> None:

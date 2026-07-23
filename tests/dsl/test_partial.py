@@ -1280,3 +1280,30 @@ class TestOptionalNestedBaseModelDuringPartialStreaming:
 
         # Must remain None — not an empty Inner() instance
         assert obj.inner is None
+
+    def test_partial_list_returns_model_instance_for_incomplete_trailing_item(self):
+        """The trailing (still-streaming) item in a list[BaseModel] field must be
+        a partial model instance, not a raw dict -- consistent with how a
+        singular open nested BaseModel field is already handled."""
+
+        class Item(BaseModel):
+            name: str
+            qty: int
+
+        class Order(BaseModel):
+            items: list[Item]
+
+        partial = Partial[Order]
+
+        # First item complete, second item mid-stream (incomplete).
+        chunks = [
+            '{"items": [{"name": "apple", "qty": 3}, {"name": "banana", "qty"'
+        ]
+
+        results = list(_partial_api(partial).model_from_chunks(chunks))
+        obj = results[-1]
+
+        assert isinstance(obj.items[0], Item)
+        # Would be a raw dict before the fix, raising AttributeError on .name
+        assert isinstance(obj.items[-1], Item)
+        assert obj.items[-1].name == "banana"
