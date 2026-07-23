@@ -69,7 +69,7 @@ def _attempt_metadata(
     }
 
 
-def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
+def _finalize_parsed_response(parsed: Any, response: Any, total_usage: Any = None) -> Any:
     if isinstance(parsed, IterableBase):
         parsed = [task for task in parsed.tasks]
     if isinstance(parsed, AdapterBase):
@@ -78,6 +78,7 @@ def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
         return ListResponse.from_list(parsed, raw_response=response)
     if isinstance(parsed, BaseModel):
         parsed._raw_response = response  # type: ignore[attr-defined]
+        parsed._total_usage = total_usage  # type: ignore[attr-defined]
     return parsed
 
 
@@ -222,7 +223,7 @@ def retry_sync_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)
+                    return _finalize_parsed_response(parsed, response, total_usage)
 
                 except IncompleteOutputException:
                     raise
@@ -467,7 +468,7 @@ async def retry_async_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)
+                    return _finalize_parsed_response(parsed, response, total_usage)
 
                 except IncompleteOutputException:
                     raise
