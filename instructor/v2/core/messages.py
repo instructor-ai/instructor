@@ -45,11 +45,7 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if (
-        hasattr(message, "function_call")
-        and message.function_call is not None
-        and ret["content"]
-    ):
+    if hasattr(message, "function_call") and message.function_call is not None:
         if not isinstance(ret["content"], str):
             response_message = ""
             for content_message in ret["content"]:
