@@ -254,7 +254,7 @@ def test_pylance_url_config() -> None:
             "e3eff5cb8a6dae8914e3831b00c690d9dee4b740/python/pydantic_core/"
             "_pydantic_core.pyi#L820C9-L829C12"
         )
-        pytest.skip(reason)  # ty: ignore[too-many-positional-arguments]
+        raise pytest.skip.Exception(reason)
 
     class Model(BaseModel):
         list_of_ints: list[int]
@@ -264,7 +264,7 @@ def test_pylance_url_config() -> None:
     data = dict(list_of_ints=["1", 2, "bad"], a_float="Not a float")
 
     with pytest.raises(ValidationError) as exc_info:
-        Model(**data)
+        Model.model_validate(data)
 
     assert "https://errors.pydantic.dev" not in str(exc_info.value)
 

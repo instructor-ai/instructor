@@ -182,13 +182,7 @@ class GenAIHandlerBase(ModeHandler):
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
                 else:
-                    try:
-                        yield chunk.text
-                    except Exception:
-                        if chunk.candidates[0].content.parts[0].text:
-                            yield chunk.candidates[0].content.parts[0].text
-                            continue
-                        raise
+                    yield gemini_utils.extract_gemini_chunk_text(chunk)
             except AttributeError:
                 continue
 
@@ -203,13 +197,7 @@ class GenAIHandlerBase(ModeHandler):
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
                 else:
-                    try:
-                        yield chunk.text
-                    except Exception:
-                        if chunk.candidates[0].content.parts[0].text:
-                            yield chunk.candidates[0].content.parts[0].text
-                            continue
-                        raise
+                    yield gemini_utils.extract_gemini_chunk_text(chunk)
             except AttributeError:
                 continue
 

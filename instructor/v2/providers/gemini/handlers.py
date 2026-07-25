@@ -20,6 +20,7 @@ from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.providers.gemini.utils import (
+    extract_gemini_chunk_text,
     handle_gemini_json,
     handle_gemini_tools,
 )
@@ -126,7 +127,7 @@ def parse_gemini_tools(
     """Parse Gemini tool-call responses."""
     try:
         function_call = completion.candidates[0].content.parts[0].function_call
-    except Exception as exc:
+    except (AttributeError, IndexError, KeyError, TypeError) as exc:
         raise ResponseParsingError(
             "No tool call found in Gemini response",
             mode="GEMINI_TOOLS",
@@ -136,7 +137,7 @@ def parse_gemini_tools(
     if args is None and hasattr(type(function_call), "to_dict"):
         try:
             resp_dict = type(function_call).to_dict(function_call)
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             resp_dict = {}
         args = resp_dict.get("args")
     if args is None:
@@ -169,13 +170,7 @@ class GeminiHandlerBase(ModeHandler):
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
                 else:
-                    try:
-                        yield chunk.text
-                    except Exception:
-                        if chunk.candidates[0].content.parts[0].text:
-                            yield chunk.candidates[0].content.parts[0].text
-                            continue
-                        raise
+                    yield extract_gemini_chunk_text(chunk)
             except AttributeError:
                 continue
 
@@ -191,13 +186,7 @@ class GeminiHandlerBase(ModeHandler):
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
                 else:
-                    try:
-                        yield chunk.text
-                    except Exception:
-                        if chunk.candidates[0].content.parts[0].text:
-                            yield chunk.candidates[0].content.parts[0].text
-                            continue
-                        raise
+                    yield extract_gemini_chunk_text(chunk)
             except AttributeError:
                 continue
 
@@ -229,8 +218,6 @@ class GeminiHandlerBase(ModeHandler):
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
             return generator
-        if inspect.isclass(response_model) and issubclass(response_model, PartialBase):
-            return list(generator)
         return list(generator)
 
     def _finalize(

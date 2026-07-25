@@ -17,10 +17,14 @@ from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.errors import IncompleteOutputException
+from instructor.v2.core.errors import IncompleteOutputException, ResponseParsingError
 from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.providers.openai.schema import generate_openai_schema
-from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    dump_message,
+    merge_consecutive_messages,
+)
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.providers.openai.handlers import OpenAIHandlerBase
 
@@ -142,6 +146,7 @@ class WriterToolsHandler(WriterHandlerBase):
         self._register_streaming_from_kwargs(response_model, kwargs)
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         schema = generate_openai_schema(response_model)
 
         new_kwargs["tools"] = [{"type": "function", "function": schema}]
@@ -178,12 +183,25 @@ class WriterToolsHandler(WriterHandlerBase):
                 strict,
             )
         # Check for truncated output
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
+        choices = getattr(response, "choices", None)
+        if not choices:
+            raise ResponseParsingError(
+                "No choices in Writer response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        if choices[0].finish_reason == "length":
+            raise IncompleteOutputException(last_completion=response)
 
         # Extract JSON from tool call
-        tool_call = response.choices[0].message.tool_calls[0]
+        tool_calls = choices[0].message.tool_calls
+        if not tool_calls:
+            raise ResponseParsingError(
+                "No tool calls in Writer response",
+                mode=str(self.mode.value),
+                raw_response=response,
+            )
+        tool_call = tool_calls[0]
         json_str = tool_call.function.arguments
 
         return response_model.model_validate_json(
@@ -228,7 +246,7 @@ class WriterMDJSONHandler(WriterHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,
@@ -309,6 +327,7 @@ class WriterJSONSchemaHandler(WriterHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         self._register_streaming_from_kwargs(response_model, new_kwargs)
         return handle_writer_json(response_model, new_kwargs)
 

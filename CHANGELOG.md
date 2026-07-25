@@ -7,6 +7,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
+- **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
+- **v2 schemas**: Treat fields with Pydantic `default_factory` values as optional in generated OpenAI tool schemas.
+- **v2 partial streaming**: Build model instances for present `Optional[BaseModel]` fields during incomplete streams instead of exposing raw dictionaries.
+- **v2 iterable unions**: Generate stable member-derived names such as `IterableAOrB` for both `Union[A, B]` and `A | B` response models.
+- **Mistral/Vertex AI partial streaming**: Avoid forwarding iterable-only parser arguments into completed `Partial` responses, preventing final Pydantic validation errors for sync and async streams.
+- **Batch providers**: Handle missing optional SDKs safely, validate OpenAI batch input before client setup, report exhausted output-file retries clearly, and remove unreachable fallbacks.
+- **OpenAI/Writer tools**: Raise clear response-parsing errors for completions with no choices or tool calls instead of leaking attribute and index errors.
+- **Fireworks streaming**: Keep non-streaming async calls non-streaming and return streaming async generators without incorrectly awaiting them.
+- **GenAI uploads**: Respect `max_retries=0` without an unwanted sleep or polling request, allow recovery on the final permitted retry, and report nameless pending uploads clearly before polling.
+- **Gemini/GenAI messages**: Honor an explicit system message for unstructured requests, remove the unsupported raw `system` argument, and reject invalid scalar message content clearly.
+- **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
+- **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
+- **Python 3.9**: Include the required type-evaluation backport in minimal installs, keep overload metadata available, and avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
+
+### Tests / CI
+- **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
+
 ## [1.15.5] - 2026-06-28
 
 ### Fixed

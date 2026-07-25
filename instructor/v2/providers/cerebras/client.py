@@ -142,11 +142,10 @@ def from_cerebras(
             mode=mode,
             **kwargs,
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.CEREBRAS,
-            mode=mode,
-            **kwargs,
-        )
+    return AsyncInstructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.CEREBRAS,
+        mode=mode,
+        **kwargs,
+    )

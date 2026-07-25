@@ -181,13 +181,11 @@ class Image(BaseModel):
                 img_type = "webp"
 
             if img_type:
-                media_type = f"image/{img_type}"
-                if media_type in VALID_MIME_TYPES:
-                    return cls(
-                        source=data,
-                        media_type=media_type,
-                        data=data,
-                    )
+                return cls(
+                    source=data,
+                    media_type=f"image/{img_type}",
+                    data=data,
+                )
             raise ValueError(f"Unsupported image type: {img_type}")
         except Exception as e:
             raise ValueError(f"Invalid or unsupported base64 image data") from e
@@ -237,8 +235,7 @@ class Image(BaseModel):
         """Cachable helper method for getting image url and encoding to base64."""
         response = requests.get(url)
         response.raise_for_status()
-        data = base64.b64encode(response.content).decode("utf-8")
-        return data
+        return base64.b64encode(response.content).decode("utf-8")
 
     def to_anthropic(self) -> dict[str, Any]:
         from instructor.v2.providers.anthropic.multimodal import image_to_anthropic
@@ -451,9 +448,9 @@ class PDF(BaseModel):
         if isinstance(source, str):
             if cls.is_base64(source):
                 return cls.from_base64(source)
-            elif source.startswith(("http://", "https://")):
+            if source.startswith(("http://", "https://")):
                 return cls.from_url(source)
-            elif source.startswith("gs://"):
+            if source.startswith("gs://"):
                 return cls.from_gs_url(source)
 
             try:
@@ -479,7 +476,7 @@ class PDF(BaseModel):
                 ) from e
 
             return cls.from_raw_base64(source)
-        elif isinstance(source, Path):
+        if isinstance(source, Path):
             return cls.from_path(source)
 
         raise ValueError(f"Unsupported PDF source type: {type(source).__name__}")
@@ -642,13 +639,8 @@ class PDF(BaseModel):
 
         # Handle S3 URIs
         if isinstance(self.source, str) and self.source.startswith("s3://"):
-            # Parse S3 URI: s3://bucket/key
-            s3_match = re.match(r"s3://([^/]+)/(.*)", self.source)
-            if not s3_match:
+            if not re.match(r"s3://[^/]+/.*", self.source):
                 raise ValueError(f"Invalid S3 URI format: {self.source}")
-
-            bucket = s3_match.group(1)
-            key = s3_match.group(2)
 
             # Note: bucketOwner is optional but recommended for cross-account access
             return {
@@ -669,9 +661,8 @@ class PDF(BaseModel):
             raise ValueError(
                 "PDF data is missing. Provide base64-encoded data or use an s3:// source."
             )
-        else:
-            # Decode base64 data to bytes
-            pdf_bytes = base64.b64decode(self.data)
+        # Decode base64 data to bytes
+        pdf_bytes = base64.b64decode(self.data)
 
         return {
             "document": {"format": "pdf", "name": name, "source": {"bytes": pdf_bytes}}
@@ -827,8 +818,7 @@ def convert_messages(
             if message["type"] in {"audio", "image"}:
                 converted_messages.append(message)
                 continue
-            else:
-                raise ValueError(f"Unsupported message type: {message['type']}")
+            raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
         content = message["content"] or []
         other_kwargs = {

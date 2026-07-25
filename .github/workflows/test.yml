@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   # Core tests without LLM providers
   core-tests:
@@ -12,18 +15,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Run core tests
         run: >-
-          uv run pytest tests/ --asyncio-mode=auto -n auto
+          uv run --frozen pytest tests/ --asyncio-mode=auto -n auto
+          --ignore=tests/coverage
+          --ignore=tests/test_batch_processor_coverage.py
           -k 'not test_core_providers and not test_openai and not test_anthropic
           and not test_gemini and not test_genai and not test_writer and not
           test_vertexai and not docs'
@@ -36,6 +42,100 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
 
+  # Offline coverage tests must not be filtered by provider names.
+  offline-coverage-tests:
+    name: Offline Coverage Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # xai-sdk requires Python 3.10+, so Python 3.9 is a smoke job.
+          # Only SDK-dependent xAI tests and source are omitted there.
+          - python-version: "3.9"
+            pytest-args: >-
+              --ignore=tests/coverage/test_xai_client_coverage.py
+              --ignore=tests/coverage/test_xai_handlers_coverage.py
+              -k 'not test_xai_builder_forwards_real_client_and_mode and
+              not test_xai_builder_reports_unavailable_factory and
+              not (test_tail_builder_factory_failure_is_logged_and_propagated
+              and _build_xai)'
+            coverage-omit: instructor/v2/providers/xai/*
+          - python-version: "3.10"
+            pytest-args: ""
+            coverage-omit: ""
+          - python-version: "3.11"
+            pytest-args: ""
+            coverage-omit: ""
+          - python-version: "3.12"
+            pytest-args: ""
+            coverage-omit: ""
+          - python-version: "3.13"
+            pytest-args: ""
+            coverage-omit: ""
+    env:
+      INSTRUCTOR_ENV: CI
+      PYTHONWARNINGS: error::ResourceWarning
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+          cache-suffix: offline-py${{ matrix.python-version }}
+      - name: Set up Python
+        run: uv python install ${{ matrix.python-version }}
+      - name: Install the project
+        run: uv sync --frozen --all-extras
+      - name: Run offline coverage tests
+        run: |
+          uv run --frozen coverage erase
+          uv run --frozen coverage run -m pytest \
+            tests/coverage tests/test_batch_processor_coverage.py \
+            --asyncio-mode=auto --strict-config --strict-markers \
+            -W error::pytest.PytestUnraisableExceptionWarning \
+            -W error::pytest.PytestUnhandledThreadExceptionWarning \
+            ${{ matrix.pytest-args }}
+          if [ "${{ matrix.python-version }}" = "3.9" ]; then
+            uv run --frozen coverage report \
+              --omit="${{ matrix.coverage-omit }}" --show-missing
+          else
+            uv run --frozen coverage report \
+              --omit="${{ matrix.coverage-omit }}" --show-missing --fail-under=90
+          fi
+
+  # Enforce repository-wide statement and branch coverage without provider secrets.
+  full-coverage:
+    name: Full Coverage (Python 3.11)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: "3.11"
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install the project
+        run: uv sync --frozen --all-extras
+      - name: Run full offline coverage
+        run: |
+          uv run --frozen coverage erase
+          uv run --frozen coverage run --branch -m pytest tests/ \
+            --asyncio-mode=auto --strict-config --strict-markers \
+            -k 'not docs'
+          uv run --frozen coverage report --show-missing --fail-under=99
+          uv run --frozen coverage json -o "${RUNNER_TEMP}/coverage.json"
+          uv run --frozen python -c 'import json, os; totals = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "coverage.json")))["totals"]; missing = totals["missing_lines"]; print(f"Missing statements: {missing}"); raise SystemExit(1 if missing else 0)'
+        env:
+          INSTRUCTOR_ENV: CI
+
   # Core provider tests for OpenAI
   core-openai:
     name: Core Provider Tests (OpenAI)
@@ -45,15 +145,16 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Skip core provider tests (OpenAI)
         if: ${{ env.OPENAI_API_KEY == '' }}
         run: echo "Skipping OpenAI core provider tests (missing OPENAI_API_KEY)."
@@ -61,7 +162,7 @@ jobs:
         if: ${{ env.OPENAI_API_KEY != '' }}
         run: |
           set +e
-          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
+          uv run --frozen pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
           status=$?
           set -e
           if [ $status -eq 5 ]; then
@@ -82,15 +183,16 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Skip core provider tests (Anthropic)
         if: ${{ env.ANTHROPIC_API_KEY == '' }}
         run: echo "Skipping Anthropic core provider tests (missing ANTHROPIC_API_KEY)."
@@ -98,7 +200,7 @@ jobs:
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
         run: |
           set +e
-          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
+          uv run --frozen pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
           status=$?
           set -e
           if [ $status -eq 5 ]; then
@@ -120,15 +222,16 @@ jobs:
       GOOGLE_GENAI_MODEL: ${{ secrets.GOOGLE_GENAI_MODEL }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Skip core provider tests (Google)
         if: ${{ env.GOOGLE_API_KEY == '' || env.GOOGLE_GENAI_MODEL == '' }}
         run: echo "Skipping Google core provider tests (missing GOOGLE_API_KEY or GOOGLE_GENAI_MODEL)."
@@ -136,7 +239,7 @@ jobs:
         if: ${{ env.GOOGLE_API_KEY != '' && env.GOOGLE_GENAI_MODEL != '' }}
         run: |
           set +e
-          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
+          uv run --frozen pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
           status=$?
           set -e
           if [ $status -eq 5 ]; then
@@ -163,15 +266,16 @@ jobs:
       PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Skip core provider tests (Other)
         if: >-
           ${{ env.COHERE_API_KEY == '' && env.XAI_API_KEY == ''
@@ -187,7 +291,7 @@ jobs:
           || env.PERPLEXITY_API_KEY != '' }}
         run: |
           set +e
-          uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+          uv run --frozen pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
           status=$?
           set -e
           if [ $status -eq 5 ]; then
@@ -237,15 +341,17 @@ jobs:
             test_path: tests/llm/test_writer
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
+          cache-suffix: provider-${{ matrix.provider.name }}-py311
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Skip ${{ matrix.provider.name }} tests
         if: >-
           ${{ env.PROVIDER_API_KEY == '' ||
@@ -261,7 +367,7 @@ jobs:
           && matrix.provider.name != 'Vertex AI') || env.GOOGLE_GENAI_MODEL != '') }}
         run: |
           set +e
-          uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
+          uv run --frozen pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
           status=$?
           set -e
           if [ $status -eq 5 ]; then
@@ -286,15 +392,16 @@ jobs:
       XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Skip Auto Client tests
         if: >-
           ${{ env.OPENAI_API_KEY == '' || env.GOOGLE_API_KEY == ''
@@ -308,7 +415,7 @@ jobs:
           && env.XAI_API_KEY != '' }}
         run: |
           set +e
-          uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
+          uv run --frozen pytest tests/providers/test_auto_client.py --asyncio-mode=auto -n auto
           status=$?
           set -e
           if [ $status -eq 5 ]; then

@@ -12,6 +12,7 @@ requires-python = "<4.0,>=3.9"
 dependencies = [
     "openai>=2.0.0,<3.0.0",
     "pydantic<3.0.0,>=2.8.0",
+    "eval-type-backport>=0.2.2 ; python_version < '3.10'",
     "docstring-parser<1.0,>=0.16",
     "typer<1.0.0,>=0.9.0",
     "rich<15.0.0,>=13.7.0",
@@ -105,3 +106,13 @@ datasets = ["datasets>=3.0.1,<5.0.0"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
+
+[tool.mutmut]
+source_paths = ["instructor/"]
+only_mutate = ["instructor/v2/core/retry.py"]
+pytest_add_cli_args_test_selection = [
+    "tests/v2/test_retry_runtime.py",
+    "tests/coverage/test_core_patch_retry_coverage.py",
+]
+pytest_add_cli_args = ["--asyncio-mode=auto", "--tb=short"]
+max_stack_depth = 12

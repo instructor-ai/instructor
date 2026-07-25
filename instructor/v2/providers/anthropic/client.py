@@ -159,11 +159,10 @@ def from_anthropic(
             mode=mode,
             **kwargs,
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.ANTHROPIC,
-            mode=mode,
-            **kwargs,
-        )
+    return AsyncInstructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.ANTHROPIC,
+        mode=mode,
+        **kwargs,
+    )

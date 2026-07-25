@@ -82,13 +82,6 @@ class Answer(ResponseSchema):
     answer: float
 
 
-class User(ResponseSchema):
-    """Simple user model for handler tests."""
-
-    name: str
-    age: int
-
-
 PARSE_SCENARIOS: dict[Provider, dict[Mode, str]] = {
     Provider.OPENAI: {
         Mode.TOOLS: "tool_call",

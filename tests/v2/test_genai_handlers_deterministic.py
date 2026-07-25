@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -13,33 +13,7 @@ from instructor.v2.providers.genai.handlers import (
     reask_genai_structured_outputs,
     reask_genai_tools,
 )
-
-
-class FakePart:
-    def __init__(
-        self,
-        *,
-        text: str | None = None,
-        function_call: Any = None,
-        function_response: Any = None,
-    ) -> None:
-        self.text = text
-        self.function_call = function_call
-        self.function_response = function_response
-
-    @classmethod
-    def from_text(cls, text: str) -> FakePart:
-        return cls(text=text)
-
-    @classmethod
-    def from_function_response(cls, name: str, response: dict[str, Any]) -> FakePart:
-        return cls(function_response={"name": name, "response": response})
-
-
-class FakeContent:
-    def __init__(self, role: str, parts: list[FakePart]) -> None:
-        self.role = role
-        self.parts = parts
+from tests.v2._fake_genai import FakeContent, FakePart, install_fake_genai
 
 
 class FakeModelContent(FakeContent):
@@ -53,17 +27,13 @@ class FakeGenerateContentConfig:
 
 
 def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
-    fake_types = SimpleNamespace(
-        Content=FakeContent,
-        Part=FakePart,
-        ModelContent=FakeModelContent,
-        GenerateContentConfig=FakeGenerateContentConfig,
+    install_fake_genai(
+        monkeypatch,
+        extra_types={
+            "ModelContent": FakeModelContent,
+            "GenerateContentConfig": FakeGenerateContentConfig,
+        },
     )
-    google_module = ModuleType("google")
-    genai_module = ModuleType("google.genai")
-    genai_module.types = fake_types  # ty: ignore[unresolved-attribute]
-    monkeypatch.setitem(__import__("sys").modules, "google", google_module)
-    monkeypatch.setitem(__import__("sys").modules, "google.genai", genai_module)
 
 
 def test_reask_genai_tools_without_function_call_appends_user_error(
