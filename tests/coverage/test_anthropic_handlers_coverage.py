@@ -580,7 +580,14 @@ def test_parallel_tools_prepare_reask_and_parse_real_tool_blocks() -> None:
     assert list(handler.parse_response(None, parallel_type)) == []
     assert list(handler.parse_response(object(), parallel_type)) == []
     reask = handler.handle_reask({"messages": []}, response, ValueError("bad job"))
-    assert reask["messages"][-1]["content"][0]["tool_use_id"] == "toolu_three"
+    # Anthropic requires a tool_result for *every* tool_use block (#2485).
+    reask_results = reask["messages"][-1]["content"]
+    assert [block["tool_use_id"] for block in reask_results] == [
+        "toolu_one",
+        "toolu_two",
+        "toolu_three",
+    ]
+    assert all(block.get("is_error") is True for block in reask_results)
 
 
 def test_json_prepare_reask_and_parse_anthropic_and_openai_shaped_responses() -> None:
