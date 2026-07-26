@@ -10,6 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **v2 request logging**: Redact common OAuth and Google API credential aliases from nested debug-log kwargs without hiding non-secret token configuration. ([#2490](https://github.com/567-labs/instructor/issues/2490))
 - **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
 - **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
 - **v2 schemas**: Treat fields with Pydantic `default_factory` values as optional in generated OpenAI tool schemas.

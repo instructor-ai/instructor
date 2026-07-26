@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import json
 from collections.abc import Callable
+from copy import deepcopy
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -105,6 +106,45 @@ def test_redaction_handles_tuples_without_mutating_input() -> None:
         )
     }
     assert kwargs["metadata"][0]["api-secret"] == "private"
+
+
+@pytest.mark.parametrize(
+    "credential_key",
+    [
+        "access_token",
+        "refresh-token",
+        "X-Goog-Api-Key",
+        "Client-Secret",
+        "api_key",
+        "Authorization",
+    ],
+)
+def test_redaction_hides_common_credential_aliases(
+    credential_key: str,
+) -> None:
+    kwargs = {
+        "extra_headers": {
+            credential_key: "private",
+            "x-request-id": "request-123",
+        }
+    }
+    original = deepcopy(kwargs)
+
+    result = _redact_kwargs(kwargs)
+
+    assert result["extra_headers"][credential_key] == "[redacted]"
+    assert result["extra_headers"]["x-request-id"] == "request-123"
+    assert kwargs == original
+
+
+def test_redaction_preserves_non_secret_token_configuration() -> None:
+    kwargs = {
+        "max_tokens": 256,
+        "token_budget": 1_000,
+        "headers": {"content-type": "application/json"},
+    }
+
+    assert _redact_kwargs(kwargs) == kwargs
 
 
 def test_registry_load_failure_is_best_effort(
