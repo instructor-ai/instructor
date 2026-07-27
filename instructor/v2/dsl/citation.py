@@ -69,6 +69,9 @@ class CitationMixin(BaseModel):
         # Get the context from the info
         text_chunks = info.context.get("context", None)
 
+        if text_chunks is None:
+            return self
+
         # Get the spans of the substring_phrase in the context
         spans = list(self.get_spans(text_chunks))
         # Replace the substring_phrase with the actual substring
