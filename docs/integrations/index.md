@@ -98,7 +98,7 @@ class UserInfo(BaseModel):
     age: int
 
 # Initialize any provider with a simple string
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-5.4-mini")
 # Or use async client
 async_client = instructor.from_provider("anthropic/claude-3-sonnet", async_client=True)
 
@@ -142,7 +142,7 @@ Use these example strings with `from_provider` to quickly get started:
 - [x] `instructor.from_provider("fireworks/llama-v3-70b-instruct")`
 - [x] `instructor.from_provider("vertexai/gemini-3-flash")`
 - [x] `instructor.from_provider("genai/gemini-3-flash")`
-- [x] `instructor.from_provider("ollama/llama3")`
+- [x] `instructor.from_provider("ollama/llama3.2")`
 
 ### 2. Manual Client Setup
 

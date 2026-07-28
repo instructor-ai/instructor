@@ -174,7 +174,7 @@ class UserInfo(BaseModel):
 @app.post("/extract")
 async def extract_user_info(text: str) -> UserInfo:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )

@@ -73,7 +73,7 @@ instructor usage
 instructor usage --by-day
 
 # Calculate cost for a specific model
-instructor usage --model gpt-4
+instructor usage --model gpt-5.4-mini
 ```
 
 For detailed usage statistics and options, see the [Usage Guide](usage.md).

@@ -86,7 +86,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def extract(url: str) -> Receipt:
     return client.create(
-        model="gpt-4",
+        model="gpt-5.4-mini",
         max_tokens=4000,
         response_model=Receipt,
         messages=[

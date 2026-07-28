@@ -31,7 +31,7 @@ class User(BaseModel):
 
 # Extract with validation
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "I'm John Smith, 35 years old, with email john@example.com"}
     ],
@@ -97,7 +97,7 @@ class Product(BaseModel):
 
 # Extract validated data
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Product: Wireless Headphones, SKU: ABC-1234, Price: $79.99"}
     ],
@@ -241,7 +241,7 @@ class Task(BaseModel):
 
 # Extract with enum validation
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Task: Update website, Description: Refresh content on homepage, Status: pending, Priority: high"}
     ],

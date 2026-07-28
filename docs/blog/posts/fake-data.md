@@ -40,7 +40,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate a {count} synthetic users"},
@@ -79,7 +79,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate a {count} synthetic users"},
@@ -100,7 +100,7 @@ By incorporating names of celebrities as examples, we have shifted towards gener
 
 ## Leveraging Complex Example
 
-To effectively generate synthetic examples with more nuance, lets upgrade to the "gpt-4-turbo-preview" model, use model level examples rather than attribute level examples:
+To effectively generate synthetic examples with more nuance, lets upgrade to the "gpt-5.4-mini" model, use model level examples rather than attribute level examples:
 
 ```Python
 import instructor
@@ -132,7 +132,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.create(
-        model="gpt-4-turbo-preview",
+        model="gpt-5.4-mini",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate `{count}` synthetic examples"},
@@ -175,7 +175,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.create(
-        model="gpt-3.5-turbo",
+        model="gpt-5.4-mini",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate `{count}` synthetic users"},

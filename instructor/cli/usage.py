@@ -28,7 +28,9 @@ async def fetch_usage(date: str) -> dict[str, Any]:
             return await resp.json()
 
 
-async def get_usage_for_past_n_days(n_days: int) -> list[dict[str, Any]]:
+async def get_usage_for_past_n_days(
+    n_days: int,
+) -> List[dict[str, Any]]:  # noqa: UP006 - conflicting with the fn name
     tasks: List[Awaitable[dict[str, Any]]] = []  # noqa: UP006 - conflicting with the fn name
     all_data: List[dict[str, Any]] = []  # noqa: UP006 - conflicting with the fn name
     with Progress() as progress:
@@ -86,18 +88,17 @@ def get_model_cost(
 
     if model.startswith("gpt-3.5-turbo-16k"):
         return MODEL_COSTS["gpt-3.5-turbo-16k"]
-    elif model.startswith("gpt-3.5-turbo"):
+    if model.startswith("gpt-3.5-turbo"):
         return MODEL_COSTS["gpt-3.5-turbo"]
-    elif model.startswith("gpt-4-turbo"):
+    if model.startswith("gpt-4-turbo"):
         return MODEL_COSTS["gpt-4-turbo-preview"]
-    elif model.startswith("gpt-4-32k"):
+    if model.startswith("gpt-4-32k"):
         return MODEL_COSTS["gpt-4-32k"]
-    elif model.startswith("gpt-4o"):
+    if model.startswith("gpt-4o"):
         return MODEL_COSTS["gpt-4o"]
-    elif model.startswith("gpt-4"):
+    if model.startswith("gpt-4"):
         return MODEL_COSTS["gpt-4"]
-    else:
-        raise ValueError(f"Cost for model {model} not found")
+    raise ValueError(f"Cost for model {model} not found")
 
 
 def calculate_cost(
@@ -116,7 +117,9 @@ def calculate_cost(
     return prompt_cost + completion_cost
 
 
-def group_and_sum_by_date_and_snapshot(usage_data: list[dict[str, Any]]) -> Table:
+def group_and_sum_by_date_and_snapshot(
+    usage_data: List[dict[str, Any]],  # noqa: UP006 - conflicting with the fn name
+) -> Table:
     """Group and sum the usage data by date and snapshot, including costs."""
     summary: defaultdict[str, defaultdict[str, dict[str, Union[int, float]]]] = (
         defaultdict(

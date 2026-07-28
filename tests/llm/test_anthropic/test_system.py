@@ -49,7 +49,7 @@ def test_creation_with_system_cache(model, mode):
                 "content": [
                     {
                         "type": "text",
-                        "text": "<story>Mike is 37 years old " * 200 + "</story>",
+                        "text": "<story>Mike is 37 years old " * 400 + "</story>",
                         "cache_control": {"type": "ephemeral"},
                     },
                     {
@@ -86,7 +86,7 @@ def test_creation_with_system_cache_anthropic_style(model, mode):
         system=[
             {
                 "type": "text",
-                "text": "<story>Mike is 37 years old " * 200 + "</story>",
+                "text": "<story>Mike is 37 years old " * 400 + "</story>",
                 "cache_control": {"type": "ephemeral"},
             },
             {

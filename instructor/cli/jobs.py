@@ -105,7 +105,7 @@ def watch(
 )
 def create_from_id(
     id: str = typer.Argument(help="ID of the existing fine-tuning job"),
-    model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    model: str = typer.Option("gpt-5.4-mini", help="Model to use for fine-tuning"),
     n_epochs: Optional[int] = typer.Option(
         None, help="Number of epochs for fine-tuning", show_default=False
     ),
@@ -145,7 +145,7 @@ def create_from_id(
 )
 def create_from_file(
     file: str = typer.Argument(help="Path to the file for fine-tuning"),
-    model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    model: str = typer.Option("gpt-5.4-mini", help="Model to use for fine-tuning"),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
     n_epochs: Optional[int] = typer.Option(
         None, help="Number of epochs for fine-tuning", show_default=False
@@ -206,7 +206,7 @@ def create_from_file(
     if hyperparameters_dict:
         additional_params["hyperparameters"] = hyperparameters_dict
     if validation_file:
-        additional_params["validation_file"] = validation_file
+        additional_params["validation_file"] = validation_file_id
     if model_suffix:
         additional_params["suffix"] = model_suffix
 

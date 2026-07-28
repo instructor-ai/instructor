@@ -45,7 +45,7 @@ PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
 
 extraction_stream = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     response_model=PartialMeetingInfo,
     messages=[
         {

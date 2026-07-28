@@ -50,7 +50,7 @@ Start by downloading [Ollama](https://ollama.ai/download), and then pull a model
 !!! tip "Make sure you update your `ollama` to the latest version!"
 
 ```
-ollama pull llama3
+ollama pull llama3.2
 ```
 
 ```python
@@ -67,13 +67,13 @@ class Character(BaseModel):
 
 # Use from_provider with base_url for Ollama
 client = instructor.from_provider(
-    "ollama/llama3",
+    "ollama/llama3.2",
     base_url="http://localhost:11434/v1",
     mode=instructor.Mode.JSON,
 )
 
 resp = client.create(
-    model="llama3",
+    model="llama3.2",
     messages=[
         {
             "role": "user",

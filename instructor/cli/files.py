@@ -41,8 +41,7 @@ def generate_file_table(files: list[openai.types.FileObject]) -> Table:
 def get_files() -> list[openai.types.FileObject]:
     files = client.files.list()
     files = files.data
-    files = sorted(files, key=lambda x: x.created_at, reverse=True)
-    return files
+    return sorted(files, key=lambda x: x.created_at, reverse=True)
 
 
 def get_file_status(file_id: str) -> str:
@@ -62,7 +61,7 @@ def upload(
     file_purpose = cast(Literal["fine-tune", "assistants"], purpose)
     with open(filepath, "rb") as file:
         response = client.files.create(file=file, purpose=file_purpose)
-    file_id = response["id"]  # type: ignore - types might be out of date
+    file_id = response["id"]
     with console.status(f"Monitoring upload: {file_id}...") as status:
         status.spinner_style = "dots"
         while True:

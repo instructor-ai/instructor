@@ -10,9 +10,66 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
-- **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
+- **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
+- **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
+- **v2 schemas**: Treat fields with Pydantic `default_factory` values as optional in generated OpenAI tool schemas.
+- **v2 partial streaming**: Build model instances for present `Optional[BaseModel]` fields during incomplete streams instead of exposing raw dictionaries.
+- **v2 iterable unions**: Generate stable member-derived names such as `IterableAOrB` for both `Union[A, B]` and `A | B` response models.
+- **Mistral/Vertex AI partial streaming**: Avoid forwarding iterable-only parser arguments into completed `Partial` responses, preventing final Pydantic validation errors for sync and async streams.
+- **Batch providers**: Handle missing optional SDKs safely, validate OpenAI batch input before client setup, report exhausted output-file retries clearly, and remove unreachable fallbacks.
+- **OpenAI/Writer tools**: Raise clear response-parsing errors for completions with no choices or tool calls instead of leaking attribute and index errors.
+- **Fireworks streaming**: Keep non-streaming async calls non-streaming and return streaming async generators without incorrectly awaiting them.
+- **GenAI uploads**: Respect `max_retries=0` without an unwanted sleep or polling request, allow recovery on the final permitted retry, and report nameless pending uploads clearly before polling.
+- **Gemini/GenAI messages**: Honor an explicit system message for unstructured requests, remove the unsupported raw `system` argument, and reject invalid scalar message content clearly.
+- **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
+- **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
+- **Python 3.9**: Include the required type-evaluation backport in minimal installs, keep overload metadata available, and avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
+
+### Tests / CI
+- **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
+
+## [1.15.5] - 2026-06-28
+
+### Fixed
+- **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))
+- **v2 response models**: Treat `list[A | B]` PEP 604 unions of Pydantic models as iterable response models, matching `list[Union[A, B]]` schema behavior. ([#2377](https://github.com/567-labs/instructor/pull/2377))
+- **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
 
 ---
+
+## [1.15.4] - 2026-06-27
+
+### Fixed
+- **CLI fine-tuning**: Use the uploaded validation file ID when creating a fine-tuning job from local files, instead of passing the local validation file path through to OpenAI. ([#2397](https://github.com/567-labs/instructor/pull/2397))
+- **v2 core**: Prepare list and primitive response models before provider handler dispatch, fixing `list[Model]` and scalar response-model crashes such as `AttributeError: type object 'list' has no attribute 'model_json_schema'`. ([#2374](https://github.com/567-labs/instructor/issues/2374))
+- **v2 streaming**: Preserve backticks inside JSON string values during streamed JSON extraction.
+- **v2 multimodal**: Accept raw bytes in `Image.autodetect()` for JPEG, PNG, GIF, and WebP, while raising clear errors for unsupported image inputs. ([#2344](https://github.com/567-labs/instructor/issues/2344))
+- **Docs**: Refresh stale OpenAI and Ollama model strings in documentation examples. ([#2395](https://github.com/567-labs/instructor/issues/2395))
+
+---
+
+## [1.15.3] - 2026-06-15
+
+### Fixed
+- **Bedrock**: Route `top_k`/`topK` through `additionalModelRequestFields` instead of leaving it as a top-level Converse kwarg. AWS `InferenceConfiguration` only supports `maxTokens`/`stopSequences`/`temperature`/`topP`, so a leftover `top_k` reached `client.converse(top_k=...)` and boto3 raised `ParamValidationError: Unknown parameter "top_k"`.
+- **Gemini/GenAI**: Fold `generation_config` (and `safety_settings`/`thinking_config`) into `config` when `response_model=None`, so plain-text calls no longer raise `generate_content() got an unexpected keyword argument 'generation_config'` ([#2366](https://github.com/567-labs/instructor/issues/2366)).
+- **v2 cleanup**: Consolidate small provider/runtime fixes for Gemini JSON prompts, Cohere templating, JSON array extraction, iterable streaming, missing `jsonref` dependency guidance, retry semantics and hook metadata, and multimodal autodetection.
+
+### Tests / CI
+- **Type checking**: Upgrade to `ty` 0.0.44, enforce warning-free checks with GitHub annotations, cover V2 tests, validate supported Python versions and platforms, and strengthen installed-package public API typing tests.
+
+---
+
+## [1.15.2] - 2026-05-10
+
+### Security
+- **Logging**: Redact sensitive request fields from debug logs, including nested auth headers such as `Authorization` and `x-api-key`. ([#2297](https://github.com/567-labs/instructor/pull/2297))
+
+### Fixed
+- **Templating (GenAI/VertexAI)**: `process_message` no longer crashes with `TypeError: Can't compile non template nodes` when multimodal messages contain image/URI/bytes Parts alongside `validation_context`. Non-text Parts (where `part.text` is `None`) now pass through unchanged. ([#2253](https://github.com/567-labs/instructor/issues/2253))
+- **Retry**: `IncompleteOutputException` now propagates directly to the caller without being wrapped in `InstructorRetryException`, making `except IncompleteOutputException` catch blocks work as documented. Applies to both sync and async paths. ([#2273](https://github.com/567-labs/instructor/issues/2273))
+- **Anthropic/Bedrock**: Omit `None` fields from Anthropic tool-use retry payloads so Bedrock reasks no longer fail with HTTP 400 when `caller=None`. ([#2301](https://github.com/567-labs/instructor/pull/2301))
+- **Responses streaming**: Surface reasoning-summary events in `RESPONSES_TOOLS` partial streaming and await callback return values when they are awaitable. ([#2299](https://github.com/567-labs/instructor/pull/2299))
 
 ## [1.15.1] - 2026-04-03
 
@@ -204,4 +261,3 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
-

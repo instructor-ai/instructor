@@ -68,7 +68,7 @@ class YoutubeClips(BaseModel):
 
 def yield_clips(segments: Iterable[TranscriptSegment]) -> Iterable[YoutubeClips]:
     return client.create(
-        model="gpt-4-turbo-preview",
+        model="gpt-5.4-mini",
         stream=True,
         messages=[
             {

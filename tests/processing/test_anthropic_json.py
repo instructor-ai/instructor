@@ -1,11 +1,13 @@
 """Isolated tests for Anthropic JSON parsing helpers."""
 
-from anthropic.types import Message, Usage
+from anthropic.types import Message, TextBlock, Usage
 import pytest
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from typing import cast
 
-import instructor
+from instructor.mode import Mode
+from instructor.processing.response import process_response
+from instructor.utils.providers import Provider
 
 
 CONTROL_CHAR_JSON = """{
@@ -15,14 +17,14 @@ characters"
 }"""
 
 
-class _AnthropicTestModel(instructor.OpenAISchema):  # type: ignore[misc]
+class _AnthropicTestModel(BaseModel):
     data: str
 
 
 def _build_message(data_content: str) -> Message:
     return Message(
         id="test_id",
-        content=[{"type": "text", "text": data_content}],
+        content=[TextBlock(type="text", text=data_content)],
         model="claude-3-5-haiku-20241022",
         role="assistant",
         stop_reason="end_turn",
@@ -36,7 +38,14 @@ def test_parse_anthropic_json_strict_control_characters() -> None:
     message = _build_message(CONTROL_CHAR_JSON)
 
     with pytest.raises(ValidationError):
-        _AnthropicTestModel.parse_anthropic_json(message, strict=True)  # type: ignore[arg-type]
+        process_response(
+            response=message,
+            response_model=_AnthropicTestModel,
+            stream=False,
+            strict=True,
+            mode=Mode.JSON,
+            provider=Provider.ANTHROPIC,
+        )
 
 
 def test_parse_anthropic_json_non_strict_preserves_control_characters() -> None:
@@ -44,7 +53,14 @@ def test_parse_anthropic_json_non_strict_preserves_control_characters() -> None:
 
     model = cast(
         _AnthropicTestModel,
-        _AnthropicTestModel.parse_anthropic_json(message, strict=False),  # type: ignore[arg-type]
+        process_response(
+            response=message,
+            response_model=_AnthropicTestModel,
+            stream=False,
+            strict=False,
+            mode=Mode.JSON,
+            provider=Provider.ANTHROPIC,
+        ),
     )
 
     assert model.data == "Claude likes\ncontrol\ncharacters"

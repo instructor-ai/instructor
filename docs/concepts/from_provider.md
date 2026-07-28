@@ -53,7 +53,7 @@ user = client.create(
 
 ### Cloud Providers
 
-- OpenAI: `"openai/gpt-4o"`, `"openai/gpt-4o-mini"`, `"openai/gpt-4-turbo"`
+- OpenAI: `"openai/gpt-4o"`, `"openai/gpt-4o-mini"`, `"openai/gpt-5.4-mini"`
 - Anthropic: `"anthropic/claude-3-5-sonnet"`, `"anthropic/claude-3-opus"`
 - Google: `"google/gemini-2.5-flash"`, `"google/gemini-pro"`
 - Azure OpenAI: `"azure_openai/gpt-4o"`
@@ -75,7 +75,7 @@ user = client.create(
 - DeepSeek: `"deepseek/deepseek-chat"`
 - xAI: `"xai/grok-beta"`
 - OpenRouter: `"openrouter/meta-llama/llama-3.1-70b"`
-- Ollama: `"ollama/llama3"` (local models)
+- Ollama: `"ollama/llama3.2"` (local models)
 - LiteLLM: `"litellm/gpt-4o"` (meta-provider)
 
 See the [Integrations](../integrations/index.md) section for complete provider documentation.
@@ -226,7 +226,7 @@ try:
 except ConfigurationError as e:
     print(f"Configuration error: {e}")
     """
-    Configuration error: Model string must be in format "provider/model-name" (e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")
+    Configuration error: Model string must be in format "provider/model-name" (e.g. "openai/gpt-5.4-mini" or "anthropic/claude-3-sonnet")
     """
 
 try:

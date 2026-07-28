@@ -24,34 +24,27 @@ class BatchProvider(ABC):
         **kwargs,
     ) -> str:
         """Submit a batch job and return the job ID"""
-        pass
 
     @abstractmethod
     def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get the status of a batch job"""
-        pass
 
     @abstractmethod
     def retrieve_results(self, batch_id: str) -> str:
         """Retrieve batch results as a string"""
-        pass
 
     @abstractmethod
     def download_results(self, batch_id: str, file_path: str) -> None:
         """Download batch results to a file"""
-        pass
 
     @abstractmethod
     def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel a batch job"""
-        pass
 
     @abstractmethod
     def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete a batch job"""
-        pass
 
     @abstractmethod
     def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List batch jobs"""
-        pass

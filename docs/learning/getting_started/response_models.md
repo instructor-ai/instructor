@@ -147,7 +147,7 @@ import instructor
 client = instructor.from_provider("openai/gpt-5-nano")
 
 forecast = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     response_model=WeatherForecast,
     messages=[
         {"role": "user", "content": "What's the weather in New York today?"}

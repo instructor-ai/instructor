@@ -29,7 +29,7 @@ class PeopleList(BaseModel):
 
 # Extract the list
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Here's information about some people:
@@ -68,7 +68,7 @@ class Book(BaseModel):
 
 # Extract a list directly
 books = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Classic novels:
@@ -106,7 +106,7 @@ class Book(BaseModel):
 
 # Extract data with nested lists
 books = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Book 1: "Good Omens" (1990)
@@ -142,7 +142,7 @@ class Task(BaseModel):
 
 # Stream a list of tasks
 for task in client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "Generate a list of 5 sample tasks for a project manager"}
     ],
@@ -187,7 +187,7 @@ class ProductList(BaseModel):
 
 # Extract list with validation
 response = client.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": "List of products: Headphones ($50), Speakers ($80), Earbuds ($30)"}
     ],
@@ -249,7 +249,7 @@ class ActionItem(BaseModel):
 
 # Extract action items from meeting notes
 action_items = client.create(
-    model="gpt-4",
+    model="gpt-5.4-mini",
     messages=[
         {"role": "user", "content": """
         Meeting Notes - Project Kickoff

@@ -54,7 +54,7 @@ Usage: instructor jobs create-from-file [OPTIONS] FILE
 │ *    file      TEXT  Path to the file for fine-tuning [default: None] [required]                  │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────╮
-│ --model                           TEXT     Model to use for fine-tuning [default: gpt-3.5-turbo]  │
+│ --model                           TEXT     Model to use for fine-tuning [default: gpt-5.4-mini]  │
 │ --poll                            INTEGER  Polling interval in seconds [default: 2]               │
 │ --n-epochs                        INTEGER  Number of epochs for fine-tuning                       │
 │ --batch-size                      TEXT     Batch size for fine-tuning                             │
@@ -87,7 +87,7 @@ The create-from-id command uses an uploaded file and trains a model
 ╰───────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Options ─────────────────────────────────────────────────────────────────────────────╮
 │ --model                           TEXT     Model to use for fine-tuning               │
-│                                            [default: gpt-3.5-turbo]                   │
+│                                            [default: gpt-5.4-mini]                   │
 │ --n-epochs                        INTEGER  Number of epochs for fine-tuning           │
 │ --batch-size                      TEXT     Batch size for fine-tuning                 │
 │ --learning-rate-multiplier        TEXT     Learning rate multiplier for fine-tuning   │
@@ -119,13 +119,13 @@ OpenAI Fine Tuning Job Monitoring
 ┃                ┃              ┃                ┃     Completion ┃                 ┃                ┃        ┃                 ┃
 ┃ Job ID         ┃ Status       ┃  Creation Time ┃           Time ┃ Model Name      ┃ File ID        ┃ Epochs ┃ Base Model      ┃
 ┡━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ ftjob-PWo6uwk... │ 🚫 cancelled │     2023-08-23 │            N/A │                 │ file-F7lJg6Z4... │ 3      │ gpt-3.5-turbo-... │
+│ ftjob-PWo6uwk... │ 🚫 cancelled │     2023-08-23 │            N/A │                 │ file-F7lJg6Z4... │ 3      │ gpt-5.4-mini-... │
 │                │              │       23:10:54 │                │                 │                │        │                 │
-│ ftjob-1whjva8... │ 🚫 cancelled │     2023-08-23 │            N/A │                 │ file-F7lJg6Z4... │ 3      │ gpt-3.5-turbo-... │
+│ ftjob-1whjva8... │ 🚫 cancelled │     2023-08-23 │            N/A │                 │ file-F7lJg6Z4... │ 3      │ gpt-5.4-mini-... │
 │                │              │       22:47:05 │                │                 │                │        │                 │
-│ ftjob-wGoBDld... │ 🚫 cancelled │     2023-08-23 │            N/A │                 │ file-F7lJg6Z4... │ 3      │ gpt-3.5-turbo-... │
+│ ftjob-wGoBDld... │ 🚫 cancelled │     2023-08-23 │            N/A │                 │ file-F7lJg6Z4... │ 3      │ gpt-5.4-mini-... │
 │                │              │       22:44:12 │                │                 │                │        │                 │
-│ ftjob-yd5aRTc... │ ✅ succeeded │     2023-08-23 │     2023-08-23 │ ft:gpt-3.5-tur... │ file-IQxAUDqX... │ 3      │ gpt-3.5-turbo-... │
+│ ftjob-yd5aRTc... │ ✅ succeeded │     2023-08-23 │     2023-08-23 │ ft:gpt-3.5-tur... │ file-IQxAUDqX... │ 3      │ gpt-5.4-mini-... │
 │                │              │       14:26:03 │       15:02:29 │                 │                │        │                 │
 └────────────────┴──────────────┴────────────────┴────────────────┴─────────────────┴────────────────┴────────┴─────────────────┘
                                     Automatically refreshes every 5 seconds, press Ctrl+C to exit

@@ -100,7 +100,7 @@ Now we can proceed to create an email using above Pydantic model.
 
 ```python hl_lines="5-14"
 email = client.messages.create(
-    model="gpt-3.5-turbo",
+    model="gpt-5.4-mini",
     max_tokens=1024,
     max_retries=3,
     messages=[  # (1)!
