@@ -18,6 +18,12 @@ Master structured data extraction using Google's Gemini models with Instructor. 
 
 Google's GenAI SDK is the recommended way to access Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. This guide shows you how to use Instructor with Google's GenAI SDK for type-safe, validated responses.
 
+!!! info "Choosing a provider prefix"
+
+    - `google/<model>` is recommended. It uses the current `google-genai` SDK for the Gemini API and, with `vertexai=True`, Vertex AI.
+    - `vertexai/<model>` is deprecated. Migrate to `google/<model>` with `vertexai=True`.
+    - `gemini/<model>` is legacy. It uses the older `google-generativeai` package; migrate to `google/<model>`.
+
 ```bash
 pip install "instructor[google-genai]"
 ```

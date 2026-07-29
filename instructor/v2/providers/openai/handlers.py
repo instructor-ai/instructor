@@ -174,8 +174,24 @@ def reask_tools(
         )
         return kwargs
 
-    reask_msgs: list[Any] = [dump_message(response.choices[0].message)]
-    for tool_call in response.choices[0].message.tool_calls:
+    message = response.choices[0].message
+    reask_msgs: list[Any] = [dump_message(message)]
+    tool_calls = message.tool_calls or []
+    if not tool_calls:
+        # Model replied without calling the tool (e.g. OpenAI-compatible
+        # providers that don't honor forced tool_choice). Fall back to a plain
+        # user correction instead of iterating None, mirroring the streaming
+        # branch and the GenAI reask handler.
+        reask_msgs.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+    for tool_call in tool_calls:
         reask_msgs.append(
             {
                 "role": "tool",
@@ -648,7 +664,11 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
             new_kwargs["tools"] = handle_parallel_model(cast(Any, response_model))
             new_kwargs["tool_choice"] = "auto"
         else:
-            schema = generate_openai_schema(response_model)
+            # Shallow-copy to avoid mutating the lru_cache return value.
+            # generate_openai_schema caches the same dict object; writing
+            # "strict" into it would permanently affect every future call for
+            # this model, even when strict=False.
+            schema = dict(generate_openai_schema(response_model))
 
             # Check for strict parameter
             use_strict = new_kwargs.pop("strict", False)

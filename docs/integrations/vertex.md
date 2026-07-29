@@ -269,8 +269,8 @@ client = from_genai(
         vertexai=True,
         project="your-project",
         location="us-central1",
-        model="gemini-3-flash"
-    )
+    ),
+    model="gemini-3-flash",
 )
 ```
 

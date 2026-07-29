@@ -46,6 +46,17 @@ def test_citation_keeps_quotes_without_context_and_recovers_fuzzy_quotes() -> No
     assert list(cited.get_spans(context)) == [(21, 42)]
 
 
+def test_citation_keeps_quotes_when_validation_context_lacks_context_key() -> None:
+    quotes = ["Jaxon is 20 years old"]
+
+    cited = Claim.model_validate(
+        {"fact": "age", "substring_quotes": quotes},
+        context={"request_id": "req_123"},
+    )
+
+    assert cited.substring_quotes == quotes
+
+
 @pytest.mark.parametrize(
     ("value", "complete"),
     [("", False), ("  \n\t", False), ('{"ok": true}', True), ('{"ok":', False)],

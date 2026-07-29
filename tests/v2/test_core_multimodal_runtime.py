@@ -256,3 +256,17 @@ def test_audio_from_path_raises_file_not_found_for_missing_file(tmp_path: Path) 
 
     with pytest.raises(FileNotFoundError):
         Audio.from_path(missing_path)
+
+
+def test_audio_to_openai_format_follows_media_type() -> None:
+    from instructor.v2.providers.openai.multimodal import audio_to_openai
+
+    mp3 = Audio(source="clip.mp3", media_type="audio/mpeg", data="ZmFrZQ==")
+    assert audio_to_openai(mp3, Mode.TOOLS)["input_audio"]["format"] == "mp3"
+
+    wav = Audio(source="clip.wav", media_type="audio/wav", data="ZmFrZQ==")
+    assert audio_to_openai(wav, Mode.TOOLS)["input_audio"]["format"] == "wav"
+
+    aac = Audio(source="clip.aac", media_type="audio/aac", data="ZmFrZQ==")
+    with pytest.raises(ValueError, match="Expected WAV or MP3"):
+        audio_to_openai(aac, Mode.TOOLS)

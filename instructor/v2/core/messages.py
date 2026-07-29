@@ -38,6 +38,16 @@ def copy_messages_for_mutation(messages: list[dict[str, Any]]) -> list[dict[str,
     return copied
 
 
+def isolate_retry_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Copy request lists that reask handlers mutate during retries."""
+    isolated = dict(kwargs)
+    for key_name in ("messages", "contents", "chat_history"):
+        value = isolated.get(key_name)
+        if isinstance(value, list):
+            isolated[key_name] = list(value)
+    return isolated
+
+
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     ret: ChatCompletionMessageParam = {
         "role": message.role,
@@ -45,11 +55,7 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if (
-        hasattr(message, "function_call")
-        and message.function_call is not None
-        and ret["content"]
-    ):
+    if hasattr(message, "function_call") and message.function_call is not None:
         if not isinstance(ret["content"], str):
             response_message = ""
             for content_message in ret["content"]:
@@ -83,6 +89,8 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
     for message in messages:
         role = message.get("role", "user")
         new_content = message.get("content", "")
+        if new_content is None:
+            new_content = ""
         if not flat_string and isinstance(new_content, str):
             new_content = [{"type": "text", "text": new_content}]
 
