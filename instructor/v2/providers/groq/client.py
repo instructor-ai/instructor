@@ -138,11 +138,10 @@ def from_groq(
             mode=mode,
             **kwargs,
         )
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.GROQ,
-            mode=mode,
-            **kwargs,
-        )
+    return AsyncInstructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.GROQ,
+        mode=mode,
+        **kwargs,
+    )

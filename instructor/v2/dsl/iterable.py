@@ -8,7 +8,6 @@ from typing import (
     get_origin,
     get_args,
     Union,
-    TYPE_CHECKING,
 )
 import json
 import sys
@@ -21,9 +20,6 @@ if sys.version_info >= (3, 10):
     _UNION_ORIGINS: tuple[Any, ...] = (Union, UnionType)
 else:  # pragma: no cover - Python 3.9 has no runtime ``X | Y`` syntax
     _UNION_ORIGINS = (Union,)
-
-if TYPE_CHECKING:
-    pass
 
 
 class IterableBase:
@@ -148,8 +144,7 @@ class IterableBase:
             union_members = get_args(cls.task_type)
             for member in union_members:
                 try:
-                    obj = member.model_validate_json(task_json, **kwargs)
-                    return obj
+                    return member.model_validate_json(task_json, **kwargs)
                 except Exception:
                     pass
         else:
@@ -267,13 +262,15 @@ def IterableModel(
         task_name = name
     else:
         # Handle `Union[A, B]` / `A | B` task types.
-        # `types.UnionType` does not have `__name__`, so fall back to a stable name.
-        task_name = getattr(subtask_class, "__name__", None)
-        if task_name is None and get_origin(subtask_class) in _UNION_ORIGINS:
+        # Both `typing.Union[A, B]` and PEP 604 `A | B` expose ``__name__ == "Union"``
+        # (and `types.UnionType` normalizes to ``typing.Union`` on modern Python), so we
+        # must detect a union *origin* first and build the name from its members --
+        # otherwise every union collapses to the unhelpful ``IterableUnion``.
+        if get_origin(subtask_class) in _UNION_ORIGINS:
             members = get_args(subtask_class)
             task_name = "Or".join(getattr(m, "__name__", str(m)) for m in members)
-        if task_name is None:
-            task_name = str(subtask_class)
+        else:
+            task_name = getattr(subtask_class, "__name__", None) or str(subtask_class)
 
     name = f"Iterable{task_name}"
 

@@ -22,13 +22,6 @@ class Answer(BaseModel):
     answer: float
 
 
-class User(BaseModel):
-    """User model for testing."""
-
-    name: str
-    age: int
-
-
 class MockToolCall:
     """Mock tool call for testing Mistral responses."""
 

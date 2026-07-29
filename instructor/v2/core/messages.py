@@ -19,6 +19,25 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
     return []
 
 
+def copy_messages_for_mutation(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return a copy of `messages` that is safe to mutate in place.
+
+    Handlers that inject a system/instruction message do so by mutating a
+    `messages` list and its dict elements directly (`.insert()`, `.append()`,
+    `message["content"] += ...`). Since `kwargs.copy()` is shallow, `messages`
+    is otherwise the exact list (and dict) objects the caller passed in, so
+    those in-place edits would corrupt the caller's own conversation state.
+    """
+    copied = [dict(message) for message in messages]
+    for message in copied:
+        content = message.get("content")
+        if isinstance(content, list):
+            message["content"] = [
+                dict(item) if isinstance(item, dict) else item for item in content
+            ]
+    return copied
+
+
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     ret: ChatCompletionMessageParam = {
         "role": message.role,

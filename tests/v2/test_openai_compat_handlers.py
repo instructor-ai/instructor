@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
-from typing import Any
-
 import pytest
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
 from instructor import Mode, Provider
 from instructor.core.exceptions import IncompleteOutputException
 from instructor.v2.core.registry import mode_registry, normalize_mode
+from tests.coverage._openai import chat_completion, tool_call
 from tests.v2.provider_matrix import PROVIDER_SPECS
 
 OPENAI_COMPAT_PROVIDERS = (
@@ -29,65 +27,6 @@ OPENAI_HANDLER_ALIAS_PROVIDERS = (
 
 class Answer(BaseModel):
     answer: float
-
-
-@dataclass
-class MockFunction:
-    name: str
-    arguments: str
-
-
-@dataclass
-class MockToolCall:
-    function: MockFunction
-
-    @classmethod
-    def build(cls, model_name: str, arguments: dict[str, Any]) -> MockToolCall:
-        return cls(MockFunction(model_name, json.dumps(arguments)))
-
-
-@dataclass
-class MockMessage:
-    content: str | None = None
-    tool_calls: list[MockToolCall] | None = None
-    role: str = "assistant"
-
-    def model_dump(self) -> dict[str, Any]:
-        result: dict[str, Any] = {"role": self.role, "content": self.content}
-        if self.tool_calls:
-            result["tool_calls"] = [
-                {
-                    "id": f"call_{index}",
-                    "type": "function",
-                    "function": {
-                        "name": tool_call.function.name,
-                        "arguments": tool_call.function.arguments,
-                    },
-                }
-                for index, tool_call in enumerate(self.tool_calls)
-            ]
-        return result
-
-
-@dataclass
-class MockChoice:
-    message: MockMessage
-    finish_reason: str = "stop"
-
-
-@dataclass
-class MockResponse:
-    choices: list[MockChoice]
-
-    @classmethod
-    def from_content(
-        cls,
-        content: str | None = None,
-        *,
-        tool_calls: list[MockToolCall] | None = None,
-        finish_reason: str = "stop",
-    ) -> MockResponse:
-        return cls([MockChoice(MockMessage(content, tool_calls), finish_reason)])
 
 
 def _handlers(provider: Provider, mode: Mode):
@@ -134,17 +73,15 @@ def test_md_json_extends_existing_system_message(provider: Provider) -> None:
     [
         (
             Mode.TOOLS,
-            MockResponse.from_content(
-                tool_calls=[MockToolCall.build("Answer", {"answer": 5.0})]
-            ),
+            chat_completion(tool_calls=[tool_call("Answer", {"answer": 5.0})]),
         ),
-        (Mode.MD_JSON, MockResponse.from_content('{"answer": 21.0}')),
+        (Mode.MD_JSON, chat_completion(content='{"answer": 21.0}')),
     ],
 )
 def test_response_parser_common_paths(
     provider: Provider,
     mode: Mode,
-    response: MockResponse,
+    response: ChatCompletion,
 ) -> None:
     result = _handlers(provider, mode).response_parser(
         response,
@@ -176,8 +113,8 @@ def test_tools_support_nested_models(provider: Provider) -> None:
 
 @pytest.mark.parametrize("provider", OPENAI_COMPAT_PROVIDERS)
 def test_incomplete_tools_output_raises(provider: Provider) -> None:
-    response = MockResponse.from_content(
-        tool_calls=[MockToolCall.build("Answer", {"answer": 4.0})],
+    response = chat_completion(
+        tool_calls=[tool_call("Answer", {"answer": 4.0})],
         finish_reason="length",
     )
 

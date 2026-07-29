@@ -21,6 +21,8 @@ from instructor.v2.providers.openai.schema import (
 class TestModel(BaseModel):
     """A test model for schema generation."""
 
+    __test__ = False
+
     name: str = Field(description="The name of the user")
     age: int = Field(description="The age of the user")
     email: Optional[str] = Field(default=None, description="The email address")
@@ -34,6 +36,8 @@ class TestModelWithDocstring(BaseModel):
         age: Age in years
         tags: List of tags
     """
+
+    __test__ = False
 
     name: str
     age: int
@@ -145,6 +149,25 @@ def test_required_fields_generation():
     assert "name" in required
     assert "age" in required
     assert "email" not in required
+
+
+def test_default_factory_fields_not_required():
+    """Fields with a default_factory have a default and must not be required."""
+
+    class ModelWithFactory(BaseModel):
+        name: str
+        items: list[str] = Field(default_factory=list)
+        tags: dict[str, str] = Field(default_factory=dict)
+
+    schema = generate_openai_schema(ModelWithFactory)
+    required = schema["parameters"]["required"]
+
+    # Only ``name`` has no default; the default_factory fields are optional.
+    assert required == ["name"]
+    # And it should agree with Pydantic's own required set.
+    assert set(required) == set(
+        ModelWithFactory.model_json_schema().get("required", [])
+    )
 
 
 def test_field_descriptions():

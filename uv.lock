@@ -1765,6 +1765,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "docstring-parser" },
+    { name = "eval-type-backport", marker = "python_full_version < '3.10'" },
     { name = "jinja2" },
     { name = "jiter" },
     { name = "openai" },
@@ -1890,6 +1891,7 @@ requires-dist = [
     { name = "diskcache", marker = "extra == 'diskcache'", specifier = ">=5.6.3,<6.0.0" },
     { name = "diskcache", marker = "extra == 'test-docs'", specifier = ">=5.6.3,<6.0.0" },
     { name = "docstring-parser", specifier = ">=0.16,<1.0" },
+    { name = "eval-type-backport", marker = "python_full_version < '3.10'", specifier = ">=0.2.2" },
     { name = "fastapi", marker = "extra == 'test-docs'", specifier = ">=0.109.2,<0.129.0" },
     { name = "fireworks-ai", marker = "extra == 'fireworks-ai'", specifier = ">=0.15.4,<1.0.0" },
     { name = "google-cloud-aiplatform", marker = "extra == 'vertexai'", specifier = ">=1.53.0,<2.0.0" },

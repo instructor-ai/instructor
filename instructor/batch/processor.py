@@ -71,25 +71,24 @@ class BatchProcessor(Generic[T]):
 
             print(f"Created batch file {file_path} with {len(batch_requests)} requests")
             return file_path
-        else:
-            # Create BytesIO buffer - caller is responsible for cleanup
-            buffer = io.BytesIO()
-            batch_requests = []
-            for i, messages in enumerate(messages_list):
-                batch_request = BatchRequest[T](
-                    custom_id=f"request-{i}",
-                    messages=messages,
-                    response_model=self.response_model,
-                    model=self.model_name,
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                )
-                batch_request.save_to_file(buffer, self.provider_name)
-                batch_requests.append(batch_request)
+        # Create BytesIO buffer - caller is responsible for cleanup
+        buffer = io.BytesIO()
+        batch_requests = []
+        for i, messages in enumerate(messages_list):
+            batch_request = BatchRequest[T](
+                custom_id=f"request-{i}",
+                messages=messages,
+                response_model=self.response_model,
+                model=self.model_name,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+            batch_request.save_to_file(buffer, self.provider_name)
+            batch_requests.append(batch_request)
 
-            print(f"Created batch buffer with {len(batch_requests)} requests")
-            buffer.seek(0)  # Reset buffer position for reading
-            return buffer
+        print(f"Created batch buffer with {len(batch_requests)} requests")
+        buffer.seek(0)  # Reset buffer position for reading
+        return buffer
 
     def submit_batch(
         self,
@@ -254,7 +253,7 @@ class BatchProcessor(Generic[T]):
                 content = data["response"]["body"]["choices"][0]["message"]["content"]
                 return json.loads(content)
 
-            elif self.provider_name == "anthropic":
+            if self.provider_name == "anthropic":
                 # Anthropic batch response format
                 if "result" not in data:
                     return None

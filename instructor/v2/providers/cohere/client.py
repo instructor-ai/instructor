@@ -168,23 +168,22 @@ def from_cohere(
             mode=mode,
             **kwargs,
         )
-    else:
 
-        def sync_wrapper(*args: Any, **call_kwargs: Any) -> Any:
-            if call_kwargs.pop("stream", False):
-                return client.chat_stream(*args, **call_kwargs)
-            return client.chat(*args, **call_kwargs)
+    def sync_wrapper(*args: Any, **call_kwargs: Any) -> Any:
+        if call_kwargs.pop("stream", False):
+            return client.chat_stream(*args, **call_kwargs)
+        return client.chat(*args, **call_kwargs)
 
-        patched_create = patch_v2(
-            func=sync_wrapper,
-            provider=Provider.COHERE,
-            mode=mode,
-        )
+    patched_create = patch_v2(
+        func=sync_wrapper,
+        provider=Provider.COHERE,
+        mode=mode,
+    )
 
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.COHERE,
-            mode=mode,
-            **kwargs,
-        )
+    return Instructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.COHERE,
+        mode=mode,
+        **kwargs,
+    )

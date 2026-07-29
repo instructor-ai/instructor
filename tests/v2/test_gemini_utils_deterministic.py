@@ -10,33 +10,11 @@ from pydantic import BaseModel
 
 from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.providers.gemini import utils
+from tests.v2._fake_genai import FakeContent, FakeFile, FakePart, install_fake_genai
 
 
 class Answer(BaseModel):
     value: int
-
-
-class FakePart:
-    def __init__(
-        self,
-        *,
-        text: str | None = None,
-    ) -> None:
-        self.text = text
-
-    @classmethod
-    def from_text(cls, text: str) -> FakePart:
-        return cls(text=text)
-
-
-class FakeContent:
-    def __init__(self, *, role: str, parts: list[Any]) -> None:
-        self.role = role
-        self.parts = parts
-
-
-class FakeFile:
-    pass
 
 
 class FakeGenerateContentConfig:
@@ -86,52 +64,41 @@ class FakeHarmCategory(Enum):
 
 
 def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
-    types_module = ModuleType("google.genai.types")
-    setattr(types_module, "Part", FakePart)  # noqa: B010
-    setattr(types_module, "Content", FakeContent)  # noqa: B010
-    setattr(types_module, "File", FakeFile)  # noqa: B010
-    setattr(types_module, "GenerateContentConfig", FakeGenerateContentConfig)  # noqa: B010
-    setattr(types_module, "FunctionDeclaration", FakeFunctionDeclaration)  # noqa: B010
-    setattr(types_module, "Tool", FakeTool)  # noqa: B010
-    setattr(types_module, "ToolConfig", FakeToolConfig)  # noqa: B010
-    setattr(types_module, "FunctionCallingConfig", FakeFunctionCallingConfig)  # noqa: B010
-    setattr(  # noqa: B010
-        types_module,
-        "FunctionCallingConfigMode",
-        FakeFunctionCallingConfigMode,
+    install_fake_genai(
+        monkeypatch,
+        extra_types={
+            "GenerateContentConfig": FakeGenerateContentConfig,
+            "FunctionDeclaration": FakeFunctionDeclaration,
+            "Tool": FakeTool,
+            "ToolConfig": FakeToolConfig,
+            "FunctionCallingConfig": FakeFunctionCallingConfig,
+            "FunctionCallingConfigMode": FakeFunctionCallingConfigMode,
+            "HarmBlockThreshold": FakeHarmBlockThreshold,
+            "HarmCategory": FakeHarmCategory,
+        },
     )
-    setattr(types_module, "HarmBlockThreshold", FakeHarmBlockThreshold)  # noqa: B010
-    setattr(types_module, "HarmCategory", FakeHarmCategory)  # noqa: B010
-
-    genai_module = ModuleType("google.genai")
-    setattr(genai_module, "types", types_module)  # noqa: B010
-
-    google_module = ModuleType("google")
-    setattr(google_module, "genai", genai_module)  # noqa: B010
-
-    monkeypatch.setitem(sys.modules, "google", google_module)
-    monkeypatch.setitem(sys.modules, "google.genai", genai_module)
-    monkeypatch.setitem(sys.modules, "google.genai.types", types_module)
 
 
 def _install_fake_vertexai_wrappers(monkeypatch: pytest.MonkeyPatch) -> None:
     handlers_module = ModuleType("instructor.v2.providers.vertexai.handlers")
-    setattr(  # noqa: B010
-        handlers_module,
-        "vertexai_process_response",
-        lambda _kwargs, _model: (["content"], ["tool"], "tool-config"),
-    )
-    setattr(  # noqa: B010
-        handlers_module,
-        "vertexai_process_json_response",
-        lambda _kwargs, _model: (["json-content"], "generation-config"),
+    handlers_module.__dict__.update(
+        {
+            "vertexai_process_response": lambda _kwargs, _model: (
+                ["content"],
+                ["tool"],
+                "tool-config",
+            ),
+            "vertexai_process_json_response": lambda _kwargs, _model: (
+                ["json-content"],
+                "generation-config",
+            ),
+        }
     )
 
     parallel_module = ModuleType("instructor.v2.providers.vertexai.parallel")
-    setattr(  # noqa: B010
-        parallel_module,
-        "VertexAIParallelModel",
-        lambda typehint: ("parallel", typehint),
+    parallel_module.__dict__["VertexAIParallelModel"] = lambda typehint: (
+        "parallel",
+        typehint,
     )
 
     monkeypatch.setitem(

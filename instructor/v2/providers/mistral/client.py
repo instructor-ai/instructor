@@ -160,26 +160,25 @@ def from_mistral(
             mode=mode,
             **kwargs,
         )
-    else:
 
-        def sync_wrapper(*args: Any, **wrapper_kwargs: Any) -> Any:
-            """Sync wrapper that handles streaming."""
-            if wrapper_kwargs.pop("stream", False):
-                return client.chat.stream(*args, **wrapper_kwargs)
-            return client.chat.complete(*args, **wrapper_kwargs)
+    def sync_wrapper(*args: Any, **wrapper_kwargs: Any) -> Any:
+        """Sync wrapper that handles streaming."""
+        if wrapper_kwargs.pop("stream", False):
+            return client.chat.stream(*args, **wrapper_kwargs)
+        return client.chat.complete(*args, **wrapper_kwargs)
 
-        # Patch using v2 registry
-        patched_create = patch_v2(
-            func=sync_wrapper,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            default_model=model,
-        )
+    # Patch using v2 registry
+    patched_create = patch_v2(
+        func=sync_wrapper,
+        provider=Provider.MISTRAL,
+        mode=mode,
+        default_model=model,
+    )
 
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            **kwargs,
-        )
+    return Instructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.MISTRAL,
+        mode=mode,
+        **kwargs,
+    )

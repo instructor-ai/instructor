@@ -383,7 +383,6 @@ Before migrating, understand your current v1 provider:
 ```python
 # V1: Factory normalizes mode + applies patching
 def from_openai(client, mode=Mode.TOOLS, **kwargs):
-    _ensure_registry_loaded()
     normalized_mode = normalize_mode_for_provider(mode, Provider.OPENAI)
 
     # Uses instructor.patch() which delegates to the registry handlers

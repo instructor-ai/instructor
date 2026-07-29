@@ -3,13 +3,8 @@ from inspect import isclass
 import typing
 from pydantic import BaseModel, create_model
 from enum import Enum
-from typing import TYPE_CHECKING
 
 from instructor.v2.dsl.partial import Partial
-
-if TYPE_CHECKING:
-    pass
-
 
 T = typing.TypeVar("T")
 
@@ -63,16 +58,6 @@ def is_simple_type(
 ) -> bool:
     # ! we're getting mixes between classes and instances due to how we handle some
     # ! response model types, we should fix this in later PRs
-
-    # Special case for Python 3.9: Directly handle list[Union[int, str]] pattern
-    import sys
-
-    if sys.version_info < (3, 10):
-        # Check if it's a list type with Union arguments using string representation
-        if str(response_model).startswith("list[typing.Union[") or "list[Union[" in str(
-            response_model
-        ):
-            return True
 
     try:
         if isclass(response_model) and validateIsSubClass(response_model):
