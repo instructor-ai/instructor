@@ -23,6 +23,10 @@ class Person(BaseModel):
     age: int
 
 
+class DefaultedResult(BaseModel):
+    status: str = "ok"
+
+
 class RecordingProvider:
     def __init__(self, results: str = "") -> None:
         self.results = results
@@ -273,6 +277,39 @@ def test_openai_results_distinguish_success_validation_extraction_and_json_error
     assert results[3].custom_id == "unknown"
     assert results[3].error_type == "json_parse_error"
     assert results[3].raw_data == {"raw_line": "not-json"}
+
+
+@pytest.mark.parametrize(
+    ("model", "content"),
+    [
+        ("openai/gpt-4.1-mini", openai_result("empty", "{}")),
+        (
+            "anthropic/claude-sonnet",
+            json.dumps(
+                {
+                    "custom_id": "empty",
+                    "result": {
+                        "type": "succeeded",
+                        "message": {"content": [{"type": "tool_use", "input": {}}]},
+                    },
+                }
+            ),
+        ),
+    ],
+)
+def test_parse_results_accepts_empty_object_for_defaulted_model(
+    provider: RecordingProvider,
+    model: str,
+    content: str,
+) -> None:
+    del provider
+    processor = BatchProcessor(model, DefaultedResult)
+
+    results = processor.parse_results(content)
+
+    assert results == [
+        BatchSuccess(custom_id="empty", result=DefaultedResult(status="ok"))
+    ]
 
 
 def test_anthropic_results_support_tool_use_and_text_fallback(

@@ -215,5 +215,24 @@ def test_anthropic_schema_uses_openai_base():
     assert anthropic_schema["input_schema"] == TestModel.model_json_schema()
 
 
+def test_cached_schema_same_object():
+    """generate_openai_schema returns the same dict object on every call (lru_cache).
+
+    This means callers MUST NOT mutate the returned dict directly; they should
+    copy it first. OpenAIToolsHandler.prepare_request does this by shallow-copying
+    before writing "strict" into the schema.
+    """
+
+    class ImmutableModel(BaseModel):
+        value: int
+
+    s1 = generate_provider_openai_schema(ImmutableModel)
+    s2 = generate_provider_openai_schema(ImmutableModel)
+
+    # Both calls return the exact same object — any direct mutation would
+    # affect all future callers, which is why handlers must copy before mutating.
+    assert s1 is s2
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

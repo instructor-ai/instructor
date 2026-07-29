@@ -960,6 +960,71 @@ class TestFinalValidationAfterStreaming:
 
         assert "age" in str(exc_info.value)
 
+    def test_final_validation_accepts_explicit_null_for_required_nullable_field(self):
+        """Explicit JSON null for a required-but-nullable field should validate.
+
+        The final validation must not confuse a field the model explicitly
+        returned as null with a field that was never streamed at all.
+        """
+
+        class ModelWithNullable(BaseModel):
+            name: str
+            email: Optional[str]  # Required, but nullable
+
+        PartialModel = Partial[ModelWithNullable]
+
+        chunks = ['{"name": "Al', 'ice", "email"', ": null}"]
+
+        results = list(_partial_api(PartialModel).model_from_chunks(iter(chunks)))
+        assert len(results) > 0
+        final = results[-1]
+        assert final.name == "Alice"
+        assert final.email is None
+
+    def test_final_validation_still_rejects_absent_required_nullable_field(self):
+        """A required nullable field genuinely absent from complete JSON still fails."""
+
+        class ModelWithNullable(BaseModel):
+            name: str
+            email: Optional[str]  # Required, but nullable
+
+        PartialModel = Partial[ModelWithNullable]
+
+        chunks = ['{"name": "Alice"}']  # 'email' truly missing
+
+        with pytest.raises(ValidationError) as exc_info:
+            list(_partial_api(PartialModel).model_from_chunks(iter(chunks)))
+
+        assert "email" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_async_final_validation_accepts_explicit_null_for_required_nullable_field(
+        self,
+    ):
+        """Async streaming should also accept explicit nulls for nullable fields."""
+
+        class ModelWithNullable(BaseModel):
+            name: str
+            email: Optional[str]  # Required, but nullable
+
+        PartialModel = Partial[ModelWithNullable]
+
+        async def async_chunks():
+            yield '{"name": "Al'
+            yield 'ice", "email"'
+            yield ": null}"
+
+        results = []
+        async for obj in _partial_api(PartialModel).model_from_chunks_async(
+            async_chunks()
+        ):
+            results.append(obj)
+
+        assert len(results) > 0
+        final = results[-1]
+        assert final.name == "Alice"
+        assert final.email is None
+
 
 class TestRecursiveModels:
     """Test that Partial handles self-referential models without infinite recursion."""
@@ -1280,3 +1345,28 @@ class TestOptionalNestedBaseModelDuringPartialStreaming:
 
         # Must remain None — not an empty Inner() instance
         assert obj.inner is None
+
+    def test_partial_list_returns_model_instance_for_incomplete_trailing_item(self):
+        """The trailing (still-streaming) item in a list[BaseModel] field must be
+        a partial model instance, not a raw dict -- consistent with how a
+        singular open nested BaseModel field is already handled."""
+
+        class Item(BaseModel):
+            name: str
+            qty: int
+
+        class Order(BaseModel):
+            items: list[Item]
+
+        partial = Partial[Order]
+
+        # First item complete, second item mid-stream (incomplete).
+        chunks = ['{"items": [{"name": "apple", "qty": 3}, {"name": "banana", "qty"']
+
+        results = list(_partial_api(partial).model_from_chunks(chunks))
+        obj = results[-1]
+
+        assert isinstance(obj.items[0], Item)
+        # Would be a raw dict before the fix, raising AttributeError on .name
+        assert isinstance(obj.items[-1], Item)
+        assert obj.items[-1].name == "banana"

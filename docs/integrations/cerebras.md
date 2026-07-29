@@ -22,7 +22,7 @@ import instructor
 from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 
-client = instructor.from_provider("cerebras/llama3.1-70b")
+client = instructor.from_provider("cerebras/gpt-oss-120b")
 
 class User(BaseModel):
     name: str
@@ -51,7 +51,7 @@ from pydantic import BaseModel
 import asyncio
 
 client = instructor.from_provider(
-    "cerebras/llama3.1-70b",
+    "cerebras/gpt-oss-120b",
     async_client=True,
 )
 
@@ -84,7 +84,7 @@ from pydantic import BaseModel
 import instructor
 from cerebras.cloud.sdk import Cerebras
 
-client = instructor.from_provider("cerebras/llama3.1-70b")
+client = instructor.from_provider("cerebras/gpt-oss-120b")
 
 
 class Address(BaseModel):
@@ -149,7 +149,7 @@ from pydantic import BaseModel
 from typing import Iterable
 
 client = instructor.from_provider(
-    "cerebras/llama3.1-70b",
+    "cerebras/gpt-oss-120b",
     mode=instructor.Mode.MD_JSON,
 )
 
@@ -187,7 +187,7 @@ from pydantic import BaseModel
 from typing import Iterable
 
 client = instructor.from_provider(
-    "cerebras/llama3.1-70b",
+    "cerebras/gpt-oss-120b",
     mode=instructor.Mode.MD_JSON,
 )
 

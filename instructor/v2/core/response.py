@@ -70,7 +70,17 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 _SENSITIVE_KEYS: frozenset[str] = frozenset(
-    {"api_key", "api_secret", "authorization", "token", "x_api_key"}
+    {
+        "access_token",
+        "api_key",
+        "api_secret",
+        "authorization",
+        "client_secret",
+        "refresh_token",
+        "token",
+        "x_api_key",
+        "x_goog_api_key",
+    }
 )
 
 

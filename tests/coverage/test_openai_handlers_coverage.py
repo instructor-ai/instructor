@@ -36,6 +36,7 @@ from instructor.v2.providers.openai.handlers import (
     OpenAIToolsHandler,
     reask_default,
     reask_responses_tools,
+    reask_tools,
 )
 from tests.coverage._openai import chat_chunk, chat_completion, tool_call
 from tests.coverage._streams import async_items
@@ -147,6 +148,26 @@ def test_tools_reask_preserves_assistant_calls_and_adds_one_tool_error_per_call(
             ),
         },
     ]
+
+
+def test_tools_reask_without_tool_call_adds_a_user_correction() -> None:
+    # OpenAI-compatible providers that don't honor forced tool_choice (or a
+    # model that answers in prose) can return a plain assistant message whose
+    # tool_calls is None. reask_tools must fall back to a user correction rather
+    # than iterating None and raising TypeError.
+    response = chat_completion(content="The answer is many.")
+
+    result = reask_tools(
+        {"messages": [{"role": "user", "content": "How many?"}]},
+        response,
+        ValueError("answer must be an int"),
+    )
+
+    assert result["messages"][1]["role"] == "assistant"
+    correction = result["messages"][-1]
+    assert correction["role"] == "user"
+    assert "answer must be an int" in correction["content"]
+    assert "Recall the function correctly" in correction["content"]
 
 
 def test_responses_reask_uses_legacy_arguments_without_inventing_call_details() -> None:
