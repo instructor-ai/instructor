@@ -141,6 +141,38 @@ def test_reask_responses_tools_none_arguments() -> None:
     assert "MUST populate ALL required fields" in msg
 
 
+def test_reask_responses_tools_no_tool_calls_adds_fallback_message() -> None:
+    """Reask must add corrective feedback even when the output has no tool calls.
+
+    Reasoning models can return only reasoning/message items instead of the
+    forced function call. Without a fallback the retry resends the identical
+    request with no feedback at all.
+    """
+    reasoning_item = MagicMock()
+    reasoning_item.type = "reasoning"
+
+    message_item = MagicMock()
+    message_item.type = "message"
+
+    response = MagicMock()
+    response.output = [reasoning_item, message_item]
+
+    error = ValueError(
+        "1 validation error for ResponseToolModel\nname\n  Field required"
+    )
+
+    result = reask_responses_tools(
+        {"messages": [{"role": "user", "content": "extract"}]}, response, error
+    )
+
+    assert len(result["messages"]) == 2
+    fallback = result["messages"][-1]
+    assert fallback["role"] == "user"
+    assert "Validation Error found" in fallback["content"]
+    assert "Field required" in fallback["content"]
+    assert "Recall the function correctly" in fallback["content"]
+
+
 def test_responses_tools_overrides_text_type_format() -> None:
     _, kwargs = OpenAIResponsesToolsHandler().prepare_request(
         ResponseToolModel,

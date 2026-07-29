@@ -260,6 +260,21 @@ def reask_responses_tools(
             }
         )
 
+    if not reask_messages:
+        # Model produced no tool calls at all (e.g. a reasoning-only or plain
+        # message output). Fall back to a plain user correction so the retry
+        # carries feedback instead of resending the identical request,
+        # mirroring reask_tools and the Anthropic reask handler.
+        reask_messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+
     kwargs["messages"].extend(reask_messages)
     return kwargs
 
