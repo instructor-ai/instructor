@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- **Requesty**: Add [Requesty](https://requesty.ai) as a provider (`from_requesty` / `from_provider("requesty/...")`), an OpenAI-compatible LLM router, mirroring the existing OpenRouter provider.
+
 ### Fixed
 - **Credential redaction**: Hide common OAuth and Google API credential aliases in nested v2 debug logging while preserving non-secret token configuration. ([#2490](https://github.com/567-labs/instructor/issues/2490), [#2491](https://github.com/567-labs/instructor/pull/2491))
 - **Retry and message integrity**: Preserve cache keys and caller-owned retry messages, retain empty-content legacy function calls, return Anthropic tool results for every parallel tool call, and handle missing OpenAI/Mistral tool calls as retryable parse failures. ([#2454](https://github.com/567-labs/instructor/issues/2454), [#2455](https://github.com/567-labs/instructor/pull/2455), [#2464](https://github.com/567-labs/instructor/issues/2464), [#2484](https://github.com/567-labs/instructor/pull/2484), [#2485](https://github.com/567-labs/instructor/issues/2485), [#2486](https://github.com/567-labs/instructor/pull/2486), [#2448](https://github.com/567-labs/instructor/pull/2448), [#2453](https://github.com/567-labs/instructor/pull/2453))
