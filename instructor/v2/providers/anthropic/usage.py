@@ -18,7 +18,15 @@ def initialize_usage() -> Any:
 
 
 def update_total_usage(response_usage: Any, total_usage: Any) -> bool:
-    """Accumulate Anthropic token usage into a running total when applicable."""
+    """Accumulate Anthropic token usage into a running total when applicable.
+
+    Every numeric field is summed generically, including the leaves of nested
+    sub-models such as ``cache_creation`` (``ephemeral_*_input_tokens``),
+    ``server_tool_use`` (``web_search_requests`` / ``web_fetch_requests``) and
+    ``output_tokens_details`` (``thinking_tokens``). Billable counters added by
+    newer ``anthropic`` SDK releases are therefore picked up automatically
+    instead of being left stale at whatever the last attempt reported.
+    """
     from anthropic.types import Usage as AnthropicUsage
 
     if not isinstance(response_usage, AnthropicUsage) or not isinstance(
@@ -26,18 +34,8 @@ def update_total_usage(response_usage: Any, total_usage: Any) -> bool:
     ):
         return False
 
-    if not total_usage.cache_creation_input_tokens:
-        total_usage.cache_creation_input_tokens = 0
-    if not total_usage.cache_read_input_tokens:
-        total_usage.cache_read_input_tokens = 0
-    total_usage.input_tokens += response_usage.input_tokens or 0
-    total_usage.output_tokens += response_usage.output_tokens or 0
-    total_usage.cache_creation_input_tokens += (
-        response_usage.cache_creation_input_tokens or 0
-    )
-    total_usage.cache_read_input_tokens += response_usage.cache_read_input_tokens or 0
-    response_usage.input_tokens = total_usage.input_tokens
-    response_usage.output_tokens = total_usage.output_tokens
-    response_usage.cache_creation_input_tokens = total_usage.cache_creation_input_tokens
-    response_usage.cache_read_input_tokens = total_usage.cache_read_input_tokens
+    # Imported lazily to avoid a circular import at module load time.
+    from instructor.v2.core.usage import accumulate_usage
+
+    accumulate_usage(total_usage, response_usage)
     return True
