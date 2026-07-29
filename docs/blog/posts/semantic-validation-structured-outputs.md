@@ -334,7 +334,7 @@ Semantic validation represents a significant advancement in ensuring the quality
 
 As these techniques mature, we can expect to see semantic validation become a standard part of AI application development, especially in regulated industries where output quality is critical.
 
-To get started with semantic validation in your projects, check out the [Semantic Validation documentation](https://python.useinstructor.com../../concepts/semantic_validation/.md) and explore the various examples and patterns.
+To get started with semantic validation in your projects, check out the [Semantic Validation documentation](../../concepts/semantic_validation.md) and explore the various examples and patterns.
 
 This approach isn't just a technical improvement-it's a fundamental shift in how we think about validation, moving from rigid rules to intelligent understanding of content and context.
 
