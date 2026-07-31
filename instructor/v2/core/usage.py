@@ -41,6 +41,19 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
+            # Accumulate newer prediction-related fields (openai>=2.45.0).
+            if hasattr(rpd, "cache_write_tokens"):
+                tpd.cache_write_tokens = (getattr(tpd, "cache_write_tokens", None) or 0) + (
+                    rpd.cache_write_tokens or 0
+                )
+            if hasattr(rpd, "accepted_prediction_tokens"):
+                tpd.accepted_prediction_tokens = (
+                    getattr(tpd, "accepted_prediction_tokens", None) or 0
+                ) + (rpd.accepted_prediction_tokens or 0)
+            if hasattr(rpd, "rejected_prediction_tokens"):
+                tpd.rejected_prediction_tokens = (
+                    getattr(tpd, "rejected_prediction_tokens", None) or 0
+                ) + (rpd.rejected_prediction_tokens or 0)
         response_usage.completion_tokens = total_usage.completion_tokens
         response_usage.prompt_tokens = total_usage.prompt_tokens
         response_usage.total_tokens = total_usage.total_tokens
