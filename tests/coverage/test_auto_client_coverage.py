@@ -373,7 +373,12 @@ def test_bedrock_forwards_explicit_region_credentials_and_mode(
         "aws_session_token": "explicit-token",
         "region_name": "eu-west-1",
     }
-    assert result == {"mode": Mode.JSON, "async_client": True, "max_tokens": 19}
+    assert result == {
+        "mode": Mode.JSON,
+        "async_client": True,
+        "model": "amazon.titan",
+        "max_tokens": 19,
+    }
 
 
 def test_bedrock_reads_all_environment_credentials(

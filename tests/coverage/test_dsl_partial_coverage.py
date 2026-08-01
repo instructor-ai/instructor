@@ -1,5 +1,7 @@
 from collections.abc import AsyncGenerator, Callable, Generator, Iterable
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+from threading import Event, Lock
 from typing import Any, Optional, Protocol, Union, cast
 import typing
 
@@ -127,7 +129,14 @@ def test_partial_builder_validates_complete_nested_values_and_keeps_open_values(
     assert result.metadata == {"source": "stream", "attempt": 2}
     assert result.featured == Item(number=7, state=State.READY)
     assert result.items[0] == Item(number=8, state=State.PENDING)
-    assert result.items[1] == {"number": "9", "state": "rea"}
+    # Open (incomplete) list items are recursed into partial model instances,
+    # consistent with how a singular open nested field is handled (see
+    # test_partial_builder_recurses_into_open_nested_model_and_handles_scalars):
+    # unvalidated/partial values are kept, but the item stays a typed instance
+    # instead of degrading to a raw dict.
+    assert isinstance(result.items[1], Item)
+    assert result.items[1].number == "9"
+    assert result.items[1].state == "rea"
 
 
 def test_partial_builder_recurses_into_open_nested_model_and_handles_scalars() -> None:
@@ -444,3 +453,68 @@ def test_partial_rejects_direct_use_and_wraps_a_recursive_model() -> None:
     assert schema["$defs"]["RecursiveNode"]["properties"]["child"] == {
         "$ref": "#/$defs/RecursiveNode"
     }
+
+
+def test_partial_processing_isolated_between_threads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Address(BaseModel):
+        street: str
+
+    class Home(BaseModel):
+        addresses: list[Address]
+
+    class Office(BaseModel):
+        addresses: list[Address]
+
+    first_entered = Event()
+    second_entered = Event()
+    release_first = Event()
+    call_lock = Lock()
+    calls = 0
+    partial_module_any = cast(Any, partial_module)
+    original_make_partial_type = cast(
+        Callable[..., type[BaseModel]],
+        partial_module_any._make_partial_type,
+    )
+
+    def block_first_address_conversion(
+        annotation: type[BaseModel], *, make_fields_optional: bool = False
+    ) -> type[BaseModel]:
+        nonlocal calls
+        if annotation is Address:
+            with call_lock:
+                calls += 1
+                call_number = calls
+
+            if call_number == 1:
+                first_entered.set()
+                assert release_first.wait(timeout=1)
+            elif call_number == 2:
+                second_entered.set()
+
+        return original_make_partial_type(
+            annotation, make_fields_optional=make_fields_optional
+        )
+
+    monkeypatch.setattr(
+        partial_module, "_make_partial_type", block_first_address_conversion
+    )
+    make_partial_type = cast(
+        Callable[..., type[BaseModel]],
+        partial_module_any._make_partial_type,
+    )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(make_partial_type, Home, make_fields_optional=True)
+        assert first_entered.wait(timeout=1)
+
+        second = executor.submit(make_partial_type, Office, make_fields_optional=True)
+        assert second_entered.wait(timeout=1)
+        release_first.set()
+
+        home_partial = first.result()
+        office_partial = second.result()
+
+    assert "PartialAddress" in home_partial.model_json_schema()["$defs"]
+    assert "PartialAddress" in office_partial.model_json_schema()["$defs"]

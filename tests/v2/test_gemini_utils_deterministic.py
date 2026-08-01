@@ -308,6 +308,18 @@ def test_handle_gemini_json_adds_schema_prompt(monkeypatch: pytest.MonkeyPatch) 
     assert kwargs["generation_config"]["response_mime_type"] == "application/json"
 
 
+def test_update_gemini_kwargs_does_not_mutate_generation_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(utils, "_default_safety_thresholds", lambda: None)
+    generation_config = {"max_tokens": 5}
+
+    result = utils.update_gemini_kwargs({"generation_config": generation_config})
+
+    assert generation_config == {"max_tokens": 5}
+    assert result["generation_config"] == {"max_output_tokens": 5}
+
+
 def test_handle_gemini_json_guards_empty_or_missing_messages(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

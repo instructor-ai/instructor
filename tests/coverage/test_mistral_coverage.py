@@ -24,7 +24,7 @@ from mistralai.models import (
 from pydantic import BaseModel
 
 import instructor.v2.providers.mistral.client as mistral_client
-from instructor.v2.core.errors import ClientError, ModeError
+from instructor.v2.core.errors import ClientError, ModeError, ResponseParsingError
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.multimodal import PDF
 from instructor.v2.core.providers import Provider
@@ -403,6 +403,38 @@ def test_parallel_tool_request_and_response_support_multiple_models() -> None:
     assert request["tool_choice"] == "any"
     assert "tools" not in original
     assert parsed == [User(name="Ada", age=36), Answer(answer=42.0)]
+
+
+def test_tools_handler_survives_prose_response_without_tool_calls() -> None:
+    # Models that ignore tool_choice="any" (or refuse) return a plain assistant
+    # message with tool_calls=None. Parsing must raise a retryable
+    # ResponseParsingError instead of TypeError, reask must fall back to a user
+    # correction instead of iterating None, and the parallel generator must
+    # yield nothing instead of crashing.
+    handler = MistralToolsHandler()
+    prose = response(content="I cannot call the tool for that.")
+
+    with pytest.raises(ResponseParsingError, match="No tool calls found"):
+        handler.parse_response(prose, User)
+
+    reask_kwargs = handler.handle_reask(
+        {"messages": [{"role": "user", "content": "Extract the user"}]},
+        prose,
+        ValueError("age must be an int"),
+    )
+    assert len(reask_kwargs["messages"]) == 3
+    assert reask_kwargs["messages"][1]["role"] == "assistant"
+    correction = reask_kwargs["messages"][-1]
+    assert correction["role"] == "user"
+    assert "age must be an int" in correction["content"]
+    assert "Recall the function correctly" in correction["content"]
+
+    parallel_model, _ = handler.prepare_request(
+        cast(type[BaseModel], Iterable[Union[User, Answer]]),
+        {"messages": [{"role": "user", "content": "Extract all results"}]},
+    )
+    assert parallel_model is not None
+    assert list(handler.parse_response(prose, parallel_model)) == []
 
 
 def test_tools_streaming_iterable_parser_uses_task_list_chunks() -> None:

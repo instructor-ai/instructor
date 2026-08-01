@@ -12,6 +12,7 @@ import re
 import types
 import warnings
 from collections.abc import AsyncGenerator, Callable, Generator, Iterable
+from contextvars import ContextVar
 from copy import deepcopy
 from functools import cache
 from functools import reduce
@@ -40,8 +41,11 @@ UNION_TYPE = getattr(types, "UnionType", None)
 UNION_ORIGINS = (Union, UNION_TYPE) if UNION_TYPE is not None else (Union,)
 
 # Track models currently being processed to prevent infinite recursion
-# with self-referential models (e.g., TreeNode with children: List["TreeNode"])
-_processing_models: set[type] = set()
+# with self-referential models (e.g., TreeNode with children: List["TreeNode"]).
+# Each top-level partial-model construction receives an isolated guard.
+_processing_models: ContextVar[set[type] | None] = ContextVar(
+    "processing_models", default=None
+)
 
 
 def _unwrap_optional_base_model(annotation: Any) -> type[BaseModel] | None:
@@ -241,6 +245,12 @@ def _build_partial_list(
             result.append(_item_model.model_validate(item, **kwargs))
             continue
 
+        if _item_model is not None and isinstance(item, dict):
+            result.append(
+                _build_partial_object(item, _item_model, tracker, item_path, **kwargs)
+            )
+            continue
+
         result.append(item)
 
     return result
@@ -250,6 +260,15 @@ def _process_generic_arg(
     arg: Any,
     make_fields_optional: bool = False,
 ) -> Any:
+    if _processing_models.get() is None:
+        token = _processing_models.set(set())
+        try:
+            return _process_generic_arg(arg, make_fields_optional=make_fields_optional)
+        finally:
+            _processing_models.reset(token)
+
+    processing_models = _processing_models.get()
+    assert processing_models is not None
     arg_origin = get_origin(arg)
 
     if arg_origin is not None:
@@ -269,9 +288,9 @@ def _process_generic_arg(
         return arg_origin[modified_nested_args]
     if isinstance(arg, type) and issubclass(arg, BaseModel):
         # Prevent infinite recursion for self-referential models
-        if arg in _processing_models:
+        if arg in processing_models:
             return arg  # Already processing this model, return unwrapped
-        _processing_models.add(arg)
+        processing_models.add(arg)
         try:
             return (
                 _make_partial_type(arg, make_fields_optional=True)
@@ -279,7 +298,7 @@ def _process_generic_arg(
                 else Partial[arg]
             )
         finally:
-            _processing_models.discard(arg)
+            processing_models.discard(arg)
     else:
         return arg
 
@@ -439,13 +458,18 @@ class PartialBase(Generic[T_Model]):
             yield obj
 
         # Final validation: only validate if the JSON is structurally complete
-        # If JSON is incomplete (stream ended mid-object), skip validation
+        # If JSON is incomplete (stream ended mid-object), skip validation.
+        # Validate the accumulated JSON itself rather than a
+        # model_dump(exclude_none=True) round-trip, which would strip fields
+        # the model legitimately returned as null and make required-but-nullable
+        # fields fail re-validation as "missing".
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                if is_json_complete(potential_object.strip() or "{}"):
+                json_str = potential_object.strip() or "{}"
+                if is_json_complete(json_str):
                     original_model.model_validate(
-                        final_obj.model_dump(exclude_none=True), **kwargs
+                        from_json(json_str.encode()), **kwargs
                     )
 
     @classmethod
@@ -474,13 +498,18 @@ class PartialBase(Generic[T_Model]):
             yield obj
 
         # Final validation: only validate if the JSON is structurally complete
-        # If JSON is incomplete (stream ended mid-object), skip validation
+        # If JSON is incomplete (stream ended mid-object), skip validation.
+        # Validate the accumulated JSON itself rather than a
+        # model_dump(exclude_none=True) round-trip, which would strip fields
+        # the model legitimately returned as null and make required-but-nullable
+        # fields fail re-validation as "missing".
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                if is_json_complete(potential_object.strip() or "{}"):
+                json_str = potential_object.strip() or "{}"
+                if is_json_complete(json_str):
                     original_model.model_validate(
-                        final_obj.model_dump(exclude_none=True), **kwargs
+                        from_json(json_str.encode()), **kwargs
                     )
 
     @staticmethod
@@ -607,6 +636,15 @@ class Partial(Generic[T_Model]):
         to support partially defined fields.
 
         """
+        if _processing_models.get() is None:
+            token = _processing_models.set(set())
+            try:
+                return cls.__class_getitem__(wrapped_class)
+            finally:
+                _processing_models.reset(token)
+
+        processing_models = _processing_models.get()
+        assert processing_models is not None
 
         make_fields_optional = None
         if isinstance(wrapped_class, tuple):
@@ -636,16 +674,16 @@ class Partial(Generic[T_Model]):
             # attributes to optionals.
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
                 # Prevent infinite recursion for self-referential models
-                if annotation in _processing_models:
+                if annotation in processing_models:
                     tmp_field.annotation = (
                         annotation  # Already processing, keep unwrapped
                     )
                 else:
-                    _processing_models.add(annotation)
+                    processing_models.add(annotation)
                     try:
                         tmp_field.annotation = Partial[annotation]
                     finally:
-                        _processing_models.discard(annotation)
+                        processing_models.discard(annotation)
             return tmp_field.annotation, tmp_field
 
         model_name = (

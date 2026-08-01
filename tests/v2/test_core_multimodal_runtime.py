@@ -218,3 +218,55 @@ def test_audio_from_path_normalizes_windows_wav_and_aac_mime_types(
 
     assert wav_audio.media_type == "audio/wav"
     assert aac_audio.media_type == "audio/aac"
+
+
+def test_audio_from_url_raises_value_error_for_unsupported_content_type(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Response:
+        headers = {"content-type": "video/mp4"}
+        content = b"\x00\x01\x02"
+
+    monkeypatch.setattr("requests.get", lambda *_args, **_kwargs: _Response())
+
+    with pytest.raises(ValueError, match="Unsupported audio format"):
+        Audio.from_url("https://example.com/clip.mp4")
+
+
+def test_audio_from_path_raises_value_error_for_unsupported_format(
+    tmp_path: Path,
+) -> None:
+    txt_path = tmp_path / "clip.txt"
+    txt_path.write_bytes(b"not audio")
+
+    with pytest.raises(ValueError, match="Unsupported audio format"):
+        Audio.from_path(txt_path)
+
+
+def test_audio_from_path_raises_value_error_for_empty_file(tmp_path: Path) -> None:
+    empty_path = tmp_path / "empty.wav"
+    empty_path.write_bytes(b"")
+
+    with pytest.raises(ValueError, match="Audio file is empty"):
+        Audio.from_path(empty_path)
+
+
+def test_audio_from_path_raises_file_not_found_for_missing_file(tmp_path: Path) -> None:
+    missing_path = tmp_path / "missing.wav"
+
+    with pytest.raises(FileNotFoundError):
+        Audio.from_path(missing_path)
+
+
+def test_audio_to_openai_format_follows_media_type() -> None:
+    from instructor.v2.providers.openai.multimodal import audio_to_openai
+
+    mp3 = Audio(source="clip.mp3", media_type="audio/mpeg", data="ZmFrZQ==")
+    assert audio_to_openai(mp3, Mode.TOOLS)["input_audio"]["format"] == "mp3"
+
+    wav = Audio(source="clip.wav", media_type="audio/wav", data="ZmFrZQ==")
+    assert audio_to_openai(wav, Mode.TOOLS)["input_audio"]["format"] == "wav"
+
+    aac = Audio(source="clip.aac", media_type="audio/aac", data="ZmFrZQ==")
+    with pytest.raises(ValueError, match="Expected WAV or MP3"):
+        audio_to_openai(aac, Mode.TOOLS)
