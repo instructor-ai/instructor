@@ -128,6 +128,38 @@ def test_openai_usage_adds_token_details_and_copies_totals_to_response() -> None
     assert response_prompt_details.cached_tokens == 25
 
 
+def test_openai_usage_accumulates_sdk_extra_numeric_fields() -> None:
+    total_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 1,
+            "prompt_tokens": 2,
+            "total_tokens": 3,
+            "future_tokens": 4,
+            "future_cost": 1.5,
+        }
+    )
+    response_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 5,
+            "prompt_tokens": 6,
+            "total_tokens": 11,
+            "future_tokens": 7,
+            "future_cost": 2.25,
+        }
+    )
+    response = _completion(1)
+    response.usage = response_usage
+
+    update_total_usage(response, total_usage)
+
+    assert total_usage.model_extra is not None
+    assert response_usage.model_extra is not None
+    assert total_usage.model_extra["future_tokens"] == 11
+    assert total_usage.model_extra["future_cost"] == 3.75
+    assert response_usage.model_extra["future_tokens"] == 11
+    assert response_usage.model_extra["future_cost"] == 3.75
+
+
 def test_patch_requires_a_target_and_supports_a_create_callable() -> None:
     patch_without_target = cast(Callable[[], object], patch)
     with pytest.raises(ValueError, match="Either client or create must be provided"):

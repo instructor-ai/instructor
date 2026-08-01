@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, TypeVar
+from numbers import Real
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -15,18 +16,31 @@ logger = logging.getLogger("instructor")
 T_Response = TypeVar("T_Response")
 
 
+def _field_names(model: BaseModel) -> set[str]:
+    """Return declared and Pydantic extra field names for a model."""
+    return set(type(model).model_fields) | set(model.model_extra or {})
+
+
+def _all_field_names(*models: BaseModel) -> set[str]:
+    return {field_name for model in models for field_name in _field_names(model)}
+
+
+def _is_numeric(value: object) -> bool:
+    return isinstance(value, Real) and not isinstance(value, bool)
+
+
 def _zero_numeric_fields(model: BaseModel) -> BaseModel:
-    for field_name in type(model).model_fields:
+    for field_name in _field_names(model):
         value = getattr(model, field_name, None)
         if isinstance(value, BaseModel):
             _zero_numeric_fields(value)
-        elif type(value) is int:
+        elif _is_numeric(value):
             setattr(model, field_name, 0)
     return model
 
 
 def _accumulate_models(response: BaseModel, total: BaseModel) -> None:
-    for field_name in type(total).model_fields:
+    for field_name in _all_field_names(response, total):
         response_value = getattr(response, field_name, None)
         total_value = getattr(total, field_name, None)
         if isinstance(response_value, BaseModel):
@@ -38,11 +52,13 @@ def _accumulate_models(response: BaseModel, total: BaseModel) -> None:
                 setattr(response, field_name, total_value.model_copy(deep=True))
         elif isinstance(total_value, BaseModel):
             setattr(response, field_name, total_value.model_copy(deep=True))
-        elif type(response_value) is int:
-            value = (total_value if type(total_value) is int else 0) + response_value
+        elif _is_numeric(response_value):
+            response_number = cast(Real, response_value)
+            total_number = cast(Real, total_value) if _is_numeric(total_value) else 0
+            value = total_number + response_number
             setattr(total, field_name, value)
             setattr(response, field_name, value)
-        elif type(total_value) is int:
+        elif _is_numeric(total_value):
             setattr(response, field_name, total_value)
         elif response_value is not None:
             setattr(total, field_name, response_value)
