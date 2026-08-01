@@ -14,6 +14,8 @@ import anthropic
 import httpx
 import pytest
 from anthropic.types import Usage
+from anthropic.types.cache_creation import CacheCreation
+from anthropic.types.server_tool_usage import ServerToolUsage
 from pydantic import BaseModel, ValidationInfo, field_validator
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
@@ -397,3 +399,34 @@ def test_anthropic_usage_initializes_and_accumulates_sdk_usage() -> None:
     ) == (12, 10, 2, 5)
     assert update_total_usage(object(), total) is False
     assert update_total_usage(second, object()) is False
+
+
+def test_anthropic_usage_accumulates_nested_provider_fields() -> None:
+    total = initialize_usage()
+    first = Usage(
+        input_tokens=100,
+        output_tokens=50,
+        cache_creation=CacheCreation(
+            ephemeral_1h_input_tokens=10, ephemeral_5m_input_tokens=20
+        ),
+        server_tool_use=ServerToolUsage(web_fetch_requests=2, web_search_requests=3),
+    )
+    second = Usage(
+        input_tokens=100,
+        output_tokens=50,
+        cache_creation=CacheCreation(
+            ephemeral_1h_input_tokens=10, ephemeral_5m_input_tokens=20
+        ),
+        server_tool_use=ServerToolUsage(web_fetch_requests=2, web_search_requests=3),
+    )
+
+    assert update_total_usage(first, total) is True
+    assert update_total_usage(second, total) is True
+    assert total.cache_creation == CacheCreation(
+        ephemeral_1h_input_tokens=20, ephemeral_5m_input_tokens=40
+    )
+    assert total.server_tool_use == ServerToolUsage(
+        web_fetch_requests=4, web_search_requests=6
+    )
+    assert second.cache_creation == total.cache_creation
+    assert second.server_tool_use == total.server_tool_use

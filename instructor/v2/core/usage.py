@@ -5,12 +5,48 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, TypeVar
 
+from pydantic import BaseModel
+
 if TYPE_CHECKING:
     from anthropic.types import Usage as AnthropicUsage
     from openai.types import CompletionUsage as OpenAIUsage
 
 logger = logging.getLogger("instructor")
 T_Response = TypeVar("T_Response")
+
+
+def _zero_numeric_fields(model: BaseModel) -> BaseModel:
+    for field_name in type(model).model_fields:
+        value = getattr(model, field_name, None)
+        if isinstance(value, BaseModel):
+            _zero_numeric_fields(value)
+        elif type(value) is int:
+            setattr(model, field_name, 0)
+    return model
+
+
+def _accumulate_models(response: BaseModel, total: BaseModel) -> None:
+    for field_name in type(total).model_fields:
+        response_value = getattr(response, field_name, None)
+        total_value = getattr(total, field_name, None)
+        if isinstance(response_value, BaseModel):
+            if total_value is None:
+                total_value = _zero_numeric_fields(response_value.model_copy(deep=True))
+                setattr(total, field_name, total_value)
+            if isinstance(total_value, BaseModel):
+                _accumulate_models(response_value, total_value)
+                setattr(response, field_name, total_value.model_copy(deep=True))
+        elif isinstance(total_value, BaseModel):
+            setattr(response, field_name, total_value.model_copy(deep=True))
+        elif type(response_value) is int:
+            value = (total_value if type(total_value) is int else 0) + response_value
+            setattr(total, field_name, value)
+            setattr(response, field_name, value)
+        elif type(total_value) is int:
+            setattr(response, field_name, total_value)
+        elif response_value is not None:
+            setattr(total, field_name, response_value)
+            setattr(response, field_name, response_value)
 
 
 def update_total_usage(
@@ -26,34 +62,7 @@ def update_total_usage(
     if isinstance(response_usage, _OpenAIUsage) and isinstance(
         total_usage, _OpenAIUsage
     ):
-        total_usage.completion_tokens += response_usage.completion_tokens or 0
-        total_usage.prompt_tokens += response_usage.prompt_tokens or 0
-        total_usage.total_tokens += response_usage.total_tokens or 0
-        if (rtd := response_usage.completion_tokens_details) and (
-            ttd := total_usage.completion_tokens_details
-        ):
-            ttd.audio_tokens = (ttd.audio_tokens or 0) + (rtd.audio_tokens or 0)
-            ttd.reasoning_tokens = (ttd.reasoning_tokens or 0) + (
-                rtd.reasoning_tokens or 0
-            )
-        if (rpd := response_usage.prompt_tokens_details) and (
-            tpd := total_usage.prompt_tokens_details
-        ):
-            tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
-            tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response_usage.completion_tokens = total_usage.completion_tokens
-        response_usage.prompt_tokens = total_usage.prompt_tokens
-        response_usage.total_tokens = total_usage.total_tokens
-        response_usage.completion_tokens_details = (
-            total_usage.completion_tokens_details.model_copy(deep=True)
-            if total_usage.completion_tokens_details is not None
-            else None
-        )
-        response_usage.prompt_tokens_details = (
-            total_usage.prompt_tokens_details.model_copy(deep=True)
-            if total_usage.prompt_tokens_details is not None
-            else None
-        )
+        _accumulate_models(response_usage, total_usage)
         return response
 
     try:
