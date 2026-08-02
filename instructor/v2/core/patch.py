@@ -209,13 +209,15 @@ def _create_sync_wrapper(
         # Get handlers from registry
         handlers = mode_registry.get_handlers(provider, mode)
 
-        if response_model is not None:
+        if response_model is not None and mode not in Mode.parallel_modes():
             response_model = prepare_response_model(response_model)
 
         # Prepare request kwargs using registry handler
-        response_model, new_kwargs = handlers.request_handler(
+        prepared_model, new_kwargs = handlers.request_handler(
             response_model=response_model, kwargs=kwargs
         )
+        if mode not in Mode.parallel_modes():
+            response_model = prepared_model
         new_kwargs.pop("autodetect_images", None)
         if handlers.message_converter and "messages" in new_kwargs:
             new_kwargs["messages"] = handlers.message_converter(
@@ -323,13 +325,15 @@ def _create_async_wrapper(
         # Get handlers from registry
         handlers = mode_registry.get_handlers(provider, mode)
 
-        if response_model is not None:
+        if response_model is not None and mode not in Mode.parallel_modes():
             response_model = prepare_response_model(response_model)
 
         # Prepare request kwargs using registry handler
-        response_model, new_kwargs = handlers.request_handler(
+        prepared_model, new_kwargs = handlers.request_handler(
             response_model=response_model, kwargs=kwargs
         )
+        if mode not in Mode.parallel_modes():
+            response_model = prepared_model
         new_kwargs.pop("autodetect_images", None)
         if handlers.message_converter and "messages" in new_kwargs:
             new_kwargs["messages"] = handlers.message_converter(
