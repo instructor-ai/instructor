@@ -60,6 +60,8 @@ def _accumulate_models(response: BaseModel, total: BaseModel) -> None:
             setattr(response, field_name, value)
         elif _is_numeric(total_value):
             setattr(response, field_name, total_value)
+        elif total_value is not None:
+            setattr(response, field_name, total_value)
         elif response_value is not None:
             setattr(total, field_name, response_value)
             setattr(response, field_name, response_value)
