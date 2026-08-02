@@ -185,6 +185,34 @@ def test_usage_carries_existing_non_numeric_fields_to_response() -> None:
     assert response_usage.model_extra["service_tier"] == "scale"
 
 
+def test_usage_response_non_numeric_fields_still_win() -> None:
+    total_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 1,
+            "prompt_tokens": 2,
+            "total_tokens": 3,
+            "service_tier": "scale",
+        }
+    )
+    response_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 5,
+            "prompt_tokens": 6,
+            "total_tokens": 11,
+            "service_tier": "default",
+        }
+    )
+    response = _completion(1)
+    response.usage = response_usage
+
+    update_total_usage(response, total_usage)
+
+    assert total_usage.model_extra is not None
+    assert total_usage.model_extra["service_tier"] == "default"
+    assert response_usage.model_extra is not None
+    assert response_usage.model_extra["service_tier"] == "default"
+
+
 def test_patch_requires_a_target_and_supports_a_create_callable() -> None:
     patch_without_target = cast(Callable[[], object], patch)
     with pytest.raises(ValueError, match="Either client or create must be provided"):
