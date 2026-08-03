@@ -31,7 +31,7 @@ from instructor.v2.core.retry import (
     retry_sync,
     retry_sync_v2,
 )
-from instructor.v2.core.usage import update_total_usage
+from instructor.v2.core.usage import _accumulate_models, update_total_usage
 from instructor.v2.dsl.iterable import IterableModel
 from instructor.v2.dsl.response_list import ListResponse
 from instructor.v2.dsl.simple_type import ModelAdapter
@@ -227,6 +227,40 @@ def test_usage_response_non_numeric_fields_still_win() -> None:
     assert total_usage.model_extra["service_tier"] == "default"
     assert response_usage.model_extra is not None
     assert response_usage.model_extra["service_tier"] == "default"
+
+
+def test_usage_accumulates_recursive_models_across_sdk_shape_changes() -> None:
+    class Counters(BaseModel):
+        billed: int
+        label: str | None = None
+
+    class Details(BaseModel):
+        counters: Counters
+        region: str
+
+    class Usage(BaseModel):
+        total: int
+        details: Details | str | None = None
+
+    total = Usage(total=0, details="legacy-shape")
+    first = Usage(
+        total=2,
+        details=Details(counters=Counters(billed=4, label="new"), region="us"),
+    )
+
+    _accumulate_models(first, total)
+
+    assert isinstance(total.details, Details)
+    assert total.details.counters.billed == 4
+    assert total.details.counters.label == "new"
+    assert total.details.region == "us"
+
+    second = Usage(total=3)
+    _accumulate_models(second, total)
+
+    assert second.total == 5
+    assert second.details == total.details
+    assert second.details is not total.details
 
 
 def test_patch_requires_a_target_and_supports_a_create_callable() -> None:

@@ -44,12 +44,11 @@ def _accumulate_models(response: BaseModel, total: BaseModel) -> None:
         response_value = getattr(response, field_name, None)
         total_value = getattr(total, field_name, None)
         if isinstance(response_value, BaseModel):
-            if total_value is None:
+            if not isinstance(total_value, BaseModel):
                 total_value = _zero_numeric_fields(response_value.model_copy(deep=True))
                 setattr(total, field_name, total_value)
-            if isinstance(total_value, BaseModel):
-                _accumulate_models(response_value, total_value)
-                setattr(response, field_name, total_value.model_copy(deep=True))
+            _accumulate_models(response_value, total_value)
+            setattr(response, field_name, total_value.model_copy(deep=True))
         elif isinstance(total_value, BaseModel):
             setattr(response, field_name, total_value.model_copy(deep=True))
         elif _is_numeric(response_value):
