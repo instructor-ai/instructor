@@ -78,18 +78,28 @@ def test_openai_usage_adds_token_details_and_copies_totals_to_response() -> None
         prompt_tokens=6,
         total_tokens=10,
         completion_tokens_details=CompletionTokensDetails(
-            audio_tokens=1, reasoning_tokens=2
+            accepted_prediction_tokens=3,
+            audio_tokens=1,
+            reasoning_tokens=2,
+            rejected_prediction_tokens=4,
         ),
-        prompt_tokens_details=PromptTokensDetails(audio_tokens=3, cached_tokens=4),
+        prompt_tokens_details=PromptTokensDetails.model_validate(
+            {"audio_tokens": 3, "cached_tokens": 4, "cache_write_tokens": 5}
+        ),
     )
     response_usage = CompletionUsage(
         completion_tokens=7,
         prompt_tokens=11,
         total_tokens=18,
         completion_tokens_details=CompletionTokensDetails(
-            audio_tokens=5, reasoning_tokens=8
+            accepted_prediction_tokens=7,
+            audio_tokens=5,
+            reasoning_tokens=8,
+            rejected_prediction_tokens=9,
         ),
-        prompt_tokens_details=PromptTokensDetails(audio_tokens=13, cached_tokens=21),
+        prompt_tokens_details=PromptTokensDetails.model_validate(
+            {"audio_tokens": 13, "cached_tokens": 21, "cache_write_tokens": 23}
+        ),
     )
     response = _completion(1)
     response.usage = response_usage
@@ -111,14 +121,20 @@ def test_openai_usage_adds_token_details_and_copies_totals_to_response() -> None
     assert total_prompt_details is not None
     assert response_completion_details is not None
     assert response_prompt_details is not None
+    assert total_completion_details.accepted_prediction_tokens == 10
     assert total_completion_details.audio_tokens == 6
     assert total_completion_details.reasoning_tokens == 10
+    assert total_completion_details.rejected_prediction_tokens == 13
     assert total_prompt_details.audio_tokens == 16
     assert total_prompt_details.cached_tokens == 25
+    assert total_prompt_details.model_extra == {"cache_write_tokens": 28}
+    assert response_completion_details.accepted_prediction_tokens == 10
     assert response_completion_details.audio_tokens == 6
     assert response_completion_details.reasoning_tokens == 10
+    assert response_completion_details.rejected_prediction_tokens == 13
     assert response_prompt_details.audio_tokens == 16
     assert response_prompt_details.cached_tokens == 25
+    assert response_prompt_details.model_extra == {"cache_write_tokens": 28}
     assert response_completion_details is not total_completion_details
     assert response_prompt_details is not total_prompt_details
 
