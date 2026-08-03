@@ -10,7 +10,9 @@ SCRIPT = Path(__file__).parents[1] / "scripts" / "prepare_release.py"
 
 def _write_release_files(root: Path, changelog: str) -> None:
     (root / "pyproject.toml").write_text(
-        '[project]\nname = "instructor"\nversion = "1.2.3"\n', encoding="utf-8"
+        '[project]\nname = "instructor"\nversion = "1.2.3"\n'
+        '[project.urls]\nrepository = "https://github.com/567-labs/instructor"\n',
+        encoding="utf-8",
     )
     (root / "uv.lock").write_text(
         'version = 1\n[[package]]\nname = "instructor"\nversion = "1.2.3"\n',
@@ -118,3 +120,21 @@ def test_prepare_release_requires_comparison_link(tmp_path: Path) -> None:
 
     assert result.returncode == 2
     assert "missing the [1.2.3] comparison link" in result.stderr
+
+
+def test_prepare_release_rejects_stale_repository_url(tmp_path: Path) -> None:
+    _write_release_files(tmp_path, _changelog())
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        pyproject.read_text(encoding="utf-8").replace(
+            "https://github.com/567-labs/instructor",
+            "https://github.com/instructor-ai/instructor",
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run(tmp_path)
+
+    assert result.returncode == 2
+    assert "repository URL mismatch" in result.stderr
+    assert "expected=https://github.com/567-labs/instructor" in result.stderr

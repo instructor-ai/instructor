@@ -28,6 +28,11 @@ def _project_version(root: Path) -> str:
     return str(data["project"]["version"])
 
 
+def _repository_url(root: Path) -> str:
+    data = _load_toml(root / "pyproject.toml")
+    return str(data["project"]["urls"]["repository"])
+
+
 def _lock_version(root: Path) -> str:
     data = _load_toml(root / "uv.lock")
     matches = [
@@ -86,9 +91,16 @@ def prepare_release(
     """Validate version metadata and write the matching changelog section."""
     version = _project_version(root)
     lock_version = _lock_version(root)
+    repository_url = _repository_url(root)
     if lock_version != version:
         raise ValueError(
             f"version mismatch: pyproject.toml={version}, uv.lock={lock_version}"
+        )
+    expected_repository_url = f"https://github.com/{REPOSITORY}"
+    if repository_url != expected_repository_url:
+        raise ValueError(
+            "repository URL mismatch: "
+            f"pyproject.toml={repository_url}, expected={expected_repository_url}"
         )
     if expected_version and expected_version != version:
         raise ValueError(

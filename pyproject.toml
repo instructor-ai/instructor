@@ -37,7 +37,7 @@ build-backend = "hatchling.build"
 package = true
 
 [project.urls]
-repository = "https://github.com/instructor-ai/instructor"
+repository = "https://github.com/567-labs/instructor"
 
 [tool.pytest.ini_options]
 markers = [
