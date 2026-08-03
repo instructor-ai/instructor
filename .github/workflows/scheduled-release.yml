@@ -1,268 +1,199 @@
-name: Scheduled Release
+name: Release Readiness
 
 on:
   schedule:
-    # Every 2 weeks on Monday at 9 AM UTC
-    - cron: '0 9 * * 1/2'
-  workflow_dispatch: # Allow manual trigger
+    - cron: "0 9 * * 1"
+  pull_request:
+    paths:
+      - .github/workflows/python-publish.yml
+      - .github/workflows/scheduled-release.yml
+      - CHANGELOG.md
+      - pyproject.toml
+      - scripts/prepare_release.py
+      - tests/test_prepare_release.py
+      - uv.lock
+  workflow_dispatch:
     inputs:
-      skip_tests:
-        description: 'Skip LLM tests (use for testing workflow)'
-        required: false
+      expected_version:
+        description: Exact version already declared in pyproject.toml
+        required: true
+        type: string
+      publish:
+        description: Publish the tested artifacts as a GitHub release
+        required: true
         default: false
         type: boolean
-      dry_run:
-        description: 'Dry run - dont push changes or create release'
-        required: false
-        default: false
-        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-readiness-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  test-and-release:
+  prepare:
+    name: Prepare exact release artifacts
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
+    timeout-minutes: 30
+    outputs:
+      release_needed: ${{ steps.metadata.outputs.release_needed }}
+      tag: ${{ steps.metadata.outputs.tag }}
+      version: ${{ steps.metadata.outputs.version }}
+
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Setup UV
-      uses: astral-sh/setup-uv@v3
-    
-    - name: Install dependencies
-      run: |
-        uv sync --all-extras --dev
-    
-    - name: Run linting
-      run: |
-        uv run ruff check instructor examples tests
-    
-    - name: Run type checking
-      run: |
-        uv run ty check --error-on-warning --output-format github instructor/
-        uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
-    
-    - name: Run core tests (no LLM)
-      run: |
-        uv run pytest tests/ -k "not openai and not llm and not anthropic and not gemini and not cohere and not mistral and not groq and not vertexai and not xai and not cerebras and not fireworks and not writer and not bedrock and not perplexity and not genai" --tb=short -v --maxfail=10
-    
-    # Optional: Run LLM tests if you have API keys in secrets
-    - name: Run LLM tests
-      if: github.event.inputs.skip_tests != 'true'
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
-      run: |
-        echo "Running basic LLM tests if API keys are available..."
-        # Run a subset of LLM tests to verify basic functionality
-        if [ ! -z "$OPENAI_API_KEY" ]; then
-          echo "Testing OpenAI integration..."
-          uv run pytest tests/llm/test_openai/test_basics.py --tb=short -v --maxfail=1 || echo "OpenAI tests failed"
-        fi
-        if [ ! -z "$ANTHROPIC_API_KEY" ]; then
-          echo "Testing Anthropic integration..."
-          uv run pytest tests/llm/test_anthropic/test_basics.py --tb=short -v --maxfail=1 || echo "Anthropic tests failed"
-        fi
-        echo "LLM tests completed (non-blocking)"
-    
-    - name: Check for changes since last release
-      id: changes
-      run: |
-        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-        if [ -z "$LAST_TAG" ]; then
-          echo "has_changes=true" >> $GITHUB_OUTPUT
-          echo "last_tag=none" >> $GITHUB_OUTPUT
-          echo "change_count=initial" >> $GITHUB_OUTPUT
-        else
-          CHANGES=$(git rev-list $LAST_TAG..HEAD --count)
-          echo "has_changes=$([[ $CHANGES -gt 0 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
-          echo "change_count=$CHANGES" >> $GITHUB_OUTPUT
-          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
-        fi
-        
-        echo "Last tag: $LAST_TAG"
-        echo "Changes since last tag: $(git rev-list $LAST_TAG..HEAD --count 2>/dev/null || echo 'N/A')"
-    
-    # Only proceed with release if tests passed AND there are changes
-    - name: Get current version
-      if: steps.changes.outputs.has_changes == 'true'
-      id: current_version
-      run: |
-        VERSION=$(uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Current version: $VERSION"
-    
-    - name: Determine version bump type
-      if: steps.changes.outputs.has_changes == 'true'
-      id: version_type
-      run: |
-        # Check commit messages since last tag to determine bump type
-        LAST_TAG="${{ steps.changes.outputs.last_tag }}"
-        if [ "$LAST_TAG" = "none" ]; then
-          COMMITS=$(git log --oneline HEAD~20..HEAD)
-        else
-          COMMITS=$(git log --oneline $LAST_TAG..HEAD)
-        fi
-        
-        echo "Recent commits:"
-        echo "$COMMITS"
-        
-        # Look for breaking changes or major features
-        if echo "$COMMITS" | grep -qE "(BREAKING|feat!|fix!)"; then
-          echo "bump_type=minor" >> $GITHUB_OUTPUT
-          echo "Detected breaking changes - using minor bump"
-        elif echo "$COMMITS" | grep -qE "feat:"; then
-          echo "bump_type=minor" >> $GITHUB_OUTPUT
-          echo "Detected new features - using minor bump"
-        else
-          echo "bump_type=patch" >> $GITHUB_OUTPUT
-          echo "Using patch bump for bug fixes and chores"
-        fi
-    
-    - name: Bump version
-      if: steps.changes.outputs.has_changes == 'true'
-      id: bump_version
-      run: |
-        CURRENT="${{ steps.current_version.outputs.version }}"
-        BUMP_TYPE="${{ steps.version_type.outputs.bump_type }}"
-        
-        IFS='.' read -r major minor patch <<< "$CURRENT"
-        
-        case $BUMP_TYPE in
-          major)
-            major=$((major + 1))
-            minor=0
-            patch=0
-            ;;
-          minor)
-            minor=$((minor + 1))
-            patch=0
-            ;;
-          patch)
-            patch=$((patch + 1))
-            ;;
-        esac
-        
-        NEW_VERSION="$major.$minor.$patch"
-        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-        echo "Bumping from $CURRENT to $NEW_VERSION ($BUMP_TYPE)"
-        
-        # Update pyproject.toml
-        sed -i "s/version = \"$CURRENT\"/version = \"$NEW_VERSION\"/" pyproject.toml
-    
-    - name: Update lockfile
-      if: steps.changes.outputs.has_changes == 'true'
-      run: |
-        uv lock
-    
-    # Run tests again after version bump to make sure nothing broke
-    - name: Final test run
-      if: steps.changes.outputs.has_changes == 'true'
-      run: |
-        uv sync
-        uv run pytest tests/ -k "not openai and not llm and not anthropic and not gemini and not cohere and not mistral and not groq and not vertexai and not xai and not cerebras and not fireworks and not writer and not bedrock and not perplexity and not genai" --tb=short --maxfail=5
-    
-    - name: Generate changelog
-      if: steps.changes.outputs.has_changes == 'true'
-      id: changelog
-      run: |
-        LAST_TAG="${{ steps.changes.outputs.last_tag }}"
-        NEW_VERSION="${{ steps.bump_version.outputs.new_version }}"
-        
-        if [ "$LAST_TAG" = "none" ]; then
-          CHANGELOG=$(git log --oneline HEAD~30..HEAD --pretty=format:"- %s" | head -20)
-        else
-          CHANGELOG=$(git log --oneline $LAST_TAG..HEAD --pretty=format:"- %s")
-        fi
-        
-        # Save changelog to file for GitHub release
-        cat > CHANGELOG.md << EOF
-        ## 🚀 What's Changed
-        
-        $CHANGELOG
-        
-        ## 🔗 Links
-        **Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...v$NEW_VERSION
-        
-        ---
-        🤖 *This release was automatically generated every 2 weeks*
-        EOF
-        
-        echo "changelog_file=CHANGELOG.md" >> $GITHUB_OUTPUT
-    
-    - name: Create release commit
-      if: steps.changes.outputs.has_changes == 'true'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add pyproject.toml uv.lock
-        git commit -m "chore: automated release v${{ steps.bump_version.outputs.new_version }}
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: "3.11"
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install locked dependencies
+        run: uv sync --frozen --all-extras
 
-        🤖 Generated with [Claude Code](https://claude.ai/code)
+      - name: Validate release metadata
+        id: metadata
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: |
+          args=(--output release-notes.md)
+          if [ -n "$EXPECTED_VERSION" ]; then
+            args+=(--expected-version "$EXPECTED_VERSION")
+          fi
+          VERSION=$(uv run --frozen python scripts/prepare_release.py "${args[@]}")
+          TAG="v$VERSION"
 
-        Co-Authored-By: GitHub Action <action@github.com>"
-        git tag "v${{ steps.bump_version.outputs.new_version }}"
-    
-    - name: Push changes
-      if: steps.changes.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
-      run: |
-        git push origin main
-        git push origin "v${{ steps.bump_version.outputs.new_version }}"
-    
-    - name: Create GitHub Release
-      if: steps.changes.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
-      uses: ncipollo/release-action@v1
-      with:
-        tag: "v${{ steps.bump_version.outputs.new_version }}"
-        name: "🚀 Release v${{ steps.bump_version.outputs.new_version }}"
-        bodyFile: "CHANGELOG.md"
-        draft: false
-        prerelease: false
-    
-    - name: Dry run summary
-      if: steps.changes.outputs.has_changes == 'true' && github.event.inputs.dry_run == 'true'
-      run: |
-        echo "🧪 DRY RUN MODE - No changes pushed"
-        echo "Would have released: v${{ steps.bump_version.outputs.new_version }}"
-        cat CHANGELOG.md
-    
-    # Optional: Publish to PyPI (uncomment if you want automatic PyPI releases)
-    # - name: Build and publish to PyPI
-    #   if: steps.changes.outputs.has_changes == 'true' && secrets.PYPI_TOKEN != ''
-    #   env:
-    #     PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-    #   run: |
-    #     uv build
-    #     uv publish --token $PYPI_TOKEN
-    
-    # Summary outputs
-    - name: Summary
-      if: always()
-      run: |
-        echo "## 📊 Scheduled Release Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Branch**: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Has Changes**: ${{ steps.changes.outputs.has_changes }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Change Count**: ${{ steps.changes.outputs.change_count }}" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ steps.changes.outputs.has_changes }}" = "true" ]; then
-          echo "- **Version**: ${{ steps.current_version.outputs.version }} → ${{ steps.bump_version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Bump Type**: ${{ steps.version_type.outputs.bump_type }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ✅ Released" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "- **Status**: ⏭️ Skipped (no changes)" >> $GITHUB_STEP_SUMMARY
-        fi
-    
-    - name: Notify on failure
-      if: failure()
-      run: |
-        echo "❌ Scheduled release failed - check the logs above"
-        echo "Common issues:"
-        echo "- Tests failed"
-        echo "- Linting issues" 
-        echo "- Type checking errors"
-        echo "- Git push permissions"
+          if git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
+            TAG_SHA=$(git rev-list -n 1 "$TAG")
+            if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag $TAG already points to $TAG_SHA; source needs a new version."
+              exit 1
+            fi
+            RELEASE_NEEDED=false
+          else
+            RELEASE_NEEDED=true
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release_needed=$RELEASE_NEEDED" >> "$GITHUB_OUTPUT"
+
+      - name: Run release checks
+        env:
+          INSTRUCTOR_ENV: CI
+        run: |
+          uv run --frozen ruff check instructor examples tests scripts/prepare_release.py
+          uv run --frozen ruff format --check instructor examples tests scripts/prepare_release.py
+          uv run --frozen ty check --error-on-warning instructor/
+          uv run --frozen ty check --config-file ty-tests.toml --error-on-warning tests
+          uv run --frozen pytest tests/ --asyncio-mode=auto -n auto \
+            --ignore=tests/coverage \
+            --ignore=tests/test_batch_processor_coverage.py \
+            -k 'not test_core_providers and not test_openai and not test_anthropic and not test_gemini and not test_genai and not test_writer and not test_vertexai and not docs'
+
+      - name: Build and validate distributions
+        run: |
+          uv build
+          uvx --from twine==6.2.0 twine check dist/*
+
+      - name: Upload exact release candidate
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: instructor-${{ steps.metadata.outputs.version }}-${{ github.sha }}
+          path: |
+            dist/*
+            release-notes.md
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summarize readiness
+        run: |
+          {
+            echo "## Release readiness"
+            echo "- Version: ${{ steps.metadata.outputs.version }}"
+            echo "- Tag: ${{ steps.metadata.outputs.tag }}"
+            echo "- Commit: $GITHUB_SHA"
+            echo "- Release needed: ${{ steps.metadata.outputs.release_needed }}"
+            echo "- Publish requested: ${{ inputs.publish || false }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  smoke:
+    name: Wheel smoke test (Python ${{ matrix.python-version }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.13"]
+
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - name: Download exact release candidate
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: instructor-${{ needs.prepare.outputs.version }}-${{ github.sha }}
+      - name: Install and exercise wheel
+        env:
+          EXPECTED_VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          uv venv --python "${{ matrix.python-version }}" .smoke
+          WHEEL=$(find dist -name '*.whl' -print -quit)
+          test -n "$WHEEL"
+          uv pip install --python .smoke/bin/python "$WHEEL"
+          .smoke/bin/python - <<'PY'
+          import os
+          from importlib.metadata import version
+
+          import instructor
+          from pydantic import BaseModel
+
+          from instructor.v2.core.schema import generate_openai_schema
+
+          class Result(BaseModel):
+              value: int
+
+          expected = os.environ["EXPECTED_VERSION"]
+          assert version("instructor") == expected
+          assert instructor.__version__ == expected
+          schema = generate_openai_schema(Result)
+          assert schema["parameters"]["required"] == ["value"]
+          assert Result.model_validate({"value": 7}).value == 7
+          PY
+
+  publish:
+    name: Publish approved GitHub release
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.publish &&
+      needs.prepare.outputs.release_needed == 'true'
+    needs: [prepare, smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download exact release candidate
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: instructor-${{ needs.prepare.outputs.version }}-${{ github.sha }}
+      - name: Create GitHub release from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Instructor $TAG" \
+            --notes-file release-notes.md \
+            --latest

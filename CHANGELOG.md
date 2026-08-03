@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.15.5] - 2026-08-02
+
 ### Fixed
 - **Retry usage accounting**: Accumulate nested and newly added numeric usage fields across OpenAI and Anthropic retries, including prediction, cache-write, cache-creation, and server-tool counters, without treating boolean metadata as billable usage. ([#2493](https://github.com/567-labs/instructor/issues/2493), [#2500](https://github.com/567-labs/instructor/pull/2500))
 - **OpenAI Responses reask**: Add a fallback correction message when a `RESPONSES_TOOLS` response contains no tool calls (e.g. reasoning-only output), so retries carry validation feedback instead of resending the identical request. ([#2498](https://github.com/567-labs/instructor/pull/2498))
@@ -34,16 +36,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
 - **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
 - **Python 3.9**: Include the required type-evaluation backport in minimal installs, keep overload metadata available, and avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
-
-### Tests / CI
-- **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
-
-## [1.15.5] - 2026-06-28
-
-### Fixed
 - **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))
 - **v2 response models**: Treat `list[A | B]` PEP 604 unions of Pydantic models as iterable response models, matching `list[Union[A, B]]` schema behavior. ([#2377](https://github.com/567-labs/instructor/pull/2377))
 - **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
+
+### Tests / CI
+- **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
+- **Release safety**: Validate the declared source, lockfile, changelog, tag, and built artifacts before any publication step; require an explicit version confirmation and publish opt-in; and publish the exact tested assets instead of rebuilding from a moving branch.
 
 ---
 
@@ -271,3 +270,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
+
+[Unreleased]: https://github.com/567-labs/instructor/compare/v1.15.5...HEAD
+[1.15.5]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.15.5
