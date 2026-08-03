@@ -12,6 +12,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [1.15.5] - 2026-08-02
 
 ### Fixed
+- **Package metadata**: Point the published distribution's repository URL at the current `567-labs/instructor` organization and validate it before release.
 - **Retry usage accounting**: Accumulate nested and newly added numeric usage fields across OpenAI and Anthropic retries, including prediction, cache-write, cache-creation, and server-tool counters, without treating boolean metadata as billable usage. ([#2493](https://github.com/567-labs/instructor/issues/2493), [#2500](https://github.com/567-labs/instructor/pull/2500))
 - **OpenAI Responses reask**: Add a fallback correction message when a `RESPONSES_TOOLS` response contains no tool calls (e.g. reasoning-only output), so retries carry validation feedback instead of resending the identical request. ([#2498](https://github.com/567-labs/instructor/pull/2498))
 - **v2 parallel tools**: Preserve raw iterable type hints through the sync and async patch wrappers so parallel tool schemas and results retain every requested model type. ([#2501](https://github.com/567-labs/instructor/pull/2501))
