@@ -718,10 +718,11 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
     ) -> Any:
         """Parse tool call response."""
         # Check for streaming
-        consume_streaming = isinstance(
-            response_model, type
-        ) and self._consume_streaming_flag(response_model)
-        if consume_streaming:
+        if (
+            isinstance(response_model, type)
+            and (stream or self._consume_streaming_flag(response_model))
+            and issubclass(response_model, (IterableBase, PartialBase))
+        ):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -905,8 +906,10 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
         stream: bool = False,  # noqa: ARG002
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
+        if (
+            isinstance(response_model, type)
+            and (stream or self._consume_streaming_flag(response_model))
+            and issubclass(response_model, (IterableBase, PartialBase))
         ):
             return self._parse_streaming_response(
                 response_model,
@@ -1007,8 +1010,10 @@ class OpenAIMDJSONHandler(OpenAIHandlerBase):
     ) -> Any:
         """Parse JSON from markdown code block in response."""
         # Check for streaming
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
+        if (
+            isinstance(response_model, type)
+            and (stream or self._consume_streaming_flag(response_model))
+            and issubclass(response_model, (IterableBase, PartialBase))
         ):
             return self._parse_streaming_response(
                 response_model,
