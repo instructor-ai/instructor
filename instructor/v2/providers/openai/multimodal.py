@@ -72,7 +72,7 @@ def pdf_to_openai(pdf: Any, mode: Mode) -> dict[str, Any]:
         and pdf.source.startswith(("http://", "https://"))
         and not pdf.data
     ):
-        response = requests.get(pdf.source)
+        response = requests.get(pdf.source, timeout=30)
         data = base64.b64encode(response.content).decode("utf-8")
         if mode in RESPONSES_MODES:
             return {
