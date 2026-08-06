@@ -33,7 +33,7 @@ def pdf_to_anthropic(pdf: Any) -> dict[str, Any]:
     ):
         return {"type": "document", "source": {"type": "url", "url": pdf.source}}
     if not pdf.data:
-        pdf.data = requests.get(str(pdf.source)).content
+        pdf.data = requests.get(str(pdf.source), timeout=30).content
         pdf.data = base64.b64encode(pdf.data).decode("utf-8")
     return {
         "type": "document",
