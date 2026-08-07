@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Iterable streaming unions**: Parse PEP 604 unions (`create_iterable(response_model=Weather | GoogleSearch)`, `Iterable[Weather | GoogleSearch]`) member by member instead of raising `AttributeError: 'types.UnionType' object has no attribute 'model_validate_json'`, matching the existing `Union[Weather, GoogleSearch]` behaviour.
+
 ## [1.15.5] - 2026-08-02
 
 ### Fixed
