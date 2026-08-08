@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import sys
 from pathlib import Path
@@ -31,6 +32,27 @@ def _project_version(root: Path) -> str:
 def _repository_url(root: Path) -> str:
     data = _load_toml(root / "pyproject.toml")
     return str(data["project"]["urls"]["repository"])
+
+
+def _runtime_version(root: Path) -> str:
+    init_path = root / "instructor" / "__init__.py"
+    tree = ast.parse(init_path.read_text(encoding="utf-8"), filename=str(init_path))
+    versions = [
+        node.value.value
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "__version__"
+            for target in node.targets
+        )
+        and isinstance(node.value, ast.Constant)
+        and isinstance(node.value.value, str)
+    ]
+    if len(versions) != 1:
+        raise ValueError(
+            "instructor/__init__.py must contain exactly one string __version__"
+        )
+    return versions[0]
 
 
 def _lock_version(root: Path) -> str:
@@ -90,8 +112,14 @@ def prepare_release(
 ) -> str:
     """Validate version metadata and write the matching changelog section."""
     version = _project_version(root)
+    runtime_version = _runtime_version(root)
     lock_version = _lock_version(root)
     repository_url = _repository_url(root)
+    if runtime_version != version:
+        raise ValueError(
+            "version mismatch: "
+            f"pyproject.toml={version}, instructor.__version__={runtime_version}"
+        )
     if lock_version != version:
         raise ValueError(
             f"version mismatch: pyproject.toml={version}, uv.lock={lock_version}"

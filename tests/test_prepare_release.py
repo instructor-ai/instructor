@@ -18,6 +18,9 @@ def _write_release_files(root: Path, changelog: str) -> None:
         'version = 1\n[[package]]\nname = "instructor"\nversion = "1.2.3"\n',
         encoding="utf-8",
     )
+    package = root / "instructor"
+    package.mkdir()
+    (package / "__init__.py").write_text('__version__ = "1.2.3"\n', encoding="utf-8")
     (root / "CHANGELOG.md").write_text(changelog, encoding="utf-8")
 
 
@@ -107,6 +110,28 @@ def test_prepare_release_rejects_lockfile_version_drift(tmp_path: Path) -> None:
 
     assert result.returncode == 2
     assert "pyproject.toml=1.2.3, uv.lock=1.2.2" in result.stderr
+
+
+def test_prepare_release_rejects_runtime_version_drift(tmp_path: Path) -> None:
+    _write_release_files(tmp_path, _changelog())
+    (tmp_path / "instructor" / "__init__.py").write_text(
+        '__version__ = "1.2.2"\n', encoding="utf-8"
+    )
+
+    result = _run(tmp_path)
+
+    assert result.returncode == 2
+    assert "pyproject.toml=1.2.3, instructor.__version__=1.2.2" in result.stderr
+
+
+def test_prepare_release_requires_single_runtime_version(tmp_path: Path) -> None:
+    _write_release_files(tmp_path, _changelog())
+    (tmp_path / "instructor" / "__init__.py").write_text("", encoding="utf-8")
+
+    result = _run(tmp_path)
+
+    assert result.returncode == 2
+    assert "exactly one string __version__" in result.stderr
 
 
 def test_prepare_release_requires_comparison_link(tmp_path: Path) -> None:

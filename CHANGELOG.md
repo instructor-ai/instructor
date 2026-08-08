@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-08-08
+
 ### Added
 - **Bedrock native structured outputs**: Add explicit `Mode.JSON_SCHEMA` and `Mode.TOOLS_STRICT` support through Converse `outputConfig.textFormat` and strict tool schemas, with recursive schema normalization and a boto3 `1.42.42` minimum. Model selection remains caller-controlled. ([#2084](https://github.com/567-labs/instructor/issues/2084), [#2086](https://github.com/567-labs/instructor/pull/2086))
 - **Validation retry budgets**: Add positive cumulative `token_budget` limits for structured non-streaming retries, immutable `completion:usage` snapshots, sync/async cutoff parity, and stable cumulative usage metadata. Valid responses still win after crossing the budget; retries fail closed before another provider call when usage is unavailable. ([#2391](https://github.com/567-labs/instructor/issues/2391), [#2392](https://github.com/567-labs/instructor/pull/2392))
@@ -287,5 +289,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
 
-[Unreleased]: https://github.com/567-labs/instructor/compare/v1.15.5...HEAD
+[Unreleased]: https://github.com/567-labs/instructor/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.5...v1.16.0
 [1.15.5]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.15.5
