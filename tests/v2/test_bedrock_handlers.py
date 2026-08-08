@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
 import pytest
@@ -22,6 +23,12 @@ class User(BaseModel):
 
     name: str
     age: int
+
+
+class Message(BaseModel):
+    """Text payload used to verify JSON escape preservation."""
+
+    text: str
 
 
 def _bedrock_tool_response(
@@ -95,6 +102,7 @@ class TestBedrockToolsHandler:
     def test_handle_reask_adds_messages(self, handler):
         """handle_reask adds tool error messages."""
         kwargs = {"messages": [{"role": "user", "content": "Original"}]}
+        original = deepcopy(kwargs)
         response = _bedrock_tool_response({"answer": "bad"})
         exception = ValueError("Validation failed")
 
@@ -102,6 +110,7 @@ class TestBedrockToolsHandler:
 
         assert "messages" in result
         assert len(result["messages"]) > 1
+        assert kwargs == original
 
 
 class TestBedrockMDJSONHandler:
@@ -144,9 +153,60 @@ class TestBedrockMDJSONHandler:
         assert isinstance(result, Answer)
         assert result.answer == 3.0
 
+    @pytest.mark.parametrize(
+        ("text", "expected"),
+        [
+            (
+                '<think>I first considered {"answer": 99}.</think>\n{"answer": 4}',
+                4.0,
+            ),
+            (
+                "<think>Reasoning with {not valid JSON} across\nmultiple lines.</think>\n"
+                '```json\n{"answer": 5}\n```',
+                5.0,
+            ),
+        ],
+    )
+    def test_parse_response_uses_final_json_after_reasoning(
+        self, handler, text: str, expected: float
+    ) -> None:
+        """Reasoning content cannot replace or corrupt the final JSON value."""
+        result = handler.response_parser(_bedrock_text_response(text), Answer)
+
+        assert isinstance(result, Answer)
+        assert result.answer == expected
+
+    def test_parse_response_preserves_escaped_newlines(self, handler) -> None:
+        """JSON escape sequences remain part of the parsed payload."""
+        response = _bedrock_text_response('{"text": "first\\nsecond"}')
+
+        result = handler.response_parser(response, Message)
+
+        assert isinstance(result, Message)
+        assert result.text == "first\nsecond"
+
+    def test_prepare_request_does_not_mutate_native_system_messages(
+        self, handler
+    ) -> None:
+        """Converting native Bedrock system content treats caller input as read-only."""
+        kwargs = {
+            "system": [{"text": "Existing instruction"}],
+            "messages": [{"role": "user", "content": "Extract user"}],
+        }
+        original = deepcopy(kwargs)
+
+        _, result_kwargs = handler.request_handler(User, kwargs)
+
+        assert kwargs == original
+        assert result_kwargs["system"][0] == {"text": "Existing instruction"}
+        assert result_kwargs["messages"] == [
+            {"role": "user", "content": [{"text": "Extract user"}]}
+        ]
+
     def test_handle_reask_adds_messages(self, handler):
         """handle_reask adds user correction message."""
         kwargs = {"messages": [{"role": "user", "content": "Original"}]}
+        original = deepcopy(kwargs)
         response = _bedrock_text_response("Invalid response")
         exception = ValueError("Validation failed")
 
@@ -154,3 +214,4 @@ class TestBedrockMDJSONHandler:
 
         assert "messages" in result
         assert len(result["messages"]) > 1
+        assert kwargs == original

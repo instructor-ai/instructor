@@ -5,7 +5,6 @@ from __future__ import annotations
 import base64
 import json
 import mimetypes
-import re
 from textwrap import dedent
 from typing import Any, cast
 
@@ -18,6 +17,7 @@ from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.json import extract_json_from_codeblock
 
 
 def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
@@ -38,9 +38,10 @@ def reask_bedrock_json(
     kwargs: dict[str, Any],
     response: Any,
     exception: Exception,
-):
+) -> dict[str, Any]:
     """Handle reask for Bedrock JSON mode when validation fails."""
-    kwargs = kwargs.copy()
+    new_kwargs = kwargs.copy()
+    new_kwargs["messages"] = list(kwargs.get("messages", []))
     reask_msgs = [response["output"]["message"]]
     reask_msgs.append(
         {
@@ -55,17 +56,18 @@ def reask_bedrock_json(
             ],
         }
     )
-    kwargs["messages"].extend(reask_msgs)
-    return kwargs
+    new_kwargs["messages"].extend(reask_msgs)
+    return new_kwargs
 
 
 def reask_bedrock_tools(
     kwargs: dict[str, Any],
     response: Any,
     exception: Exception,
-):
+) -> dict[str, Any]:
     """Handle reask for Bedrock tools mode when validation fails."""
-    kwargs = kwargs.copy()
+    new_kwargs = kwargs.copy()
+    new_kwargs["messages"] = list(kwargs.get("messages", []))
 
     assistant_message = response["output"]["message"]
     reask_msgs = [assistant_message]
@@ -115,8 +117,8 @@ def reask_bedrock_tools(
             }
         )
 
-    kwargs["messages"].extend(reask_msgs)
-    return kwargs
+    new_kwargs["messages"].extend(reask_msgs)
+    return new_kwargs
 
 
 def _normalize_bedrock_image_format(mime_or_ext: str) -> str:
@@ -241,11 +243,9 @@ def _prepare_bedrock_converse_kwargs_internal(
             and "text" in system_content[0]
         ):
             system_text = system_content[0]["text"]
-            if "messages" not in call_kwargs:
-                call_kwargs["messages"] = []
-            call_kwargs["messages"].insert(
-                0, {"role": "system", "content": system_text}
-            )
+            messages = list(call_kwargs.get("messages", []))
+            messages.insert(0, {"role": "system", "content": system_text})
+            call_kwargs["messages"] = messages
 
     if "model" in call_kwargs and "modelId" not in call_kwargs:
         call_kwargs["modelId"] = call_kwargs.pop("model")
@@ -544,10 +544,7 @@ class BedrockMDJSONHandler(ModeHandler):
                 "Streaming is not supported for Bedrock in MD_JSON mode."
             )
         text = _extract_bedrock_text(response)
-        match = re.search(r"```?json(.*?)```?", text, re.DOTALL)
-        if match:
-            text = match.group(1).strip()
-        text = re.sub(r"```?json|\\n", "", text).strip()
+        text = extract_json_from_codeblock(text)
         return response_model.model_validate_json(
             text,
             context=validation_context,

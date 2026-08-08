@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Bedrock reasoning JSON**: Parse the final complete JSON value after reasoning text or `<think>` blocks, preserve JSON escape sequences, and keep caller-owned messages unchanged during Bedrock request preparation and retries. ([#2076](https://github.com/567-labs/instructor/issues/2076), [#2287](https://github.com/567-labs/instructor/pull/2287))
+
 ## [1.15.5] - 2026-08-07
 
 ### Fixed
