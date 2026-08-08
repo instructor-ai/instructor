@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- **Bedrock native structured outputs**: Add explicit `Mode.JSON_SCHEMA` and `Mode.TOOLS_STRICT` support through Converse `outputConfig.textFormat` and strict tool schemas, with recursive schema normalization and a boto3 `1.42.42` minimum. Model selection remains caller-controlled. ([#2084](https://github.com/567-labs/instructor/issues/2084), [#2086](https://github.com/567-labs/instructor/pull/2086))
+
 ## [1.15.5] - 2026-08-07
 
 ### Fixed

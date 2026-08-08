@@ -64,4 +64,4 @@ class TestBedrockClientWithSDK:
         client.converse = _converse  # type: ignore[assignment]
 
         with pytest.raises(ModeError):
-            from_bedrock(client, mode=Mode.JSON_SCHEMA)
+            from_bedrock(client, mode=Mode.PARALLEL_TOOLS)

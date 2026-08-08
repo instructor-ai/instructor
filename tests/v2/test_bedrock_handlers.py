@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from typing import Any, cast
 
 import pytest
 from pydantic import BaseModel
 
 from instructor import Mode, Provider
+from instructor.v2.core.errors import ConfigurationError
 from instructor.v2.core.registry import mode_registry
 
 
@@ -22,6 +24,25 @@ class User(BaseModel):
 
     name: str
     age: int
+
+
+class Address(BaseModel):
+    """Nested address model for strict schema tests."""
+
+    city: str
+
+
+class Profile(BaseModel):
+    """Nested profile model for strict schema tests."""
+
+    user: User
+    addresses: list[Address]
+
+
+class FreeFormMetadata(BaseModel):
+    """Model shape that Bedrock native structured outputs cannot represent."""
+
+    metadata: dict[str, str]
 
 
 def _bedrock_tool_response(
@@ -154,3 +175,89 @@ class TestBedrockMDJSONHandler:
 
         assert "messages" in result
         assert len(result["messages"]) > 1
+
+
+class TestBedrockNativeStructuredOutputs:
+    """Tests for opt-in Bedrock constrained decoding modes."""
+
+    def test_json_schema_request_uses_recursive_strict_schema(self) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.JSON_SCHEMA)
+
+        result_model, result_kwargs = handler.request_handler(
+            Profile,
+            {"messages": [{"role": "user", "content": "Extract profile"}]},
+        )
+
+        assert result_model is not None
+        output_format = result_kwargs["outputConfig"]["textFormat"]
+        assert output_format["type"] == "json_schema"
+        json_schema = output_format["structure"]["jsonSchema"]
+        assert json_schema["name"] == "Profile"
+        schema = json.loads(json_schema["schema"])
+        assert schema["additionalProperties"] is False
+        assert schema["$defs"]["User"]["additionalProperties"] is False
+        assert schema["$defs"]["Address"]["additionalProperties"] is False
+
+    def test_strict_tools_request_enforces_recursive_schema(self) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.TOOLS_STRICT)
+
+        result_model, result_kwargs = handler.request_handler(
+            Profile,
+            {"messages": [{"role": "user", "content": "Extract profile"}]},
+        )
+
+        assert result_model is not None
+        tool_spec = result_kwargs["toolConfig"]["tools"][0]["toolSpec"]
+        assert tool_spec["strict"] is True
+        schema = tool_spec["inputSchema"]["json"]
+        assert schema["additionalProperties"] is False
+        assert schema["$defs"]["User"]["additionalProperties"] is False
+        assert schema["$defs"]["Address"]["additionalProperties"] is False
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    def test_native_modes_reject_free_form_mappings(self, mode: Mode) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        with pytest.raises(ConfigurationError, match="free-form mappings"):
+            handler.request_handler(
+                FreeFormMetadata,
+                {"messages": [{"role": "user", "content": "Extract metadata"}]},
+            )
+
+    def test_json_schema_response_parses_text(self) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.JSON_SCHEMA)
+        response = _bedrock_text_response(
+            '{"user":{"name":"Ada","age":37},"addresses":[{"city":"London"}]}'
+        )
+
+        result = handler.response_parser(response, Profile)
+
+        assert isinstance(result, Profile)
+        assert result.user.name == "Ada"
+        assert result.addresses[0].city == "London"
+
+    def test_json_schema_response_rejects_streaming(self) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.JSON_SCHEMA)
+
+        with pytest.raises(ConfigurationError, match="Streaming is not supported"):
+            handler.response_parser(
+                _bedrock_text_response('{"answer":4}'),
+                Answer,
+                stream=True,
+            )
+
+    def test_locked_sdk_exposes_native_converse_shapes(self) -> None:
+        from botocore.session import Session
+
+        operation = (
+            Session().get_service_model("bedrock-runtime").operation_model("Converse")
+        )
+        input_shape = cast(Any, operation.input_shape)
+        tool_spec = (
+            input_shape.members["toolConfig"]
+            .members["tools"]
+            .member.members["toolSpec"]
+        )
+
+        assert "outputConfig" in input_shape.members
+        assert "strict" in tool_spec.members
