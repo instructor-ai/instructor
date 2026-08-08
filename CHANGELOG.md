@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+- **LLM validator isolation**: Send validation rules and candidate values as structured JSON data under a fixed trusted instruction to reduce prompt-injection risk, and raise `ValueError` for rejected values instead of relying on optimization-sensitive assertions. ([#2056](https://github.com/567-labs/instructor/issues/2056), [#2307](https://github.com/567-labs/instructor/pull/2307))
+
 ## [1.15.5] - 2026-08-07
 
 ### Fixed
