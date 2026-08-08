@@ -18,13 +18,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Fixed
 - **Mistral SDK compatibility**: Support the `mistralai` 2.x client export on Python 3.10+ while retaining the compatible 1.x fallback required by Python 3.9. ([#2298](https://github.com/567-labs/instructor/pull/2298), [#2365](https://github.com/567-labs/instructor/issues/2365))
 - **Bedrock reasoning JSON**: Parse the final complete JSON value after reasoning text or `<think>` blocks, preserve JSON escape sequences, and keep caller-owned messages unchanged during Bedrock request preparation and retries. ([#2076](https://github.com/567-labs/instructor/issues/2076), [#2287](https://github.com/567-labs/instructor/pull/2287))
-
-### Security
-- **LLM validator isolation**: Send validation rules and candidate values as structured JSON data under a fixed trusted instruction to reduce prompt-injection risk, and raise `ValueError` for rejected values instead of relying on optimization-sensitive assertions. ([#2056](https://github.com/567-labs/instructor/issues/2056), [#2307](https://github.com/567-labs/instructor/pull/2307))
-
-## [1.15.5] - 2026-08-07
-
-### Fixed
 - **Remote multimodal fetches**: Apply the existing 30-second request timeout to image, audio, and PDF downloads so an unresponsive URL cannot block a caller indefinitely. ([#2507](https://github.com/567-labs/instructor/pull/2507))
 - **OpenAI streaming retries**: Keep TOOLS, JSON, JSON_SCHEMA, and MD_JSON retries on the streaming parser after the one-shot model marker is consumed, allowing corrected streamed responses to validate successfully. ([#2508](https://github.com/567-labs/instructor/pull/2508))
 - **Iterable streaming unions**: Parse PEP 604 unions (`create_iterable(response_model=Weather | GoogleSearch)`, `Iterable[Weather | GoogleSearch]`) member by member instead of calling `model_validate_json` on `types.UnionType`. ([#2509](https://github.com/567-labs/instructor/pull/2509))
@@ -56,6 +49,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))
 - **v2 response models**: Treat `list[A | B]` PEP 604 unions of Pydantic models as iterable response models, matching `list[Union[A, B]]` schema behavior. ([#2377](https://github.com/567-labs/instructor/pull/2377))
 - **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
+
+### Security
+- **LLM validator isolation**: Send validation rules and candidate values as structured JSON data under a fixed trusted instruction to reduce prompt-injection risk, and raise `ValueError` for rejected values instead of relying on optimization-sensitive assertions. ([#2056](https://github.com/567-labs/instructor/issues/2056), [#2307](https://github.com/567-labs/instructor/pull/2307))
 
 ### Tests / CI
 - **Fork-safe contributor checks**: Mark auto-client network tests explicitly and exclude them from core, coverage, and release lanes so fork PRs without provider secrets do not fail with empty authorization headers.
@@ -290,5 +286,4 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
 
 [Unreleased]: https://github.com/567-labs/instructor/compare/v1.16.0...HEAD
-[1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.5...v1.16.0
-[1.15.5]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.15.5
+[1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.16.0
