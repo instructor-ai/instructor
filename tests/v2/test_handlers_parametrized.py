@@ -151,6 +151,8 @@ PARSE_SCENARIOS: dict[Provider, dict[Mode, str]] = {
     },
     Provider.BEDROCK: {
         Mode.TOOLS: "tool_call",
+        Mode.TOOLS_STRICT: "tool_call",
+        Mode.JSON_SCHEMA: "text",
         Mode.MD_JSON: "markdown",
     },
     Provider.CEREBRAS: {
