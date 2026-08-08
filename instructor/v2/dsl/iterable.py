@@ -140,10 +140,7 @@ class IterableBase:
         **kwargs: Any,
     ):
         assert cls.task_type is not None
-        # ``Iterable[A | B]`` stores a ``types.UnionType`` task type, whose origin is
-        # ``types.UnionType`` rather than ``typing.Union`` on Python 3.10-3.13. Match on
-        # ``_UNION_ORIGINS`` so PEP 604 unions take the member-by-member branch instead of
-        # falling through to ``model_validate_json`` on the union object itself.
+        # PEP 604 unions use types.UnionType rather than typing.Union as their origin.
         if get_origin(cls.task_type) in _UNION_ORIGINS:
             union_members = get_args(cls.task_type)
             for member in union_members:

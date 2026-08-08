@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+import sys
 from typing import Any, Union, cast
 
 import pytest
@@ -79,22 +80,23 @@ EXPECTED_UNION_TASKS = [
     GoogleSearch(query="super bowl winner"),
 ]
 
+TASK_TYPE_CASES = [pytest.param(Union[Weather, GoogleSearch], id="typing-union")]
+RESPONSE_MODEL_CASES = [
+    pytest.param(Iterable[Union[Weather, GoogleSearch]], id="typing-union")
+]
+if sys.version_info >= (3, 10):
+    TASK_TYPE_CASES.append(pytest.param(Weather | GoogleSearch, id="pep604-union"))
+    RESPONSE_MODEL_CASES.append(
+        pytest.param(Iterable[Weather | GoogleSearch], id="pep604-union")
+    )
+
 
 @pytest.mark.parametrize(
     "task_type",
-    [
-        pytest.param(Union[Weather, GoogleSearch], id="typing-union"),
-        pytest.param(Weather | GoogleSearch, id="pep604-union"),
-    ],
+    TASK_TYPE_CASES,
 )
 def test_iterable_streaming_parses_both_union_spellings(task_type: Any) -> None:
-    """`A | B` must stream like `Union[A, B]`.
-
-    `IterableModel` already accepts PEP 604 unions when it builds the wrapper class, but
-    `extract_cls_task_type` used to match only `typing.Union`, so a `types.UnionType`
-    task type fell through to `model_validate_json` on the union object itself and raised
-    `AttributeError: 'types.UnionType' object has no attribute 'model_validate_json'`.
-    """
+    """`A | B` must stream like `Union[A, B]`."""
     iterable_model = cast(Any, IterableModel(cast(type[BaseModel], task_type)))
 
     assert list(iterable_model.tasks_from_chunks(UNION_CHUNKS)) == EXPECTED_UNION_TASKS
@@ -102,21 +104,18 @@ def test_iterable_streaming_parses_both_union_spellings(task_type: Any) -> None:
 
 @pytest.mark.parametrize(
     "response_model",
-    [
-        pytest.param(Iterable[Union[Weather, GoogleSearch]], id="typing-union"),
-        pytest.param(Iterable[Weather | GoogleSearch], id="pep604-union"),
-    ],
+    RESPONSE_MODEL_CASES,
 )
 def test_create_iterable_response_model_streams_union_members(
     response_model: Any,
 ) -> None:
-    """Covers the type `create_iterable` builds: it wraps `response_model` in `Iterable[...]`."""
     prepared = cast(Any, prepare_response_model(response_model))
 
     assert prepared.__name__ == "IterableWeatherOrGoogleSearch"
     assert list(prepared.tasks_from_chunks(UNION_CHUNKS)) == EXPECTED_UNION_TASKS
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="PEP 604 requires Python 3.10")
 def test_iterable_pep604_union_reports_unmatched_payload_as_value_error() -> None:
     iterable_model = cast(
         Any, IterableModel(cast(type[BaseModel], Weather | GoogleSearch))

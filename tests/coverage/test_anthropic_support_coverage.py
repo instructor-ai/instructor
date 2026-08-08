@@ -184,10 +184,10 @@ def test_anthropic_multimodal_encodes_remote_image_and_local_pdf(
     assert image_calls == ["https://example.test/diagram.png"]
     assert image.data == "aW1hZ2U="
 
-    requests: list[str] = []
+    requests: list[tuple[str, int]] = []
 
-    def fake_get(url: str) -> Any:
-        requests.append(url)
+    def fake_get(url: str, *, timeout: int) -> Any:
+        requests.append((url, timeout))
         return SimpleNamespace(content=b"%PDF-1.7\nexample")
 
     monkeypatch.setattr(multimodal.requests, "get", fake_get)
@@ -203,7 +203,7 @@ def test_anthropic_multimodal_encodes_remote_image_and_local_pdf(
             "data": expected,
         },
     }
-    assert requests == ["/tmp/example.pdf"]
+    assert requests == [("/tmp/example.pdf", 30)]
     assert pdf.data == expected
 
 

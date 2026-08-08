@@ -765,7 +765,7 @@ def test_url_to_base64_passes_timeout():
 
         mock_requests.get.assert_called_once()
         _, kwargs = mock_requests.get.call_args
-        assert kwargs.get("timeout") is not None
+        assert kwargs["timeout"] == 30
 
 
 def test_image_from_url_head_passes_timeout():
@@ -782,4 +782,4 @@ def test_image_from_url_head_passes_timeout():
 
         mock_requests.head.assert_called_once()
         _, kwargs = mock_requests.head.call_args
-        assert kwargs.get("timeout") is not None
+        assert kwargs["timeout"] == 30

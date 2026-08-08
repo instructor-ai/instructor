@@ -9,12 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Fixed
-- **Iterable streaming unions**: Parse PEP 604 unions (`create_iterable(response_model=Weather | GoogleSearch)`, `Iterable[Weather | GoogleSearch]`) member by member instead of raising `AttributeError: 'types.UnionType' object has no attribute 'model_validate_json'`, matching the existing `Union[Weather, GoogleSearch]` behaviour.
-
-## [1.15.5] - 2026-08-02
+## [1.15.5] - 2026-08-07
 
 ### Fixed
+- **Remote multimodal fetches**: Apply the existing 30-second request timeout to image, audio, and PDF downloads so an unresponsive URL cannot block a caller indefinitely. ([#2507](https://github.com/567-labs/instructor/pull/2507))
+- **OpenAI streaming retries**: Keep TOOLS, JSON, JSON_SCHEMA, and MD_JSON retries on the streaming parser after the one-shot model marker is consumed, allowing corrected streamed responses to validate successfully. ([#2508](https://github.com/567-labs/instructor/pull/2508))
+- **Iterable streaming unions**: Parse PEP 604 unions (`create_iterable(response_model=Weather | GoogleSearch)`, `Iterable[Weather | GoogleSearch]`) member by member instead of calling `model_validate_json` on `types.UnionType`. ([#2509](https://github.com/567-labs/instructor/pull/2509))
 - **Package metadata**: Point the published distribution's repository URL at the current `567-labs/instructor` organization and validate it before release.
 - **Retry usage accounting**: Accumulate nested and newly added numeric usage fields across OpenAI and Anthropic retries, including prediction, cache-write, cache-creation, and server-tool counters, without treating boolean metadata as billable usage. ([#2493](https://github.com/567-labs/instructor/issues/2493), [#2500](https://github.com/567-labs/instructor/pull/2500))
 - **OpenAI Responses reask**: Add a fallback correction message when a `RESPONSES_TOOLS` response contains no tool calls (e.g. reasoning-only output), so retries carry validation feedback instead of resending the identical request. ([#2498](https://github.com/567-labs/instructor/pull/2498))
@@ -45,6 +45,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
 
 ### Tests / CI
+- **Fork-safe contributor checks**: Mark auto-client network tests explicitly and exclude them from core, coverage, and release lanes so fork PRs without provider secrets do not fail with empty authorization headers.
 - **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
 - **Release safety**: Validate the declared source, lockfile, changelog, tag, and built artifacts before any publication step; require an explicit version confirmation and publish opt-in; and publish the exact tested assets instead of rebuilding from a moving branch.
 
