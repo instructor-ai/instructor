@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator, Generator
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from typing_extensions import assert_type
 
@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from botocore.client import BaseClient
     from cerebras.cloud.sdk import AsyncCerebras, Cerebras
     from fireworks.client import Fireworks
-    from mistralai import Mistral
     from writerai import AsyncWriter, Writer
     from xai_sdk.sync.client import Client as SyncXAIClient
 
@@ -63,6 +62,10 @@ if TYPE_CHECKING:
 
 class User(BaseModel):
     name: str
+
+
+class MistralClient(Protocol):
+    chat: Any
 
 
 def check_response_helpers(
@@ -200,7 +203,7 @@ def check_litellm_factory() -> None:
 def check_bool_selected_factories(
     gemini_model: legacy_genai.GenerativeModel,
     vertex_model: gm.GenerativeModel,
-    mistral_client: Mistral,
+    mistral_client: MistralClient,
 ) -> None:
     assert_type(from_gemini(gemini_model), Instructor)
     assert_type(from_gemini(gemini_model, use_async=True), AsyncInstructor)

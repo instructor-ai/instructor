@@ -28,9 +28,12 @@ pip install "instructor[mistral]"
 ⚠️ **Important**: You must set your Mistral API key by setting it explicitly on the client
 
 ```python
-import os
-from mistralai import Mistral
-client = Mistral(api_key='your-api-key-here')
+try:
+    from mistralai.client import Mistral  # mistralai 2.x
+except ImportError:
+    from mistralai import Mistral  # mistralai 1.x
+
+client = Mistral(api_key="your-api-key-here")
 ```
 
 ## Available Modes
@@ -43,22 +46,19 @@ Instructor provides two modes for working with Mistral:
 To set the mode for your mistral client, simply use the code snippet below
 
 ```python
-import os
-from pydantic import BaseModel
 import instructor
 
 
 # Initialize with API key
 instructor_client = instructor.from_provider(
     "mistral/mistral-large-latest",
-    mode=Mode.TOOLS,
+    mode=instructor.Mode.TOOLS,
 )
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-import os
 from pydantic import BaseModel
 import instructor
 from instructor import Mode
@@ -88,10 +88,9 @@ print(user)
 
 ## Async Example
 
-For asynchronous operations, you can use the `use_async=True` parameter when creating the client:
+For asynchronous operations, use `async_client=True` with `from_provider()`:
 
 ```python
-import os
 import asyncio
 from pydantic import BaseModel
 import instructor
@@ -131,7 +130,6 @@ You can also work with nested models:
 ```python
 from pydantic import BaseModel
 from typing import List
-import os
 import instructor
 from instructor import Mode
 
@@ -185,17 +183,13 @@ Instructor now supports streaming capabilities with Mistral! You can use both `c
 ```python
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
 from instructor.dsl.partial import Partial
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
+# Create an Instructor client for Mistral
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream partial responses
@@ -220,16 +214,12 @@ for partial_user in model:
 ```python
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
+# Create an Instructor client for Mistral
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream iterable responses
@@ -255,16 +245,16 @@ You can also use async versions of both streaming approaches:
 import asyncio
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
 from instructor.dsl.partial import Partial
 
 class UserExtract(BaseModel):
     name: str
     age: int
 
-# Initialize client with async support
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-instructor_client = instructor.from_provider("mistral/mistral-small")
+instructor_client = instructor.from_provider(
+    "mistral/mistral-small",
+    async_client=True,
+)
 
 async def stream_partial():
     model = await instructor_client.create(
@@ -310,12 +300,10 @@ Instructor maintains compatibility with the latest Mistral API versions and mode
 
 Instructor makes it easy to analyse and extract semantic information from PDFs using Mistral's models. Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method. Note that for now Mistral only supports document URLs.
 
-```
+```python
 from instructor.processing.multimodal import PDF
 from pydantic import BaseModel
 import instructor
-from mistralai import Mistral
-import os
 
 
 class Receipt(BaseModel):

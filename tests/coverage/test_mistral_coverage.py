@@ -1,27 +1,32 @@
 from __future__ import annotations
 
 import builtins
+import importlib
 import runpy
 from collections.abc import Iterable
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Union, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from mistralai import Mistral
-from mistralai.models import (
-    AssistantMessage,
-    ChatCompletionChoice,
-    ChatCompletionResponse,
-    CompletionChunk,
-    CompletionEvent,
-    CompletionResponseStreamChoice,
-    DeltaMessage,
-    FunctionCall,
-    ToolCall,
-    UsageInfo,
-)
 from pydantic import BaseModel
+
+try:
+    mistral_models = cast(Any, importlib.import_module("mistralai.client.models"))
+except ImportError:
+    mistral_models = cast(Any, importlib.import_module("mistralai.models"))
+
+AssistantMessage = mistral_models.AssistantMessage
+ChatCompletionChoice = mistral_models.ChatCompletionChoice
+ChatCompletionResponse = mistral_models.ChatCompletionResponse
+CompletionChunk = mistral_models.CompletionChunk
+CompletionEvent = mistral_models.CompletionEvent
+CompletionResponseStreamChoice = mistral_models.CompletionResponseStreamChoice
+DeltaMessage = mistral_models.DeltaMessage
+FunctionCall = mistral_models.FunctionCall
+ToolCall = mistral_models.ToolCall
+UsageInfo = mistral_models.UsageInfo
 
 import instructor.v2.providers.mistral.client as mistral_client
 from instructor.v2.core.errors import ClientError, ModeError, ResponseParsingError
@@ -50,7 +55,7 @@ class Answer(BaseModel):
     answer: float
 
 
-def tool_call(name: str, arguments: dict[str, Any] | str, call_id: str) -> ToolCall:
+def tool_call(name: str, arguments: dict[str, Any] | str, call_id: str) -> Any:
     return ToolCall(
         id=call_id,
         type="function",
@@ -61,9 +66,9 @@ def tool_call(name: str, arguments: dict[str, Any] | str, call_id: str) -> ToolC
 def response(
     *,
     content: str | None = None,
-    tool_calls: list[ToolCall] | None = None,
+    tool_calls: list[Any] | None = None,
     finish_reason: str = "stop",
-) -> ChatCompletionResponse:
+) -> Any:
     return ChatCompletionResponse(
         id="mistral-response",
         object="chat.completion",
@@ -80,9 +85,7 @@ def response(
     )
 
 
-def event(
-    *, content: str | None = None, tool_calls: list[ToolCall] | None = None
-) -> CompletionEvent:
+def event(*, content: str | None = None, tool_calls: list[Any] | None = None) -> Any:
     return CompletionEvent(
         data=CompletionChunk(
             id="mistral-stream",
@@ -105,10 +108,53 @@ class FakeMistral:
         self.chat.stream_async = AsyncMock()
 
 
+def test_runtime_client_class_matches_installed_sdk() -> None:
+    assert mistral_client.Mistral is not None
+    assert mistral_client.Mistral.__name__ == "Mistral"
+
+
+def test_client_loader_prefers_sdk_v2_export(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class V2Mistral:
+        pass
+
+    def import_module(name: str, package: str | None = None) -> Any:
+        assert package is None
+        assert name == "mistralai.client"
+        return SimpleNamespace(Mistral=V2Mistral)
+
+    monkeypatch.setattr(importlib, "import_module", import_module)
+
+    assert mistral_client._load_mistral_client_type() is V2Mistral
+
+
+def test_client_loader_falls_back_to_sdk_v1_export(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class V1Mistral:
+        pass
+
+    imported_modules: list[str] = []
+
+    def import_module(name: str, package: str | None = None) -> Any:
+        assert package is None
+        imported_modules.append(name)
+        if name == "mistralai.client":
+            return SimpleNamespace()
+        return SimpleNamespace(Mistral=V1Mistral)
+
+    monkeypatch.setattr(importlib, "import_module", import_module)
+
+    assert mistral_client._load_mistral_client_type() is V1Mistral
+    assert imported_modules == ["mistralai.client", "mistralai"]
+
+
 def test_missing_mistral_sdk_has_clear_client_and_package_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     real_import = builtins.__import__
+    real_import_module = importlib.import_module
     client_path = Path(mistral_client.__file__)
     package_path = client_path.with_name("__init__.py")
 
@@ -119,11 +165,18 @@ def test_missing_mistral_sdk_has_clear_client_and_package_fallback(
         fromlist: tuple[str, ...] = (),
         level: int = 0,
     ) -> Any:
-        if name == "mistralai":
+        if name in {"mistralai", "mistralai.client"}:
             raise ImportError("mistralai is not installed")
         return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", without_sdk)
+
+    def without_sdk_module(name: str, package: str | None = None) -> Any:
+        if name in {"mistralai", "mistralai.client"}:
+            raise ImportError("mistralai is not installed")
+        return real_import_module(name, package)
+
+    monkeypatch.setattr(importlib, "import_module", without_sdk_module)
     unloaded_client = runpy.run_path(str(client_path))
 
     assert unloaded_client["Mistral"] is None
@@ -154,14 +207,12 @@ def test_from_mistral_rejects_bad_mode_and_client(
     monkeypatch.setattr(mistral_client, "Mistral", FakeMistral)
 
     with pytest.raises(ModeError) as mode_error:
-        mistral_client.from_mistral(
-            cast(Mistral, FakeMistral()), mode=Mode.ANTHROPIC_JSON
-        )
+        mistral_client.from_mistral(cast(Any, FakeMistral()), mode=Mode.ANTHROPIC_JSON)
     assert "anthropic_json" in str(mode_error.value)
     assert Provider.MISTRAL.value in str(mode_error.value)
 
     with pytest.raises(ClientError, match="Got: object"):
-        mistral_client.from_mistral(cast(Mistral, object()), mode=Mode.TOOLS)
+        mistral_client.from_mistral(cast(Any, object()), mode=Mode.TOOLS)
 
 
 def test_from_mistral_warns_for_deprecated_tools_mode(
@@ -171,7 +222,7 @@ def test_from_mistral_warns_for_deprecated_tools_mode(
 
     with pytest.warns(DeprecationWarning, match="Use Mode.TOOLS instead"):
         client = mistral_client.from_mistral(
-            cast(Mistral, FakeMistral()), mode=Mode.MISTRAL_TOOLS
+            cast(Any, FakeMistral()), mode=Mode.MISTRAL_TOOLS
         )
 
     assert client.mode is Mode.TOOLS
@@ -198,7 +249,7 @@ def test_sync_client_routes_completion_retry_and_stream(
     ]
 
     client = mistral_client.from_mistral(
-        cast(Mistral, sdk),
+        cast(Any, sdk),
         mode=Mode.TOOLS,
         model="mistral-small-latest",
         temperature=0.2,
@@ -259,7 +310,7 @@ async def test_async_client_routes_completion_retry_and_stream(
     )
 
     client = mistral_client.from_mistral(
-        cast(Mistral, sdk),
+        cast(Any, sdk),
         mode=Mode.TOOLS,
         use_async=True,
         model="mistral-small-latest",

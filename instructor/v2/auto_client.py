@@ -736,7 +736,12 @@ def _build_mistral(
     provider_info: dict[str, str],
 ) -> InstructorType:
     try:
-        from mistralai import Mistral
+        try:
+            mistral_module = cast(Any, importlib.import_module("mistralai.client"))
+            Mistral = mistral_module.Mistral
+        except (AttributeError, ImportError):
+            mistral_module = cast(Any, importlib.import_module("mistralai"))
+            Mistral = mistral_module.Mistral
         from instructor.v2.providers.mistral.client import from_mistral
         import os
 
