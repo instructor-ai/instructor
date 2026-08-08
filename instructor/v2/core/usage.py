@@ -66,6 +66,27 @@ def _accumulate_models(response: BaseModel, total: BaseModel) -> None:
             setattr(response, field_name, total_value)
 
 
+def has_compatible_usage(response: object, total_usage: object) -> bool:
+    """Return whether a response exposes usage supported by the accumulator."""
+    response_usage = getattr(response, "usage", None)
+
+    from openai.types import CompletionUsage as _OpenAIUsage
+
+    if isinstance(response_usage, _OpenAIUsage) and isinstance(
+        total_usage, _OpenAIUsage
+    ):
+        return True
+
+    try:
+        from anthropic.types import Usage as _AnthropicUsage
+
+        return isinstance(response_usage, _AnthropicUsage) and isinstance(
+            total_usage, _AnthropicUsage
+        )
+    except ImportError:
+        return False
+
+
 def update_total_usage(
     response: T_Response | None,
     total_usage: OpenAIUsage | AnthropicUsage,

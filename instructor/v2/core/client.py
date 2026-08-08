@@ -65,6 +65,7 @@ class Response(_ResponseBase):
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T: ...
 
@@ -76,6 +77,7 @@ class Response(_ResponseBase):
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Any: ...
 
@@ -86,9 +88,12 @@ class Response(_ResponseBase):
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs,
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
         create = cast(Callable[..., Any], self.client.create)
         return create(
@@ -224,6 +229,7 @@ class AsyncResponse(_ResponseBase):
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T: ...
 
@@ -235,6 +241,7 @@ class AsyncResponse(_ResponseBase):
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Any: ...
 
@@ -245,9 +252,12 @@ class AsyncResponse(_ResponseBase):
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs,
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
         create = cast(Callable[..., Awaitable[Any]], self.client.create)
         return await create(
@@ -419,6 +429,7 @@ class Instructor:
                 "completion:response",
                 "completion:error",
                 "completion:last_attempt",
+                "completion:usage",
                 "parse:error",
             ]
         ),
@@ -435,6 +446,7 @@ class Instructor:
                 "completion:response",
                 "completion:error",
                 "completion:last_attempt",
+                "completion:usage",
                 "parse:error",
             ]
         ),
@@ -451,6 +463,7 @@ class Instructor:
                 "completion:response",
                 "completion:error",
                 "completion:last_attempt",
+                "completion:usage",
                 "parse:error",
             ]
         )
@@ -479,6 +492,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> Awaitable[T]: ...
 
@@ -491,6 +505,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T: ...
 
@@ -503,6 +518,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Awaitable[Any]: ...
 
@@ -515,6 +531,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Any: ...
 
@@ -526,9 +543,12 @@ class Instructor:
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T | Any | Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
         # Combine client hooks with per-call hooks
         combined_hooks = self.hooks
@@ -766,9 +786,12 @@ class AsyncInstructor(Instructor):
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
         # Combine client hooks with per-call hooks
         combined_hooks = self.hooks
