@@ -94,6 +94,7 @@ jobs:
           uv run --frozen pytest tests/ --asyncio-mode=auto -n auto \
             --ignore=tests/coverage \
             --ignore=tests/test_batch_processor_coverage.py \
+            -m 'not llm' \
             -k 'not test_core_providers and not test_openai and not test_anthropic and not test_gemini and not test_genai and not test_writer and not test_vertexai and not docs'
 
       - name: Build and validate distributions
