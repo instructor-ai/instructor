@@ -69,6 +69,7 @@ def check_response_helpers(
     sync_response: Response, async_response: AsyncResponse
 ) -> None:
     assert_type(sync_response.create(response_model=User), User)
+    assert_type(sync_response.create(response_model=User, token_budget=1_000), User)
     assert_type(sync_response.create(response_model=None), Any)
     assert_type(
         sync_response.create_with_completion(response_model=User),
@@ -92,7 +93,7 @@ def check_response_helpers(
         sync_response.create_partial(response_model=None), Generator[Any, None, None]
     )
 
-    create_coro = async_response.create(response_model=User)
+    create_coro = async_response.create(response_model=User, token_budget=1_000)
     create_any_coro = async_response.create(response_model=None)
     completion_coro = async_response.create_with_completion(response_model=User)
     completion_any_coro = async_response.create_with_completion(response_model=None)

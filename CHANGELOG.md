@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- **Validation retry budgets**: Add positive cumulative `token_budget` limits for structured non-streaming retries, immutable `completion:usage` snapshots, sync/async cutoff parity, and stable cumulative usage metadata. Valid responses still win after crossing the budget; retries fail closed before another provider call when usage is unavailable. ([#2391](https://github.com/567-labs/instructor/issues/2391), [#2392](https://github.com/567-labs/instructor/pull/2392))
+
 ## [1.15.5] - 2026-08-07
 
 ### Fixed
