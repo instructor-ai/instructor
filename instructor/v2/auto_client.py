@@ -974,7 +974,7 @@ def _build_bedrock(
     model_name: str,
     async_client: bool,
     mode: Mode | None,
-    api_key: str | None,  # noqa: ARG001
+    api_key: str | None,
     kwargs: dict[str, Any],
     provider_info: dict[str, str],
 ) -> InstructorType:
@@ -991,6 +991,13 @@ def _build_bedrock(
                 "AWS_DEFAULT_REGION is not set. Using default region us-east-1"
             )
             region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+
+        # Bedrock API keys (bearer tokens) authenticate without SigV4 credentials.
+        # botocore >= 1.39.0 reads AWS_BEARER_TOKEN_BEDROCK at request time, so
+        # exporting the key is the supported way to enable bearer auth.
+        if api_key:
+            os.environ["AWS_BEARER_TOKEN_BEDROCK"] = api_key
+            logger.debug("Using Bedrock API key (bearer token) authentication")
 
         # Extract AWS-specific parameters
         # Dictionary to collect AWS credentials and session parameters for boto3 client
