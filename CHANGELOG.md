@@ -9,15 +9,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-## [1.16.0] - 2026-08-08
+## [1.16.0] - 2026-08-09
 
 ### Added
-- **Bedrock native structured outputs**: Add explicit `Mode.JSON_SCHEMA` and `Mode.TOOLS_STRICT` support through Converse `outputConfig.textFormat` and strict tool schemas, with recursive schema normalization and a boto3 `1.42.42` minimum. Model selection remains caller-controlled. ([#2084](https://github.com/567-labs/instructor/issues/2084), [#2086](https://github.com/567-labs/instructor/pull/2086))
-- **Validation retry budgets**: Add positive cumulative `token_budget` limits for structured non-streaming retries, immutable `completion:usage` snapshots, sync/async cutoff parity, and stable cumulative usage metadata. Valid responses still win after crossing the budget; retries fail closed before another provider call when usage is unavailable. ([#2391](https://github.com/567-labs/instructor/issues/2391), [#2392](https://github.com/567-labs/instructor/pull/2392))
+- **Bedrock native structured outputs**: Add explicit `Mode.JSON_SCHEMA` and `Mode.TOOLS_STRICT` support through Converse `outputConfig.textFormat` and strict tool schemas, with recursive schema normalization and a boto3 `1.42.42` minimum. Model selection remains caller-controlled. ([#2515](https://github.com/567-labs/instructor/pull/2515), [#2084](https://github.com/567-labs/instructor/issues/2084), [#2086](https://github.com/567-labs/instructor/pull/2086))
+- **Validation retry budgets**: Add positive cumulative `token_budget` limits for structured non-streaming retries, immutable `completion:usage` snapshots, sync/async cutoff parity, and stable cumulative usage metadata. Valid responses still win after crossing the budget. When a budget is configured, a failed attempt with unavailable usage stops before another provider call. ([#2512](https://github.com/567-labs/instructor/pull/2512), [#2391](https://github.com/567-labs/instructor/issues/2391), [#2392](https://github.com/567-labs/instructor/pull/2392))
+
+### Changed
+- **Contributor workflow**: Align contributor setup and dependency management around locked `uv sync` environments, `uv run` commands, and `uv add` only for intentional project metadata changes. ([#2516](https://github.com/567-labs/instructor/pull/2516), [#2354](https://github.com/567-labs/instructor/pull/2354))
 
 ### Fixed
-- **Mistral SDK compatibility**: Support the `mistralai` 2.x client export on Python 3.10+ while retaining the compatible 1.x fallback required by Python 3.9. ([#2298](https://github.com/567-labs/instructor/pull/2298), [#2365](https://github.com/567-labs/instructor/issues/2365))
-- **Bedrock reasoning JSON**: Parse the final complete JSON value after reasoning text or `<think>` blocks, preserve JSON escape sequences, and keep caller-owned messages unchanged during Bedrock request preparation and retries. ([#2076](https://github.com/567-labs/instructor/issues/2076), [#2287](https://github.com/567-labs/instructor/pull/2287))
+- **Mistral SDK compatibility**: Support the `mistralai` 2.x client export on Python 3.10+ while retaining the compatible 1.x fallback required by Python 3.9. ([#2513](https://github.com/567-labs/instructor/pull/2513), [#2298](https://github.com/567-labs/instructor/pull/2298), [#2365](https://github.com/567-labs/instructor/issues/2365))
+- **Bedrock reasoning JSON**: Parse the final complete JSON value after reasoning text or `<think>` blocks, preserve JSON escape sequences, and keep caller-owned messages unchanged during Bedrock request preparation and retries. ([#2514](https://github.com/567-labs/instructor/pull/2514), [#2076](https://github.com/567-labs/instructor/issues/2076), [#2287](https://github.com/567-labs/instructor/pull/2287))
 - **Remote multimodal fetches**: Apply the existing 30-second request timeout to image, audio, and PDF downloads so an unresponsive URL cannot block a caller indefinitely. ([#2507](https://github.com/567-labs/instructor/pull/2507))
 - **OpenAI streaming retries**: Keep TOOLS, JSON, JSON_SCHEMA, and MD_JSON retries on the streaming parser after the one-shot model marker is consumed, allowing corrected streamed responses to validate successfully. ([#2508](https://github.com/567-labs/instructor/pull/2508))
 - **Iterable streaming unions**: Parse PEP 604 unions (`create_iterable(response_model=Weather | GoogleSearch)`, `Iterable[Weather | GoogleSearch]`) member by member instead of calling `model_validate_json` on `types.UnionType`. ([#2509](https://github.com/567-labs/instructor/pull/2509))
@@ -51,7 +54,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
 
 ### Security
-- **LLM validator isolation**: Send validation rules and candidate values as structured JSON data under a fixed trusted instruction to reduce prompt-injection risk, and raise `ValueError` for rejected values instead of relying on optimization-sensitive assertions. ([#2056](https://github.com/567-labs/instructor/issues/2056), [#2307](https://github.com/567-labs/instructor/pull/2307))
+- **LLM validator isolation**: Send validation rules and candidate values as structured JSON data under a fixed trusted instruction to reduce prompt-injection risk, and raise `ValueError` for rejected values instead of relying on optimization-sensitive assertions. ([#2511](https://github.com/567-labs/instructor/pull/2511), [#2056](https://github.com/567-labs/instructor/issues/2056), [#2307](https://github.com/567-labs/instructor/pull/2307))
 
 ### Tests / CI
 - **Fork-safe contributor checks**: Mark auto-client network tests explicitly and exclude them from core, coverage, and release lanes so fork PRs without provider secrets do not fail with empty authorization headers.
