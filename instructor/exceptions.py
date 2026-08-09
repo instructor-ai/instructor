@@ -29,6 +29,9 @@ from .core.exceptions import (
     MultimodalError,
     ProviderError,
     ResponseParsingError,
+    TokenBudgetError,
+    TokenBudgetExceeded,
+    TokenUsageUnavailableError,
     ValidationError,
 )
 
@@ -44,5 +47,8 @@ __all__ = [
     "MultimodalError",
     "ProviderError",
     "ResponseParsingError",
+    "TokenBudgetError",
+    "TokenBudgetExceeded",
+    "TokenUsageUnavailableError",
     "ValidationError",
 ]

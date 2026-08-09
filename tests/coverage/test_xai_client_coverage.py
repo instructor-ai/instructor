@@ -306,6 +306,15 @@ def test_sync_unstructured_request_converts_messages_and_filters_instructor_args
         }
     ]
 
+    with pytest.raises(ValueError, match="not supported for xAI"):
+        wrapped.create(
+            response_model=Answer,
+            messages=MESSAGES,
+            model="grok-test",
+            token_budget=100,
+        )
+    assert len(factory.calls) == 1
+
 
 @pytest.mark.asyncio
 async def test_async_unstructured_request_converts_messages_and_filters_instructor_args() -> (
@@ -338,6 +347,15 @@ async def test_async_unstructured_request_converts_messages_and_filters_instruct
             "temperature": 0.25,
         }
     ]
+
+    with pytest.raises(ValueError, match="not supported for xAI"):
+        await wrapped.create(
+            response_model=Answer,
+            messages=MESSAGES,
+            model="grok-test",
+            token_budget=100,
+        )
+    assert len(factory.calls) == 1
 
 
 def test_sync_json_schema_parse_attaches_raw_response() -> None:

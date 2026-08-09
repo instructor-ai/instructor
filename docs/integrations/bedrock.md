@@ -125,11 +125,16 @@ print(user)
 
 AWS Bedrock supports the following **core** modes:
 
+- `JSON_SCHEMA`: Native JSON schema constrained decoding for supported models
+- `TOOLS_STRICT`: Native schema enforcement for supported tool-calling models
 - `TOOLS`: Uses function calling for models that support it (like Claude models)
 - `MD_JSON`: Direct JSON response generation (text extraction fallback)
 
 > Legacy modes (`BEDROCK_TOOLS`, `BEDROCK_JSON`) are deprecated and map to `Mode.TOOLS` and `Mode.MD_JSON`.
-> modes above. Use `TOOLS` or `MD_JSON` in new code.
+
+Native structured outputs require boto3 `1.42.42` or newer. Model support varies,
+so select `JSON_SCHEMA` or `TOOLS_STRICT` explicitly and check the
+[current AWS structured output documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html).
 
 ```python
 import boto3
@@ -137,17 +142,30 @@ import instructor
 from instructor import Mode
 from pydantic import BaseModel
 
-# Use from_provider for simplified setup
-client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", mode=Mode.TOOLS)
-
-# Or if you need to use a custom boto3 client:
-# bedrock_client = boto3.client('bedrock-runtime')
-# client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", client=bedrock_client, mode=Mode.TOOLS)
 
 class User(BaseModel):
     name: str
     age: int
+
+
+model_id = "anthropic.claude-sonnet-4-5-20250929-v1:0"
+bedrock_client = boto3.client("bedrock-runtime", region_name="us-east-1")
+client = instructor.from_bedrock(
+    bedrock_client,
+    mode=Mode.JSON_SCHEMA,
+    model=model_id,
+)
+
+user = client.create(
+    messages=[
+        {"role": "user", "content": "Extract: Jason is 25 years old"},
+    ],
+    response_model=User,
+)
 ```
+
+Use `Mode.TOOLS_STRICT` with the same setup when the selected model supports
+strict tool use and you prefer a tool-call response over JSON text.
 
 ## OpenAI Compatibility: Flexible Input Format and Model Parameter
 

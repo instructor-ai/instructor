@@ -388,9 +388,13 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             Provider.BEDROCK,
             aliases=("bedrock",),
             handler_module="instructor.v2.providers.bedrock.handlers",
-            supported_modes=(Mode.TOOLS, Mode.MD_JSON),
-            unsupported_modes=(
+            supported_modes=(
+                Mode.TOOLS,
+                Mode.TOOLS_STRICT,
                 Mode.JSON_SCHEMA,
+                Mode.MD_JSON,
+            ),
+            unsupported_modes=(
                 Mode.PARALLEL_TOOLS,
                 Mode.RESPONSES_TOOLS,
             ),
@@ -402,8 +406,18 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             client_module="instructor.v2.providers.bedrock.client",
             sdk_module="botocore",
             provider_string="bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
-            basic_modes=(Mode.TOOLS, Mode.MD_JSON),
-            async_modes=(Mode.TOOLS, Mode.MD_JSON),
+            basic_modes=(
+                Mode.TOOLS,
+                Mode.TOOLS_STRICT,
+                Mode.JSON_SCHEMA,
+                Mode.MD_JSON,
+            ),
+            async_modes=(
+                Mode.TOOLS,
+                Mode.TOOLS_STRICT,
+                Mode.JSON_SCHEMA,
+                Mode.MD_JSON,
+            ),
         ),
         Provider.VERTEXAI: _spec(
             Provider.VERTEXAI,
