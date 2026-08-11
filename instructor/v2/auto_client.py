@@ -114,6 +114,14 @@ def from_provider(
             '(e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")'
         ) from None
 
+    if not provider or not model_name:
+        from instructor.v2.core.errors import ConfigurationError
+
+        raise ConfigurationError(
+            'Model string must be in format "provider/model-name" '
+            'with both parts non-empty (e.g. "openai/gpt-4")'
+        )
+
     provider_info = {"provider": provider, "operation": "initialize"}
     logger.info(
         "Initializing %s provider with model %s",
