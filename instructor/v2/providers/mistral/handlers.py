@@ -28,7 +28,10 @@ from pydantic import BaseModel
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.errors import IncompleteOutputException
+from instructor.v2.core.errors import (
+    IncompleteOutputException,
+    ResponseParsingError,
+)
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import ParallelBase, get_types_array
 from instructor.v2.dsl.partial import PartialBase
@@ -224,8 +227,19 @@ class MistralHandlerBase(ModeHandler):
         Mistral returns tool call arguments as either a string or a dict,
         so we need to handle both cases.
         """
-        tool_call = response.choices[0].message.tool_calls[0]
-        args = tool_call.function.arguments
+        message = response.choices[0].message
+        tool_calls = getattr(message, "tool_calls", None) or []
+        if not tool_calls:
+            # The model replied in prose instead of calling the tool (e.g.
+            # models that don't honor tool_choice="any", refusals, or
+            # OpenAI-compatible gateways). Raise a retryable parsing error so
+            # the retry machinery re-asks instead of crashing with TypeError.
+            raise ResponseParsingError(
+                "No tool calls found in Mistral response",
+                mode=self.mode.name,
+                raw_response=response,
+            )
+        args = tool_calls[0].function.arguments
         if isinstance(args, dict):
             return json.dumps(args)
         return args
@@ -294,9 +308,25 @@ class MistralToolsHandler(MistralHandlerBase):
     ) -> dict[str, Any]:
         """Handle reask for tools mode."""
         kwargs = kwargs.copy()
-        reask_msgs: list[Any] = [dump_message(response.choices[0].message)]
+        message = response.choices[0].message
+        reask_msgs: list[Any] = [dump_message(message)]
 
-        for tool_call in response.choices[0].message.tool_calls:
+        tool_calls = message.tool_calls or []
+        if not tool_calls:
+            # The model answered in prose without calling the tool, so there is
+            # no tool_call_id to attach a tool-role message to. Fall back to a
+            # plain user correction instead of iterating None.
+            reask_msgs.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Validation Error found:\n{exception}\n"
+                        "Recall the function correctly, fix the errors"
+                    ),
+                }
+            )
+
+        for tool_call in tool_calls:
             reask_msgs.append(
                 {
                     "role": "tool",
@@ -347,7 +377,7 @@ class MistralToolsHandler(MistralHandlerBase):
             type_registry = {t.__name__: t for t in the_types}
 
             def parallel_generator() -> Generator[BaseModel, None, None]:
-                for tool_call in response.choices[0].message.tool_calls:
+                for tool_call in response.choices[0].message.tool_calls or []:
                     name = tool_call.function.name
                     if name in type_registry:
                         model_class = type_registry[name]

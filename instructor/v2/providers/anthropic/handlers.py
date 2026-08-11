@@ -402,6 +402,11 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                 new_kwargs["tool_choice"] = {
                     "type": "tool",
                     "name": getattr(response_model, "__name__", "response"),
+                    # Without this, Anthropic may still emit multiple tool_use
+                    # blocks for the same forced tool, which the single-model
+                    # parser then rejects even though the model's response was
+                    # otherwise valid.
+                    "disable_parallel_tool_use": True,
                 }
 
         return response_model, new_kwargs
@@ -426,7 +431,10 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
             return kwargs
 
         assistant_content = []
-        tool_use_id = None
+        # Anthropic requires a tool_result for *every* tool_use in the prior turn.
+        # Collect all ids — overwriting a single id drops results for PARALLEL_TOOLS
+        # and makes the reask request fail with 400 (issue #2485).
+        tool_use_ids: list[str] = []
         for content in response.content:
             try:
                 dumped_content = content.model_dump(exclude_none=True)  # type: ignore[attr-defined]
@@ -434,10 +442,14 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                 dumped_content = content.model_dump()  # type: ignore[attr-defined]
             assistant_content.append(dumped_content)
             if content.type == "tool_use":
-                tool_use_id = content.id
+                tool_use_ids.append(content.id)
 
         reask_msgs = [{"role": "assistant", "content": assistant_content}]
-        if tool_use_id is not None:
+        if tool_use_ids:
+            error_content = (
+                "Validation Error found:\n"
+                f"{exception}\nRecall the function correctly, fix the errors"
+            )
             reask_msgs.append(
                 {
                     "role": "user",
@@ -445,12 +457,10 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                         {
                             "type": "tool_result",
                             "tool_use_id": tool_use_id,
-                            "content": (
-                                "Validation Error found:\n"
-                                f"{exception}\nRecall the function correctly, fix the errors"
-                            ),
+                            "content": error_content,
                             "is_error": True,
                         }
+                        for tool_use_id in tool_use_ids
                     ],
                 }
             )

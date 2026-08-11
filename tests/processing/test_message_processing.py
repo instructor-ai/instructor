@@ -88,6 +88,27 @@ class TestMergeConsecutiveMessages:
         assert result[2]["role"] == "user"
         assert "I need help" in result[2]["content"]
 
+    def test_consecutive_none_content(self):
+        """Consecutive same-role messages with content=None (e.g. tool-call-only
+        assistant turns) must not crash the merge."""
+        messages = [
+            {"role": "user", "content": "hi"},
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [{"id": "call_1"}],
+            },
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [{"id": "call_2"}],
+            },
+        ]
+        result = merge_consecutive_messages(messages)
+        assert len(result) == 2
+        assert result[0]["role"] == "user"
+        assert result[1]["role"] == "assistant"
+
 
 class TestGetMessageContent:
     """Test the get_message_content function."""

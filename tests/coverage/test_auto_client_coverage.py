@@ -309,6 +309,60 @@ def test_mistral_requires_key_and_accepts_environment_key(
     assert callable(client.create_fn)
 
 
+def test_mistral_builder_supports_sdk_v1_export(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import instructor.v2.providers.mistral.client as mistral_client
+
+    class LegacyMistral:
+        def __init__(self, api_key: str) -> None:
+            self.api_key = api_key
+
+    class LegacySDK:
+        Mistral = LegacyMistral
+
+    real_import_module = importlib.import_module
+
+    def import_module(name: str, package: str | None = None) -> Any:
+        if name == "mistralai.client":
+            return object()
+        if name == "mistralai":
+            return LegacySDK
+        return real_import_module(name, package)
+
+    captured: dict[str, Any] = {}
+
+    def from_mistral(client: object, **kwargs: Any) -> dict[str, Any]:
+        captured["client"] = client
+        captured["kwargs"] = kwargs
+        return kwargs
+
+    monkeypatch.setattr(importlib, "import_module", import_module)
+    monkeypatch.setattr(mistral_client, "from_mistral", from_mistral)
+
+    result = cast(
+        Any,
+        auto_client._build_mistral(
+            provider="mistral",
+            model_name="mistral-small",
+            async_client=True,
+            mode=None,
+            api_key="test-key",
+            kwargs={"temperature": 0.2},
+            provider_info={"provider": "mistral", "operation": "initialize"},
+        ),
+    )
+
+    assert isinstance(captured["client"], LegacyMistral)
+    assert captured["client"].api_key == "test-key"
+    assert captured["kwargs"] == {
+        "model": "mistral-small",
+        "use_async": True,
+        "temperature": 0.2,
+    }
+    assert result == captured["kwargs"]
+
+
 @pytest.mark.parametrize(
     "model,environment_key",
     [
@@ -373,7 +427,12 @@ def test_bedrock_forwards_explicit_region_credentials_and_mode(
         "aws_session_token": "explicit-token",
         "region_name": "eu-west-1",
     }
-    assert result == {"mode": Mode.JSON, "async_client": True, "max_tokens": 19}
+    assert result == {
+        "mode": Mode.JSON,
+        "async_client": True,
+        "model": "amazon.titan",
+        "max_tokens": 19,
+    }
 
 
 def test_bedrock_reads_all_environment_credentials(
@@ -432,6 +491,7 @@ def test_missing_provider_dependency_has_actionable_error(
     message: str,
 ) -> None:
     real_import = builtins.__import__
+    real_import_module = importlib.import_module
 
     def guarded_import(
         name: str,
@@ -447,6 +507,15 @@ def test_missing_provider_dependency_has_actionable_error(
         return real_import(name, globals_, locals_, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", guarded_import)
+
+    def guarded_import_module(name: str, package: str | None = None) -> Any:
+        if name == blocked_import or name.startswith(f"{blocked_import}."):
+            raise ModuleNotFoundError(
+                f"No module named '{blocked_import}'", name=blocked_import
+            )
+        return real_import_module(name, package)
+
+    monkeypatch.setattr(importlib, "import_module", guarded_import_module)
     with pytest.raises(ConfigurationError, match=message):
         auto_client.from_provider(model, api_key="test-key")
 

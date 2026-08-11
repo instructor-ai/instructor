@@ -28,7 +28,7 @@ def image_to_genai(image: Any) -> Any:
         ("http://", "https://")
     ):
         return types.Part.from_bytes(
-            data=requests.get(image.source).content,
+            data=requests.get(image.source, timeout=30).content,
             mime_type=image.media_type,
         )
     if image.data or image.is_base64(str(image.source)):
@@ -55,7 +55,7 @@ def pdf_to_genai(pdf: Any) -> Any:
         and pdf.source.startswith(("http://", "https://"))
         and not pdf.data
     ):
-        data = requests.get(pdf.source).content
+        data = requests.get(pdf.source, timeout=30).content
         encoded = base64.b64encode(data).decode("utf-8")
         return types.Part.from_bytes(
             data=base64.b64decode(encoded),

@@ -232,13 +232,17 @@ For those interested in exploring the capabilities of Mistral Large with Instruc
 ```python
 import instructor
 from pydantic import BaseModel
-from mistralai.client import MistralClient
 
+try:
+    from mistralai.client import Mistral
+except ImportError:
+    from mistralai import Mistral
 
-client = MistralClient()
-
-patched_chat = instructor.from_openai(
-    create=client.chat, mode=instructor.Mode.TOOLS
+client = Mistral(api_key="your-api-key-here")
+patched_chat = instructor.from_mistral(
+    client=client,
+    model="mistral-large-latest",
+    mode=instructor.Mode.TOOLS,
 )
 
 
@@ -247,8 +251,7 @@ class UserDetails(BaseModel):
     age: int
 
 
-resp = patched_chat(
-    model="mistral-large-latest",
+resp = patched_chat.create(
     response_model=UserDetails,
     messages=[
         {

@@ -65,7 +65,7 @@ Once you've done so, you can use the following code to get started.
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_provider("cerebras/llama3.1-70b")
+client = instructor.from_provider("cerebras/gpt-oss-120b")
 
 
 class Person(BaseModel):
@@ -74,7 +74,7 @@ class Person(BaseModel):
 
 
 resp = client.create(
-    model="llama3.1-70b",
+    model="gpt-oss-120b",
     messages=[
         {
             "role": "user",
@@ -109,7 +109,7 @@ class Person(BaseModel):
 
 
 resp = client.create(
-    model="llama3.1-70b",
+    model="gpt-oss-120b",
     messages=[
         {
             "role": "user",

@@ -39,7 +39,30 @@ def image_to_openai(image: Any, mode: Mode) -> dict[str, Any]:
 def audio_to_openai(audio: Any, mode: Mode) -> dict[str, Any]:
     if mode in RESPONSES_MODES:
         raise ValueError("OpenAI Responses doesn't support audio")
-    return {"type": "input_audio", "input_audio": {"data": audio.data, "format": "wav"}}
+
+    # Chat Completions accepts only WAV or MP3. Reject other formats instead of
+    # sending mislabeled bytes that the API cannot decode.
+    media_type = (getattr(audio, "media_type", "") or "").lower()
+    format_by_media_type = {
+        "audio/mp3": "mp3",
+        "audio/mpeg": "mp3",
+        "audio/mpga": "mp3",
+        "audio/wav": "wav",
+        "audio/x-wav": "wav",
+    }
+    if media_type not in format_by_media_type:
+        raise ValueError(
+            f"Unsupported OpenAI audio format: {media_type or 'unknown'}. "
+            "Expected WAV or MP3."
+        )
+
+    return {
+        "type": "input_audio",
+        "input_audio": {
+            "data": audio.data,
+            "format": format_by_media_type[media_type],
+        },
+    }
 
 
 def pdf_to_openai(pdf: Any, mode: Mode) -> dict[str, Any]:
@@ -49,7 +72,7 @@ def pdf_to_openai(pdf: Any, mode: Mode) -> dict[str, Any]:
         and pdf.source.startswith(("http://", "https://"))
         and not pdf.data
     ):
-        response = requests.get(pdf.source)
+        response = requests.get(pdf.source, timeout=30)
         data = base64.b64encode(response.content).decode("utf-8")
         if mode in RESPONSES_MODES:
             return {

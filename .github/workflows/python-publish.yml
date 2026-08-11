@@ -1,38 +1,53 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Upload Python Package
 
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: pypi-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
 jobs:
-  release:
+  publish:
+    name: Publish attached release artifacts
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Check out the release tag
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
-      - name: Set up Python
-        run: uv python install 3.10
-      - name: Install the project
-        run: uv sync --all-extras
-      - name: Build the project
-        run: uv build
-      - name: Build and publish Python package
-        run: uv publish
+          python-version: "3.11"
+      - name: Download tested release artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          mkdir -p dist
+          gh release download "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern '*.whl' \
+            --pattern '*.tar.gz' \
+            --dir dist
+      - name: Validate tag, metadata, and distributions
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          test "$TAG" = "v$VERSION"
+          python scripts/prepare_release.py \
+            --expected-version "$VERSION" \
+            --output /tmp/release-notes.md
+          uvx --from twine==6.2.0 twine check dist/*
+      - name: Publish exact release artifacts to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish dist/*

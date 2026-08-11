@@ -68,6 +68,8 @@ class CitationMixin(BaseModel):
 
         # Get the context from the info
         text_chunks = info.context.get("context", None)
+        if text_chunks is None:
+            return self
 
         # Get the spans of the substring_phrase in the context
         spans = list(self.get_spans(text_chunks))
@@ -80,12 +82,15 @@ class CitationMixin(BaseModel):
     ) -> Generator[tuple[int, int], None, None]:
         import regex
 
-        minor = quote
+        # Escape the quote so regex metacharacters in LLM-generated text
+        # (e.g. unbalanced parentheses or brackets) are matched literally
+        # instead of crashing the fuzzy search with a regex compile error.
+        minor = regex.escape(quote)
         major = context
 
         errs_ = 0
         s = regex.search(f"({minor}){{e<={errs_}}}", major)
-        while s is None and errs_ <= errs:
+        while s is None and errs_ < errs:
             errs_ += 1
             s = regex.search(f"({minor}){{e<={errs_}}}", major)
 

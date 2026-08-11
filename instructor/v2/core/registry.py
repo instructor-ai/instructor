@@ -6,6 +6,7 @@ Supports lazy loading, dynamic registration, and queryable API.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from typing import Callable
 
@@ -80,6 +81,12 @@ class ModeRegistry:
         """Initialize empty registry."""
         self._handlers: dict[tuple[Provider, Mode], ModeHandlers] = {}
         self._lazy_loaders: dict[tuple[Provider, Mode], Callable[[], ModeHandlers]] = {}
+        # Guards the lazy-load resolution (check -> pop -> import -> set) in
+        # get_handlers(). Without this, concurrent first-callers for the same
+        # mode_key race: one pops the loader, the others see neither dict
+        # populated yet and raise KeyError. Held for the whole resolution
+        # (not per-key) since lazy-loading only ever runs once per key.
+        self._lazy_load_lock = threading.Lock()
 
     def register(
         self,
@@ -181,12 +188,22 @@ class ModeRegistry:
         if mode_key in self._handlers:
             return self._handlers[mode_key]
 
-        # Try lazy loading
-        if mode_key in self._lazy_loaders:
-            loader = self._lazy_loaders.pop(mode_key)
-            handlers = loader()
-            self._handlers[mode_key] = handlers
-            return handlers
+        # Try lazy loading. Locked because the pop -> import -> set sequence
+        # below is not atomic: without the lock, a thread that loses the race
+        # to pop self._lazy_loaders[mode_key] would find it already gone and
+        # self._handlers[mode_key] not yet set, and raise KeyError even
+        # though the mode genuinely is registered (just still resolving).
+        with self._lazy_load_lock:
+            # Re-check: another thread may have finished loading this key
+            # while we were waiting for the lock.
+            if mode_key in self._handlers:
+                return self._handlers[mode_key]
+
+            if mode_key in self._lazy_loaders:
+                loader = self._lazy_loaders.pop(mode_key)
+                handlers = loader()
+                self._handlers[mode_key] = handlers
+                return handlers
 
         raise KeyError(
             f"Mode {mode_key} is not registered. "

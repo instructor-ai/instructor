@@ -203,7 +203,7 @@ class Image(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True)
+                response = requests.head(url, allow_redirects=True, timeout=30)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
                 raise ValueError(f"Failed to fetch image from URL") from e
@@ -233,7 +233,7 @@ class Image(BaseModel):
     @lru_cache
     def url_to_base64(url: str) -> str:
         """Cachable helper method for getting image url and encoding to base64."""
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         response.raise_for_status()
         return base64.b64encode(response.content).decode("utf-8")
 
@@ -324,11 +324,13 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         content_type = response.headers.get("content-type")
-        assert content_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        if content_type not in VALID_AUDIO_MIME_TYPES:
+            raise ValueError(
+                f"Unsupported audio format: {content_type}. "
+                f"Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+            )
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -337,7 +339,11 @@ class Audio(BaseModel):
     def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
         """Create an Audio instance from a file path."""
         path = Path(path)
-        assert path.is_file(), f"Audio file not found: {path}"
+        if not path.is_file():
+            raise FileNotFoundError(f"Audio file not found: {path}")
+
+        if path.stat().st_size == 0:
+            raise ValueError("Audio file is empty")
 
         mime_type = mimetypes.guess_type(str(path))[0]
 
@@ -349,9 +355,11 @@ class Audio(BaseModel):
         ):  # <--- this is the case for aac audio files in Windows
             mime_type = "audio/aac"
 
-        assert mime_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        if mime_type not in VALID_AUDIO_MIME_TYPES:
+            raise ValueError(
+                f"Unsupported audio format: {mime_type}. "
+                f"Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+            )
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -583,7 +591,7 @@ class PDF(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True)
+                response = requests.head(url, allow_redirects=True, timeout=30)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
                 raise ValueError("Failed to fetch PDF from URL") from e

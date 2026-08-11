@@ -115,6 +115,18 @@ def test_dump_message_appends_function_call_to_text_content() -> None:
     )
 
 
+def test_dump_message_retains_function_call_when_content_is_empty() -> None:
+    message = ChatCompletionMessage(
+        role="assistant",
+        content=None,
+        function_call=FunctionCall(name="lookup", arguments='{"id":7}'),
+    )
+
+    result = dump_message(message)
+
+    assert result["content"] == json.dumps({"arguments": '{"id":7}', "name": "lookup"})
+
+
 def test_merge_consecutive_messages_checks_tail_for_non_string_content() -> None:
     messages: list[dict[str, Any]] = [
         {"role": "user", "content": f"line {index}"} for index in range(10)

@@ -83,6 +83,8 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
     delimiter_stack: list[str] = []
     buffer: list[str] = []
     codeblock_buffer: list[str] = []
+    last_invalid_candidate: str | None = None
+    emitted_valid_candidate = False
 
     for chunk in chunks:
         for char in chunk:
@@ -142,9 +144,17 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                         delimiter_stack.pop()
                         if not delimiter_stack:
                             buffer.append(char)
-                            yield from buffer
+                            candidate = "".join(buffer)
                             buffer = []
                             json_started = False
+                            try:
+                                json.loads(candidate)
+                            except ValueError:
+                                last_invalid_candidate = candidate
+                                continue
+                            emitted_valid_candidate = True
+                            last_invalid_candidate = None
+                            yield from candidate
                             continue
 
                 buffer.append(char)
@@ -157,6 +167,8 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
 
     if json_started and buffer:
         yield from buffer
+    elif not emitted_valid_candidate and last_invalid_candidate is not None:
+        yield from last_invalid_candidate
 
 
 async def extract_json_from_stream_async(
@@ -171,6 +183,8 @@ async def extract_json_from_stream_async(
     delimiter_stack: list[str] = []
     buffer: list[str] = []
     codeblock_buffer: list[str] = []
+    last_invalid_candidate: str | None = None
+    emitted_valid_candidate = False
 
     async for chunk in chunks:
         for char in chunk:
@@ -231,10 +245,18 @@ async def extract_json_from_stream_async(
                         delimiter_stack.pop()
                         if not delimiter_stack:
                             buffer.append(char)
-                            for buffered_char in buffer:
-                                yield buffered_char
+                            candidate = "".join(buffer)
                             buffer = []
                             json_started = False
+                            try:
+                                json.loads(candidate)
+                            except ValueError:
+                                last_invalid_candidate = candidate
+                                continue
+                            emitted_valid_candidate = True
+                            last_invalid_candidate = None
+                            for buffered_char in candidate:
+                                yield buffered_char
                             continue
 
                 buffer.append(char)
@@ -247,4 +269,7 @@ async def extract_json_from_stream_async(
 
     if json_started and buffer:
         for buffered_char in buffer:
+            yield buffered_char
+    elif not emitted_valid_candidate and last_invalid_candidate is not None:
+        for buffered_char in last_invalid_candidate:
             yield buffered_char
