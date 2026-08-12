@@ -104,6 +104,28 @@ def test_image_url_errors_missing_path_and_unsupported_data_uri(
         Image.from_base64("data:image/tiff;base64,aW1hZ2U=")
 
 
+def test_remote_media_types_ignore_http_parameters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def head(url: str, **_kwargs: Any) -> requests.Response:
+        media_type = "image/png" if "photo" in url else "application/pdf"
+        return response(b"", f"{media_type}; charset=binary")
+
+    def get(_url: str, **_kwargs: Any) -> requests.Response:
+        return response(b"audio", "Audio/WAV; codecs=1")
+
+    monkeypatch.setattr(requests, "head", head)
+    monkeypatch.setattr(requests, "get", get)
+
+    image = Image.from_url("https://example.test/photo")
+    audio = Audio.from_url("https://example.test/audio")
+    pdf = PDF.from_url("https://example.test/report")
+
+    assert image.media_type == "image/png"
+    assert audio.media_type == "audio/wav"
+    assert pdf.media_type == "application/pdf"
+
+
 def test_image_path_probe_falls_back_to_raw_base64(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

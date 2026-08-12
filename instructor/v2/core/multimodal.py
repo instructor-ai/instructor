@@ -50,6 +50,13 @@ CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
 
+def _normalize_media_type(media_type: str | None) -> str | None:
+    """Return the lowercase media type without optional HTTP parameters."""
+    if media_type is None:
+        return None
+    return media_type.split(";", 1)[0].strip().lower()
+
+
 class ImageParamsBase(TypedDict):
     type: Literal["image"]
     source: str
@@ -151,7 +158,7 @@ class Image(BaseModel):
         try:
             response = requests.get(public_url, timeout=timeout)
             response.raise_for_status()
-            media_type = response.headers.get("Content-Type")
+            media_type = _normalize_media_type(response.headers.get("Content-Type"))
             if media_type not in VALID_MIME_TYPES:
                 raise ValueError(f"Unsupported image format: {media_type}")
 
@@ -204,7 +211,7 @@ class Image(BaseModel):
         if not media_type:
             try:
                 response = requests.head(url, allow_redirects=True, timeout=30)
-                media_type = response.headers.get("Content-Type")
+                media_type = _normalize_media_type(response.headers.get("Content-Type"))
             except requests.RequestException as e:
                 raise ValueError(f"Failed to fetch image from URL") from e
 
@@ -325,7 +332,7 @@ class Audio(BaseModel):
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
         response = requests.get(url, timeout=30)
-        content_type = response.headers.get("content-type")
+        content_type = _normalize_media_type(response.headers.get("content-type"))
         if content_type not in VALID_AUDIO_MIME_TYPES:
             raise ValueError(
                 f"Unsupported audio format: {content_type}. "
@@ -381,7 +388,7 @@ class Audio(BaseModel):
         try:
             response = requests.get(public_url, timeout=timeout)
             response.raise_for_status()
-            media_type = response.headers.get("Content-Type")
+            media_type = _normalize_media_type(response.headers.get("Content-Type"))
             if media_type not in VALID_AUDIO_MIME_TYPES:
                 raise ValueError(f"Unsupported audio format: {media_type}")
 
@@ -569,7 +576,9 @@ class PDF(BaseModel):
         try:
             response = requests.get(public_url, timeout=timeout)
             response.raise_for_status()
-            media_type = response.headers.get("Content-Type", "application/pdf")
+            media_type = _normalize_media_type(
+                response.headers.get("Content-Type", "application/pdf")
+            )
             if media_type not in VALID_PDF_MIME_TYPES:
                 raise ValueError(f"Unsupported PDF format: {media_type}")
 
@@ -592,7 +601,7 @@ class PDF(BaseModel):
         if not media_type:
             try:
                 response = requests.head(url, allow_redirects=True, timeout=30)
-                media_type = response.headers.get("Content-Type")
+                media_type = _normalize_media_type(response.headers.get("Content-Type"))
             except requests.RequestException as e:
                 raise ValueError("Failed to fetch PDF from URL") from e
 
