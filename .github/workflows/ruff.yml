@@ -25,6 +25,7 @@ jobs:
           enable-cache: true
           python-version: "3.9"
           cache-suffix: ruff-py39
+          working-directory: .
       - name: Set up Python
         run: uv python install 3.9
       - name: Install the project
