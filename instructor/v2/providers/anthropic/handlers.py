@@ -53,34 +53,30 @@ def combine_system_messages(
     new_system: str | list[SystemMessage],
 ) -> str | list[SystemMessage]:
     """Combine existing and new system messages."""
-    if existing_system is None:
-        return new_system
-
-    if not isinstance(existing_system, (str, list)) or not isinstance(
-        new_system, (str, list)
+    if not isinstance(new_system, (str, list)) or (
+        existing_system is not None and not isinstance(existing_system, (str, list))
     ):
         raise ValueError(
             "System messages must be strings or lists, got "
             f"{type(existing_system)} and {type(new_system)}"
         )
 
-    if isinstance(existing_system, str) and isinstance(new_system, str):
-        return f"{existing_system}\n\n{new_system}"
-    if isinstance(existing_system, list) and isinstance(new_system, list):
-        result = list(existing_system)
-        result.extend(new_system)
-        return result
-    if isinstance(existing_system, str) and isinstance(new_system, list):
+    if existing_system is None:
+        return new_system
+
+    if isinstance(existing_system, str):
+        if isinstance(new_system, str):
+            return f"{existing_system}\n\n{new_system}"
         result = [SystemMessage(type="text", text=existing_system)]
         result.extend(new_system)
         return result
-    if isinstance(existing_system, list) and isinstance(new_system, str):
-        new_message = SystemMessage(type="text", text=new_system)
-        result = list(existing_system)
-        result.append(new_message)
-        return result
 
-    return existing_system
+    result = list(existing_system)
+    if isinstance(new_system, list):
+        result.extend(new_system)
+    else:
+        result.append(SystemMessage(type="text", text=new_system))
+    return result
 
 
 def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
@@ -294,8 +290,6 @@ class AnthropicHandlerBase(ModeHandler):
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
             return generator
-        if inspect.isclass(response_model) and issubclass(response_model, PartialBase):
-            return list(generator)
         return list(generator)
 
     def _finalize_parsed_result(
@@ -357,10 +351,7 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
         new_kwargs["messages"] = [
             m for m in new_kwargs.get("messages", []) if m["role"] != "system"
         ]
-        if "messages" in new_kwargs:
-            new_kwargs["messages"] = process_messages_for_anthropic(
-                new_kwargs["messages"]
-            )
+        new_kwargs["messages"] = process_messages_for_anthropic(new_kwargs["messages"])
 
         if response_model is None:
             return None, new_kwargs
@@ -411,6 +402,11 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                 new_kwargs["tool_choice"] = {
                     "type": "tool",
                     "name": getattr(response_model, "__name__", "response"),
+                    # Without this, Anthropic may still emit multiple tool_use
+                    # blocks for the same forced tool, which the single-model
+                    # parser then rejects even though the model's response was
+                    # otherwise valid.
+                    "disable_parallel_tool_use": True,
                 }
 
         return response_model, new_kwargs
@@ -435,7 +431,10 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
             return kwargs
 
         assistant_content = []
-        tool_use_id = None
+        # Anthropic requires a tool_result for *every* tool_use in the prior turn.
+        # Collect all ids — overwriting a single id drops results for PARALLEL_TOOLS
+        # and makes the reask request fail with 400 (issue #2485).
+        tool_use_ids: list[str] = []
         for content in response.content:
             try:
                 dumped_content = content.model_dump(exclude_none=True)  # type: ignore[attr-defined]
@@ -443,10 +442,14 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                 dumped_content = content.model_dump()  # type: ignore[attr-defined]
             assistant_content.append(dumped_content)
             if content.type == "tool_use":
-                tool_use_id = content.id
+                tool_use_ids.append(content.id)
 
         reask_msgs = [{"role": "assistant", "content": assistant_content}]
-        if tool_use_id is not None:
+        if tool_use_ids:
+            error_content = (
+                "Validation Error found:\n"
+                f"{exception}\nRecall the function correctly, fix the errors"
+            )
             reask_msgs.append(
                 {
                     "role": "user",
@@ -454,12 +457,10 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
                         {
                             "type": "tool_result",
                             "tool_use_id": tool_use_id,
-                            "content": (
-                                "Validation Error found:\n"
-                                f"{exception}\nRecall the function correctly, fix the errors"
-                            ),
+                            "content": error_content,
                             "is_error": True,
                         }
+                        for tool_use_id in tool_use_ids
                     ],
                 }
             )
@@ -658,10 +659,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
         new_kwargs["messages"] = [
             m for m in new_kwargs.get("messages", []) if m["role"] != "system"
         ]
-        if "messages" in new_kwargs:
-            new_kwargs["messages"] = process_messages_for_anthropic(
-                new_kwargs["messages"]
-            )
+        new_kwargs["messages"] = process_messages_for_anthropic(new_kwargs["messages"])
 
         if response_model is None:
             return None, new_kwargs
@@ -812,10 +810,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
         new_kwargs["messages"] = [
             m for m in new_kwargs.get("messages", []) if m["role"] != "system"
         ]
-        if "messages" in new_kwargs:
-            new_kwargs["messages"] = process_messages_for_anthropic(
-                new_kwargs["messages"]
-            )
+        new_kwargs["messages"] = process_messages_for_anthropic(new_kwargs["messages"])
 
         import anthropic
 

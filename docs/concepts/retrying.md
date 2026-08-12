@@ -7,6 +7,49 @@ description: "Learn how to implement retry logic with Tenacity for LLM applicati
 
 Tenacity is a Python library for adding retry logic to your applications. Combined with Instructor, it helps handle API failures, rate limits, and validation errors.
 
+## Limit Validation Retry Cost
+
+Use `token_budget` to stop validation retries after cumulative provider usage
+reaches a positive token limit:
+
+```python
+import instructor
+from instructor.core import TokenBudgetExceeded
+from pydantic import BaseModel
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+
+try:
+    user = client.create(
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": "Extract: Jason is 25"}],
+        max_retries=3,
+        token_budget=2_000,
+    )
+except TokenBudgetExceeded as error:
+    print(error.total_usage)
+```
+
+The budget is checked after a response fails validation and before Instructor
+prepares another request. Reaching the exact budget stops the retry. A response
+that validates successfully is returned even if that completed request takes
+the cumulative total over the budget.
+
+`token_budget` is a retry budget, not a hard per-request limit. The provider may
+use more than the remaining budget while completing the current request. Use
+the provider's output-token setting when you also need a per-request limit.
+
+Budgeted retries currently require a structured, non-streaming response and
+compatible provider usage metadata. Instructor raises
+`TokenUsageUnavailableError` instead of making another request when it cannot
+account for usage safely.
+
 ## Basic Retry with Exponential Backoff
 
 The most common pattern uses exponential backoff to delay retries:

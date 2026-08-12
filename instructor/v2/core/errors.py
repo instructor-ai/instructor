@@ -242,7 +242,7 @@ class InstructorRetryException(InstructorError):
         last_completion: Any | None = None,
         messages: list[Any] | None = None,
         n_attempts: int,
-        total_usage: int,
+        total_usage: Any,
         create_kwargs: dict[str, Any] | None = None,
         failed_attempts: list[FailedAttempt] | None = None,
         **kwargs: Any,
@@ -253,6 +253,42 @@ class InstructorRetryException(InstructorError):
         self.total_usage = total_usage
         self.create_kwargs = create_kwargs
         super().__init__(*args, failed_attempts=failed_attempts, **kwargs)
+
+
+class TokenBudgetError(InstructorRetryException):
+    """Base class for retry termination caused by a token budget."""
+
+    def __init__(
+        self,
+        *args: Any,
+        budget: int,
+        last_completion: Any | None = None,
+        messages: list[Any] | None = None,
+        n_attempts: int,
+        total_usage: Any,
+        create_kwargs: dict[str, Any] | None = None,
+        failed_attempts: list[FailedAttempt] | None = None,
+        **kwargs: Any,
+    ):
+        self.budget = budget
+        super().__init__(
+            *args,
+            last_completion=last_completion,
+            messages=messages,
+            n_attempts=n_attempts,
+            total_usage=total_usage,
+            create_kwargs=create_kwargs,
+            failed_attempts=failed_attempts,
+            **kwargs,
+        )
+
+
+class TokenBudgetExceeded(TokenBudgetError):
+    """Raised before a retry that would continue at an exhausted token budget."""
+
+
+class TokenUsageUnavailableError(TokenBudgetError):
+    """Raised when a retry budget cannot be enforced without usage metadata."""
 
 
 class ValidationError(InstructorError):
@@ -294,8 +330,6 @@ class ValidationError(InstructorError):
     See Also:
         - InstructorRetryException: Raised when validation fails repeatedly
     """
-
-    pass
 
 
 class ProviderError(InstructorError):
@@ -369,8 +403,6 @@ class ConfigurationError(InstructorError):
         ```
     """
 
-    pass
-
 
 class ModeError(InstructorError):
     """Exception raised when an invalid mode is used for a provider.
@@ -440,8 +472,6 @@ class ClientError(InstructorError):
             print(f"Client error: {e}")
         ```
     """
-
-    pass
 
 
 class AsyncValidationError(ValueError, InstructorError):

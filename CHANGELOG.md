@@ -14,12 +14,60 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Changed
 - **Sarvam**: Default structured-output mode is `Mode.MD_JSON`.
+
 ---
 
+## [1.16.0] - 2026-08-09
+
+### Added
+- **Bedrock native structured outputs**: Add explicit `Mode.JSON_SCHEMA` and `Mode.TOOLS_STRICT` support through Converse `outputConfig.textFormat` and strict tool schemas, with recursive schema normalization and a boto3 `1.42.42` minimum. Model selection remains caller-controlled. ([#2515](https://github.com/567-labs/instructor/pull/2515), [#2084](https://github.com/567-labs/instructor/issues/2084), [#2086](https://github.com/567-labs/instructor/pull/2086))
+- **Validation retry budgets**: Add positive cumulative `token_budget` limits for structured non-streaming retries, immutable `completion:usage` snapshots, sync/async cutoff parity, and stable cumulative usage metadata. Valid responses still win after crossing the budget. When a budget is configured, a failed attempt with unavailable usage stops before another provider call. ([#2512](https://github.com/567-labs/instructor/pull/2512), [#2391](https://github.com/567-labs/instructor/issues/2391), [#2392](https://github.com/567-labs/instructor/pull/2392))
+
+### Changed
+- **Contributor workflow**: Align contributor setup and dependency management around locked `uv sync` environments, `uv run` commands, and `uv add` only for intentional project metadata changes. ([#2516](https://github.com/567-labs/instructor/pull/2516), [#2354](https://github.com/567-labs/instructor/pull/2354))
+
 ### Fixed
+- **Mistral SDK compatibility**: Support the `mistralai` 2.x client export on Python 3.10+ while retaining the compatible 1.x fallback required by Python 3.9. ([#2513](https://github.com/567-labs/instructor/pull/2513), [#2298](https://github.com/567-labs/instructor/pull/2298), [#2365](https://github.com/567-labs/instructor/issues/2365))
+- **Bedrock reasoning JSON**: Parse the final complete JSON value after reasoning text or `<think>` blocks, preserve JSON escape sequences, and keep caller-owned messages unchanged during Bedrock request preparation and retries. ([#2514](https://github.com/567-labs/instructor/pull/2514), [#2076](https://github.com/567-labs/instructor/issues/2076), [#2287](https://github.com/567-labs/instructor/pull/2287))
+- **Remote multimodal fetches**: Apply the existing 30-second request timeout to image, audio, and PDF downloads so an unresponsive URL cannot block a caller indefinitely. ([#2507](https://github.com/567-labs/instructor/pull/2507))
+- **OpenAI streaming retries**: Keep TOOLS, JSON, JSON_SCHEMA, and MD_JSON retries on the streaming parser after the one-shot model marker is consumed, allowing corrected streamed responses to validate successfully. ([#2508](https://github.com/567-labs/instructor/pull/2508))
+- **Iterable streaming unions**: Parse PEP 604 unions (`create_iterable(response_model=Weather | GoogleSearch)`, `Iterable[Weather | GoogleSearch]`) member by member instead of calling `model_validate_json` on `types.UnionType`. ([#2509](https://github.com/567-labs/instructor/pull/2509))
+- **Package metadata**: Point the published distribution's repository URL at the current `567-labs/instructor` organization and validate it before release.
+- **Retry usage accounting**: Accumulate nested and newly added numeric usage fields across OpenAI and Anthropic retries, including prediction, cache-write, cache-creation, and server-tool counters, without treating boolean metadata as billable usage. ([#2493](https://github.com/567-labs/instructor/issues/2493), [#2500](https://github.com/567-labs/instructor/pull/2500))
+- **OpenAI Responses reask**: Add a fallback correction message when a `RESPONSES_TOOLS` response contains no tool calls (e.g. reasoning-only output), so retries carry validation feedback instead of resending the identical request. ([#2498](https://github.com/567-labs/instructor/pull/2498))
+- **v2 parallel tools**: Preserve raw iterable type hints through the sync and async patch wrappers so parallel tool schemas and results retain every requested model type. ([#2501](https://github.com/567-labs/instructor/pull/2501))
+- **Credential redaction**: Hide common OAuth and Google API credential aliases in nested v2 debug logging while preserving non-secret token configuration. ([#2490](https://github.com/567-labs/instructor/issues/2490), [#2491](https://github.com/567-labs/instructor/pull/2491))
+- **Retry and message integrity**: Preserve cache keys and caller-owned retry messages, retain empty-content legacy function calls, return Anthropic tool results for every parallel tool call, and handle missing OpenAI/Mistral tool calls as retryable parse failures. ([#2454](https://github.com/567-labs/instructor/issues/2454), [#2455](https://github.com/567-labs/instructor/pull/2455), [#2464](https://github.com/567-labs/instructor/issues/2464), [#2484](https://github.com/567-labs/instructor/pull/2484), [#2485](https://github.com/567-labs/instructor/issues/2485), [#2486](https://github.com/567-labs/instructor/pull/2486), [#2448](https://github.com/567-labs/instructor/pull/2448), [#2453](https://github.com/567-labs/instructor/pull/2453))
+- **Streaming and DSL correctness**: Isolate partial-model recursion guards, preserve partial nested models and explicit nulls, harden citation matching, derive useful Iterable union names, and continue scanning JSON streams after non-JSON or multiple balanced values. ([#2422](https://github.com/567-labs/instructor/issues/2422), [#2430](https://github.com/567-labs/instructor/pull/2430), [#2431](https://github.com/567-labs/instructor/issues/2431), [#2452](https://github.com/567-labs/instructor/pull/2452), [#2456](https://github.com/567-labs/instructor/pull/2456), [#2461](https://github.com/567-labs/instructor/issues/2461), [#2463](https://github.com/567-labs/instructor/pull/2463), [#2476](https://github.com/567-labs/instructor/pull/2476), [#2487](https://github.com/567-labs/instructor/pull/2487), [#2489](https://github.com/567-labs/instructor/pull/2489))
+- **Provider request handling**: Avoid mutating Gemini generation config and cached OpenAI schemas, disable Anthropic parallel calls for forced single-tool requests, forward Bedrock default models, and label OpenAI audio as WAV or MP3 without misrepresenting unsupported formats. ([#2450](https://github.com/567-labs/instructor/issues/2450), [#2451](https://github.com/567-labs/instructor/pull/2451), [#2465](https://github.com/567-labs/instructor/issues/2465), [#2467](https://github.com/567-labs/instructor/pull/2467), [#2477](https://github.com/567-labs/instructor/issues/2477), [#2478](https://github.com/567-labs/instructor/pull/2478), [#2447](https://github.com/567-labs/instructor/pull/2447), [#2415](https://github.com/567-labs/instructor/pull/2415))
+- **Batch, CLI, and citation runtime**: Accept valid empty batch objects, use typed OpenAI file attributes in the CLI, normalize `None` message content, and install `regex` as the direct dependency required by `CitationMixin`. ([#2473](https://github.com/567-labs/instructor/pull/2473), [#2441](https://github.com/567-labs/instructor/pull/2441), [#2440](https://github.com/567-labs/instructor/pull/2440), [#2443](https://github.com/567-labs/instructor/pull/2443))
+- **Provider documentation**: Refresh retired Cerebras model IDs, clarify current and deprecated Google provider prefixes, and fix the Vertex Google GenAI example so its default model is passed to `from_genai()`. ([#2494](https://github.com/567-labs/instructor/pull/2494), [#2289](https://github.com/567-labs/instructor/issues/2289), [#2343](https://github.com/567-labs/instructor/pull/2343), [#2416](https://github.com/567-labs/instructor/issues/2416), [#2475](https://github.com/567-labs/instructor/pull/2475))
+- **Multimodal (Audio)**: Raise explicit `ValueError` or `FileNotFoundError` from `Audio.from_url()` and `Audio.from_path()` instead of relying on bare `assert` statements that can disappear under `python -O`. ([#2361](https://github.com/567-labs/instructor/pull/2361))
+- **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
+- **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
+- **v2 schemas**: Treat fields with Pydantic `default_factory` values as optional in generated OpenAI tool schemas.
+- **v2 partial streaming**: Build model instances for present `Optional[BaseModel]` fields during incomplete streams instead of exposing raw dictionaries.
+- **v2 iterable unions**: Generate stable member-derived names such as `IterableAOrB` for both `Union[A, B]` and `A | B` response models.
+- **Mistral/Vertex AI partial streaming**: Avoid forwarding iterable-only parser arguments into completed `Partial` responses, preventing final Pydantic validation errors for sync and async streams.
+- **Batch providers**: Handle missing optional SDKs safely, validate OpenAI batch input before client setup, report exhausted output-file retries clearly, and remove unreachable fallbacks.
+- **OpenAI/Writer tools**: Raise clear response-parsing errors for completions with no choices or tool calls instead of leaking attribute and index errors.
+- **Fireworks streaming**: Keep non-streaming async calls non-streaming and return streaming async generators without incorrectly awaiting them.
+- **GenAI uploads**: Respect `max_retries=0` without an unwanted sleep or polling request, allow recovery on the final permitted retry, and report nameless pending uploads clearly before polling.
+- **Gemini/GenAI messages**: Honor an explicit system message for unstructured requests, remove the unsupported raw `system` argument, and reject invalid scalar message content clearly.
+- **Templating**: Use populated `contents` when `messages` is empty, avoid mutating nested caller input, and preserve uncopyable metadata during template expansion.
+- **Anthropic system messages**: Reject invalid new system-message values even when no existing system message is present.
+- **Python 3.9**: Include the required type-evaluation backport in minimal installs, keep overload metadata available, and avoid runtime evaluation of unsupported union syntax in the core response path and offline tests.
 - **v2 imports**: Defer OpenAI SDK imports from core v2 modules until an OpenAI-specific path actually needs them, reducing import side effects for non-OpenAI usage. ([#2390](https://github.com/567-labs/instructor/pull/2390))
 - **v2 response models**: Treat `list[A | B]` PEP 604 unions of Pydantic models as iterable response models, matching `list[Union[A, B]]` schema behavior. ([#2377](https://github.com/567-labs/instructor/pull/2377))
 - **OpenAI Responses API**: Align `RESPONSES_TOOLS` `text.format` with the forced tool schema and add targeted retry guidance when tool calls return empty `{}` arguments. ([#2300](https://github.com/567-labs/instructor/issues/2300), [#2304](https://github.com/567-labs/instructor/pull/2304))
+
+### Security
+- **LLM validator isolation**: Send validation rules and candidate values as structured JSON data under a fixed trusted instruction to reduce prompt-injection risk, and raise `ValueError` for rejected values instead of relying on optimization-sensitive assertions. ([#2511](https://github.com/567-labs/instructor/pull/2511), [#2056](https://github.com/567-labs/instructor/issues/2056), [#2307](https://github.com/567-labs/instructor/pull/2307))
+
+### Tests / CI
+- **Fork-safe contributor checks**: Mark auto-client network tests explicitly and exclude them from core, coverage, and release lanes so fork PRs without provider secrets do not fail with empty authorization headers.
+- **Coverage and test quality**: Run the complete offline suite on Python 3.9-3.13, enforce fork-safe statement and branch coverage plus supported-version type checks in pull-request CI, add strict resource and thread warning checks, and provide a manual retry-mutation workflow. Consolidate typed response, stream, and SDK fixtures; remove duplicate tests and unreachable provider paths; and replace coverage-only stubs with meaningful edge-case and transport-backed provider checks.
+- **Release safety**: Validate the declared source, lockfile, changelog, tag, and built artifacts before any publication step; require an explicit version confirmation and publish opt-in; and publish the exact tested assets instead of rebuilding from a moving branch.
 
 ---
 
@@ -247,3 +295,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
+
+[Unreleased]: https://github.com/567-labs/instructor/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.16.0

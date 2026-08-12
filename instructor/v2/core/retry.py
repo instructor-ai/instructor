@@ -6,8 +6,10 @@ instead of v1's process_response.
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
+from numbers import Real
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -27,12 +29,15 @@ from instructor.v2.core.errors import (
     IncompleteOutputException,
     InstructorRetryException,
     ResponseParsingError,
+    TokenBudgetError,
+    TokenBudgetExceeded,
+    TokenUsageUnavailableError,
 )
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.response_list import ListResponse
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.messages import extract_messages
-from instructor.v2.core.usage import update_total_usage
+from instructor.v2.core.usage import has_compatible_usage, update_total_usage
 from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
 
@@ -69,16 +74,119 @@ def _attempt_metadata(
     }
 
 
-def _finalize_parsed_response(parsed: Any, response: Any) -> Any:
+def _usage_snapshot(total_usage: Any) -> Any:
+    if isinstance(total_usage, BaseModel):
+        return total_usage.model_copy(deep=True)
+    return copy.deepcopy(total_usage)
+
+
+def _usage_total_tokens(total_usage: Any) -> int | None:
+    direct_total = getattr(total_usage, "total_tokens", None)
+    if isinstance(direct_total, Real) and not isinstance(direct_total, bool):
+        return int(direct_total)
+
+    token_fields = (
+        "input_tokens",
+        "output_tokens",
+        "cache_creation_input_tokens",
+        "cache_read_input_tokens",
+    )
+    values = [getattr(total_usage, field, None) for field in token_fields]
+    numeric_values = [
+        int(value)
+        for value in values
+        if isinstance(value, Real) and not isinstance(value, bool)
+    ]
+    return sum(numeric_values) if numeric_values else None
+
+
+def _validate_token_budget(
+    token_budget: int | None,
+    *,
+    response_model: object,
+    kwargs: dict[str, Any],
+) -> None:
+    if token_budget is None:
+        return
+    if isinstance(token_budget, bool) or not isinstance(token_budget, int):
+        raise TypeError("token_budget must be a positive integer or None")
+    if token_budget <= 0:
+        raise ValueError("token_budget must be greater than zero")
+    if response_model is None:
+        raise ValueError("token_budget requires a structured response_model")
+    if kwargs.get("stream"):
+        raise ValueError("token_budget is not supported for streaming responses")
+
+
+def _finalize_parsed_response(
+    parsed: Any,
+    response: Any,
+    total_usage: Any | None = None,
+) -> Any:
+    usage = _usage_snapshot(total_usage) if total_usage is not None else None
     if isinstance(parsed, IterableBase):
         parsed = [task for task in parsed.tasks]
     if isinstance(parsed, AdapterBase):
         return parsed.content
     if isinstance(parsed, list) and not isinstance(parsed, ListResponse):
-        return ListResponse.from_list(parsed, raw_response=response)
+        return ListResponse.from_list(
+            parsed,
+            raw_response=response,
+            total_usage=usage,
+        )
+    if isinstance(parsed, ListResponse):
+        parsed._raw_response = response
+        parsed._total_usage = usage
+        return parsed
     if isinstance(parsed, BaseModel):
         parsed._raw_response = response  # type: ignore[attr-defined]
+        if usage is not None:
+            parsed._total_usage = usage  # type: ignore[attr-defined]
     return parsed
+
+
+def _budget_error(
+    *,
+    token_budget: int | None,
+    usage_available: bool,
+    total_usage: Any,
+    attempt_number: int,
+    response: Any,
+    kwargs: dict[str, Any],
+    failed_attempts: list[FailedAttempt],
+) -> TokenBudgetError | None:
+    if token_budget is None:
+        return None
+
+    error_kwargs = {
+        "budget": token_budget,
+        "last_completion": response,
+        "messages": extract_messages(kwargs),
+        "n_attempts": attempt_number,
+        "total_usage": _usage_snapshot(total_usage),
+        "create_kwargs": kwargs,
+        "failed_attempts": failed_attempts,
+    }
+    if not usage_available:
+        return TokenUsageUnavailableError(
+            "Token budget cannot be enforced because the provider response did "
+            "not include compatible usage metadata",
+            **error_kwargs,
+        )
+
+    used_tokens = _usage_total_tokens(total_usage)
+    if used_tokens is None:
+        return TokenUsageUnavailableError(
+            "Token budget cannot be enforced because total token usage is unavailable",
+            **error_kwargs,
+        )
+    if used_tokens >= token_budget:
+        return TokenBudgetExceeded(
+            f"Token budget exhausted after {used_tokens} tokens across "
+            f"{attempt_number} attempts (budget: {token_budget})",
+            **error_kwargs,
+        )
+    return None
 
 
 def _initialize_usage(provider: Provider | Mode) -> Any:
@@ -121,6 +229,7 @@ def retry_sync_v2(
     kwargs: dict[str, Any],
     strict: bool,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model:
     """Sync retry logic using v2 registry handlers.
 
@@ -135,13 +244,21 @@ def retry_sync_v2(
         kwargs: Keyword args for func
         strict: Strict validation mode
         hooks: Optional hooks
+        token_budget: Positive cumulative token budget for validation retries
 
     Returns:
         Validated Pydantic model instance
 
     Raises:
         InstructorRetryException: If max retries exceeded
+        TokenBudgetExceeded: If a failed attempt exhausts the retry budget
+        TokenUsageUnavailableError: If a retry budget cannot be enforced
     """
+    _validate_token_budget(
+        token_budget,
+        response_model=response_model,
+        kwargs=kwargs,
+    )
     if response_model is None:
         # No structured output, just call the API
         return func(*args, **kwargs)
@@ -169,6 +286,7 @@ def retry_sync_v2(
     last_exception: Exception | None = None
     last_attempt_number = 0
     total_usage = _initialize_usage(provider)
+    usage_complete = True
 
     try:
         for attempt in max_retries_instance:
@@ -205,7 +323,14 @@ def retry_sync_v2(
                 if hooks:
                     hooks.emit_completion_response(response)
 
+                usage_available = has_compatible_usage(response, total_usage)
+                usage_complete = usage_complete and usage_available
                 update_total_usage(response=response, total_usage=total_usage)
+                if hooks and usage_complete:
+                    hooks.emit_completion_usage(
+                        _usage_snapshot(total_usage),
+                        attempt_number=attempt_number,
+                    )
 
                 # Parse response using registry
                 try:
@@ -222,7 +347,11 @@ def retry_sync_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)
+                    return _finalize_parsed_response(
+                        parsed,
+                        response,
+                        total_usage=total_usage if usage_complete else None,
+                    )
 
                 except IncompleteOutputException:
                     raise
@@ -237,15 +366,38 @@ def retry_sync_v2(
                     )
                     last_exception = e
 
+                    budget_error = _budget_error(
+                        token_budget=token_budget,
+                        usage_available=usage_complete,
+                        total_usage=total_usage,
+                        attempt_number=attempt_number,
+                        response=response,
+                        kwargs=kwargs,
+                        failed_attempts=failed_attempts,
+                    )
                     if hooks:
                         hooks.emit_parse_error(
                             e,
                             **_attempt_metadata(
                                 attempt_number=attempt_number,
                                 max_attempts=max_attempts,
-                                is_last_attempt=max_attempts == attempt_number,
+                                is_last_attempt=(
+                                    max_attempts == attempt_number
+                                    or budget_error is not None
+                                ),
                             ),
                         )
+                    if budget_error is not None:
+                        if hooks:
+                            hooks.emit_completion_last_attempt(
+                                budget_error,
+                                **_attempt_metadata(
+                                    attempt_number=attempt_number,
+                                    max_attempts=max_attempts,
+                                    is_last_attempt=True,
+                                ),
+                            )
+                        raise budget_error from e
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
                         kwargs=kwargs,
@@ -256,7 +408,7 @@ def retry_sync_v2(
                     # Will retry with modified kwargs
                     raise
 
-    except IncompleteOutputException:
+    except (IncompleteOutputException, TokenBudgetError):
         raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred
@@ -310,6 +462,7 @@ def retry_sync(
     mode: Mode = Mode.TOOLS,
     provider: Provider = Provider.OPENAI,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model | None:
     """Compatibility wrapper for the public retry API."""
     strict_value = True if strict is None else strict
@@ -324,6 +477,7 @@ def retry_sync(
         kwargs=dict(kwargs),
         strict=strict_value,
         hooks=hooks,
+        token_budget=token_budget,
     )
 
 
@@ -338,6 +492,7 @@ async def retry_async(
     mode: Mode = Mode.TOOLS,
     provider: Provider = Provider.OPENAI,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model | None:
     """Compatibility wrapper for the public retry API."""
     strict_value = True if strict is None else strict
@@ -352,6 +507,7 @@ async def retry_async(
         kwargs=dict(kwargs),
         strict=strict_value,
         hooks=hooks,
+        token_budget=token_budget,
     )
 
 
@@ -366,6 +522,7 @@ async def retry_async_v2(
     kwargs: dict[str, Any],
     strict: bool,
     hooks: Hooks | None = None,
+    token_budget: int | None = None,
 ) -> T_Model:
     """Async retry logic using v2 registry handlers.
 
@@ -380,13 +537,21 @@ async def retry_async_v2(
         kwargs: Keyword args for func
         strict: Strict validation mode
         hooks: Optional hooks
+        token_budget: Positive cumulative token budget for validation retries
 
     Returns:
         Validated Pydantic model instance
 
     Raises:
         InstructorRetryException: If max retries exceeded
+        TokenBudgetExceeded: If a failed attempt exhausts the retry budget
+        TokenUsageUnavailableError: If a retry budget cannot be enforced
     """
+    _validate_token_budget(
+        token_budget,
+        response_model=response_model,
+        kwargs=kwargs,
+    )
     if response_model is None:
         # No structured output, just call the API
         return await func(*args, **kwargs)
@@ -414,6 +579,7 @@ async def retry_async_v2(
     last_exception: Exception | None = None
     last_attempt_number = 0
     total_usage = _initialize_usage(provider)
+    usage_complete = True
 
     try:
         async for attempt in max_retries_instance:
@@ -450,7 +616,14 @@ async def retry_async_v2(
                 if hooks:
                     hooks.emit_completion_response(response)
 
+                usage_available = has_compatible_usage(response, total_usage)
+                usage_complete = usage_complete and usage_available
                 update_total_usage(response=response, total_usage=total_usage)
+                if hooks and usage_complete:
+                    hooks.emit_completion_usage(
+                        _usage_snapshot(total_usage),
+                        attempt_number=attempt_number,
+                    )
 
                 # Parse response using registry
                 try:
@@ -467,7 +640,11 @@ async def retry_async_v2(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
                     )
-                    return _finalize_parsed_response(parsed, response)
+                    return _finalize_parsed_response(
+                        parsed,
+                        response,
+                        total_usage=total_usage if usage_complete else None,
+                    )
 
                 except IncompleteOutputException:
                     raise
@@ -482,15 +659,38 @@ async def retry_async_v2(
                     )
                     last_exception = e
 
+                    budget_error = _budget_error(
+                        token_budget=token_budget,
+                        usage_available=usage_complete,
+                        total_usage=total_usage,
+                        attempt_number=attempt_number,
+                        response=response,
+                        kwargs=kwargs,
+                        failed_attempts=failed_attempts,
+                    )
                     if hooks:
                         hooks.emit_parse_error(
                             e,
                             **_attempt_metadata(
                                 attempt_number=attempt_number,
                                 max_attempts=max_attempts,
-                                is_last_attempt=max_attempts == attempt_number,
+                                is_last_attempt=(
+                                    max_attempts == attempt_number
+                                    or budget_error is not None
+                                ),
                             ),
                         )
+                    if budget_error is not None:
+                        if hooks:
+                            hooks.emit_completion_last_attempt(
+                                budget_error,
+                                **_attempt_metadata(
+                                    attempt_number=attempt_number,
+                                    max_attempts=max_attempts,
+                                    is_last_attempt=True,
+                                ),
+                            )
+                        raise budget_error from e
                     # Prepare reask using registry
                     kwargs = handlers.reask_handler(
                         kwargs=kwargs,
@@ -501,7 +701,7 @@ async def retry_async_v2(
                     # Will retry with modified kwargs
                     raise
 
-    except IncompleteOutputException:
+    except (IncompleteOutputException, TokenBudgetError):
         raise
     except Exception as e:
         # Max retries exceeded or non-validation error occurred

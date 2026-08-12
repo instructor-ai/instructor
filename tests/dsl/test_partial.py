@@ -960,6 +960,71 @@ class TestFinalValidationAfterStreaming:
 
         assert "age" in str(exc_info.value)
 
+    def test_final_validation_accepts_explicit_null_for_required_nullable_field(self):
+        """Explicit JSON null for a required-but-nullable field should validate.
+
+        The final validation must not confuse a field the model explicitly
+        returned as null with a field that was never streamed at all.
+        """
+
+        class ModelWithNullable(BaseModel):
+            name: str
+            email: Optional[str]  # Required, but nullable
+
+        PartialModel = Partial[ModelWithNullable]
+
+        chunks = ['{"name": "Al', 'ice", "email"', ": null}"]
+
+        results = list(_partial_api(PartialModel).model_from_chunks(iter(chunks)))
+        assert len(results) > 0
+        final = results[-1]
+        assert final.name == "Alice"
+        assert final.email is None
+
+    def test_final_validation_still_rejects_absent_required_nullable_field(self):
+        """A required nullable field genuinely absent from complete JSON still fails."""
+
+        class ModelWithNullable(BaseModel):
+            name: str
+            email: Optional[str]  # Required, but nullable
+
+        PartialModel = Partial[ModelWithNullable]
+
+        chunks = ['{"name": "Alice"}']  # 'email' truly missing
+
+        with pytest.raises(ValidationError) as exc_info:
+            list(_partial_api(PartialModel).model_from_chunks(iter(chunks)))
+
+        assert "email" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_async_final_validation_accepts_explicit_null_for_required_nullable_field(
+        self,
+    ):
+        """Async streaming should also accept explicit nulls for nullable fields."""
+
+        class ModelWithNullable(BaseModel):
+            name: str
+            email: Optional[str]  # Required, but nullable
+
+        PartialModel = Partial[ModelWithNullable]
+
+        async def async_chunks():
+            yield '{"name": "Al'
+            yield 'ice", "email"'
+            yield ": null}"
+
+        results = []
+        async for obj in _partial_api(PartialModel).model_from_chunks_async(
+            async_chunks()
+        ):
+            results.append(obj)
+
+        assert len(results) > 0
+        final = results[-1]
+        assert final.name == "Alice"
+        assert final.email is None
+
 
 class TestRecursiveModels:
     """Test that Partial handles self-referential models without infinite recursion."""
@@ -1197,3 +1262,111 @@ class TestRecursiveModels:
         assert result.content[0].text == "Introduction paragraph"
         assert result.content[1].title == "Section 1.1"
         assert result.content[1].content[1].title == "Subsection 1.1.1"
+
+
+class TestOptionalNestedBaseModelDuringPartialStreaming:
+    """Regression tests for Optional[BaseModel] field handling during partial streaming.
+
+    When the root JSON is incomplete (stream still in flight), _build_partial_object()
+    is called instead of model_validate().  Fields annotated as ``Optional[NestedModel]``
+    (equivalently ``Union[NestedModel, None]``) used to be stored as raw ``dict`` objects
+    because the guard ``isinstance(field_type, type)`` returns False for generic aliases
+    like ``Optional[NestedModel]``.
+
+    The fix adds ``_unwrap_optional_base_model()`` which unwraps the Optional wrapper, so
+    callers get proper model instances with attribute access instead of plain dicts.
+    """
+
+    def test_optional_nested_basemodel_is_model_instance_during_incomplete_stream(self):
+        """Optional[NestedModel] fields must yield NestedModel instances, not raw dicts."""
+
+        class Inner(BaseModel):
+            value: int
+
+        class Outer(BaseModel):
+            name: str
+            inner: Optional[Inner] = None
+
+        partial = Partial[Outer]
+
+        # Incomplete JSON — root closing brace is missing, so _build_partial_object runs
+        chunks = ['{"name": "alice", "inner": {"value": 42}']
+
+        results = list(_partial_api(partial).model_from_chunks(chunks))
+        assert len(results) == 1
+        obj = results[0]
+
+        # Before the fix: obj.inner was a plain dict {"value": 42}
+        assert isinstance(obj.inner, Inner), (
+            f"Expected Inner instance, got {type(obj.inner)}: {obj.inner!r}"
+        )
+        assert obj.inner.value == 42
+
+    def test_optional_nested_basemodel_attribute_access_does_not_raise(self):
+        """Attribute access on an Optional[BaseModel] field must not raise AttributeError."""
+
+        class Address(BaseModel):
+            city: str
+            zip_code: str
+
+        class Person(BaseModel):
+            name: str
+            address: Optional[Address] = None
+
+        partial = Partial[Person]
+
+        # Root still open — simulates mid-stream state
+        chunks = ['{"name": "bob", "address": {"city": "NYC", "zip_code": "10001"}']
+
+        results = list(_partial_api(partial).model_from_chunks(chunks))
+        obj = results[-1]
+
+        # Would raise AttributeError on a raw dict before the fix
+        assert obj.address.city == "NYC"
+        assert obj.address.zip_code == "10001"
+
+    def test_optional_nested_basemodel_absent_field_stays_none(self):
+        """When the Optional[BaseModel] field is absent, its default (None) must not change."""
+
+        class Inner(BaseModel):
+            value: int
+
+        class Outer(BaseModel):
+            name: str
+            inner: Optional[Inner] = None
+
+        partial = Partial[Outer]
+
+        # inner field completely absent; root also incomplete
+        chunks = ['{"name": "carol"']
+
+        results = list(_partial_api(partial).model_from_chunks(chunks))
+        obj = results[-1]
+
+        # Must remain None — not an empty Inner() instance
+        assert obj.inner is None
+
+    def test_partial_list_returns_model_instance_for_incomplete_trailing_item(self):
+        """The trailing (still-streaming) item in a list[BaseModel] field must be
+        a partial model instance, not a raw dict -- consistent with how a
+        singular open nested BaseModel field is already handled."""
+
+        class Item(BaseModel):
+            name: str
+            qty: int
+
+        class Order(BaseModel):
+            items: list[Item]
+
+        partial = Partial[Order]
+
+        # First item complete, second item mid-stream (incomplete).
+        chunks = ['{"items": [{"name": "apple", "qty": 3}, {"name": "banana", "qty"']
+
+        results = list(_partial_api(partial).model_from_chunks(chunks))
+        obj = results[-1]
+
+        assert isinstance(obj.items[0], Item)
+        # Would be a raw dict before the fix, raising AttributeError on .name
+        assert isinstance(obj.items[-1], Item)
+        assert obj.items[-1].name == "banana"

@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
-from typing import Any
-
 import pytest
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
 from instructor import Mode, Provider
 from instructor.core.exceptions import IncompleteOutputException
 from instructor.v2.core.registry import mode_registry, normalize_mode
+from tests.coverage._openai import chat_completion, tool_call
 from tests.v2.provider_matrix import PROVIDER_SPECS
 
 OPENAI_COMPAT_PROVIDERS = (
@@ -29,65 +27,6 @@ OPENAI_HANDLER_ALIAS_PROVIDERS = (
 
 class Answer(BaseModel):
     answer: float
-
-
-@dataclass
-class MockFunction:
-    name: str
-    arguments: str
-
-
-@dataclass
-class MockToolCall:
-    function: MockFunction
-
-    @classmethod
-    def build(cls, model_name: str, arguments: dict[str, Any]) -> MockToolCall:
-        return cls(MockFunction(model_name, json.dumps(arguments)))
-
-
-@dataclass
-class MockMessage:
-    content: str | None = None
-    tool_calls: list[MockToolCall] | None = None
-    role: str = "assistant"
-
-    def model_dump(self) -> dict[str, Any]:
-        result: dict[str, Any] = {"role": self.role, "content": self.content}
-        if self.tool_calls:
-            result["tool_calls"] = [
-                {
-                    "id": f"call_{index}",
-                    "type": "function",
-                    "function": {
-                        "name": tool_call.function.name,
-                        "arguments": tool_call.function.arguments,
-                    },
-                }
-                for index, tool_call in enumerate(self.tool_calls)
-            ]
-        return result
-
-
-@dataclass
-class MockChoice:
-    message: MockMessage
-    finish_reason: str = "stop"
-
-
-@dataclass
-class MockResponse:
-    choices: list[MockChoice]
-
-    @classmethod
-    def from_content(
-        cls,
-        content: str | None = None,
-        *,
-        tool_calls: list[MockToolCall] | None = None,
-        finish_reason: str = "stop",
-    ) -> MockResponse:
-        return cls([MockChoice(MockMessage(content, tool_calls), finish_reason)])
 
 
 def _handlers(provider: Provider, mode: Mode):
@@ -134,17 +73,15 @@ def test_md_json_extends_existing_system_message(provider: Provider) -> None:
     [
         (
             Mode.TOOLS,
-            MockResponse.from_content(
-                tool_calls=[MockToolCall.build("Answer", {"answer": 5.0})]
-            ),
+            chat_completion(tool_calls=[tool_call("Answer", {"answer": 5.0})]),
         ),
-        (Mode.MD_JSON, MockResponse.from_content('{"answer": 21.0}')),
+        (Mode.MD_JSON, chat_completion(content='{"answer": 21.0}')),
     ],
 )
 def test_response_parser_common_paths(
     provider: Provider,
     mode: Mode,
-    response: MockResponse,
+    response: ChatCompletion,
 ) -> None:
     result = _handlers(provider, mode).response_parser(
         response,
@@ -176,8 +113,8 @@ def test_tools_support_nested_models(provider: Provider) -> None:
 
 @pytest.mark.parametrize("provider", OPENAI_COMPAT_PROVIDERS)
 def test_incomplete_tools_output_raises(provider: Provider) -> None:
-    response = MockResponse.from_content(
-        tool_calls=[MockToolCall.build("Answer", {"answer": 4.0})],
+    response = chat_completion(
+        tool_calls=[tool_call("Answer", {"answer": 4.0})],
         finish_reason="length",
     )
 
@@ -202,3 +139,34 @@ def test_legacy_modes_remain_accepted(provider: Provider) -> None:
     for legacy_mode in spec.legacy_modes:
         assert normalize_mode(provider, legacy_mode) != legacy_mode
         assert mode_registry.is_registered(provider, legacy_mode)
+
+
+def test_strict_mode_does_not_pollute_schema_cache() -> None:
+    """strict=True must not permanently corrupt the lru_cache for subsequent calls.
+
+    generate_openai_schema uses lru_cache, so it returns the same dict object on
+    every call. If the TOOLS handler writes "strict" directly into that dict, all
+    future calls for the same model (even without strict=True) receive a schema
+    that already carries "strict": True. The fix is a shallow copy before mutation.
+    """
+
+    class StrictCacheModel(BaseModel):
+        x: int
+
+    handler = _handlers(Provider.OPENAI, Mode.TOOLS)
+
+    # First call with strict=True.
+    _, result_strict = handler.request_handler(
+        StrictCacheModel,
+        {"messages": [{"role": "user", "content": "test"}], "strict": True},
+    )
+    assert result_strict["tools"][0]["function"].get("strict") is True
+
+    # Second call WITHOUT strict=True must not inherit the mutation.
+    _, result_plain = handler.request_handler(
+        StrictCacheModel,
+        {"messages": [{"role": "user", "content": "test"}]},
+    )
+    assert "strict" not in result_plain["tools"][0]["function"], (
+        "lru_cache was poisoned: 'strict' key survived a non-strict call"
+    )

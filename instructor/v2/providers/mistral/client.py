@@ -11,7 +11,8 @@ Mistral has a unique API structure:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, overload
+import importlib
+from typing import Any, Literal, Protocol, overload
 
 from instructor.v2.core.client import AsyncInstructor, Instructor
 from instructor.v2.core.mode import Mode
@@ -21,18 +22,30 @@ from instructor.v2.core.patch import patch_v2
 # Ensure handlers are registered (decorators auto-register on import)
 from instructor.v2.providers.mistral import handlers  # noqa: F401
 
-if TYPE_CHECKING:
-    from mistralai import Mistral
-else:
-    try:
-        from mistralai import Mistral
-    except ImportError:
-        Mistral = None
+
+class _MistralClient(Protocol):
+    chat: Any
+
+
+def _load_mistral_client_type() -> type[Any] | None:
+    """Load the client class from the Mistral 2.x or 1.x export."""
+    for module_name in ("mistralai.client", "mistralai"):
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+        client_type = getattr(module, "Mistral", None)
+        if isinstance(client_type, type):
+            return client_type
+    return None
+
+
+Mistral = _load_mistral_client_type()
 
 
 @overload
 def from_mistral(
-    client: Mistral,
+    client: _MistralClient,
     mode: Mode = Mode.TOOLS,
     use_async: Literal[False] = False,
     model: str | None = None,
@@ -42,7 +55,7 @@ def from_mistral(
 
 @overload
 def from_mistral(
-    client: Mistral,
+    client: _MistralClient,
     mode: Mode = Mode.TOOLS,
     use_async: Literal[True] = True,
     model: str | None = None,
@@ -52,7 +65,7 @@ def from_mistral(
 
 @overload
 def from_mistral(
-    client: Mistral,
+    client: _MistralClient,
     mode: Mode = Mode.TOOLS,
     use_async: bool = False,
     model: str | None = None,
@@ -61,7 +74,7 @@ def from_mistral(
 
 
 def from_mistral(
-    client: Mistral,
+    client: _MistralClient,
     mode: Mode = Mode.TOOLS,
     use_async: bool = False,
     model: str | None = None,
@@ -87,7 +100,10 @@ def from_mistral(
         ClientError: If client is not a valid Mistral client instance or mistralai not installed
 
     Examples:
-        >>> from mistralai import Mistral
+        >>> try:
+        ...     from mistralai.client import Mistral  # mistralai 2.x
+        ... except ImportError:
+        ...     from mistralai import Mistral  # mistralai 1.x
         >>> from instructor import Mode
         >>> from instructor.v2.providers.mistral import from_mistral
         >>>
@@ -160,26 +176,25 @@ def from_mistral(
             mode=mode,
             **kwargs,
         )
-    else:
 
-        def sync_wrapper(*args: Any, **wrapper_kwargs: Any) -> Any:
-            """Sync wrapper that handles streaming."""
-            if wrapper_kwargs.pop("stream", False):
-                return client.chat.stream(*args, **wrapper_kwargs)
-            return client.chat.complete(*args, **wrapper_kwargs)
+    def sync_wrapper(*args: Any, **wrapper_kwargs: Any) -> Any:
+        """Sync wrapper that handles streaming."""
+        if wrapper_kwargs.pop("stream", False):
+            return client.chat.stream(*args, **wrapper_kwargs)
+        return client.chat.complete(*args, **wrapper_kwargs)
 
-        # Patch using v2 registry
-        patched_create = patch_v2(
-            func=sync_wrapper,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            default_model=model,
-        )
+    # Patch using v2 registry
+    patched_create = patch_v2(
+        func=sync_wrapper,
+        provider=Provider.MISTRAL,
+        mode=mode,
+        default_model=model,
+    )
 
-        return Instructor(
-            client=client,
-            create=patched_create,
-            provider=Provider.MISTRAL,
-            mode=mode,
-            **kwargs,
-        )
+    return Instructor(
+        client=client,
+        create=patched_create,
+        provider=Provider.MISTRAL,
+        mode=mode,
+        **kwargs,
+    )

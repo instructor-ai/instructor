@@ -28,7 +28,7 @@ def image_to_genai(image: Any) -> Any:
         ("http://", "https://")
     ):
         return types.Part.from_bytes(
-            data=requests.get(image.source).content,
+            data=requests.get(image.source, timeout=30).content,
             mime_type=image.media_type,
         )
     if image.data or image.is_base64(str(image.source)):
@@ -55,7 +55,7 @@ def pdf_to_genai(pdf: Any) -> Any:
         and pdf.source.startswith(("http://", "https://"))
         and not pdf.data
     ):
-        data = requests.get(pdf.source).content
+        data = requests.get(pdf.source, timeout=30).content
         encoded = base64.b64encode(data).decode("utf-8")
         return types.Part.from_bytes(
             data=base64.b64decode(encoded),
@@ -79,14 +79,16 @@ def upload_new_pdf_file(
     client = Client()
     file = client.files.upload(file=file_path)
     while file.state != FileState.ACTIVE:
-        time.sleep(retry_delay)
-        file = client.files.get(name=file.name)  # type: ignore
-        if max_retries > 0:
-            max_retries -= 1
-        else:
+        file_name = file.name
+        if file_name is None:
+            raise ValueError("Cannot poll a pending GenAI file without a file name")
+        if max_retries <= 0:
             raise Exception(
                 "Max retries reached. File upload has been started but is still pending"
             )
+        time.sleep(retry_delay)
+        file = client.files.get(name=file_name)
+        max_retries -= 1
     return cls(source=file.uri, media_type=file.mime_type, data=None)
 
 

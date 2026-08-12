@@ -1,8 +1,13 @@
-from pydantic import BaseModel
-from mistralai.client import MistralClient
-from instructor import from_mistral
-from instructor.mode import Mode
 import os
+
+from pydantic import BaseModel
+
+from instructor import Mode, from_mistral
+
+try:
+    from mistralai.client import Mistral
+except ImportError:
+    from mistralai import Mistral
 
 
 class UserDetails(BaseModel):
@@ -11,7 +16,7 @@ class UserDetails(BaseModel):
 
 
 # enables `response_model` in chat call
-client = MistralClient(api_key=os.environ.get("MISTRAL_API_KEY"))
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 instructor_client = from_mistral(
     client=client,
     model="mistral-large-latest",
@@ -19,7 +24,7 @@ instructor_client = from_mistral(
     max_tokens=1000,
 )
 
-resp = instructor_client.messages.create(
+resp = instructor_client.create(
     response_model=UserDetails,
     messages=[{"role": "user", "content": "Jason is 10"}],
     temperature=0,

@@ -22,13 +22,6 @@ class Answer(BaseModel):
     answer: float
 
 
-class User(BaseModel):
-    """User model for testing."""
-
-    name: str
-    age: int
-
-
 class MockToolCall:
     """Mock tool call for testing Mistral responses."""
 
@@ -201,6 +194,52 @@ class TestMistralToolsHandler:
         tool_msg = result["messages"][-1]
         assert tool_msg["role"] == "tool"
         assert "Validation Error" in tool_msg["content"]
+
+    def test_parse_response_without_tool_calls_raises_retryable_error(self, handler):
+        """Test parsing a prose response with no tool calls raises ResponseParsingError.
+
+        Some models ignore tool_choice="any" and reply with plain text, leaving
+        tool_calls as None. Parsing must raise a retryable ResponseParsingError
+        (not a bare TypeError) so the retry machinery can re-ask.
+        """
+        from instructor.v2.core.errors import ResponseParsingError
+
+        response = MockResponse(content="I cannot answer that as a tool call.")
+
+        with pytest.raises(ResponseParsingError, match="No tool calls found"):
+            handler.response_parser(response, Answer)
+
+    def test_handle_reask_without_tool_calls_adds_user_correction(self, handler):
+        """Test handle_reask falls back to a user message when tool_calls is None.
+
+        There is no tool_call_id to attach a tool-role message to, so the
+        handler must append a plain user correction instead of iterating None.
+        """
+        kwargs = {"messages": [{"role": "user", "content": "Original"}]}
+        response = MockResponse(content="The answer is four.")
+        exception = ValueError("Validation failed")
+
+        result = handler.reask_handler(kwargs, response, exception)
+
+        assert len(result["messages"]) == 3
+        correction = result["messages"][-1]
+        assert correction["role"] == "user"
+        assert "Validation Error" in correction["content"]
+        assert "Validation failed" in correction["content"]
+
+    def test_parallel_parse_response_without_tool_calls_yields_nothing(self, handler):
+        """Test the parallel generator tolerates tool_calls=None without crashing."""
+        from collections.abc import Iterable
+        from typing import Union
+
+        class Other(BaseModel):
+            value: int
+
+        response = MockResponse(content="No tools were called.")
+
+        result = handler.response_parser(response, Iterable[Union[Answer, Other]])
+
+        assert list(result) == []
 
     def test_tools_handler_preserves_extra_kwargs(self, handler):
         """Test TOOLS handler preserves extra kwargs."""

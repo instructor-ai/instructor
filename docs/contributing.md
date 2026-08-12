@@ -13,7 +13,7 @@ We welcome contributions to Instructor! This page covers the different ways you 
 
 Evals help us monitor the quality of both the OpenAI models and the Instructor library. To contribute:
 
-1. **Explore Existing Evals**: Check out [our evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm/test_openai/evals)
+1. **Explore Existing Evals**: Check out [our evals directory](https://github.com/567-labs/instructor/tree/main/tests/llm)
 2. **Create a New Eval**: Add new pytest tests that evaluate specific capabilities or edge cases
 3. **Follow the Pattern**: Structure your eval similar to existing ones
 4. **Submit a PR**: We'll review and incorporate your eval
@@ -22,7 +22,7 @@ Evals are run weekly, and results are tracked to monitor performance over time.
 
 ### Reporting Issues
 
-If you encounter a bug or problem, please [file an issue on GitHub](https://github.com/instructor-ai/instructor/issues) with:
+If you encounter a bug or problem, please [file an issue on GitHub](https://github.com/567-labs/instructor/issues) with:
 
 1. A clear, descriptive title
 2. Detailed information including:
@@ -38,8 +38,8 @@ If you encounter a bug or problem, please [file an issue on GitHub](https://gith
 We welcome pull requests! Here's the process:
 
 1. **For Small Changes**: Feel free to submit a PR directly
-2. **For Larger Changes**: [Start with an issue](https://github.com/instructor-ai/instructor/issues) to discuss approach
-3. **Looking for Ideas?** Check issues labeled [help wanted](https://github.com/instructor-ai/instructor/labels/help%20wanted) or [good first issue](https://github.com/instructor-ai/instructor/labels/good%20first%20issue)
+2. **For Larger Changes**: [Start with an issue](https://github.com/567-labs/instructor/issues) to discuss approach
+3. **Looking for Ideas?** Check issues labeled [help wanted](https://github.com/567-labs/instructor/labels/help%20wanted) or [good first issue](https://github.com/567-labs/instructor/labels/good%20first%20issue)
 
 ## Setting Up Your Development Environment
 
@@ -63,16 +63,16 @@ UV is a fast Python package installer and resolver that makes development easier
    cd instructor
 
    # Install with development dependencies
-   uv pip install -e ".[dev,docs]"
+   uv sync --extra dev --extra docs
    ```
 
 3. **Adding New Dependencies**:
    ```bash
-   # Add a regular dependency
-   uv pip install some-package
+   # Add a project dependency and update pyproject.toml plus uv.lock
+   uv add some-package
 
-   # Install a specific version
-   uv pip install "some-package>=1.0.0,<2.0.0"
+   # Install only into the current environment without changing project metadata
+   uv pip install some-package
    ```
 
 4. **Common UV Commands**:
@@ -80,8 +80,9 @@ UV is a fast Python package installer and resolver that makes development easier
    # Update UV itself
    uv self update
 
-   # Create a requirements file
-   uv pip freeze > requirements.txt
+   # Verify the lockfile and regenerate the committed requirements export
+   uv lock --check
+   uv pip compile pyproject.toml -o requirements.txt
    ```
 
 ### Using Poetry
@@ -142,9 +143,9 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 4. **Document Installation**:
    ```bash
    # Installation command for your provider
-   uv pip install "instructor[my-provider]"
+   uv add "instructor[my-provider]"
    # or with poetry
-   poetry install --with my-provider
+   poetry add "instructor[my-provider]"
    ```
 
 5. **Create Provider Utilities and Handlers**:
@@ -171,7 +172,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
    ```bash
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
-   git remote add upstream https://github.com/instructor-ai/instructor.git
+   git remote add upstream https://github.com/567-labs/instructor.git
    ```
 3. **Create a Branch**:
    ```bash
@@ -180,7 +181,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 4. **Make Changes, Test, and Commit**:
    ```bash
    # Run tests
-   pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
+   uv run pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
 
    # Commit changes
    git add .
@@ -300,8 +301,7 @@ We use the following tools to maintain code quality:
 
 ```bash
 # Install pre-commit hooks
-pip install pre-commit
-pre-commit install
+uv run pre-commit install
 ```
 
 Key style guidelines:
@@ -439,8 +439,8 @@ print(person.age)   # 25
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
+<a href="https://github.com/567-labs/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=567-labs/instructor" />
 </a>
 
 ## Documentation Resources

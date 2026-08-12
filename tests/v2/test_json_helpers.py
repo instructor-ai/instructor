@@ -38,6 +38,21 @@ def test_extract_json_from_codeblock_handles_even_backslashes_before_quote() -> 
     assert extract_json_from_codeblock(content) == '{"path":"C:\\\\","name":"Ada"}'
 
 
+def test_extract_json_from_codeblock_returns_last_top_level_candidate() -> None:
+    content = (
+        'The user supplied {"is_verified":true}. '
+        'The result is {"person":{"name":"Ada"}}.'
+    )
+
+    assert extract_json_from_codeblock(content) == '{"person":{"name":"Ada"}}'
+
+
+def test_extract_json_from_codeblock_preserves_nested_candidate() -> None:
+    content = 'prefix {"person":{"name":"Ada"}} suffix'
+
+    assert extract_json_from_codeblock(content) == '{"person":{"name":"Ada"}}'
+
+
 def test_extract_json_from_stream_handles_plain_json() -> None:
     assert "".join(extract_json_from_stream(["before ", '{"a":', "1}", " after"])) == (
         '{"a":1}'
@@ -89,10 +104,39 @@ def test_extract_json_from_stream_preserves_triple_backticks_in_plain_string() -
     assert "".join(extract_json_from_stream(chunks)) == '{"code":"```py```"}'
 
 
+def test_extract_json_from_stream_yields_all_objects_in_one_chunk() -> None:
+    # A complete object must not swallow a second object sharing its chunk.
+    chunks = ['{"a":1}{"b":2}']
+    assert "".join(extract_json_from_stream(chunks)) == '{"a":1}{"b":2}'
+
+
+def test_extract_json_from_stream_yields_all_objects_in_fenced_chunk() -> None:
+    chunks = ['```json\n{"a":1}{"b":2}\n```']
+    assert "".join(extract_json_from_stream(chunks)) == '{"a":1}{"b":2}'
+
+
 def test_extract_json_from_stream_preserves_backticks_in_fenced_string() -> None:
     chunks = ["```json\n", '{"code":"`inline`"}', "\n```"]
 
     assert "".join(extract_json_from_stream(chunks)) == '{"code":"`inline`"}'
+
+
+def test_extract_json_from_stream_discards_non_json_brace_span_before_payload() -> None:
+    # MD_JSON prompts often produce a prose preamble before the actual payload,
+    # and that preamble can itself contain a balanced pair of braces that is not
+    # JSON (e.g. a parenthetical aside). A naive bracket-matching scan treats that
+    # span as "the JSON" once it balances and emits it verbatim, so the real
+    # payload that follows gets appended onto invalid JSON instead of replacing
+    # it. The extractor should recognize the span isn't valid JSON, drop it, and
+    # keep scanning for the real payload.
+    chunks = [
+        "I'll pull out the fields now. ",
+        "{Note: keeping the original casing} ",
+        "Here is the result: ",
+        '{"name":"Ada","age":30}',
+    ]
+
+    assert "".join(extract_json_from_stream(chunks)) == '{"name":"Ada","age":30}'
 
 
 @pytest.mark.asyncio
@@ -131,6 +175,16 @@ async def test_extract_json_from_stream_async_handles_array_root() -> None:
 
 
 @pytest.mark.asyncio
+async def test_extract_json_from_stream_async_yields_all_objects_in_chunk() -> None:
+    async def chunks():
+        yield '{"a":1}{"b":2}'
+
+    assert "".join(
+        [chunk async for chunk in extract_json_from_stream_async(chunks())]
+    ) == ('{"a":1}{"b":2}')
+
+
+@pytest.mark.asyncio
 async def test_extract_json_from_stream_async_handles_even_backslashes() -> None:
     async def chunks():
         for chunk in ['prefix {"path":"C:', '\\\\","name":"Ada"} suffix']:
@@ -139,4 +193,23 @@ async def test_extract_json_from_stream_async_handles_even_backslashes() -> None
     assert (
         "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
         == '{"path":"C:\\\\","name":"Ada"}'
+    )
+
+
+@pytest.mark.asyncio
+async def test_extract_json_from_stream_async_discards_non_json_brace_span_before_payload() -> (
+    None
+):
+    async def chunks():
+        for chunk in [
+            "I'll pull out the fields now. ",
+            "{Note: keeping the original casing} ",
+            "Here is the result: ",
+            '{"name":"Ada","age":30}',
+        ]:
+            yield chunk
+
+    assert (
+        "".join([chunk async for chunk in extract_json_from_stream_async(chunks())])
+        == '{"name":"Ada","age":30}'
     )

@@ -182,6 +182,14 @@ client = instructor.from_provider(
     "openai/gpt-4o-mini", organization="org-your-org-id", timeout=30.0
 )
 
+# OpenAI-compatible multi-model gateways (same client pattern via base_url)
+# Example: DaoXE at https://api.daoxe.com/v1
+client = instructor.from_provider(
+    "openai/gpt-4o-mini",
+    api_key="YOUR_GATEWAY_KEY",
+    base_url="https://api.daoxe.com/v1",
+)
+
 # For Anthropic
 client = instructor.from_provider("anthropic/claude-3-5-sonnet", max_tokens=4096)
 

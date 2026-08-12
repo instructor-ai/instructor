@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 env:
   WORKING_DIRECTORY: "."
 
@@ -14,22 +17,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          python-version: "3.11"
       - name: Set up Python
         run: uv python install 3.11
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --frozen --all-extras
       - name: Run type check with ty
-        run: uv run ty check --error-on-warning --output-format github instructor/
+        run: uv run --frozen ty check --error-on-warning --output-format github instructor/
       - name: Run type check with ty (tests)
-        run: uv run ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
+        run: uv run --frozen ty check --config-file ty-tests.toml --error-on-warning --output-format github tests
       - name: Check installed-package public typing
         run: tests/typing/check_installed_package.sh
       - name: Check supported Python versions and platforms
         run: |
-          uv run ty check --python-version 3.9 --python-platform all --error-on-warning --output-format github instructor/
-          uv run ty check --python-version 3.14 --python-platform all --error-on-warning --output-format github instructor/
+          uv run --frozen ty check --python-version 3.9 --python-platform all --error-on-warning --output-format github instructor/
+          uv run --frozen ty check --python-version 3.14 --python-platform all --error-on-warning --output-format github instructor/
+      - name: Check tests on supported Python versions and platforms
+        run: |
+          uv run --frozen ty check --config-file ty-tests.toml --python-version 3.9 --python-platform all --error-on-warning --output-format github tests
+          uv run --frozen ty check --config-file ty-tests.toml --python-version 3.14 --python-platform all --error-on-warning --output-format github tests

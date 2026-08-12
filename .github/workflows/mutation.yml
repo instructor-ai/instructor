@@ -1,0 +1,74 @@
+name: Retry mutation tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retry-mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+          python-version: "3.11"
+          cache-suffix: retry-mutation-py311
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Run retry mutation tests
+        env:
+          INSTRUCTOR_ENV: CI
+        run: |
+          set -euo pipefail
+          mutation_dir="${RUNNER_TEMP}/instructor-mutation"
+          mkdir -p "${mutation_dir}"
+          git archive HEAD | tar -x -C "${mutation_dir}"
+          cd "${mutation_dir}"
+
+          # Keep this manual check focused on the async retry contract.
+          uv run --frozen --all-extras --with 'mutmut==3.6.0' \
+            mutmut run 'instructor.v2.core.retry.x_retry_async_v2__mutmut_*' \
+            --max-children 4
+          uv run --frozen --all-extras --with 'mutmut==3.6.0' \
+            mutmut results --all true \
+            | grep -E '^[[:space:]]*instructor\.v2\.core\.retry\.x_retry_async_v2__mutmut_[0-9]+: ' \
+            | tee "${RUNNER_TEMP}/mutmut-results.txt"
+
+          # Seven survivors are structural: 42 and 107 are overwritten state;
+          # 161, 168, 174, 178, and 179 are unreachable empty-attempt branches.
+          # One timeout (33) removes Tenacity's stop policy and can loop forever.
+          # Keep those exact budgets explicit while rejecting all new gaps.
+          awk -F ': ' '
+            {
+              total++
+              if ($2 == "killed") killed++
+              else if ($2 == "survived") survived++
+              else if ($2 == "timeout") timeout++
+              else unexpected++
+            }
+            END {
+              printf "Async retry mutation results: %d killed, %d survived, %d timeout, %d unexpected, %d total\n", killed, survived, timeout, unexpected, total
+              if (total == 0 || unexpected > 0 || survived > 7 || timeout > 1 || killed * 100 < total * 95) exit 1
+            }
+          ' "${RUNNER_TEMP}/mutmut-results.txt"
+
+      - name: Upload mutation results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: retry-mutation-results
+          path: ${{ runner.temp }}/mutmut-results.txt
+          if-no-files-found: ignore

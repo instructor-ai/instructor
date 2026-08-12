@@ -4,7 +4,6 @@ from typing import (
     TYPE_CHECKING,
     TypeVar,
     Callable,
-    overload,
     Literal,
     Any,
     cast,
@@ -23,22 +22,12 @@ from tenacity import (
     Retrying,
 )
 from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator, Coroutine
-from typing_extensions import Self
+from typing_extensions import Self, overload
 from instructor.v2.dsl.partial import Partial
 from instructor.v2.core.hooks import Hooks, HookName
 
 
 T = TypeVar("T")
-
-
-def _ensure_registry_loaded() -> None:
-    """Ensure v2 handlers are imported so the registry is populated."""
-    try:
-        import importlib
-
-        importlib.import_module("instructor.v2")
-    except Exception:
-        return
 
 
 class _ResponseBase:
@@ -76,6 +65,7 @@ class Response(_ResponseBase):
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T: ...
 
@@ -87,6 +77,7 @@ class Response(_ResponseBase):
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Any: ...
 
@@ -97,11 +88,14 @@ class Response(_ResponseBase):
         max_retries: int | Retrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs,
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
-        create = cast(Callable[..., T | Any], self.client.create)
+        create = cast(Callable[..., Any], self.client.create)
         return create(
             response_model=response_model,
             context=context,
@@ -235,6 +229,7 @@ class AsyncResponse(_ResponseBase):
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T: ...
 
@@ -246,6 +241,7 @@ class AsyncResponse(_ResponseBase):
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Any: ...
 
@@ -256,11 +252,14 @@ class AsyncResponse(_ResponseBase):
         max_retries: int | AsyncRetrying = 3,
         context: dict[str, Any] | None = None,
         strict: bool = True,
+        token_budget: int | None = None,
         **kwargs,
     ) -> T | Any:
         messages = self._normalize_messages(messages, kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
-        create = cast(Callable[..., Awaitable[T | Any]], self.client.create)
+        create = cast(Callable[..., Awaitable[Any]], self.client.create)
         return await create(
             response_model=response_model,
             context=context,
@@ -430,6 +429,7 @@ class Instructor:
                 "completion:response",
                 "completion:error",
                 "completion:last_attempt",
+                "completion:usage",
                 "parse:error",
             ]
         ),
@@ -446,6 +446,7 @@ class Instructor:
                 "completion:response",
                 "completion:error",
                 "completion:last_attempt",
+                "completion:usage",
                 "parse:error",
             ]
         ),
@@ -462,6 +463,7 @@ class Instructor:
                 "completion:response",
                 "completion:error",
                 "completion:last_attempt",
+                "completion:usage",
                 "parse:error",
             ]
         )
@@ -490,6 +492,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> Awaitable[T]: ...
 
@@ -502,6 +505,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T: ...
 
@@ -514,6 +518,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Awaitable[Any]: ...
 
@@ -526,6 +531,7 @@ class Instructor:
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: None = None,
         **kwargs: Any,
     ) -> Any: ...
 
@@ -537,9 +543,12 @@ class Instructor:
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T | Any | Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
         # Combine client hooks with per-call hooks
         combined_hooks = self.hooks
@@ -777,9 +786,12 @@ class AsyncInstructor(Instructor):
         context: dict[str, Any] | None = None,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         **kwargs: Any,
     ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
+        if token_budget is not None:
+            kwargs["token_budget"] = token_budget
 
         # Combine client hooks with per-call hooks
         combined_hooks = self.hooks
@@ -906,8 +918,7 @@ def from_openai(
     client: openai.OpenAI,
     mode: Mode = Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    pass
+) -> Instructor: ...
 
 
 @overload
@@ -915,8 +926,7 @@ def from_openai(
     client: openai.AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor:
-    pass
+) -> AsyncInstructor: ...
 
 
 def from_openai(

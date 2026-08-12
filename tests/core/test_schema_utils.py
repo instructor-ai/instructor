@@ -21,6 +21,8 @@ from instructor.v2.providers.openai.schema import (
 class TestModel(BaseModel):
     """A test model for schema generation."""
 
+    __test__ = False
+
     name: str = Field(description="The name of the user")
     age: int = Field(description="The age of the user")
     email: Optional[str] = Field(default=None, description="The email address")
@@ -34,6 +36,8 @@ class TestModelWithDocstring(BaseModel):
         age: Age in years
         tags: List of tags
     """
+
+    __test__ = False
 
     name: str
     age: int
@@ -147,6 +151,25 @@ def test_required_fields_generation():
     assert "email" not in required
 
 
+def test_default_factory_fields_not_required():
+    """Fields with a default_factory have a default and must not be required."""
+
+    class ModelWithFactory(BaseModel):
+        name: str
+        items: list[str] = Field(default_factory=list)
+        tags: dict[str, str] = Field(default_factory=dict)
+
+    schema = generate_openai_schema(ModelWithFactory)
+    required = schema["parameters"]["required"]
+
+    # Only ``name`` has no default; the default_factory fields are optional.
+    assert required == ["name"]
+    # And it should agree with Pydantic's own required set.
+    assert set(required) == set(
+        ModelWithFactory.model_json_schema().get("required", [])
+    )
+
+
 def test_field_descriptions():
     """Test that field descriptions are preserved."""
     schema = generate_openai_schema(TestModel)
@@ -190,6 +213,25 @@ def test_anthropic_schema_uses_openai_base():
     # But should have its own input_schema
     assert "input_schema" in anthropic_schema
     assert anthropic_schema["input_schema"] == TestModel.model_json_schema()
+
+
+def test_cached_schema_same_object():
+    """generate_openai_schema returns the same dict object on every call (lru_cache).
+
+    This means callers MUST NOT mutate the returned dict directly; they should
+    copy it first. OpenAIToolsHandler.prepare_request does this by shallow-copying
+    before writing "strict" into the schema.
+    """
+
+    class ImmutableModel(BaseModel):
+        value: int
+
+    s1 = generate_provider_openai_schema(ImmutableModel)
+    s2 = generate_provider_openai_schema(ImmutableModel)
+
+    # Both calls return the exact same object — any direct mutation would
+    # affect all future callers, which is why handlers must copy before mutating.
+    assert s1 is s2
 
 
 if __name__ == "__main__":

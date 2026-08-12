@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import base64
+from copy import deepcopy
 import json
 import mimetypes
-import re
 from textwrap import dedent
 from typing import Any, cast
 
@@ -18,29 +18,66 @@ from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.json import extract_json_from_codeblock
 
 
-def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
+def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
+    """Return a Bedrock-compatible schema without mutating model-owned data."""
+    schema = deepcopy(response_model.model_json_schema())
+
+    def normalize(value: Any, path: str) -> None:
+        if isinstance(value, list):
+            for index, item in enumerate(value):
+                normalize(item, f"{path}[{index}]")
+            return
+        if not isinstance(value, dict):
+            return
+
+        additional_properties = value.get("additionalProperties")
+        if additional_properties is not None and additional_properties is not False:
+            raise ConfigurationError(
+                "Bedrock native structured outputs do not support free-form "
+                f"mappings at {path}; `additionalProperties` must be false."
+            )
+        if value.get("type") == "object" or "properties" in value:
+            value["additionalProperties"] = False
+
+        for key, item in value.items():
+            normalize(item, f"{path}.{key}")
+
+    normalize(schema, "$")
+    return schema
+
+
+def generate_bedrock_schema(
+    response_model: type[Any], *, strict: bool = False
+) -> dict[str, Any]:
     """Generate Bedrock tool schema from a Pydantic model."""
-    schema = response_model.model_json_schema()
-
-    return {
-        "toolSpec": {
-            "name": response_model.__name__,
-            "description": response_model.__doc__
-            or f"Correctly extracted `{response_model.__name__}` with all the required parameters with correct types",
-            "inputSchema": {"json": schema},
-        }
+    schema = (
+        _prepare_bedrock_strict_schema(response_model)
+        if strict
+        else response_model.model_json_schema()
+    )
+    tool_spec: dict[str, Any] = {
+        "name": response_model.__name__,
+        "description": response_model.__doc__
+        or f"Correctly extracted `{response_model.__name__}` with all the required parameters with correct types",
+        "inputSchema": {"json": schema},
     }
+    if strict:
+        tool_spec["strict"] = True
+
+    return {"toolSpec": tool_spec}
 
 
 def reask_bedrock_json(
     kwargs: dict[str, Any],
     response: Any,
     exception: Exception,
-):
+) -> dict[str, Any]:
     """Handle reask for Bedrock JSON mode when validation fails."""
-    kwargs = kwargs.copy()
+    new_kwargs = kwargs.copy()
+    new_kwargs["messages"] = list(kwargs.get("messages", []))
     reask_msgs = [response["output"]["message"]]
     reask_msgs.append(
         {
@@ -55,17 +92,18 @@ def reask_bedrock_json(
             ],
         }
     )
-    kwargs["messages"].extend(reask_msgs)
-    return kwargs
+    new_kwargs["messages"].extend(reask_msgs)
+    return new_kwargs
 
 
 def reask_bedrock_tools(
     kwargs: dict[str, Any],
     response: Any,
     exception: Exception,
-):
+) -> dict[str, Any]:
     """Handle reask for Bedrock tools mode when validation fails."""
-    kwargs = kwargs.copy()
+    new_kwargs = kwargs.copy()
+    new_kwargs["messages"] = list(kwargs.get("messages", []))
 
     assistant_message = response["output"]["message"]
     reask_msgs = [assistant_message]
@@ -115,8 +153,8 @@ def reask_bedrock_tools(
             }
         )
 
-    kwargs["messages"].extend(reask_msgs)
-    return kwargs
+    new_kwargs["messages"].extend(reask_msgs)
+    return new_kwargs
 
 
 def _normalize_bedrock_image_format(mime_or_ext: str) -> str:
@@ -241,11 +279,9 @@ def _prepare_bedrock_converse_kwargs_internal(
             and "text" in system_content[0]
         ):
             system_text = system_content[0]["text"]
-            if "messages" not in call_kwargs:
-                call_kwargs["messages"] = []
-            call_kwargs["messages"].insert(
-                0, {"role": "system", "content": system_text}
-            )
+            messages = list(call_kwargs.get("messages", []))
+            messages.insert(0, {"role": "system", "content": system_text})
+            call_kwargs["messages"] = messages
 
     if "model" in call_kwargs and "modelId" not in call_kwargs:
         call_kwargs["modelId"] = call_kwargs.pop("model")
@@ -387,7 +423,10 @@ def handle_bedrock_json(
 
 
 def handle_bedrock_tools(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+    response_model: type[Any] | None,
+    new_kwargs: dict[str, Any],
+    *,
+    strict: bool = False,
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """Handle Bedrock tools mode."""
     new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
@@ -395,12 +434,39 @@ def handle_bedrock_tools(
     if response_model is None:
         return None, new_kwargs
 
-    tool_schema = generate_bedrock_schema(response_model)
+    tool_schema = generate_bedrock_schema(response_model, strict=strict)
     new_kwargs["toolConfig"] = {
         "tools": [tool_schema],
         "toolChoice": {"tool": {"name": response_model.__name__}},
     }
 
+    return response_model, new_kwargs
+
+
+def handle_bedrock_json_schema(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """Handle native Bedrock JSON schema constrained decoding."""
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+
+    if response_model is None:
+        return None, new_kwargs
+
+    schema = _prepare_bedrock_strict_schema(response_model)
+    schema_name = response_model.__name__
+    new_kwargs["outputConfig"] = {
+        "textFormat": {
+            "type": "json_schema",
+            "structure": {
+                "jsonSchema": {
+                    "schema": json.dumps(schema),
+                    "name": schema_name,
+                    "description": response_model.__doc__
+                    or f"Correctly extracted `{schema_name}` with all the required parameters with correct types",
+                }
+            },
+        }
+    }
     return response_model, new_kwargs
 
 
@@ -504,6 +570,25 @@ class BedrockToolsHandler(ModeHandler):
         )
 
 
+@register_mode_handler(Provider.BEDROCK, Mode.TOOLS_STRICT)
+class BedrockToolsStrictHandler(BedrockToolsHandler):
+    """Handler for Bedrock tool use with native schema enforcement."""
+
+    mode = Mode.TOOLS_STRICT
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        new_kwargs = kwargs.copy()
+        if response_model is None:
+            return handle_bedrock_tools(None, new_kwargs, strict=True)
+
+        prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
+        return handle_bedrock_tools(prepared_model, new_kwargs, strict=True)
+
+
 @register_mode_handler(Provider.BEDROCK, Mode.MD_JSON)
 class BedrockMDJSONHandler(ModeHandler):
     """Handler for Bedrock MD_JSON mode."""
@@ -544,10 +629,7 @@ class BedrockMDJSONHandler(ModeHandler):
                 "Streaming is not supported for Bedrock in MD_JSON mode."
             )
         text = _extract_bedrock_text(response)
-        match = re.search(r"```?json(.*?)```?", text, re.DOTALL)
-        if match:
-            text = match.group(1).strip()
-        text = re.sub(r"```?json|\\n", "", text).strip()
+        text = extract_json_from_codeblock(text)
         return response_model.model_validate_json(
             text,
             context=validation_context,
@@ -555,7 +637,55 @@ class BedrockMDJSONHandler(ModeHandler):
         )
 
 
+@register_mode_handler(Provider.BEDROCK, Mode.JSON_SCHEMA)
+class BedrockJSONSchemaHandler(ModeHandler):
+    """Handler for Bedrock native JSON schema constrained decoding."""
+
+    mode = Mode.JSON_SCHEMA
+
+    def prepare_request(
+        self,
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        new_kwargs = kwargs.copy()
+        if response_model is None:
+            return handle_bedrock_json_schema(None, new_kwargs)
+
+        prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
+        return handle_bedrock_json_schema(prepared_model, new_kwargs)
+
+    def handle_reask(
+        self,
+        kwargs: dict[str, Any],
+        response: Any,
+        exception: Exception,
+    ) -> dict[str, Any]:
+        return reask_bedrock_json(kwargs, response, exception)
+
+    def parse_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool = False,
+        is_async: bool = False,  # noqa: ARG002
+    ) -> BaseModel:
+        if stream:
+            raise ConfigurationError(
+                "Streaming is not supported for Bedrock in JSON_SCHEMA mode."
+            )
+        return response_model.model_validate_json(
+            _extract_bedrock_text(response),
+            context=validation_context,
+            strict=strict,
+        )
+
+
 __all__ = [
     "BedrockToolsHandler",
+    "BedrockToolsStrictHandler",
     "BedrockMDJSONHandler",
+    "BedrockJSONSchemaHandler",
 ]

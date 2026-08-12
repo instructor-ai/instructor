@@ -181,13 +181,11 @@ class Image(BaseModel):
                 img_type = "webp"
 
             if img_type:
-                media_type = f"image/{img_type}"
-                if media_type in VALID_MIME_TYPES:
-                    return cls(
-                        source=data,
-                        media_type=media_type,
-                        data=data,
-                    )
+                return cls(
+                    source=data,
+                    media_type=f"image/{img_type}",
+                    data=data,
+                )
             raise ValueError(f"Unsupported image type: {img_type}")
         except Exception as e:
             raise ValueError(f"Invalid or unsupported base64 image data") from e
@@ -205,7 +203,7 @@ class Image(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True)
+                response = requests.head(url, allow_redirects=True, timeout=30)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
                 raise ValueError(f"Failed to fetch image from URL") from e
@@ -235,10 +233,9 @@ class Image(BaseModel):
     @lru_cache
     def url_to_base64(url: str) -> str:
         """Cachable helper method for getting image url and encoding to base64."""
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         response.raise_for_status()
-        data = base64.b64encode(response.content).decode("utf-8")
-        return data
+        return base64.b64encode(response.content).decode("utf-8")
 
     def to_anthropic(self) -> dict[str, Any]:
         from instructor.v2.providers.anthropic.multimodal import image_to_anthropic
@@ -327,11 +324,13 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         content_type = response.headers.get("content-type")
-        assert content_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        if content_type not in VALID_AUDIO_MIME_TYPES:
+            raise ValueError(
+                f"Unsupported audio format: {content_type}. "
+                f"Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+            )
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -340,7 +339,11 @@ class Audio(BaseModel):
     def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
         """Create an Audio instance from a file path."""
         path = Path(path)
-        assert path.is_file(), f"Audio file not found: {path}"
+        if not path.is_file():
+            raise FileNotFoundError(f"Audio file not found: {path}")
+
+        if path.stat().st_size == 0:
+            raise ValueError("Audio file is empty")
 
         mime_type = mimetypes.guess_type(str(path))[0]
 
@@ -352,9 +355,11 @@ class Audio(BaseModel):
         ):  # <--- this is the case for aac audio files in Windows
             mime_type = "audio/aac"
 
-        assert mime_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        if mime_type not in VALID_AUDIO_MIME_TYPES:
+            raise ValueError(
+                f"Unsupported audio format: {mime_type}. "
+                f"Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+            )
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -451,9 +456,9 @@ class PDF(BaseModel):
         if isinstance(source, str):
             if cls.is_base64(source):
                 return cls.from_base64(source)
-            elif source.startswith(("http://", "https://")):
+            if source.startswith(("http://", "https://")):
                 return cls.from_url(source)
-            elif source.startswith("gs://"):
+            if source.startswith("gs://"):
                 return cls.from_gs_url(source)
 
             try:
@@ -479,7 +484,7 @@ class PDF(BaseModel):
                 ) from e
 
             return cls.from_raw_base64(source)
-        elif isinstance(source, Path):
+        if isinstance(source, Path):
             return cls.from_path(source)
 
         raise ValueError(f"Unsupported PDF source type: {type(source).__name__}")
@@ -586,7 +591,7 @@ class PDF(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True)
+                response = requests.head(url, allow_redirects=True, timeout=30)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
                 raise ValueError("Failed to fetch PDF from URL") from e
@@ -642,13 +647,8 @@ class PDF(BaseModel):
 
         # Handle S3 URIs
         if isinstance(self.source, str) and self.source.startswith("s3://"):
-            # Parse S3 URI: s3://bucket/key
-            s3_match = re.match(r"s3://([^/]+)/(.*)", self.source)
-            if not s3_match:
+            if not re.match(r"s3://[^/]+/.*", self.source):
                 raise ValueError(f"Invalid S3 URI format: {self.source}")
-
-            bucket = s3_match.group(1)
-            key = s3_match.group(2)
 
             # Note: bucketOwner is optional but recommended for cross-account access
             return {
@@ -669,9 +669,8 @@ class PDF(BaseModel):
             raise ValueError(
                 "PDF data is missing. Provide base64-encoded data or use an s3:// source."
             )
-        else:
-            # Decode base64 data to bytes
-            pdf_bytes = base64.b64decode(self.data)
+        # Decode base64 data to bytes
+        pdf_bytes = base64.b64decode(self.data)
 
         return {
             "document": {"format": "pdf", "name": name, "source": {"bytes": pdf_bytes}}
@@ -827,8 +826,7 @@ def convert_messages(
             if message["type"] in {"audio", "image"}:
                 converted_messages.append(message)
                 continue
-            else:
-                raise ValueError(f"Unsupported message type: {message['type']}")
+            raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
         content = message["content"] or []
         other_kwargs = {

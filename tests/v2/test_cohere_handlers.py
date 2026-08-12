@@ -42,13 +42,6 @@ class Answer(BaseModel):
     answer: float
 
 
-class User(BaseModel):
-    """User model for testing."""
-
-    name: str
-    age: int
-
-
 # ============================================================================
 # Mock Response Classes for Cohere
 # ============================================================================
@@ -607,6 +600,16 @@ class TestCohereMessageConversion:
         result = _convert_messages_to_cohere_v2(kwargs)
 
         assert "strict" not in result
+
+    def test_convert_v2_without_messages(self):
+        """Test that message-free kwargs remain message-free."""
+        from instructor.v2.providers.cohere.handlers import (
+            _convert_messages_to_cohere_v2,
+        )
+
+        result = _convert_messages_to_cohere_v2({"model": "command-r-plus"})
+
+        assert "messages" not in result
 
 
 # ============================================================================

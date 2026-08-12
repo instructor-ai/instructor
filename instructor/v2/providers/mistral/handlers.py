@@ -21,17 +21,17 @@ from collections.abc import (
     Iterable as TypingIterable,
 )
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, cast, get_origin
+from typing import Any, cast, get_origin
 from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
 
-if TYPE_CHECKING:  # pragma: no cover - typing only
-    pass
-
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
-from instructor.v2.core.errors import IncompleteOutputException
+from instructor.v2.core.errors import (
+    IncompleteOutputException,
+    ResponseParsingError,
+)
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import ParallelBase, get_types_array
 from instructor.v2.dsl.partial import PartialBase
@@ -43,7 +43,11 @@ from instructor.v2.core.json import (
     extract_json_from_stream_async,
 )
 from instructor.v2.providers.openai.schema import generate_openai_schema
-from instructor.v2.core.messages import dump_message, merge_consecutive_messages
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    dump_message,
+    merge_consecutive_messages,
+)
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 
@@ -179,27 +183,25 @@ class MistralHandlerBase(ModeHandler):
             task_parser = streaming_model.tasks_from_task_list_chunks
 
         if inspect.isasyncgen(response) or isinstance(response, AsyncIterator):
+            if task_parser is not None:
+                parse_kwargs["task_parser"] = (
+                    streaming_model.tasks_from_task_list_chunks_async
+                )
             return streaming_model.from_streaming_response_async(
                 response,
                 stream_extractor=self.extract_streaming_json_async,
-                task_parser=(
-                    streaming_model.tasks_from_task_list_chunks_async
-                    if task_parser is not None
-                    else None
-                ),
                 **parse_kwargs,
             )
 
+        if task_parser is not None:
+            parse_kwargs["task_parser"] = task_parser
         generator = streaming_model.from_streaming_response(
             response,
             stream_extractor=self.extract_streaming_json,
-            task_parser=task_parser,
             **parse_kwargs,
         )
         if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
             return generator
-        if inspect.isclass(response_model) and issubclass(response_model, PartialBase):
-            return list(generator)
         return list(generator)
 
     def _finalize_parsed_result(
@@ -225,8 +227,19 @@ class MistralHandlerBase(ModeHandler):
         Mistral returns tool call arguments as either a string or a dict,
         so we need to handle both cases.
         """
-        tool_call = response.choices[0].message.tool_calls[0]
-        args = tool_call.function.arguments
+        message = response.choices[0].message
+        tool_calls = getattr(message, "tool_calls", None) or []
+        if not tool_calls:
+            # The model replied in prose instead of calling the tool (e.g.
+            # models that don't honor tool_choice="any", refusals, or
+            # OpenAI-compatible gateways). Raise a retryable parsing error so
+            # the retry machinery re-asks instead of crashing with TypeError.
+            raise ResponseParsingError(
+                "No tool calls found in Mistral response",
+                mode=self.mode.name,
+                raw_response=response,
+            )
+        args = tool_calls[0].function.arguments
         if isinstance(args, dict):
             return json.dumps(args)
         return args
@@ -252,6 +265,7 @@ class MistralToolsHandler(MistralHandlerBase):
     ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
         """Prepare request with tool definitions."""
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         if response_model is None:
             return None, new_kwargs
@@ -294,9 +308,25 @@ class MistralToolsHandler(MistralHandlerBase):
     ) -> dict[str, Any]:
         """Handle reask for tools mode."""
         kwargs = kwargs.copy()
-        reask_msgs: list[Any] = [dump_message(response.choices[0].message)]
+        message = response.choices[0].message
+        reask_msgs: list[Any] = [dump_message(message)]
 
-        for tool_call in response.choices[0].message.tool_calls:
+        tool_calls = message.tool_calls or []
+        if not tool_calls:
+            # The model answered in prose without calling the tool, so there is
+            # no tool_call_id to attach a tool-role message to. Fall back to a
+            # plain user correction instead of iterating None.
+            reask_msgs.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Validation Error found:\n{exception}\n"
+                        "Recall the function correctly, fix the errors"
+                    ),
+                }
+            )
+
+        for tool_call in tool_calls:
             reask_msgs.append(
                 {
                     "role": "tool",
@@ -347,7 +377,7 @@ class MistralToolsHandler(MistralHandlerBase):
             type_registry = {t.__name__: t for t in the_types}
 
             def parallel_generator() -> Generator[BaseModel, None, None]:
-                for tool_call in response.choices[0].message.tool_calls:
+                for tool_call in response.choices[0].message.tool_calls or []:
                     name = tool_call.function.name
                     if name in type_registry:
                         model_class = type_registry[name]
@@ -394,6 +424,7 @@ class MistralJSONSchemaHandler(MistralHandlerBase):
             return None, kwargs
 
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
 
         # Use Mistral's helper to create response format
         from mistralai.extra import response_format_from_pydantic_model
@@ -500,7 +531,7 @@ class MistralMDJSONHandler(MistralHandlerBase):
         )
 
         # Add system message with schema
-        messages = new_kwargs.get("messages", [])
+        messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
         if messages and messages[0]["role"] != "system":
             messages.insert(
                 0,

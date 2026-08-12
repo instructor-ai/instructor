@@ -71,6 +71,20 @@ def process_message(
     return message
 
 
+def _copy_message_for_templating(message: Any) -> Any:
+    if not isinstance(message, dict):
+        return message
+
+    copied_message = message.copy()
+    for field in ("content", "parts"):
+        parts = copied_message.get(field)
+        if isinstance(parts, list):
+            copied_message[field] = [
+                part.copy() if isinstance(part, dict) else part for part in parts
+            ]
+    return copied_message
+
+
 def handle_templating(
     kwargs: dict[str, Any],
     mode: Mode,  # noqa: ARG001
@@ -110,31 +124,24 @@ def handle_templating(
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
         new_kwargs["chat_history"] = [
-            process_message(message, context, provider)
+            process_message(_copy_message_for_templating(message), context, provider)
             for message in new_kwargs.get("chat_history", [])
         ]
 
         return new_kwargs
 
     if isinstance(new_kwargs, list):
-        messages = new_kwargs
-        if not messages:
-            return new_kwargs
-    elif isinstance(new_kwargs, dict):
-        messages = new_kwargs.get("messages") or new_kwargs.get("contents")
+        return new_kwargs
+
+    message_key = "messages" if new_kwargs.get("messages") else "contents"
+    messages = new_kwargs.get(message_key)
 
     if not messages:
         return new_kwargs
 
-    if "messages" in new_kwargs:
-        new_kwargs["messages"] = [
-            process_message(message, context, provider) for message in messages
-        ]
-
-    elif "contents" in new_kwargs:
-        new_kwargs["contents"] = [
-            process_message(content, context, provider)
-            for content in new_kwargs["contents"]
-        ]
+    new_kwargs[message_key] = [
+        process_message(_copy_message_for_templating(message), context, provider)
+        for message in messages
+    ]
 
     return new_kwargs

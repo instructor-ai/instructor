@@ -2,43 +2,13 @@ from __future__ import annotations
 
 import importlib
 import sys
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
 from instructor.v2.core.multimodal import Image, PDF, PDFWithGenaiFile
-
-
-class FakePart:
-    def __init__(
-        self,
-        *,
-        data: bytes | None = None,
-        mime_type: str | None = None,
-        file_uri: str | None = None,
-    ) -> None:
-        self.data = data
-        self.mime_type = mime_type
-        self.file_uri = file_uri
-
-    @classmethod
-    def from_bytes(cls, data: bytes, mime_type: str) -> FakePart:
-        return cls(data=data, mime_type=mime_type)
-
-    @classmethod
-    def from_uri(cls, file_uri: str, mime_type: str) -> FakePart:
-        return cls(file_uri=file_uri, mime_type=mime_type)
-
-
-class FakeContent:
-    def __init__(self, *, role: str, parts: list[Any]) -> None:
-        self.role = role
-        self.parts = parts
-
-
-class FakeFile:
-    pass
+from tests.v2._fake_genai import FakeContent, install_fake_genai
 
 
 def _install_fake_genai(
@@ -46,34 +16,26 @@ def _install_fake_genai(
     *,
     client_factory: type[Any] | None = None,
 ) -> None:
-    types_module = ModuleType("google.genai.types")
-    setattr(types_module, "Part", FakePart)  # noqa: B010
-    setattr(types_module, "Content", FakeContent)  # noqa: B010
-    setattr(types_module, "File", FakeFile)  # noqa: B010
-    setattr(types_module, "FileState", SimpleNamespace(ACTIVE="ACTIVE"))  # noqa: B010
-    setattr(types_module, "FileSource", SimpleNamespace(UPLOADED="UPLOADED"))  # noqa: B010
-
-    genai_module = ModuleType("google.genai")
-    setattr(genai_module, "types", types_module)  # noqa: B010
-    if client_factory is not None:
-        setattr(genai_module, "Client", client_factory)  # noqa: B010
-
-    google_module = ModuleType("google")
-    setattr(google_module, "genai", genai_module)  # noqa: B010
-
-    monkeypatch.setitem(sys.modules, "google", google_module)
-    monkeypatch.setitem(sys.modules, "google.genai", genai_module)
-    monkeypatch.setitem(sys.modules, "google.genai.types", types_module)
+    install_fake_genai(
+        monkeypatch,
+        extra_types={
+            "FileState": SimpleNamespace(ACTIVE="ACTIVE"),
+            "FileSource": SimpleNamespace(UPLOADED="UPLOADED"),
+        },
+        client_factory=client_factory,
+    )
 
 
 def test_image_to_genai_fetches_url_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
     _install_fake_genai(monkeypatch)
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
-    monkeypatch.setattr(
-        multimodal.requests,
-        "get",
-        lambda url: SimpleNamespace(content=f"fetched:{url}".encode()),
-    )
+    requests: list[tuple[str, int]] = []
+
+    def get(url: str, *, timeout: int) -> Any:
+        requests.append((url, timeout))
+        return SimpleNamespace(content=f"fetched:{url}".encode())
+
+    monkeypatch.setattr(multimodal.requests, "get", get)
 
     image = Image(
         source="https://example.com/image.png",
@@ -85,6 +47,7 @@ def test_image_to_genai_fetches_url_bytes(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert part.data == b"fetched:https://example.com/image.png"
     assert part.mime_type == "image/png"
+    assert requests == [("https://example.com/image.png", 30)]
 
 
 def test_image_to_genai_decodes_inline_data(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -120,11 +83,13 @@ def test_pdf_to_genai_handles_remote_and_inline_data(
 ) -> None:
     _install_fake_genai(monkeypatch)
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
-    monkeypatch.setattr(
-        multimodal.requests,
-        "get",
-        lambda _url: SimpleNamespace(content=b"remote-pdf"),
-    )
+    requests: list[tuple[str, int]] = []
+
+    def get(url: str, *, timeout: int) -> Any:
+        requests.append((url, timeout))
+        return SimpleNamespace(content=b"remote-pdf")
+
+    monkeypatch.setattr(multimodal.requests, "get", get)
 
     remote_pdf = PDF(
         source="https://example.com/file.pdf",
@@ -142,6 +107,7 @@ def test_pdf_to_genai_handles_remote_and_inline_data(
 
     assert remote_part.data == b"remote-pdf"
     assert inline_part.data == b"A"
+    assert requests == [("https://example.com/file.pdf", 30)]
 
 
 def test_pdf_to_genai_raises_for_unsupported_pdf(

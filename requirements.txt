@@ -77,6 +77,8 @@ pydantic-core==2.41.5
     #   pydantic
 pygments==2.20.0
     # via rich
+regex==2026.7.19
+    # via instructor (pyproject.toml)
 requests==2.32.5
     # via instructor (pyproject.toml)
 rich==14.3.3

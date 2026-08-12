@@ -7,15 +7,35 @@ from collections.abc import AsyncGenerator, Generator, Iterable
 
 
 def extract_json_from_codeblock(content: str) -> str:
-    """Extract the first JSON object- or array-like span from a text block."""
-    for start_index, start_char in enumerate(content):
-        if start_char not in "{[":
-            continue
+    """Extract the last JSON object- or array-like span from a text block.
+
+    Returns the LAST complete JSON object, not the first. The LLM's own
+    structured output is the authoritative JSON and appears last; JSON that
+    appeared earlier may have originated from user input embedded in the
+    prompt and was referenced in the model's reasoning. Returning the first
+    object allowed prompt-injection to hijack the parsed output.
+    """
+    candidates: list[str] = []
+    search_index = 0
+    while search_index < len(content):
+        start_index = next(
+            (
+                index
+                for index in range(search_index, len(content))
+                if content[index] in "{["
+            ),
+            None,
+        )
+        if start_index is None:
+            break
+
+        start_char = content[start_index]
 
         end_stack = ["}" if start_char == "{" else "]"]
         in_string = False
         escape_next = False
 
+        candidate_found = False
         for end_index in range(start_index + 1, len(content)):
             char = content[end_index]
 
@@ -40,8 +60,16 @@ def extract_json_from_codeblock(content: str) -> str:
                         json.loads(candidate)
                     except Exception:
                         break
-                    return candidate
+                    candidates.append(candidate)
+                    search_index = end_index + 1
+                    candidate_found = True
+                    break
 
+        if not candidate_found:
+            search_index = start_index + 1
+
+    if candidates:
+        return candidates[-1]
     return content
 
 
@@ -55,6 +83,8 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
     delimiter_stack: list[str] = []
     buffer: list[str] = []
     codeblock_buffer: list[str] = []
+    last_invalid_candidate: str | None = None
+    emitted_valid_candidate = False
 
     for chunk in chunks:
         for char in chunk:
@@ -114,10 +144,18 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
                         delimiter_stack.pop()
                         if not delimiter_stack:
                             buffer.append(char)
-                            yield from buffer
+                            candidate = "".join(buffer)
                             buffer = []
                             json_started = False
-                            break
+                            try:
+                                json.loads(candidate)
+                            except ValueError:
+                                last_invalid_candidate = candidate
+                                continue
+                            emitted_valid_candidate = True
+                            last_invalid_candidate = None
+                            yield from candidate
+                            continue
 
                 buffer.append(char)
                 continue
@@ -129,6 +167,8 @@ def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None
 
     if json_started and buffer:
         yield from buffer
+    elif not emitted_valid_candidate and last_invalid_candidate is not None:
+        yield from last_invalid_candidate
 
 
 async def extract_json_from_stream_async(
@@ -143,6 +183,8 @@ async def extract_json_from_stream_async(
     delimiter_stack: list[str] = []
     buffer: list[str] = []
     codeblock_buffer: list[str] = []
+    last_invalid_candidate: str | None = None
+    emitted_valid_candidate = False
 
     async for chunk in chunks:
         for char in chunk:
@@ -203,11 +245,19 @@ async def extract_json_from_stream_async(
                         delimiter_stack.pop()
                         if not delimiter_stack:
                             buffer.append(char)
-                            for buffered_char in buffer:
-                                yield buffered_char
+                            candidate = "".join(buffer)
                             buffer = []
                             json_started = False
-                            break
+                            try:
+                                json.loads(candidate)
+                            except ValueError:
+                                last_invalid_candidate = candidate
+                                continue
+                            emitted_valid_candidate = True
+                            last_invalid_candidate = None
+                            for buffered_char in candidate:
+                                yield buffered_char
+                            continue
 
                 buffer.append(char)
                 continue
@@ -219,4 +269,7 @@ async def extract_json_from_stream_async(
 
     if json_started and buffer:
         for buffered_char in buffer:
+            yield buffered_char
+    elif not emitted_valid_candidate and last_invalid_candidate is not None:
+        for buffered_char in last_invalid_candidate:
             yield buffered_char

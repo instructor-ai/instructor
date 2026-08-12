@@ -242,8 +242,6 @@ def store_cached_response(
     cache: BaseCache, key: str, model: BaseModel, ttl: int | None = None
 ) -> None:  # noqa: D401
     """Serialize *model* and optional raw response to JSON and cache it."""
-    import json
-
     raw_resp = getattr(model, "_raw_response", None)
     if raw_resp is not None:
         try:
@@ -254,11 +252,9 @@ def store_cached_response(
             else:
                 raise AttributeError("raw_resp has no model_dump_json")
             logger.debug("Cached raw response as Pydantic JSON")
-        except (AttributeError, TypeError) as e:
+        except (AttributeError, TypeError):
             # Fallback for non-Pydantic responses (custom providers, plain dicts, etc.)
             try:
-                import json
-
                 raw_json = json.dumps(raw_resp, default=str)
                 logger.debug(
                     "Cached raw response as plain JSON (provider may not support full reconstruction)"
