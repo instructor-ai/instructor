@@ -148,6 +148,7 @@ def make_cache_key(
     model: str | None,
     response_model: type[BaseModel] | None,
     mode: str | None = None,
+    system: Any = None,
 ) -> str:  # noqa: ANN401
     """Compute a *deterministic* cache key.
 
@@ -157,6 +158,10 @@ def make_cache_key(
     Components that influence the key:
         • provider/model name
         • serialized *messages* (user + system prompt, etc.)
+        • *system* – providers such as Anthropic and Bedrock hoist system
+          messages out of ``messages`` into a separate top-level parameter,
+          so it has to be hashed separately or two calls that only differ in
+          their system prompt would collide.
         • *mode* (Tools, JSON, …) – helps when users change Instructor mode
         • *response_model* schema – so edits to field definitions or
           descriptions invalidate prior cache entries (critical!).
@@ -167,6 +172,11 @@ def make_cache_key(
         "messages": messages,
         "mode": mode,
     }
+
+    # Only added when present so keys for providers that keep the system
+    # prompt inside ``messages`` (OpenAI & friends) stay unchanged.
+    if system is not None:
+        payload["system"] = system
 
     if response_model is not None:
         # Include the entire JSON schema – guarantees busting when either
