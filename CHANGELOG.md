@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Remote multimodal media types**: Accept valid case-insensitive HTTP `Content-Type` values with optional parameters when loading images, audio, and PDFs. ([#2525](https://github.com/567-labs/instructor/pull/2525))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
