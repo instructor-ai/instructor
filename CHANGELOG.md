@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Message history**: Preserve tool-call and other protocol fields when normalizing consecutive messages, and keep protocol messages as separate turns. ([#2527](https://github.com/567-labs/instructor/pull/2527))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
