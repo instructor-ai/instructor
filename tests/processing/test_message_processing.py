@@ -105,9 +105,37 @@ class TestMergeConsecutiveMessages:
             },
         ]
         result = merge_consecutive_messages(messages)
-        assert len(result) == 2
+        assert len(result) == 3
         assert result[0]["role"] == "user"
         assert result[1]["role"] == "assistant"
+        assert result[1]["tool_calls"] == [{"id": "call_1"}]
+        assert result[2]["tool_calls"] == [{"id": "call_2"}]
+
+    def test_tool_call_fields_are_preserved(self):
+        """Tool-call history must keep the fields that link calls to results."""
+        messages = [
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": "call_1",
+                        "type": "function",
+                        "function": {"name": "lookup", "arguments": "{}"},
+                    }
+                ],
+            },
+            {
+                "role": "tool",
+                "content": "result",
+                "tool_call_id": "call_1",
+            },
+        ]
+
+        result = merge_consecutive_messages(messages)
+
+        assert result[0]["tool_calls"] == messages[0]["tool_calls"]
+        assert result[1]["tool_call_id"] == "call_1"
 
 
 class TestGetMessageContent:
