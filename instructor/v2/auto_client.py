@@ -963,6 +963,57 @@ def _build_writer(
         raise
 
 
+def _create_bedrock_runtime_client(api_key: str | None, aws_kwargs: dict[str, Any]):
+    """Create a ``bedrock-runtime`` boto3 client.
+
+    When ``api_key`` is provided, the Bedrock API key (bearer token) is scoped to
+    this client's own botocore session rather than exported to ``os.environ``. The
+    default token provider reads bearer tokens from an ``environ`` mapping that
+    defaults to ``os.environ``; handing it a private dict keeps the token local to
+    this client, so concurrent clients can use different keys without clobbering
+    each other or leaking into unrelated boto3 usage in the same process.
+
+    When no ``api_key`` is passed, behavior is unchanged -- an ``AWS_BEARER_TOKEN_BEDROCK``
+    the user exported themselves and the normal SigV4 credential chain still apply.
+    """
+    import boto3
+
+    if not api_key:
+        return boto3.client("bedrock-runtime", **aws_kwargs)
+
+    try:
+        from botocore.tokens import (
+            ScopedEnvTokenProvider,
+            SSOTokenProvider,
+            TokenProviderChain,
+        )
+    except ImportError as exc:
+        from instructor.v2.core.errors import ConfigurationError
+
+        raise ConfigurationError(
+            "Bedrock API key (bearer token) authentication requires "
+            "botocore >= 1.39.0 (boto3 >= 1.39.0). Upgrade boto3, or export the "
+            "AWS_BEARER_TOKEN_BEDROCK environment variable instead of passing api_key."
+        ) from exc
+
+    logger.debug("Using Bedrock API key (bearer token) authentication")
+    session = boto3.session.Session()
+    botocore_session = session._session
+    botocore_session.register_component(
+        "token_provider",
+        TokenProviderChain(
+            providers=[
+                ScopedEnvTokenProvider(
+                    botocore_session,
+                    environ={"AWS_BEARER_TOKEN_BEDROCK": api_key},
+                ),
+                SSOTokenProvider(botocore_session),
+            ]
+        ),
+    )
+    return session.client("bedrock-runtime", **aws_kwargs)
+
+
 def _build_bedrock(
     *,
     provider: str,
@@ -975,7 +1026,7 @@ def _build_bedrock(
 ) -> InstructorType:
     try:
         import os
-        import boto3
+
         from instructor.v2.providers.bedrock.client import from_bedrock
 
         # Get AWS configuration from environment or kwargs
@@ -986,13 +1037,6 @@ def _build_bedrock(
                 "AWS_DEFAULT_REGION is not set. Using default region us-east-1"
             )
             region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-
-        # Bedrock API keys (bearer tokens) authenticate without SigV4 credentials.
-        # botocore >= 1.39.0 reads AWS_BEARER_TOKEN_BEDROCK at request time, so
-        # exporting the key is the supported way to enable bearer auth.
-        if api_key:
-            os.environ["AWS_BEARER_TOKEN_BEDROCK"] = api_key
-            logger.debug("Using Bedrock API key (bearer token) authentication")
 
         # Extract AWS-specific parameters
         # Dictionary to collect AWS credentials and session parameters for boto3 client
@@ -1011,8 +1055,10 @@ def _build_bedrock(
         # Add region to client configuration
         aws_kwargs["region_name"] = region
 
-        # Create bedrock-runtime client
-        client = boto3.client("bedrock-runtime", **aws_kwargs)
+        # Create bedrock-runtime client. When a Bedrock API key (bearer token) is
+        # supplied, it is scoped to this client's botocore session rather than
+        # mutating os.environ, so concurrent clients can use different keys.
+        client = _create_bedrock_runtime_client(api_key, aws_kwargs)
 
         # Determine default mode based on model
         if mode is None:

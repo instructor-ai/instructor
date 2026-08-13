@@ -205,14 +205,76 @@ def test_build_bedrock_chooses_default_mode_from_model_name(
     assert calls[1]["mode"] == Mode.MD_JSON
 
 
-def test_build_bedrock_api_key_enables_bearer_token_auth(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import os
+def _install_fake_bedrock_deps(
+    monkeypatch: pytest.MonkeyPatch, *, with_token_classes: bool = True
+) -> dict[str, Any]:
+    """Install fake ``boto3`` / ``botocore.tokens`` modules and record what the
+    Bedrock client factory does with them.
+
+    Returns a holder dict capturing plain ``boto3.client`` calls, session-scoped
+    ``Session().client`` calls, and any component registered on the session.
+    """
+    import sys
+
+    holder: dict[str, Any] = {
+        "plain_client_calls": [],
+        "session_client_calls": [],
+        "session": None,
+    }
 
     boto3_module = ModuleType("boto3")
-    setattr(boto3_module, "client", lambda *_args, **_kwargs: object())  # noqa: B010
-    monkeypatch.setitem(__import__("sys").modules, "boto3", boto3_module)
+
+    def fake_client(service_name: str, **kwargs: Any) -> object:
+        holder["plain_client_calls"].append((service_name, kwargs))
+        return object()
+
+    setattr(boto3_module, "client", fake_client)  # noqa: B010
+
+    class FakeBotocoreSession:
+        def __init__(self) -> None:
+            self.registered: dict[str, Any] = {}
+
+        def register_component(self, name: str, value: Any) -> None:
+            self.registered[name] = value
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self._session = FakeBotocoreSession()
+            holder["session"] = self
+
+        def client(self, service_name: str, **kwargs: Any) -> object:
+            holder["session_client_calls"].append((service_name, kwargs))
+            return object()
+
+    session_module = ModuleType("boto3.session")
+    setattr(session_module, "Session", FakeSession)  # noqa: B010
+    setattr(boto3_module, "session", session_module)  # noqa: B010
+    monkeypatch.setitem(sys.modules, "boto3", boto3_module)
+    monkeypatch.setitem(sys.modules, "boto3.session", session_module)
+
+    botocore_module = ModuleType("botocore")
+    tokens_module = ModuleType("botocore.tokens")
+    if with_token_classes:
+
+        class FakeScopedEnvTokenProvider:
+            def __init__(self, session: Any, environ: Any = None) -> None:
+                self.session = session
+                self.environ = environ
+
+        class FakeSSOTokenProvider:
+            def __init__(self, session: Any) -> None:
+                self.session = session
+
+        class FakeTokenProviderChain:
+            def __init__(self, providers: Any) -> None:
+                self.providers = providers
+
+        setattr(tokens_module, "ScopedEnvTokenProvider", FakeScopedEnvTokenProvider)  # noqa: B010
+        setattr(tokens_module, "SSOTokenProvider", FakeSSOTokenProvider)  # noqa: B010
+        setattr(tokens_module, "TokenProviderChain", FakeTokenProviderChain)  # noqa: B010
+    setattr(botocore_module, "tokens", tokens_module)  # noqa: B010
+    monkeypatch.setitem(sys.modules, "botocore", botocore_module)
+    monkeypatch.setitem(sys.modules, "botocore.tokens", tokens_module)
 
     import instructor.v2.providers.bedrock.client as bedrock_client
 
@@ -220,7 +282,17 @@ def test_build_bedrock_api_key_enables_bearer_token_auth(
         bedrock_client, "from_bedrock", lambda _client, **kwargs: kwargs
     )
 
-    # Ensure the variable is absent but restored to its original state on teardown
+    return holder
+
+
+def test_build_bedrock_api_key_scopes_bearer_token_to_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import os
+
+    holder = _install_fake_bedrock_deps(monkeypatch)
+
+    # Ensure the process-wide variable is absent (restored on teardown).
     monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "sentinel")
     monkeypatch.delenv("AWS_BEARER_TOKEN_BEDROCK")
 
@@ -234,23 +306,25 @@ def test_build_bedrock_api_key_enables_bearer_token_auth(
         provider_info={"provider": "bedrock", "operation": "initialize"},
     )
 
-    assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "bedrock-api-key"
+    # The client is built from a dedicated session, not the module-level factory.
+    assert holder["session_client_calls"][0][0] == "bedrock-runtime"
+    assert holder["plain_client_calls"] == []
+
+    # The bearer token is scoped to that session's token provider...
+    chain = holder["session"]._session.registered["token_provider"]
+    scoped_provider = chain.providers[0]
+    assert scoped_provider.environ == {"AWS_BEARER_TOKEN_BEDROCK": "bedrock-api-key"}
+
+    # ...and never leaks into the process environment.
+    assert "AWS_BEARER_TOKEN_BEDROCK" not in os.environ
 
 
-def test_build_bedrock_without_api_key_leaves_bearer_token_unset(
+def test_build_bedrock_without_api_key_uses_plain_client_and_no_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import os
 
-    boto3_module = ModuleType("boto3")
-    setattr(boto3_module, "client", lambda *_args, **_kwargs: object())  # noqa: B010
-    monkeypatch.setitem(__import__("sys").modules, "boto3", boto3_module)
-
-    import instructor.v2.providers.bedrock.client as bedrock_client
-
-    monkeypatch.setattr(
-        bedrock_client, "from_bedrock", lambda _client, **kwargs: kwargs
-    )
+    holder = _install_fake_bedrock_deps(monkeypatch)
 
     monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "sentinel")
     monkeypatch.delenv("AWS_BEARER_TOKEN_BEDROCK")
@@ -265,7 +339,29 @@ def test_build_bedrock_without_api_key_leaves_bearer_token_unset(
         provider_info={"provider": "bedrock", "operation": "initialize"},
     )
 
+    # No api_key -> plain boto3.client, no scoped session, no env mutation.
+    assert holder["plain_client_calls"][0][0] == "bedrock-runtime"
+    assert holder["session"] is None
     assert "AWS_BEARER_TOKEN_BEDROCK" not in os.environ
+
+
+def test_build_bedrock_api_key_requires_bearer_token_support(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # botocore too old to expose the bearer-token providers -> clear error,
+    # never a silent fall-through to SigV4 that ignores the key.
+    _install_fake_bedrock_deps(monkeypatch, with_token_classes=False)
+
+    with pytest.raises(ConfigurationError, match="botocore >= 1.39.0"):
+        auto_client._build_bedrock(
+            provider="bedrock",
+            model_name="anthropic.claude-3-7-sonnet",
+            async_client=False,
+            mode=None,
+            api_key="bedrock-api-key",
+            kwargs={},
+            provider_info={"provider": "bedrock", "operation": "initialize"},
+        )
 
 
 def test_build_ollama_uses_tool_mode_only_for_tool_capable_models(

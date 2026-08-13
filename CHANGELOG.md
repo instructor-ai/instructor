@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- **Bedrock**: Support Amazon Bedrock API key (bearer token) authentication via `from_provider("bedrock/...", api_key=...)`. The token is scoped to the client's own botocore session instead of mutating `AWS_BEARER_TOKEN_BEDROCK` process-wide, so concurrent clients can use different keys; requires `boto3>=1.39.0`. ([#2408](https://github.com/567-labs/instructor/issues/2408), [#2409](https://github.com/567-labs/instructor/pull/2409))
+
 ### Fixed
 - **v2 message handling**: Preserve caller-owned message lists and nested content across request preparation and retries for OpenAI-compatible, Cohere, Mistral, OpenRouter, Writer, and xAI handlers. ([#2417](https://github.com/567-labs/instructor/issues/2417), [#2428](https://github.com/567-labs/instructor/issues/2428))
 - **v2 JSON extraction**: Prefer the final complete top-level JSON value in text responses and retain every JSON object when multiple objects arrive in one streaming chunk.
