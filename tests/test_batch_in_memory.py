@@ -225,3 +225,27 @@ class TestProviderInMemorySupport:
             anthropic_provider.submit_batch(
                 123  # ty: ignore[invalid-argument-type] - deliberately invalid input
             )
+
+
+def test_from_anthropic_total_counts_all_buckets():
+    """total must include canceled and expired requests.
+
+    Anthropic returns five request_counts buckets. ``from_anthropic`` summed only
+    processing + succeeded + errored, silently dropping canceled and expired, so
+    the reported total undercounted the batch.
+    """
+    from instructor.batch.models import BatchJobInfo
+
+    data = {
+        "id": "msgbatch_1",
+        "processing_status": "ended",
+        "request_counts": {
+            "processing": 0,
+            "succeeded": 10,
+            "errored": 2,
+            "canceled": 3,
+            "expired": 5,
+        },
+    }
+    rc = BatchJobInfo.from_anthropic(data).request_counts
+    assert rc.total == 20
