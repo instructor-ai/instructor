@@ -24,6 +24,13 @@ from instructor.v2.core.json import extract_json_from_codeblock
 def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
     """Return a Bedrock-compatible schema without mutating model-owned data."""
     schema = deepcopy(response_model.model_json_schema())
+    unsupported_constraints = {
+        "minimum",
+        "maximum",
+        "multipleOf",
+        "minLength",
+        "maxLength",
+    }
 
     def normalize(value: Any, path: str) -> None:
         if isinstance(value, list):
@@ -32,6 +39,13 @@ def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
             return
         if not isinstance(value, dict):
             return
+
+        if unsupported := unsupported_constraints.intersection(value):
+            constraint = sorted(unsupported)[0]
+            raise ConfigurationError(
+                "Bedrock native structured outputs do not support "
+                f"the `{constraint}` JSON Schema constraint at {path}."
+            )
 
         additional_properties = value.get("additionalProperties")
         if additional_properties is not None and additional_properties is not False:

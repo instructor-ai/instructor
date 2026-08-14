@@ -7,7 +7,7 @@ import json
 from typing import Any, cast
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import ConfigurationError
@@ -50,6 +50,12 @@ class FreeFormMetadata(BaseModel):
     """Model shape that Bedrock native structured outputs cannot represent."""
 
     metadata: dict[str, str]
+
+
+class ConstrainedScore(BaseModel):
+    """Model using a constraint unsupported by Bedrock structured outputs."""
+
+    score: int = Field(ge=0)
 
 
 def _bedrock_tool_response(
@@ -283,6 +289,18 @@ class TestBedrockNativeStructuredOutputs:
             handler.request_handler(
                 FreeFormMetadata,
                 {"messages": [{"role": "user", "content": "Extract metadata"}]},
+            )
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    def test_native_modes_reject_unsupported_schema_constraints(
+        self, mode: Mode
+    ) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        with pytest.raises(ConfigurationError, match="minimum"):
+            handler.request_handler(
+                ConstrainedScore,
+                {"messages": [{"role": "user", "content": "Extract score"}]},
             )
 
     def test_json_schema_response_parses_text(self) -> None:
