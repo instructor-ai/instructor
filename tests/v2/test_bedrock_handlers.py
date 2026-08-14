@@ -112,6 +112,21 @@ class TestBedrockToolsHandler:
         assert "tools" in result_kwargs["toolConfig"]
         assert "toolChoice" in result_kwargs["toolConfig"]
 
+    def test_prepare_request_does_not_mutate_nested_config(self, handler):
+        """Preparing Bedrock kwargs treats nested caller config as read-only."""
+        kwargs = {
+            "messages": [{"role": "user", "content": "What is 2+2?"}],
+            "temperature": 0.2,
+            "top_k": 10,
+            "inferenceConfig": {"maxTokens": 100},
+            "additionalModelRequestFields": {"thinking": {"type": "enabled"}},
+        }
+        original = deepcopy(kwargs)
+
+        handler.request_handler(Answer, kwargs)
+
+        assert kwargs == original
+
     def test_parse_response_from_tool_use(self, handler):
         """parse_response extracts tool input."""
         response = _bedrock_tool_response({"answer": 4.0})
