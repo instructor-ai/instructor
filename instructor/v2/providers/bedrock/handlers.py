@@ -339,10 +339,13 @@ def _prepare_bedrock_converse_kwargs_internal(
 
     if additional_model_request_fields:
         if "additionalModelRequestFields" in call_kwargs:
-            existing_additional_fields = call_kwargs["additionalModelRequestFields"]
+            existing_additional_fields = call_kwargs[
+                "additionalModelRequestFields"
+            ].copy()
             for key, value in additional_model_request_fields.items():
                 if key not in existing_additional_fields:
                     existing_additional_fields[key] = value
+            call_kwargs["additionalModelRequestFields"] = existing_additional_fields
         else:
             call_kwargs["additionalModelRequestFields"] = (
                 additional_model_request_fields
@@ -350,10 +353,11 @@ def _prepare_bedrock_converse_kwargs_internal(
 
     if inference_config_params:
         if "inferenceConfig" in call_kwargs:
-            existing_inference_config = call_kwargs["inferenceConfig"]
+            existing_inference_config = call_kwargs["inferenceConfig"].copy()
             for key, value in inference_config_params.items():
                 if key not in existing_inference_config:
                     existing_inference_config[key] = value
+            call_kwargs["inferenceConfig"] = existing_inference_config
         else:
             call_kwargs["inferenceConfig"] = inference_config_params
 
