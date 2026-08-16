@@ -38,16 +38,6 @@ def copy_messages_for_mutation(messages: list[dict[str, Any]]) -> list[dict[str,
     return copied
 
 
-def isolate_retry_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
-    """Copy request lists that reask handlers mutate during retries."""
-    isolated = dict(kwargs)
-    for key_name in ("messages", "contents", "chat_history"):
-        value = isolated.get(key_name)
-        if isinstance(value, list):
-            isolated[key_name] = list(value)
-    return isolated
-
-
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     ret: ChatCompletionMessageParam = {
         "role": message.role,
@@ -55,7 +45,11 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if hasattr(message, "function_call") and message.function_call is not None:
+    if (
+        hasattr(message, "function_call")
+        and message.function_call is not None
+        and ret["content"]
+    ):
         if not isinstance(ret["content"], str):
             response_message = ""
             for content_message in ret["content"]:
@@ -67,6 +61,13 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
             ret["content"] = response_message
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
+
+
+_PROTOCOL_FIELDS = ("tool_calls", "tool_call_id", "name", "function_call")
+
+
+def _has_protocol_fields(message: dict[str, Any]) -> bool:
+    return any(message.get(field) is not None for field in _PROTOCOL_FIELDS)
 
 
 def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -89,12 +90,18 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
     for message in messages:
         role = message.get("role", "user")
         new_content = message.get("content", "")
-        if new_content is None:
-            new_content = ""
         if not flat_string and isinstance(new_content, str):
             new_content = [{"type": "text", "text": new_content}]
 
-        if new_messages and role == new_messages[-1]["role"]:
+        # Protocol fields (tool calls, tool ids, function calls) must survive
+        # the rebuild, and messages carrying them are never merged with their
+        # neighbours — merging would silently corrupt a valid tool exchange.
+        if (
+            new_messages
+            and role == new_messages[-1]["role"]
+            and not _has_protocol_fields(message)
+            and not _has_protocol_fields(new_messages[-1])
+        ):
             if flat_string:
                 new_messages[-1]["content"] += f"\n\n{new_content}"
             elif isinstance(new_content, list):
@@ -102,7 +109,11 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
             else:
                 new_messages[-1]["content"].append(new_content)
         else:
-            new_messages.append({"role": role, "content": new_content})
+            new_message: dict[str, Any] = {"role": role, "content": new_content}
+            for field in _PROTOCOL_FIELDS:
+                if message.get(field) is not None:
+                    new_message[field] = message[field]
+            new_messages.append(new_message)
 
     return new_messages
 

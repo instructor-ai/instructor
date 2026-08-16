@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **v2 message handling**: Preserve protocol fields (`tool_calls`, `tool_call_id`, `name`, `function_call`) in `merge_consecutive_messages` and stop merging across tool/function-call boundaries, so reused tool-call history is no longer silently corrupted before the provider request. ([#2526](https://github.com/jxnl/instructor/issues/2526))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
