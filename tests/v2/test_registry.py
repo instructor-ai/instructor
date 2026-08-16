@@ -186,3 +186,36 @@ def test_get_handlers_concurrent_first_access_does_not_race():
     )
     # The loader must run exactly once, not once per racing thread.
     assert load_count == 1
+
+
+def test_registry_stays_registered_while_lazy_loader_runs():
+    """The mode remains registered while its lazy loader is in progress."""
+    import threading
+
+    from instructor.v2.core.registry import ModeHandlers, ModeRegistry
+
+    registry = ModeRegistry()
+    load_started = threading.Event()
+    finish_load = threading.Event()
+
+    def slow_loader() -> ModeHandlers:
+        load_started.set()
+        finish_load.wait(timeout=5)
+        return ModeHandlers(
+            request_handler=cast(Any, lambda *_a, **_k: None),
+            reask_handler=cast(Any, lambda *_a, **_k: None),
+            response_parser=cast(Any, lambda *_a, **_k: None),
+        )
+
+    registry.register_lazy(Provider.DEEPSEEK, Mode.TOOLS, slow_loader)
+    thread = threading.Thread(
+        target=registry.get_handlers, args=(Provider.DEEPSEEK, Mode.TOOLS)
+    )
+    thread.start()
+    assert load_started.wait(timeout=5)
+    try:
+        assert registry.is_registered(Provider.DEEPSEEK, Mode.TOOLS)
+    finally:
+        finish_load.set()
+        thread.join(timeout=5)
+    assert not thread.is_alive()
