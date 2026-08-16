@@ -146,6 +146,43 @@ def test_transform_to_gemini_prompt_preserves_multipart_system_text() -> None:
     assert result[0]["parts"] == ["*be helpful\n\nand brief*", "hello"]
 
 
+def test_transform_to_gemini_prompt_preserves_tool_calls() -> None:
+    result = utils.transform_to_gemini_prompt(
+        [
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": "call_1",
+                        "type": "function",
+                        "function": {"name": "lookup", "arguments": '{"key": "x"}'},
+                    }
+                ],
+            },
+            {"role": "tool", "content": '{"value": 1}', "tool_call_id": "call_1"},
+        ]
+    )
+
+    assert result[0]["role"] == "model"
+    assert {"functionCall": {"name": "lookup", "args": {"key": "x"}}} in result[0][
+        "parts"
+    ]
+    assert result[1]["role"] == "user"
+    assert result[1]["parts"][0]["functionResponse"]["name"] == "lookup"
+    assert result[1]["parts"][0]["functionResponse"]["response"]["result"] == {
+        "value": 1
+    }
+
+
+def test_transform_to_gemini_prompt_tool_without_name_falls_back_to_id() -> None:
+    result = utils.transform_to_gemini_prompt(
+        [{"role": "tool", "content": "ok", "tool_call_id": "call_9"}]
+    )
+
+    assert result[0]["parts"][0]["functionResponse"]["name"] == "call_9"
+
+
 def test_extract_genai_system_message_validates_edge_cases() -> None:
     assert (
         utils.extract_genai_system_message(

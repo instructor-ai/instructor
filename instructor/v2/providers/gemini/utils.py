@@ -103,13 +103,66 @@ def transform_to_gemini_prompt(
         "assistant": "model",
     }
 
+    # Track tool-call ids from assistant messages so tool (function
+    # response) messages can be mapped back to their function names.
+    tool_name_by_id: dict[str, str] = {}
+
     for message in messages_chatgpt:
         role = message.get("role", "")
-        if role in role_map:
-            gemini_role = role_map[role]
+        if role == "tool":
+            # Gemini represents function responses as a user-turn part; the
+            # alternative is silently dropping the tool result.
+            tool_call_id = message.get("tool_call_id", "")
+            name = tool_name_by_id.get(tool_call_id, tool_call_id)
+            result = message.get("content", "")
+            if isinstance(result, str):
+                try:
+                    result = json.loads(result)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            elif isinstance(result, list):
+                result = "".join(
+                    part.get("text", "") for part in result if isinstance(part, dict)
+                )
             messages_gemini.append(
-                {"role": gemini_role, "parts": get_message_content(message)}
+                {
+                    "role": "user",
+                    "parts": [
+                        {
+                            "functionResponse": {
+                                "name": name,
+                                "response": {"result": result},
+                            }
+                        }
+                    ],
+                }
             )
+            continue
+
+        if role not in role_map:
+            continue
+
+        gemini_role = role_map[role]
+        parts: list[Any] = list(get_message_content(message))
+        tool_calls = message.get("tool_calls")
+        if role == "assistant" and tool_calls:
+            for tool_call in tool_calls:
+                if not isinstance(tool_call, dict):
+                    continue
+                function = tool_call.get("function")
+                if not isinstance(function, dict):
+                    continue
+                name = function.get("name", "")
+                arguments = function.get("arguments", "{}")
+                if isinstance(arguments, str):
+                    try:
+                        arguments = json.loads(arguments)
+                    except (json.JSONDecodeError, TypeError):
+                        arguments = {}
+                if tool_call.get("id"):
+                    tool_name_by_id[tool_call["id"]] = name
+                parts.append({"functionCall": {"name": name, "args": arguments}})
+        messages_gemini.append({"role": gemini_role, "parts": parts})
 
     if system_prompt:
         if messages_gemini:

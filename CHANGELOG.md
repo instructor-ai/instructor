@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **v2 gemini**: Preserve tool-call history in the Gemini prompt conversion — assistant `tool_calls` become `functionCall` parts and `tool` messages become `functionResponse` parts instead of being silently dropped.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
