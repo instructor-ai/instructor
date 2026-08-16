@@ -9,6 +9,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+- **v2 mode registry**: Keep lazily loaded modes registered while their handlers initialize, preventing concurrent first calls from failing spuriously. ([#2536](https://github.com/567-labs/instructor/pull/2536), [#2535](https://github.com/567-labs/instructor/issues/2535))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
