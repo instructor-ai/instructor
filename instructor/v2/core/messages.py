@@ -38,6 +38,39 @@ def copy_messages_for_mutation(messages: list[dict[str, Any]]) -> list[dict[str,
     return copied
 
 
+def merge_system_instruction(
+    messages: list[dict[str, Any]], instruction: str
+) -> list[dict[str, Any]]:
+    """Attach `instruction` to the leading system message, adding one if needed.
+
+    System content can be a list of parts, and the first part is not
+    necessarily text (an image or an audio part may come first), so the
+    instruction goes on the first text part and falls back to a new text part
+    when the list has none.
+
+    `messages` is mutated in place when it already starts with a system
+    message, so pass a list that is safe to edit (see
+    `copy_messages_for_mutation`).
+    """
+    if not messages or messages[0].get("role") != "system":
+        return [{"role": "system", "content": instruction}, *messages]
+
+    content = messages[0].get("content")
+    if isinstance(content, str):
+        messages[0]["content"] = f"{content}\n\n{instruction}"
+        return messages
+
+    if isinstance(content, list):
+        for part in content:
+            if isinstance(part, dict) and isinstance(part.get("text"), str):
+                part["text"] += f"\n\n{instruction}"
+                return messages
+        content.append({"type": "text", "text": instruction})
+        return messages
+
+    return [{"role": "system", "content": instruction}, *messages]
+
+
 def isolate_retry_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Copy request lists that reask handlers mutate during retries."""
     isolated = dict(kwargs)

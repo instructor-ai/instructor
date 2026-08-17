@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **v2 system instructions**: Append the generated JSON schema instruction to the first text part of a structured system message instead of assuming the first part is text, so JSON and MD_JSON requests no longer raise `KeyError: 'text'` (or `IndexError`) for OpenAI-compatible, Mistral, Writer, and xAI handlers.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

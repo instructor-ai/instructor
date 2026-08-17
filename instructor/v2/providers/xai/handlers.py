@@ -52,7 +52,10 @@ from instructor.v2.core.json import (
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
-from instructor.v2.core.messages import copy_messages_for_mutation
+from instructor.v2.core.messages import (
+    copy_messages_for_mutation,
+    merge_system_instruction,
+)
 
 
 def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
@@ -708,24 +711,7 @@ class XAIMDJSONHandler(XAIHandlerBase):
 
         # Add system message with schema
         messages = copy_messages_for_mutation(new_kwargs.get("messages", []))
-        if messages and messages[0]["role"] != "system":
-            messages.insert(
-                0,
-                {
-                    "role": "system",
-                    "content": message,
-                },
-            )
-        elif messages and isinstance(messages[0]["content"], str):
-            messages[0]["content"] += f"\n\n{message}"
-        elif (
-            messages
-            and isinstance(messages[0]["content"], list)
-            and messages[0]["content"]
-        ):
-            messages[0]["content"][0]["text"] += f"\n\n{message}"
-        else:
-            messages.insert(0, {"role": "system", "content": message})
+        messages = merge_system_instruction(messages, message)
 
         # Add user message requesting JSON in code block
         messages.append(
