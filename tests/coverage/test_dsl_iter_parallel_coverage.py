@@ -174,6 +174,24 @@ def test_iterable_sync_rejects_missing_extractor_and_malformed_task_lists() -> N
         )
 
 
+def test_iterable_sync_skips_whitespace_only_task_list_chunks() -> None:
+    assert list(
+        EmailIterable.tasks_from_task_list_chunks(
+            ["\n", "  ", '{"tasks": [{"address": "third@example.test"}]}']
+        )
+    ) == [EmailJob(address="third@example.test")]
+
+
+@pytest.mark.asyncio
+async def test_iterable_async_skips_whitespace_only_task_list_chunks() -> None:
+    assert [
+        item
+        async for item in EmailIterable.tasks_from_task_list_chunks_async(
+            async_items(["\n", "  ", '{"tasks": [{"address": "third@example.test"}]}'])
+        )
+    ] == [EmailJob(address="third@example.test")]
+
+
 @pytest.mark.asyncio
 async def test_iterable_async_rejects_missing_extractor_and_malformed_task_lists() -> (
     None

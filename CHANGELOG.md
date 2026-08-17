@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Iterable streaming**: Skip whitespace-only chunks in `tasks_from_task_list_chunks` and its async variant so a keep-alive delta such as `"\n"` no longer raises `JSONDecodeError` mid-stream for Mistral and VertexAI tool streams.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

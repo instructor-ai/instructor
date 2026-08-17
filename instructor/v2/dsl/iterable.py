@@ -63,7 +63,9 @@ class IterableBase:
         """Process streaming chunks that contain a full tasks list."""
 
         async for chunk in json_chunks:
-            if not chunk:
+            # Providers emit keep-alive deltas that carry only whitespace; feeding
+            # those to json.loads raises JSONDecodeError mid-stream.
+            if not chunk or not chunk.strip():
                 continue
             json_response = json.loads(chunk)
             if not json_response["tasks"]:
@@ -79,7 +81,9 @@ class IterableBase:
     ) -> Generator[BaseModel, None, None]:
         """Process streaming chunks that contain a full tasks list."""
         for chunk in json_chunks:
-            if not chunk:
+            # Providers emit keep-alive deltas that carry only whitespace; feeding
+            # those to json.loads raises JSONDecodeError mid-stream.
+            if not chunk or not chunk.strip():
                 continue
             json_response = json.loads(chunk)
             if not json_response["tasks"]:
