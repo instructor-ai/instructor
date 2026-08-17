@@ -6,6 +6,7 @@ pytest.importorskip("google.genai")
 
 from google.genai import types
 
+from instructor.v2.providers.genai.handlers import reask_genai_structured_outputs
 from instructor.v2.providers.gemini.utils import reask_genai_tools
 
 
@@ -82,3 +83,32 @@ def test_reask_genai_tools_falls_back_when_no_function_call():
 
     assert result["contents"][0] is model_content
     assert result["contents"][1].role == "user"
+
+
+def test_reask_genai_structured_outputs_does_not_mutate_caller_contents():
+    user_content = types.Content(
+        role="user", parts=[types.Part.from_text(text="hello")]
+    )
+    original_kwargs = {"contents": [user_content]}
+
+    result = reask_genai_structured_outputs(
+        kwargs=original_kwargs,
+        response=types.GenerateContentResponse(),
+        exception=Exception("boom"),
+    )
+
+    assert original_kwargs["contents"] == [user_content]
+    assert result["contents"][0] is user_content
+    assert len(result["contents"]) == 2
+    assert "boom" in result["contents"][-1].parts[0].text
+
+
+def test_reask_genai_structured_outputs_handles_missing_contents():
+    result = reask_genai_structured_outputs(
+        kwargs={},
+        response=None,
+        exception=Exception("boom"),
+    )
+
+    assert len(result["contents"]) == 1
+    assert "boom" in result["contents"][0].parts[0].text

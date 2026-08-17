@@ -19,14 +19,8 @@ from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.providers.gemini import utils as gemini_utils
 
 
-def reask_genai_tools(
-    kwargs: dict[str, Any],
-    response: Any,
-    exception: Exception,
-):
-    """Build a GenAI tool reask payload after validation failure."""
-    from google.genai import types
-
+def _copy_kwargs_with_contents(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Copy kwargs and its contents list so reasks never mutate the caller's list."""
     kwargs = kwargs.copy()
     existing_contents = kwargs.get("contents")
     if isinstance(existing_contents, list):
@@ -35,6 +29,18 @@ def reask_genai_tools(
         kwargs["contents"] = []
     else:
         kwargs["contents"] = list(existing_contents)
+    return kwargs
+
+
+def reask_genai_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Build a GenAI tool reask payload after validation failure."""
+    from google.genai import types
+
+    kwargs = _copy_kwargs_with_contents(kwargs)
 
     model_content = None
     function_call_content = None
@@ -91,7 +97,7 @@ def reask_genai_structured_outputs(
     """Build a GenAI structured-output reask payload after validation failure."""
     from google.genai import types
 
-    kwargs = kwargs.copy()
+    kwargs = _copy_kwargs_with_contents(kwargs)
     genai_response = (
         response.text
         if response and hasattr(response, "text")

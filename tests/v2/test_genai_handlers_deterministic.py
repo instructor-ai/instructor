@@ -81,6 +81,24 @@ def test_reask_genai_structured_outputs_appends_model_content(
     assert '{"bad": true}' in result["contents"][-1].parts[0].text
 
 
+def test_structured_outputs_handler_reask_does_not_mutate_caller_contents(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_genai_types(monkeypatch)
+    caller_contents = [FakeContent(role="user", parts=[FakePart(text="hi")])]
+    handler = GenAIStructuredOutputsHandler(mode=Mode.JSON)
+
+    result = handler.handle_reask(
+        {"contents": caller_contents},
+        SimpleNamespace(text='{"bad": true}'),
+        ValueError("bad json"),
+    )
+
+    assert len(caller_contents) == 1
+    assert result["contents"][:1] == caller_contents
+    assert len(result["contents"]) == 2
+
+
 def test_tools_handler_prepare_request_without_response_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

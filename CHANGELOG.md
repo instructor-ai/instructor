@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **GenAI structured-output reask**: Copy the `contents` list before appending the validation error, so retries no longer mutate the caller's list, and handle a missing or non-list `contents` instead of raising `KeyError`. This matches the guard `reask_genai_tools` already had.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
