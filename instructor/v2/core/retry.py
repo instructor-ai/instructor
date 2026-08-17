@@ -40,6 +40,10 @@ from instructor.v2.core.messages import extract_messages
 from instructor.v2.core.usage import has_compatible_usage, update_total_usage
 from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
+from instructor.v2.validation.async_validators import (
+    async_validate_model,
+    has_async_validators,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -343,6 +347,12 @@ def retry_sync_v2(
                         stream=stream,
                         is_async=False,
                     )
+                    if not stream and has_async_validators(parsed):
+                        logger.warning(
+                            "Async validators are declared on the response model but "
+                            "cannot run in a synchronous client. Use an async client "
+                            "to run them."
+                        )
                     logger.debug(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"
@@ -636,6 +646,8 @@ async def retry_async_v2(
                         stream=stream,
                         is_async=True,
                     )
+                    if not stream:
+                        await async_validate_model(parsed, context)
                     logger.debug(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"

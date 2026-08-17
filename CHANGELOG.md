@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Async validators**: Run the validators declared with `@async_field_validator` and `@async_model_validator`, including validators on nested models, after an async client parses a non-streaming response. Failures raise `AsyncValidationError` inside the retry loop so the existing reask path handles them, sync clients log a warning instead of silently skipping the validators, and both decorators are exported from the package root again. ([#2528](https://github.com/567-labs/instructor/issues/2528))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

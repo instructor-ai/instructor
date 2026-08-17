@@ -21,6 +21,11 @@ from instructor.validation import (
 )
 
 
+def test_decorators_are_exported_from_the_package_root():
+    assert instructor.async_field_validator is async_field_validator
+    assert instructor.async_model_validator is async_model_validator
+
+
 def _make_response(content: str) -> Mock:
     response = Mock()
     response.choices = [Mock()]

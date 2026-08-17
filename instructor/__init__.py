@@ -62,6 +62,8 @@ if TYPE_CHECKING:
     from .v2.providers.writer.client import from_writer as from_writer
     from .v2.providers.xai.client import from_xai as from_xai
     from .v2.validation import (
+        async_field_validator as async_field_validator,
+        async_model_validator as async_model_validator,
         llm_validator as llm_validator,
         openai_moderation as openai_moderation,
     )
@@ -104,6 +106,8 @@ __all__ = [
     "BatchJob",
     "llm_validator",
     "openai_moderation",
+    "async_field_validator",
+    "async_model_validator",
     "hooks",
     "v2",
 ]
@@ -138,6 +142,8 @@ _LAZY_IMPORTS: dict[str, tuple[str, str | None]] = {
     "generate_gemini_schema": (".v2.core.schema", "generate_gemini_schema"),
     "llm_validator": (".v2.validation", "llm_validator"),
     "openai_moderation": (".v2.validation", "openai_moderation"),
+    "async_field_validator": (".v2.validation", "async_field_validator"),
+    "async_model_validator": (".v2.validation", "async_model_validator"),
     "Provider": (".utils.providers", "Provider"),
     "from_provider": (".auto_client", "from_provider"),
     "BatchProcessor": (".batch", "BatchProcessor"),

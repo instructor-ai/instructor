@@ -275,6 +275,148 @@ In this example:
 
 For more advanced examples including multi-field validation and citation verification, check out our [exact citations example](../examples/exact_citations.md).
 
+### Async Validation
+
+Pydantic validators cannot await coroutines, so validation that needs a database
+query, an HTTP call, or another LLM request does not fit in `field_validator`.
+Instructor ships two decorators for that case: `async_field_validator` and
+`async_model_validator`. They run after the response parses and before the value
+is returned, so a failure is reasked like any other validation error.
+
+!!! warning "Async client required"
+
+    Async validators only run on an async client. On a sync client Instructor
+    logs a warning and skips them.
+
+Use `async_field_validator` to check one or more fields:
+
+```python
+import asyncio
+import instructor
+from instructor import async_field_validator
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    occupation: str
+
+    @async_field_validator("name", "occupation")
+    async def must_be_uppercase(self, value: str) -> str:
+        await asyncio.sleep(0)  # stand-in for an async lookup
+        if not value.isupper():
+            raise ValueError(f"{value} must be uppercase")
+        return value
+
+
+client = instructor.from_provider("openai/gpt-4.1-mini", async_client=True)
+
+user = asyncio.run(
+    client.chat.completions.create(
+        response_model=User,
+        max_retries=2,
+        messages=[
+            {
+                "role": "user",
+                "content": "Ivan is a 27 year old software engineer",
+            }
+        ],
+    )
+)
+print(user)
+#> name='IVAN' occupation='SOFTWARE ENGINEER'
+```
+
+Use `async_model_validator` when the rule spans several fields. Validators on
+nested models run too, and every validator runs concurrently:
+
+```python
+import asyncio
+import instructor
+from instructor import async_model_validator
+from pydantic import BaseModel
+
+
+class Address(BaseModel):
+    city: str
+    country: str
+
+    @async_model_validator()
+    async def city_matches_country(self):
+        await asyncio.sleep(0)  # stand-in for an async lookup
+        if self.city == "Paris" and self.country != "France":
+            raise ValueError("Paris is in France")
+
+
+class User(BaseModel):
+    name: str
+    addresses: list[Address]
+
+
+client = instructor.from_provider("openai/gpt-4.1-mini", async_client=True)
+
+user = asyncio.run(
+    client.chat.completions.create(
+        response_model=User,
+        max_retries=2,
+        messages=[
+            {
+                "role": "user",
+                "content": "Ivan lives in Paris and in Berlin, Germany",
+            }
+        ],
+    )
+)
+print(user.addresses[0].country)
+#> France
+```
+
+Add an `info: ValidationInfo` parameter to either decorator to read the
+`context` you pass to `create()`:
+
+```python
+import asyncio
+import instructor
+from instructor import async_model_validator
+from pydantic import BaseModel, ValidationInfo
+
+
+class User(BaseModel):
+    name: str
+    occupation: str
+
+    @async_model_validator()
+    async def occupation_is_known(self, info: ValidationInfo):
+        await asyncio.sleep(0)  # stand-in for an async lookup
+        allowed = (info.context or {}).get("allowed_occupations", [])
+        if allowed and self.occupation not in allowed:
+            raise ValueError(f"occupation must be one of {allowed}")
+
+
+client = instructor.from_provider("openai/gpt-4.1-mini", async_client=True)
+
+user = asyncio.run(
+    client.chat.completions.create(
+        response_model=User,
+        max_retries=2,
+        context={"allowed_occupations": ["Engineer", "Barista"]},
+        messages=[
+            {
+                "role": "user",
+                "content": "Ivan is a 27 year old software engineer",
+            }
+        ],
+    )
+)
+print(user.occupation)
+#> Engineer
+```
+
+When a validator raises, Instructor collects every failure into a single
+`AsyncValidationError` that names the failing field path, then reasks the model
+with that message. If retries run out, the error is wrapped in
+`InstructorRetryException` like other validation failures.
+
 ## Optimizing Token usage
 
 Pydantic automatically includes a URL within the error message itself when an error is thrown so that users can learn more about the specific error that was thrown. Some users might want to remove this URL since it adds extra tokens that otherwise might not add much value to the validation process.
