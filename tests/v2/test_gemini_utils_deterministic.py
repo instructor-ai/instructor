@@ -160,6 +160,35 @@ def test_extract_genai_system_message_validates_edge_cases() -> None:
     with pytest.raises(ValueError, match="At least one user message"):
         utils.extract_genai_system_message([{"role": "system", "content": "only"}])
 
+    assert (
+        utils.extract_genai_system_message(
+            [
+                {
+                    "role": "system",
+                    "content": [
+                        {"type": "text", "text": "be helpful"},
+                        {"type": "image_url", "image_url": {"url": "image.png"}},
+                        {"type": "text", "text": 42},
+                        {"type": "text", "text": "and brief"},
+                    ],
+                },
+                {"role": "user", "content": "hello"},
+            ]
+        )
+        == "be helpful\n\nand brief\n\n"
+    )
+
+    with pytest.raises(ValueError, match="Jinja templating"):
+        utils.extract_genai_system_message(
+            [
+                {
+                    "role": "system",
+                    "content": [{"type": "text", "text": "Hello {{ name }}"}],
+                },
+                {"role": "user", "content": "hi"},
+            ]
+        )
+
     with pytest.raises(ValueError, match="Jinja templating"):
         utils.extract_genai_system_message(
             [

@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **GenAI system messages**: Read `{"type": "text", "text": ...}` blocks from list-form system message content so those instructions reach `system_instruction` instead of being dropped. Previously only plain strings inside the list were kept, unlike `transform_to_gemini_prompt`, which already handled both shapes.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

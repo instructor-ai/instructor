@@ -366,6 +366,10 @@ def extract_genai_system_message(
                     for item in message.get("content", []):
                         if isinstance(item, str):
                             system_messages += item + "\n\n"
+                        elif isinstance(item, dict) and item.get("type") == "text":
+                            text = item.get("text")
+                            if isinstance(text, str):
+                                system_messages += text + "\n\n"
 
     if system_messages and len(messages) == 1:
         raise ValueError(
