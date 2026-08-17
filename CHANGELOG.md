@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Bedrock text extraction**: Return the first Converse content block that actually contains text, so responses that lead with a reasoning or tool-use block no longer yield `None` from `_extract_text_content`.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

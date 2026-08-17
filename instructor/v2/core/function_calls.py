@@ -77,7 +77,12 @@ def _extract_text_content(completion: Any) -> str:
             content = message.get("content")
             if not isinstance(content, list):
                 return ""
-            return content[0].get("text")
+            # Bedrock can prepend non-text blocks (reasoning, tool use) before
+            # the text block, so return the first block that actually has text.
+            for block in content:
+                if isinstance(block, dict) and isinstance(block.get("text"), str):
+                    return block["text"]
+            return ""
         except (AttributeError, IndexError):
             pass
 

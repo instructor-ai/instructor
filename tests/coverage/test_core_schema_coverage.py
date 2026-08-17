@@ -116,12 +116,29 @@ def test_extract_text_content_returns_empty_for_anthropic_tool_only_response() -
         {"output": {"message": {"content": "not-a-list"}}},
         {"output": {"message": {"content": []}}},
         {"output": {"message": {"content": [None]}}},
+        {"output": {"message": {"content": [{"toolUse": {"name": "Answer"}}]}}},
+        {"output": {"message": {"content": [{"text": None}]}}},
     ],
 )
 def test_extract_text_content_tolerates_malformed_bedrock_responses(
     completion: dict[str, Any],
 ) -> None:
     assert _extract_text_content(completion) == ""
+
+
+def test_extract_text_content_skips_bedrock_blocks_without_text() -> None:
+    completion = {
+        "output": {
+            "message": {
+                "content": [
+                    {"reasoningContent": {"reasoningText": {"text": "thinking"}}},
+                    {"text": '{"value": 7}'},
+                ]
+            }
+        }
+    }
+
+    assert _extract_text_content(completion) == '{"value": 7}'
 
 
 def test_validate_non_model_type_uses_type_adapter_and_honors_strictness() -> None:
