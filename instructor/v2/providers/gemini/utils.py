@@ -408,13 +408,17 @@ def convert_to_genai_messages(
             if message["role"] == "system":
                 continue
 
-            if message["role"] not in {"user", "model"}:
+            # OpenAI-style history uses "assistant" where GenAI expects "model",
+            # matching the mapping ``transform_to_gemini_prompt`` already applies.
+            role = "model" if message["role"] == "assistant" else message["role"]
+
+            if role not in {"user", "model"}:
                 raise ValueError(f"Unsupported role: {message['role']}")
 
             if isinstance(message["content"], str):
                 result.append(
                     types.Content(
-                        role=message["role"],
+                        role=role,
                         parts=[types.Part.from_text(text=message["content"])],
                     )
                 )
@@ -434,7 +438,7 @@ def convert_to_genai_messages(
 
                 result.append(
                     types.Content(
-                        role=message["role"],
+                        role=role,
                         parts=content_parts,
                     )
                 )

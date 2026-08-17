@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **v2 genai**: Map the OpenAI `assistant` role to GenAI's `model` role in `convert_to_genai_messages` so multi-turn history and few-shot examples no longer raise `ValueError: Unsupported role: assistant`. `transform_to_gemini_prompt` already applied this mapping.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

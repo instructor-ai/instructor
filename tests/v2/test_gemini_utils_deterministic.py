@@ -200,6 +200,34 @@ def test_convert_to_genai_messages_supports_strings_existing_content_and_media(
     assert result[3].parts[1] == "image-part"
 
 
+def test_convert_to_genai_messages_maps_assistant_role_to_model(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_genai_types(monkeypatch)
+
+    class FakeImage:
+        def to_genai(self) -> str:
+            return "image-part"
+
+    monkeypatch.setattr(utils, "Image", FakeImage)
+
+    result = utils.convert_to_genai_messages(
+        [
+            {"role": "user", "content": "who won?"},
+            {"role": "assistant", "content": "the home team"},
+            {"role": "assistant", "content": ["by", "two goals"]},
+            {"role": "model", "content": "already a genai role"},
+        ]
+    )
+
+    assert [content.role for content in result] == ["user", "model", "model", "model"]
+    assert result[1].parts[0].text == "the home team"
+    assert [part.text for part in result[2].parts] == ["by", "two goals"]
+
+    with pytest.raises(ValueError, match="Unsupported role: tool"):
+        utils.convert_to_genai_messages([{"role": "tool", "content": "result"}])
+
+
 def test_handle_genai_message_conversion_extracts_system_and_contents(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

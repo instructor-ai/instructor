@@ -741,9 +741,16 @@ def test_genai_message_conversion_rejects_invalid_roles_parts_and_message_types(
         == "hi"
     )
 
-    with pytest.raises(ValueError, match="Unsupported role: assistant"):
+    assert (
         utils.convert_to_genai_messages(
-            [{"role": "assistant", "content": "not a GenAI role"}]
+            [{"role": "assistant", "content": "mapped to model"}]
+        )[0].role
+        == "model"
+    )
+
+    with pytest.raises(ValueError, match="Unsupported role: tool"):
+        utils.convert_to_genai_messages(
+            [{"role": "tool", "content": "not a GenAI role"}]
         )
 
     with pytest.raises(ValueError, match="Unsupported content item type"):
