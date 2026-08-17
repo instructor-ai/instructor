@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from openai.types import Batch as OpenAIBatch
 from pydantic import BaseModel
 
 from instructor.batch import (
@@ -295,6 +296,28 @@ def test_openai_batch_job_info_normalizes_status_timestamps_counts_and_error() -
     assert minimal.status is BatchStatus.PENDING
     assert minimal.timestamps == minimal.timestamps.__class__()
     assert minimal.error is None
+
+
+def test_openai_batch_job_info_accepts_unset_optional_sdk_fields() -> None:
+    payload = OpenAIBatch(
+        id="batch-validating",
+        completion_window="24h",
+        created_at=1_700_000_000,
+        endpoint="/v1/chat/completions",
+        input_file_id="file-input",
+        object="batch",
+        status="validating",
+    ).model_dump()
+
+    assert payload["request_counts"] is None
+    assert payload["metadata"] is None
+
+    result = BatchJobInfo.from_openai(payload)
+
+    assert result.status is BatchStatus.PENDING
+    assert result.request_counts == result.request_counts.__class__()
+    assert result.metadata == {}
+    assert result.error is None
 
 
 def test_anthropic_batch_job_info_accepts_timestamp_variants_and_counts() -> None:
