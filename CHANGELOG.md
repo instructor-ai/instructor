@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **v2 completion helpers**: Treat an empty `choices` list as "no text" in `_handle_incomplete_output` and `_extract_text_content` so responses without choices no longer raise `IndexError`.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

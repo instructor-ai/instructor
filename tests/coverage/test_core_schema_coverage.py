@@ -101,6 +101,13 @@ def test_completed_openai_and_anthropic_outputs_are_not_reported_as_incomplete()
     assert _handle_incomplete_output(anthropic_completion) is None
 
 
+def test_openai_helpers_tolerate_responses_without_choices() -> None:
+    completion = chat_completion(content="dropped").model_copy(update={"choices": []})
+
+    assert _handle_incomplete_output(completion) is None
+    assert _extract_text_content(completion) == ""
+
+
 def test_extract_text_content_returns_empty_for_anthropic_tool_only_response() -> None:
     completion = _anthropic_message(tool=True)
 

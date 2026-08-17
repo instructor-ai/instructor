@@ -38,10 +38,8 @@ logger = logging.getLogger("instructor")
 # Utility functions for common JSON parsing operations
 def _handle_incomplete_output(completion: Any) -> None:
     """Check if a completion was incomplete and raise appropriate exception."""
-    if (
-        hasattr(completion, "choices")
-        and completion.choices[0].finish_reason == "length"
-    ):
+    choices = getattr(completion, "choices", None)
+    if choices and choices[0].finish_reason == "length":
         raise IncompleteOutputException(last_completion=completion)
 
     # Handle Anthropic format
@@ -53,7 +51,10 @@ def _extract_text_content(completion: Any) -> str:
     """Extract text content from various completion formats."""
     # OpenAI format
     if hasattr(completion, "choices"):
-        return completion.choices[0].message.content or ""
+        choices = completion.choices
+        if not choices:
+            return ""
+        return choices[0].message.content or ""
 
     # Simple text format
     if hasattr(completion, "text"):
