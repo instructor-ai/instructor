@@ -11,6 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 - **OpenAI batch listing**: Keep `BatchJobInfo.from_openai()` working when the OpenAI SDK returns `request_counts` or `metadata` as `null`, which previously raised an error and made `list_batches()` fail for the whole page.
+- **OpenAI batch errors**: Read batch-level failures from the `{"object": "list", "data": [...]}` shape the OpenAI Batch API returns, so `BatchJobInfo.error` carries the reported code and message instead of empty values.
 
 ## [1.16.0] - 2026-08-09
 

@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 from openai.types import Batch as OpenAIBatch
+from openai.types.batch import BatchError as OpenAIBatchError
+from openai.types.batch import Errors as OpenAIBatchErrors
 from pydantic import BaseModel
 
 from instructor.batch import (
@@ -317,6 +319,55 @@ def test_openai_batch_job_info_accepts_unset_optional_sdk_fields() -> None:
     assert result.status is BatchStatus.PENDING
     assert result.request_counts == result.request_counts.__class__()
     assert result.metadata == {}
+    assert result.error is None
+
+
+def test_openai_batch_job_info_reads_error_list_payload() -> None:
+    payload = OpenAIBatch(
+        id="batch-failed",
+        completion_window="24h",
+        created_at=1_700_000_000,
+        endpoint="/v1/chat/completions",
+        input_file_id="file-input",
+        object="batch",
+        status="failed",
+        errors=OpenAIBatchErrors(
+            object="list",
+            data=[
+                OpenAIBatchError(
+                    code="invalid_json_line",
+                    message="Line 3 is not valid JSON.",
+                    line=3,
+                ),
+                OpenAIBatchError(
+                    code="missing_required_parameter",
+                    message="Line 5 is missing model.",
+                    line=5,
+                    param="model",
+                ),
+            ],
+        ),
+    ).model_dump()
+
+    result = BatchJobInfo.from_openai(payload)
+
+    assert result.error is not None
+    assert result.error.model_dump() == {
+        "error_type": None,
+        "error_message": "Line 3 is not valid JSON.",
+        "error_code": "invalid_json_line",
+    }
+
+
+def test_openai_batch_job_info_ignores_empty_error_list() -> None:
+    result = BatchJobInfo.from_openai(
+        {
+            "id": "batch-empty-errors",
+            "status": "completed",
+            "errors": {"object": "list", "data": []},
+        }
+    )
+
     assert result.error is None
 
 

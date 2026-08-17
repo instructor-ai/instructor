@@ -195,8 +195,15 @@ class BatchJobInfo(BaseModel):
 
         # Parse error information
         error = None
-        if batch_data.get("errors"):
-            error_data = batch_data["errors"]
+        errors_data = batch_data.get("errors") or {}
+        if "data" in errors_data:
+            # OpenAI reports batch-level errors as {"object": "list", "data": [...]}
+            entries = errors_data["data"] or []
+            error_data = entries[0] if entries else None
+        else:
+            error_data = errors_data or None
+
+        if error_data:
             error = BatchErrorInfo(
                 error_type=error_data.get("type"),
                 error_message=error_data.get("message"),
