@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Gemini message handling**: Keep caller-owned `messages` unchanged during Gemini request preparation. `Mode.MD_JSON` injected its JSON schema instruction directly into the caller's list and system message dict, and the prompt conversion hoisted the system prompt into the caller's own content list, so a single successful call with no retry left both altered. ([#2417](https://github.com/567-labs/instructor/issues/2417))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
