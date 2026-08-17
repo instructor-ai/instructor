@@ -188,6 +188,33 @@ def test_tools_reask_without_tool_invocation_adds_plain_correction() -> None:
     ]
 
 
+def test_tools_reask_returns_a_tool_result_for_every_tool_use() -> None:
+    original = {"messages": [{"role": "user", "content": [{"text": "extract"}]}]}
+    response = {
+        "output": {
+            "message": {
+                "role": "assistant",
+                "content": [
+                    {"toolUse": {"toolUseId": "tool-1", "name": "Answer", "input": {}}},
+                    {"text": "thinking"},
+                    {"toolUse": {"toolUseId": "tool-2", "name": "Answer", "input": {}}},
+                ],
+            }
+        }
+    }
+
+    result = reask_bedrock_tools(original, response, ValueError("value is required"))
+
+    # Bedrock Converse requires a toolResult for *every* toolUse block in the
+    # previous assistant turn, otherwise the retry fails with a 400.
+    tool_results = result["messages"][-1]["content"]
+    assert [block["toolResult"]["toolUseId"] for block in tool_results] == [
+        "tool-1",
+        "tool-2",
+    ]
+    assert all(block["toolResult"]["status"] == "error" for block in tool_results)
+
+
 def test_tools_reask_without_content_adds_plain_correction() -> None:
     original = {"messages": [{"role": "user", "content": [{"text": "extract"}]}]}
     response = {"output": {"message": {"role": "assistant"}}}

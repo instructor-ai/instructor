@@ -108,14 +108,21 @@ def reask_bedrock_tools(
     assistant_message = response["output"]["message"]
     reask_msgs = [assistant_message]
 
-    tool_use_id = None
+    # Bedrock Converse requires a toolResult for *every* toolUse in the prior turn.
+    # Keeping only the first id drops results when the model emits parallel tool
+    # calls and makes the reask request fail with a 400.
+    tool_use_ids: list[str] = []
     if "content" in assistant_message:
         for content_block in assistant_message["content"]:
             if "toolUse" in content_block:
-                tool_use_id = content_block["toolUse"]["toolUseId"]
-                break
+                tool_use_ids.append(content_block["toolUse"]["toolUseId"])
 
-    if tool_use_id:
+    if tool_use_ids:
+        error_text = (
+            "Validation Error found:\n"
+            f"{exception}\n"
+            "Recall the function correctly, fix the errors"
+        )
         reask_msgs.append(
             {
                 "role": "user",
@@ -123,18 +130,11 @@ def reask_bedrock_tools(
                     {
                         "toolResult": {
                             "toolUseId": tool_use_id,
-                            "content": [
-                                {
-                                    "text": (
-                                        "Validation Error found:\n"
-                                        f"{exception}\n"
-                                        "Recall the function correctly, fix the errors"
-                                    )
-                                }
-                            ],
+                            "content": [{"text": error_text}],
                             "status": "error",
                         }
                     }
+                    for tool_use_id in tool_use_ids
                 ],
             }
         )

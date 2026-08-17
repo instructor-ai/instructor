@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Bedrock parallel tool reask**: Return a `toolResult` for every `toolUse` block in the previous assistant turn instead of only the first one, so retries after a validation error no longer fail with a Converse 400 when the model emits parallel tool calls.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
