@@ -60,6 +60,7 @@ class PerplexityMDJSONHandler(OpenAIMDJSONHandler):
         if response_model is None:
             return None, kwargs
         new_kwargs = kwargs.copy()
+        new_kwargs["messages"] = list(kwargs.get("messages", []))
         return handle_perplexity_json(response_model, new_kwargs)
 
     def handle_reask(

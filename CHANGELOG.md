@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **v2 Perplexity messages**: Copy the caller's `messages` list during Perplexity `MD_JSON` request preparation so a validation retry appends the reask turns to instructor's own list instead of the caller's. ([#2417](https://github.com/567-labs/instructor/issues/2417))
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
