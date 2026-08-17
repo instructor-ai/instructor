@@ -197,7 +197,13 @@ class IterableBase:
             elif c == "}":
                 stack -= 1
                 if stack == 0:
-                    return s[start_index : i + 1], s[i + 2 :]
+                    remainder = s[i + 1 :]
+                    # Only a comma is a separator worth consuming; dropping the
+                    # character unconditionally eats the `{` of the next object
+                    # when two objects arrive with nothing between them.
+                    if remainder.startswith(","):
+                        remainder = remainder[1:]
+                    return s[start_index : i + 1], remainder
         return None, s
 
 

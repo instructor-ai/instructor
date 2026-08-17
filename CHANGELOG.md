@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Iterable streaming**: Keep the opening brace of the next object when two streamed objects arrive with no separator between them, so `create_iterable` no longer drops a task after a `}{` boundary.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added

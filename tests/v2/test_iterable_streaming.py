@@ -51,6 +51,30 @@ def test_iterable_get_object_handles_even_backslashes_before_quote() -> None:
     assert rest == '{"bio": "next"}'
 
 
+def test_iterable_get_object_keeps_next_object_when_objects_abut() -> None:
+    """`}` followed straight by `{` must not lose the second object's brace."""
+    obj, rest = IterableBase.get_object('{"bio": "first"}{"bio": "next"}', 0)
+
+    assert obj == '{"bio": "first"}'
+    assert rest == '{"bio": "next"}'
+
+
+def test_iterable_tasks_from_chunks_parses_objects_without_separators() -> None:
+    chunks = [
+        "[",
+        '{"name": "Alice", "bio": "first"}{"name": "Bob", "bio": "second"}',
+        "]",
+    ]
+
+    iterable_model = cast(Any, IterableModel(User))
+    users = list(iterable_model.tasks_from_chunks(chunks))
+
+    assert users == [
+        User(name="Alice", bio="first"),
+        User(name="Bob", bio="second"),
+    ]
+
+
 def test_iterable_tasks_from_chunks_handles_braces_inside_strings() -> None:
     chunks = [
         '{"tasks": [',
