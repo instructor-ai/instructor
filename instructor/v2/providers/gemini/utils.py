@@ -339,7 +339,7 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         result.setdefault("safety_settings", {})
         return result
 
-    safety_settings = result.get("safety_settings", {})
+    safety_settings = result.get("safety_settings", {}).copy()
     result["safety_settings"] = safety_settings
 
     for category, threshold in default_safety_thresholds.items():
