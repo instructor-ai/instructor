@@ -66,9 +66,9 @@ print(weather_info.model_dump_json(indent=2))
 """
 ```
 
-Once we've run this request succesfully, we'll see that we have a trace avaliable in the Langfuse dashboard for you to look at.
+Once we've run this request successfully, we'll see that we have a trace available in the Langfuse dashboard for you to look at.
 
-### Langfuse-Instructor integration with asychnronous OpenAI client
+### Langfuse-Instructor integration with asynchronous OpenAI client
 
 ```python
 import instructor
