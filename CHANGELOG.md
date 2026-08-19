@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Anthropic batch messages**: Preserve every system instruction when converting batch requests instead of keeping only the final system message.
+
 ## [1.16.0] - 2026-08-09
 
 ### Added
