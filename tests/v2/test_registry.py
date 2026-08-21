@@ -197,7 +197,6 @@ def test_is_registered_and_list_modes_during_concurrent_lazy_load():
     between popping _lazy_loaders and publishing _handlers.
     """
     import threading
-    import time
     from typing import cast
 
     from instructor.v2.core.registry import ModeHandlers, ModeRegistry
