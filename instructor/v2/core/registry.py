@@ -200,9 +200,10 @@ class ModeRegistry:
                 return self._handlers[mode_key]
 
             if mode_key in self._lazy_loaders:
-                loader = self._lazy_loaders.pop(mode_key)
+                loader = self._lazy_loaders[mode_key]
                 handlers = loader()
                 self._handlers[mode_key] = handlers
+                self._lazy_loaders.pop(mode_key, None)
                 return handlers
 
         raise KeyError(

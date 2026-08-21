@@ -186,3 +186,56 @@ def test_get_handlers_concurrent_first_access_does_not_race():
     )
     # The loader must run exactly once, not once per racing thread.
     assert load_count == 1
+
+
+def test_is_registered_and_list_modes_during_concurrent_lazy_load():
+    """Regression test for #2535.
+
+    When thread A is in the middle of resolving a lazy loader, concurrent
+    readers calling is_registered() or list_modes() must still see the mode
+    as registered rather than raising RegistryError due to a momentary gap
+    between popping _lazy_loaders and publishing _handlers.
+    """
+    import threading
+    import time
+    from typing import cast
+
+    from instructor.v2.core.registry import ModeHandlers, ModeRegistry
+
+    registry = ModeRegistry()
+    load_in_progress = threading.Event()
+    finish_load = threading.Event()
+
+    def slow_loader() -> ModeHandlers:
+        load_in_progress.set()
+        finish_load.wait(timeout=5)
+        return ModeHandlers(
+            request_handler=cast(Any, lambda *_a, **_k: None),
+            reask_handler=cast(Any, lambda *_a, **_k: None),
+            response_parser=cast(Any, lambda *_a, **_k: None),
+        )
+
+    registry.register_lazy(Provider.OPENAI, Mode.JSON, slow_loader)
+
+    # Thread 1 starts lazy load
+    t1 = threading.Thread(target=lambda: registry.get_handlers(Provider.OPENAI, Mode.JSON))
+    t1.start()
+
+    # Wait until thread 1 has popped the loader and is executing the slow loader
+    assert load_in_progress.wait(timeout=5)
+
+    # Thread 2 checks registration while thread 1 is still inside the loader
+    assert registry.is_registered(Provider.OPENAI, Mode.JSON), (
+        "is_registered() must return True even while lazy loading is in-flight"
+    )
+    assert (Provider.OPENAI, Mode.JSON) in registry.list_modes(), (
+        "list_modes() must include mode even while lazy loading is in-flight"
+    )
+
+    finish_load.set()
+    t1.join(timeout=5)
+
+    # Post-load sanity check
+    assert registry.is_registered(Provider.OPENAI, Mode.JSON)
+    assert (Provider.OPENAI, Mode.JSON) in registry.list_modes()
+
