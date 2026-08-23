@@ -62,7 +62,6 @@ def test_reask_genai_tools_with_function_call_appends_user_response(
 
     assert result["contents"][0] is content
     assert result["contents"][1].role == "user"
-    assert result["contents"][1].role != "tool"
     function_response = result["contents"][1].parts[0].function_response
     assert function_response["name"] == "Answer"
     assert "Validation Error found" in function_response["response"]["error"]

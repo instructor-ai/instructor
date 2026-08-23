@@ -122,7 +122,6 @@ def _assert_retry_history(
             == expected_content.parts[1].thought_signature
         )
         assert function_response_content.role == "user"
-        assert function_response_content.role != "tool"
         function_response = function_response_content.parts[0].function_response
         assert function_response.name == "WireResult"
         assert "Validation Error found" in function_response.response["error"]
