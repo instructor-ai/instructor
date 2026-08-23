@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Google GenAI**: Use the user role for validation-retry function responses so Gemini accepts the corrected request. ([#2557](https://github.com/567-labs/instructor/pull/2557))
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed
