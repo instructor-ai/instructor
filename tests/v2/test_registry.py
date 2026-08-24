@@ -186,3 +186,42 @@ def test_get_handlers_concurrent_first_access_does_not_race():
     )
     # The loader must run exactly once, not once per racing thread.
     assert load_count == 1
+
+
+def test_lazy_load_keeps_mode_registered_during_loader():
+    """Regression test for #2535.
+
+    is_registered() reads _handlers / _lazy_loaders without the lazy-load
+    lock. While a lazy loader is resolving, the (provider, mode) key must
+    stay visible as registered — otherwise a second thread calling
+    from_litellm during the load window is told the mode is not registered
+    and patch_v2 raises RegistryError.
+
+    The old pop-then-set order removed the loader from _lazy_loaders before
+    _handlers was populated, so is_registered() returned False for the whole
+    duration of the loader. The loader below records is_registered() mid-load,
+    which reproduces exactly that window deterministically without threads.
+    """
+    from instructor.v2.core.registry import ModeHandlers, ModeRegistry
+
+    registry = ModeRegistry()
+    observed: dict[str, bool] = {}
+
+    def loader() -> ModeHandlers:
+        # Called while the key is mid-resolution: it must still look registered.
+        observed["registered_during_load"] = registry.is_registered(
+            Provider.DEEPSEEK, Mode.TOOLS
+        )
+        return ModeHandlers(
+            request_handler=cast(Any, lambda *_a, **_k: None),
+            reask_handler=cast(Any, lambda *_a, **_k: None),
+            response_parser=cast(Any, lambda *_a, **_k: None),
+        )
+
+    registry.register_lazy(Provider.DEEPSEEK, Mode.TOOLS, loader)
+    registry.get_handlers(Provider.DEEPSEEK, Mode.TOOLS)
+
+    assert observed["registered_during_load"] is True, (
+        "mode must stay registered while its lazy loader is resolving"
+    )
+    assert registry.is_registered(Provider.DEEPSEEK, Mode.TOOLS) is True

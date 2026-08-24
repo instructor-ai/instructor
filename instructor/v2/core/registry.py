@@ -200,9 +200,19 @@ class ModeRegistry:
                 return self._handlers[mode_key]
 
             if mode_key in self._lazy_loaders:
-                loader = self._lazy_loaders.pop(mode_key)
+                # Publish into _handlers *before* removing from _lazy_loaders so
+                # the key is present in at least one dict at every instant.
+                # is_registered() reads both dicts without this lock, so a
+                # pop-then-set order briefly exposes the key as unregistered
+                # while the loader runs, and a concurrent first-caller is told
+                # the mode is not registered (raising RegistryError). Keeping
+                # the loader in _lazy_loaders until the handlers are published
+                # also means a loader that raises leaves the mode registered
+                # and retryable instead of dropping it permanently. (#2535)
+                loader = self._lazy_loaders[mode_key]
                 handlers = loader()
                 self._handlers[mode_key] = handlers
+                self._lazy_loaders.pop(mode_key, None)
                 return handlers
 
         raise KeyError(
