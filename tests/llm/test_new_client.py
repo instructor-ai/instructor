@@ -354,10 +354,12 @@ async def test_client_cohere_async():
 
 @pytest.mark.skip(reason="Skip for now")
 def test_client_from_mistral_with_response():
-    import mistralai.client as mistralaicli
+    from instructor.v2.providers.mistral.client import Mistral
+
+    assert Mistral is not None
 
     client = instructor.from_mistral(
-        mistralaicli.MistralClient(),
+        Mistral(api_key=os.environ.get("MISTRAL_API_KEY")),
         max_tokens=1000,
         model="mistral-large-latest",
     )
@@ -373,9 +375,11 @@ def test_client_from_mistral_with_response():
 
 @pytest.mark.skip(reason="Skip for now")
 def test_client_mistral_response():
-    import mistralai.client as mistralaicli
+    from instructor.v2.providers.mistral.client import Mistral
 
-    client = mistralaicli.MistralClient()
+    assert Mistral is not None
+
+    client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
     instructor_client = instructor.from_mistral(
         client, max_tokens=1000, model="mistral-large-latest"
     )

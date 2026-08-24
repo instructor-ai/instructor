@@ -237,10 +237,10 @@ def test_openai_multimodal_encoders_cover_response_and_error_paths(
     with pytest.raises(ValueError, match="Responses doesn't support audio"):
         audio_to_openai(audio, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS)
 
-    requested: list[str] = []
+    requested: list[tuple[str, int]] = []
 
-    def fetch(url: str) -> requests.Response:
-        requested.append(url)
+    def fetch(url: str, *, timeout: int) -> requests.Response:
+        requested.append((url, timeout))
         response = requests.Response()
         response.status_code = 200
         response._content = b"%PDF-1.7\ncoverage"  # real response body, no network call
@@ -261,8 +261,8 @@ def test_openai_multimodal_encoders_cover_response_and_error_paths(
         },
     }
     assert requested == [
-        "https://cdn.example.invalid/report.pdf",
-        "https://cdn.example.invalid/report.pdf",
+        ("https://cdn.example.invalid/report.pdf", 30),
+        ("https://cdn.example.invalid/report.pdf", 30),
     ]
 
     pdf_data = PDF.from_base64("data:application/pdf;base64,cGRm")

@@ -143,10 +143,10 @@ def test_image_raw_base64_rejects_non_webp_riff_data() -> None:
 
 
 def test_image_url_to_base64_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
-    calls: list[str] = []
+    calls: list[tuple[str, int]] = []
 
-    def get(url: str) -> requests.Response:
-        calls.append(url)
+    def get(url: str, *, timeout: int) -> requests.Response:
+        calls.append((url, timeout))
         return response(b"image-bytes", "image/png")
 
     monkeypatch.setattr(requests, "get", get)
@@ -154,7 +154,7 @@ def test_image_url_to_base64_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
     second = Image.url_to_base64("https://example.test/photo.png")
 
     assert first == second == base64.b64encode(b"image-bytes").decode()
-    assert calls == ["https://example.test/photo.png"]
+    assert calls == [("https://example.test/photo.png", 30)]
 
 
 def test_audio_autodetects_url_gcs_string_path_and_path(
@@ -260,10 +260,12 @@ def test_pdf_autodetects_gcs_path_and_raw_base64(
 def test_pdf_autodetects_url_from_response_media_type(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    calls: list[tuple[str, bool]] = []
+    calls: list[tuple[str, bool, int]] = []
 
-    def head(url: str, allow_redirects: bool = False) -> requests.Response:
-        calls.append((url, allow_redirects))
+    def head(
+        url: str, allow_redirects: bool = False, *, timeout: int
+    ) -> requests.Response:
+        calls.append((url, allow_redirects, timeout))
         return response(b"", "application/pdf")
 
     monkeypatch.setattr(requests, "head", head)
@@ -273,7 +275,7 @@ def test_pdf_autodetects_url_from_response_media_type(
     assert pdf.source == "https://example.test/reports/latest"
     assert pdf.media_type == "application/pdf"
     assert pdf.data is None
-    assert calls == [("https://example.test/reports/latest", True)]
+    assert calls == [("https://example.test/reports/latest", True, 30)]
 
 
 def test_pdf_rejects_raw_base64_with_non_pdf_content() -> None:

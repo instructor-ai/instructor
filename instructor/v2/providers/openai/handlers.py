@@ -260,6 +260,21 @@ def reask_responses_tools(
             }
         )
 
+    if not reask_messages:
+        # Model produced no tool calls at all (e.g. a reasoning-only or plain
+        # message output). Fall back to a plain user correction so the retry
+        # carries feedback instead of resending the identical request,
+        # mirroring reask_tools and the Anthropic reask handler.
+        reask_messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Validation Error found:\n{exception}\n"
+                    "Recall the function correctly, fix the errors"
+                ),
+            }
+        )
+
     kwargs["messages"].extend(reask_messages)
     return kwargs
 
@@ -398,6 +413,19 @@ class OpenAIHandlerBase(ModeHandler):
             del self._streaming_models[response_model]
             return True
         return False
+
+    def _should_parse_streaming(
+        self,
+        response_model: type[BaseModel] | ParallelBase | None,
+        stream: bool,
+    ) -> bool:
+        """Return whether a response needs DSL streaming parsing."""
+        registered = self._consume_streaming_flag(response_model)
+        return bool(
+            inspect.isclass(response_model)
+            and issubclass(response_model, (IterableBase, PartialBase))
+            and (stream or registered)
+        )
 
     def extract_streaming_json(
         self, completion: TypingIterable[Any]
@@ -698,15 +726,12 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse tool call response."""
         # Check for streaming
-        consume_streaming = isinstance(
-            response_model, type
-        ) and self._consume_streaming_flag(response_model)
-        if consume_streaming:
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -795,16 +820,12 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse JSON schema response."""
         # Check for streaming
-        if (
-            isinstance(response_model, type)
-            and (stream or self._consume_streaming_flag(response_model))
-            and issubclass(response_model, (IterableBase, PartialBase))
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -887,12 +908,10 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -987,14 +1006,12 @@ class OpenAIMDJSONHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse JSON from markdown code block in response."""
         # Check for streaming
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,

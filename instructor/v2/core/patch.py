@@ -22,7 +22,11 @@ from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
 from instructor.v2.core.messages import isolate_retry_kwargs
 from instructor.v2.core.response_model import prepare_response_model
-from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
+from instructor.v2.core.retry import (
+    _validate_token_budget,
+    retry_async_v2,
+    retry_sync_v2,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -193,10 +197,16 @@ def _create_sync_wrapper(
         max_retries: int | Retrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> T_Model:
         """Patched synchronous create function."""
+        _validate_token_budget(
+            token_budget,
+            response_model=response_model,
+            kwargs=kwargs,
+        )
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
@@ -209,13 +219,15 @@ def _create_sync_wrapper(
         # Get handlers from registry
         handlers = mode_registry.get_handlers(provider, mode)
 
-        if response_model is not None:
+        if response_model is not None and mode not in Mode.parallel_modes():
             response_model = prepare_response_model(response_model)
 
         # Prepare request kwargs using registry handler
-        response_model, new_kwargs = handlers.request_handler(
+        prepared_model, new_kwargs = handlers.request_handler(
             response_model=response_model, kwargs=kwargs
         )
+        if mode not in Mode.parallel_modes():
+            response_model = prepared_model
         new_kwargs.pop("autodetect_images", None)
         if handlers.message_converter and "messages" in new_kwargs:
             new_kwargs["messages"] = handlers.message_converter(
@@ -262,6 +274,7 @@ def _create_sync_wrapper(
             kwargs=isolate_retry_kwargs(new_kwargs),
             strict=strict,
             hooks=hooks,
+            token_budget=token_budget,
         )
 
         # Store in cache after successful call
@@ -307,10 +320,16 @@ def _create_async_wrapper(
         max_retries: int | AsyncRetrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
+        token_budget: int | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> T_Model:
         """Patched asynchronous create function."""
+        _validate_token_budget(
+            token_budget,
+            response_model=response_model,
+            kwargs=kwargs,
+        )
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
@@ -323,13 +342,15 @@ def _create_async_wrapper(
         # Get handlers from registry
         handlers = mode_registry.get_handlers(provider, mode)
 
-        if response_model is not None:
+        if response_model is not None and mode not in Mode.parallel_modes():
             response_model = prepare_response_model(response_model)
 
         # Prepare request kwargs using registry handler
-        response_model, new_kwargs = handlers.request_handler(
+        prepared_model, new_kwargs = handlers.request_handler(
             response_model=response_model, kwargs=kwargs
         )
+        if mode not in Mode.parallel_modes():
+            response_model = prepared_model
         new_kwargs.pop("autodetect_images", None)
         if handlers.message_converter and "messages" in new_kwargs:
             new_kwargs["messages"] = handlers.message_converter(
@@ -376,6 +397,7 @@ def _create_async_wrapper(
             kwargs=isolate_retry_kwargs(new_kwargs),
             strict=strict,
             hooks=hooks,
+            token_budget=token_budget,
         )
 
         # Store in cache after successful call

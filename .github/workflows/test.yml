@@ -30,17 +30,12 @@ jobs:
           uv run --frozen pytest tests/ --asyncio-mode=auto -n auto
           --ignore=tests/coverage
           --ignore=tests/test_batch_processor_coverage.py
+          -m 'not llm'
           -k 'not test_core_providers and not test_openai and not test_anthropic
           and not test_gemini and not test_genai and not test_writer and not
           test_vertexai and not docs'
         env:
           INSTRUCTOR_ENV: CI
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
 
   # Offline coverage tests must not be filtered by provider names.
   offline-coverage-tests:
@@ -129,6 +124,7 @@ jobs:
           uv run --frozen coverage erase
           uv run --frozen coverage run --branch -m pytest tests/ \
             --asyncio-mode=auto --strict-config --strict-markers \
+            -m 'not llm' \
             -k 'not docs'
           uv run --frozen coverage report --show-missing --fail-under=99
           uv run --frozen coverage json -o "${RUNNER_TEMP}/coverage.json"

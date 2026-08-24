@@ -38,7 +38,7 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 ### Environment Setup
 
-1. **Fork the Repository**: Click the "Fork" button at the top right of the [repository page](https://github.com/instructor-ai/instructor).
+1. **Fork the Repository**: Click the "Fork" button at the top right of the [repository page](https://github.com/567-labs/instructor).
 
 2. **Clone Your Fork**:
    ```bash
@@ -48,7 +48,7 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 3. **Set up Remote**:
    ```bash
-   git remote add upstream https://github.com/instructor-ai/instructor.git
+   git remote add upstream https://github.com/567-labs/instructor.git
    ```
 
 4. **Install UV** (recommended):
@@ -63,19 +63,18 @@ By participating in this project, you agree to abide by our code of conduct: tre
 5. **Install Dependencies**:
    ```bash
    # Using uv (recommended)
-   uv pip install -e ".[dev,docs,test-docs]"
+   uv sync --extra dev --extra docs --extra test-docs
    
    # Using poetry
    poetry install --with dev,docs,test-docs
    
    # For specific providers, add the provider name as an extra
-   # Example: uv pip install -e ".[dev,docs,test-docs,anthropic]"
+   # Example: uv sync --extra dev --extra docs --extra test-docs --extra anthropic
    ```
 
 6. **Set up Pre-commit**:
    ```bash
-   pip install pre-commit
-   pre-commit install
+   uv run pre-commit install
    ```
 
 ### Development Workflow
@@ -115,16 +114,19 @@ UV is a fast Python package installer and resolver. It's recommended for day-to-
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install project and development dependencies
-uv pip install -e ".[dev,docs]"
+uv sync --extra dev --extra docs
 
-# Adding a new dependency (example)
-uv pip install new-package
+# Add a project dependency and update pyproject.toml plus uv.lock
+uv add new-package
 ```
 
 Key UV commands:
-- `uv pip install -e .` - Install the project in editable mode
-- `uv pip install -e ".[dev]"` - Install with development extras
-- `uv pip freeze > requirements.txt` - Generate requirements file
+- `uv sync` - Install the project and synchronize the environment with `uv.lock`
+- `uv sync --extra dev` - Install with a selected optional extra
+- `uv add package-name` - Add a project dependency and update the lockfile
+- `uv pip install package-name` - Install only into the current environment without changing project metadata
+- `uv pip compile pyproject.toml -o requirements.txt` - Regenerate the committed requirements export
+- `uv lock --check` - Verify that `uv.lock` matches `pyproject.toml`
 - `uv self update` - Update UV to the latest version
 
 #### Using Poetry
@@ -173,9 +175,9 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 4. **Document Installation**: Update the documentation to include installation instructions:
    ```
    # Install with your provider support
-   uv pip install "instructor[my-provider]"
+   uv add "instructor[my-provider]"
    # or
-   poetry install --with my-provider
+   poetry add "instructor[my-provider]"
    ```
 
 5. **Create Provider Utilities and Handlers**:
@@ -198,7 +200,7 @@ Instructor uses optional dependencies to support different LLM providers. Provid
 
 ### Reporting Bugs
 
-If you find a bug, please create an issue on [our issue tracker](https://github.com/instructor-ai/instructor/issues) with:
+If you find a bug, please create an issue on [our issue tracker](https://github.com/567-labs/instructor/issues) with:
 
 1. A clear, descriptive title
 2. A detailed description including:
@@ -241,7 +243,7 @@ Documentation improvements are always welcome! Follow these guidelines:
 
 We encourage contributions to our evaluation tests:
 
-1. Explore existing evals in the [evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm)
+1. Explore existing evals in the [evals directory](https://github.com/567-labs/instructor/tree/main/tests/llm)
 2. Contribute new evals as pytest tests
 3. Evals should test specific capabilities or edge cases of the library or models
 4. Follow the existing patterns for structuring eval tests
@@ -350,17 +352,17 @@ Run tests using pytest:
 
 ```bash
 # Run all tests
-pytest tests/
+uv run pytest tests/
 
 # Run specific test
-pytest tests/path_to_test.py::test_name
+uv run pytest tests/path_to_test.py::test_name
 
 # Skip LLM tests (faster for local development)
-pytest tests/ -k 'not llm and not openai'
+uv run pytest tests/ -k 'not llm and not openai'
 
 # Generate coverage report
-coverage run -m pytest tests/ -k "not docs"
-coverage report
+uv run coverage run -m pytest tests/ -k "not docs"
+uv run coverage report
 ```
 
 ## Branch and Release Process

@@ -29,11 +29,13 @@ def _install_fake_genai(
 def test_image_to_genai_fetches_url_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
     _install_fake_genai(monkeypatch)
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
-    monkeypatch.setattr(
-        multimodal.requests,
-        "get",
-        lambda url: SimpleNamespace(content=f"fetched:{url}".encode()),
-    )
+    requests: list[tuple[str, int]] = []
+
+    def get(url: str, *, timeout: int) -> Any:
+        requests.append((url, timeout))
+        return SimpleNamespace(content=f"fetched:{url}".encode())
+
+    monkeypatch.setattr(multimodal.requests, "get", get)
 
     image = Image(
         source="https://example.com/image.png",
@@ -45,6 +47,7 @@ def test_image_to_genai_fetches_url_bytes(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert part.data == b"fetched:https://example.com/image.png"
     assert part.mime_type == "image/png"
+    assert requests == [("https://example.com/image.png", 30)]
 
 
 def test_image_to_genai_decodes_inline_data(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -80,11 +83,13 @@ def test_pdf_to_genai_handles_remote_and_inline_data(
 ) -> None:
     _install_fake_genai(monkeypatch)
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
-    monkeypatch.setattr(
-        multimodal.requests,
-        "get",
-        lambda _url: SimpleNamespace(content=b"remote-pdf"),
-    )
+    requests: list[tuple[str, int]] = []
+
+    def get(url: str, *, timeout: int) -> Any:
+        requests.append((url, timeout))
+        return SimpleNamespace(content=b"remote-pdf")
+
+    monkeypatch.setattr(multimodal.requests, "get", get)
 
     remote_pdf = PDF(
         source="https://example.com/file.pdf",
@@ -102,6 +107,7 @@ def test_pdf_to_genai_handles_remote_and_inline_data(
 
     assert remote_part.data == b"remote-pdf"
     assert inline_part.data == b"A"
+    assert requests == [("https://example.com/file.pdf", 30)]
 
 
 def test_pdf_to_genai_raises_for_unsupported_pdf(
