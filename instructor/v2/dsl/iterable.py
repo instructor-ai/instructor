@@ -140,7 +140,8 @@ class IterableBase:
         **kwargs: Any,
     ):
         assert cls.task_type is not None
-        if get_origin(cls.task_type) is Union:
+        # PEP 604 unions use types.UnionType rather than typing.Union as their origin.
+        if get_origin(cls.task_type) in _UNION_ORIGINS:
             union_members = get_args(cls.task_type)
             for member in union_members:
                 try:

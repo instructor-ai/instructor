@@ -31,7 +31,7 @@ from instructor.v2.core.retry import (
     retry_sync,
     retry_sync_v2,
 )
-from instructor.v2.core.usage import update_total_usage
+from instructor.v2.core.usage import _accumulate_models, update_total_usage
 from instructor.v2.dsl.iterable import IterableModel
 from instructor.v2.dsl.response_list import ListResponse
 from instructor.v2.dsl.simple_type import ModelAdapter
@@ -78,18 +78,28 @@ def test_openai_usage_adds_token_details_and_copies_totals_to_response() -> None
         prompt_tokens=6,
         total_tokens=10,
         completion_tokens_details=CompletionTokensDetails(
-            audio_tokens=1, reasoning_tokens=2
+            accepted_prediction_tokens=3,
+            audio_tokens=1,
+            reasoning_tokens=2,
+            rejected_prediction_tokens=4,
         ),
-        prompt_tokens_details=PromptTokensDetails(audio_tokens=3, cached_tokens=4),
+        prompt_tokens_details=PromptTokensDetails.model_validate(
+            {"audio_tokens": 3, "cached_tokens": 4, "cache_write_tokens": 5}
+        ),
     )
     response_usage = CompletionUsage(
         completion_tokens=7,
         prompt_tokens=11,
         total_tokens=18,
         completion_tokens_details=CompletionTokensDetails(
-            audio_tokens=5, reasoning_tokens=8
+            accepted_prediction_tokens=7,
+            audio_tokens=5,
+            reasoning_tokens=8,
+            rejected_prediction_tokens=9,
         ),
-        prompt_tokens_details=PromptTokensDetails(audio_tokens=13, cached_tokens=21),
+        prompt_tokens_details=PromptTokensDetails.model_validate(
+            {"audio_tokens": 13, "cached_tokens": 21, "cache_write_tokens": 23}
+        ),
     )
     response = _completion(1)
     response.usage = response_usage
@@ -111,14 +121,20 @@ def test_openai_usage_adds_token_details_and_copies_totals_to_response() -> None
     assert total_prompt_details is not None
     assert response_completion_details is not None
     assert response_prompt_details is not None
+    assert total_completion_details.accepted_prediction_tokens == 10
     assert total_completion_details.audio_tokens == 6
     assert total_completion_details.reasoning_tokens == 10
+    assert total_completion_details.rejected_prediction_tokens == 13
     assert total_prompt_details.audio_tokens == 16
     assert total_prompt_details.cached_tokens == 25
+    assert total_prompt_details.model_extra == {"cache_write_tokens": 28}
+    assert response_completion_details.accepted_prediction_tokens == 10
     assert response_completion_details.audio_tokens == 6
     assert response_completion_details.reasoning_tokens == 10
+    assert response_completion_details.rejected_prediction_tokens == 13
     assert response_prompt_details.audio_tokens == 16
     assert response_prompt_details.cached_tokens == 25
+    assert response_prompt_details.model_extra == {"cache_write_tokens": 28}
     assert response_completion_details is not total_completion_details
     assert response_prompt_details is not total_prompt_details
 
@@ -126,6 +142,125 @@ def test_openai_usage_adds_token_details_and_copies_totals_to_response() -> None
     total_prompt_details.cached_tokens = 99
     assert response_completion_details.audio_tokens == 6
     assert response_prompt_details.cached_tokens == 25
+
+
+def test_openai_usage_accumulates_sdk_extra_numeric_fields() -> None:
+    total_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 1,
+            "prompt_tokens": 2,
+            "total_tokens": 3,
+            "future_tokens": 4,
+            "future_cost": 1.5,
+        }
+    )
+    response_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 5,
+            "prompt_tokens": 6,
+            "total_tokens": 11,
+            "future_tokens": 7,
+            "future_cost": 2.25,
+        }
+    )
+    response = _completion(1)
+    response.usage = response_usage
+
+    update_total_usage(response, total_usage)
+
+    assert total_usage.model_extra is not None
+    assert response_usage.model_extra is not None
+    assert total_usage.model_extra["future_tokens"] == 11
+    assert total_usage.model_extra["future_cost"] == 3.75
+    assert response_usage.model_extra["future_tokens"] == 11
+    assert response_usage.model_extra["future_cost"] == 3.75
+
+
+def test_usage_carries_existing_non_numeric_fields_to_response() -> None:
+    total_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 1,
+            "prompt_tokens": 2,
+            "total_tokens": 3,
+            "service_tier": "scale",
+        }
+    )
+    response_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 5,
+            "prompt_tokens": 6,
+            "total_tokens": 11,
+        }
+    )
+    response = _completion(1)
+    response.usage = response_usage
+
+    update_total_usage(response, total_usage)
+
+    assert response_usage.model_extra is not None
+    assert response_usage.model_extra["service_tier"] == "scale"
+
+
+def test_usage_response_non_numeric_fields_still_win() -> None:
+    total_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 1,
+            "prompt_tokens": 2,
+            "total_tokens": 3,
+            "service_tier": "scale",
+        }
+    )
+    response_usage = CompletionUsage.model_validate(
+        {
+            "completion_tokens": 5,
+            "prompt_tokens": 6,
+            "total_tokens": 11,
+            "service_tier": "default",
+        }
+    )
+    response = _completion(1)
+    response.usage = response_usage
+
+    update_total_usage(response, total_usage)
+
+    assert total_usage.model_extra is not None
+    assert total_usage.model_extra["service_tier"] == "default"
+    assert response_usage.model_extra is not None
+    assert response_usage.model_extra["service_tier"] == "default"
+
+
+def test_usage_accumulates_recursive_models_across_sdk_shape_changes() -> None:
+    class Counters(BaseModel):
+        billed: int
+        label: str | None = None
+
+    class Details(BaseModel):
+        counters: Counters
+        region: str
+
+    class Usage(BaseModel):
+        total: int
+        details: Details | str | None = None
+
+    total = Usage(total=0, details="legacy-shape")
+    first = Usage(
+        total=2,
+        details=Details(counters=Counters(billed=4, label="new"), region="us"),
+    )
+
+    _accumulate_models(first, total)
+
+    assert isinstance(total.details, Details)
+    assert total.details.counters.billed == 4
+    assert total.details.counters.label == "new"
+    assert total.details.region == "us"
+
+    second = Usage(total=3)
+    _accumulate_models(second, total)
+
+    assert second.total == 5
+    assert second.details == total.details
+    assert second.details is not total.details
 
 
 def test_patch_requires_a_target_and_supports_a_create_callable() -> None:

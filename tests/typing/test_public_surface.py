@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator, Generator
 from types import CoroutineType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from typing_extensions import assert_type
 
@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from botocore.client import BaseClient
     from cerebras.cloud.sdk import AsyncCerebras, Cerebras
     from fireworks.client import Fireworks
-    from mistralai import Mistral
     from writerai import AsyncWriter, Writer
     from xai_sdk.sync.client import Client as SyncXAIClient
 
@@ -65,10 +64,15 @@ class User(BaseModel):
     name: str
 
 
+class MistralClient(Protocol):
+    chat: Any
+
+
 def check_response_helpers(
     sync_response: Response, async_response: AsyncResponse
 ) -> None:
     assert_type(sync_response.create(response_model=User), User)
+    assert_type(sync_response.create(response_model=User, token_budget=1_000), User)
     assert_type(sync_response.create(response_model=None), Any)
     assert_type(
         sync_response.create_with_completion(response_model=User),
@@ -92,7 +96,7 @@ def check_response_helpers(
         sync_response.create_partial(response_model=None), Generator[Any, None, None]
     )
 
-    create_coro = async_response.create(response_model=User)
+    create_coro = async_response.create(response_model=User, token_budget=1_000)
     create_any_coro = async_response.create(response_model=None)
     completion_coro = async_response.create_with_completion(response_model=User)
     completion_any_coro = async_response.create_with_completion(response_model=None)
@@ -200,7 +204,7 @@ def check_litellm_factory() -> None:
 def check_bool_selected_factories(
     gemini_model: legacy_genai.GenerativeModel,
     vertex_model: gm.GenerativeModel,
-    mistral_client: Mistral,
+    mistral_client: MistralClient,
 ) -> None:
     assert_type(from_gemini(gemini_model), Instructor)
     assert_type(from_gemini(gemini_model, use_async=True), AsyncInstructor)

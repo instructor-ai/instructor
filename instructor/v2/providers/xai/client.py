@@ -269,6 +269,8 @@ def from_xai(
         call_kwargs.pop("validation_context", None)
         call_kwargs.pop("context", None)
         call_kwargs.pop("hooks", None)
+        if call_kwargs.pop("token_budget", None) is not None:
+            raise ValueError("token_budget is not supported for xAI requests")
         is_stream = call_kwargs.pop("stream", False)
 
         prepared_model = response_model
@@ -429,6 +431,8 @@ def from_xai(
         call_kwargs.pop("validation_context", None)
         call_kwargs.pop("context", None)
         call_kwargs.pop("hooks", None)
+        if call_kwargs.pop("token_budget", None) is not None:
+            raise ValueError("token_budget is not supported for xAI requests")
         is_stream = call_kwargs.pop("stream", False)
 
         prepared_model = response_model

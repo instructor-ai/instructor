@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from instructor.v2.core.usage import _accumulate_models
+
 
 def initialize_usage() -> Any:
     """Create an empty Anthropic usage accumulator."""
@@ -26,18 +28,5 @@ def update_total_usage(response_usage: Any, total_usage: Any) -> bool:
     ):
         return False
 
-    if not total_usage.cache_creation_input_tokens:
-        total_usage.cache_creation_input_tokens = 0
-    if not total_usage.cache_read_input_tokens:
-        total_usage.cache_read_input_tokens = 0
-    total_usage.input_tokens += response_usage.input_tokens or 0
-    total_usage.output_tokens += response_usage.output_tokens or 0
-    total_usage.cache_creation_input_tokens += (
-        response_usage.cache_creation_input_tokens or 0
-    )
-    total_usage.cache_read_input_tokens += response_usage.cache_read_input_tokens or 0
-    response_usage.input_tokens = total_usage.input_tokens
-    response_usage.output_tokens = total_usage.output_tokens
-    response_usage.cache_creation_input_tokens = total_usage.cache_creation_input_tokens
-    response_usage.cache_read_input_tokens = total_usage.cache_read_input_tokens
+    _accumulate_models(response_usage, total_usage)
     return True

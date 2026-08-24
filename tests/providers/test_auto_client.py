@@ -173,6 +173,7 @@ def test_validation_error_with_api_key_is_not_skipped() -> None:
 
 
 @pytest.mark.parametrize("provider_string", PROVIDERS)
+@pytest.mark.llm
 def test_user_extraction_sync(provider_string):
     """Test user extraction for each provider (sync)."""
 
@@ -200,6 +201,7 @@ def test_user_extraction_sync(provider_string):
 
 @pytest.mark.parametrize("provider_string", PROVIDERS)
 @pytest.mark.asyncio
+@pytest.mark.llm
 async def test_user_extraction_async(provider_string):
     """Test user extraction for each provider (async)."""
 
@@ -270,6 +272,7 @@ def test_provider_dispatch_uses_registered_builder(monkeypatch):
     ]
 
 
+@pytest.mark.llm
 def test_additional_kwargs_passed():
     """Test that additional kwargs are passed to provider."""
     import instructor

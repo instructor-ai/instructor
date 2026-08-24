@@ -751,3 +751,35 @@ def test_pdf_to_bedrock_missing_data_no_source():
         match="PDF data is missing. Provide base64-encoded data or use an s3:// source.",
     ):
         pdf.to_bedrock()
+
+
+def test_url_to_base64_passes_timeout():
+    """Remote fetches must pass a request timeout so a slow or unresponsive host
+    cannot hang the caller indefinitely (uncontrolled resource consumption, CWE-400)."""
+    with patch("instructor.v2.core.multimodal.requests") as mock_requests:
+        mock_response = MagicMock()
+        mock_response.content = b"fake image bytes"
+        mock_requests.get.return_value = mock_response
+
+        Image.url_to_base64("https://example.com/timeout-regression.jpg")
+
+        mock_requests.get.assert_called_once()
+        _, kwargs = mock_requests.get.call_args
+        assert kwargs["timeout"] == 30
+
+
+def test_image_from_url_head_passes_timeout():
+    """The HEAD probe used to sniff an extensionless URL's content type must also
+    pass a timeout so it cannot hang the caller indefinitely (CWE-400)."""
+    with patch("instructor.v2.core.multimodal.requests") as mock_requests:
+        mock_requests.RequestException = Exception
+        mock_response = MagicMock()
+        mock_response.headers = {"Content-Type": "image/jpeg"}
+        mock_requests.head.return_value = mock_response
+
+        # URL has no file extension, forcing the HEAD content-type probe.
+        Image.from_url("https://example.com/no-extension")
+
+        mock_requests.head.assert_called_once()
+        _, kwargs = mock_requests.head.call_args
+        assert kwargs["timeout"] == 30

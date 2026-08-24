@@ -203,7 +203,7 @@ class Image(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True)
+                response = requests.head(url, allow_redirects=True, timeout=30)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
                 raise ValueError(f"Failed to fetch image from URL") from e
@@ -233,7 +233,7 @@ class Image(BaseModel):
     @lru_cache
     def url_to_base64(url: str) -> str:
         """Cachable helper method for getting image url and encoding to base64."""
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         response.raise_for_status()
         return base64.b64encode(response.content).decode("utf-8")
 
@@ -324,7 +324,7 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         content_type = response.headers.get("content-type")
         if content_type not in VALID_AUDIO_MIME_TYPES:
             raise ValueError(
@@ -591,7 +591,7 @@ class PDF(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True)
+                response = requests.head(url, allow_redirects=True, timeout=30)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
                 raise ValueError("Failed to fetch PDF from URL") from e

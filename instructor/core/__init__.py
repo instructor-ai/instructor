@@ -14,6 +14,9 @@ from .exceptions import (
     ResponseParsingError,
     MultimodalError,
     FailedAttempt,
+    TokenBudgetError,
+    TokenBudgetExceeded,
+    TokenUsageUnavailableError,
 )
 from .hooks import Hooks, HookName
 from .patch import patch, apatch
@@ -35,6 +38,9 @@ __all__ = [
     "ResponseParsingError",
     "MultimodalError",
     "FailedAttempt",
+    "TokenBudgetError",
+    "TokenBudgetExceeded",
+    "TokenUsageUnavailableError",
     "Hooks",
     "HookName",
     "patch",

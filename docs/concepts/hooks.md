@@ -13,11 +13,35 @@ Hooks let you intercept and handle events during the completion and parsing proc
 |-------|-------------|-------------------|
 | `completion:kwargs` | Arguments passed to completion | `def handler(*args, **kwargs)` |
 | `completion:response` | Raw API response received | `def handler(response)` |
+| `completion:usage` | Immutable snapshot of cumulative retry usage | `def handler(usage, *, attempt_number)` |
 | `completion:error` | Error during a retry attempt | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
 | `parse:error` | Pydantic validation failed | `def handler(error)` |
 | `completion:last_attempt` | Final retry attempt exhausted | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
 
-`completion:error` and `completion:last_attempt` handlers receive optional retry metadata as keyword arguments. Old-style handlers that only accept `error` continue to work — the metadata is silently dropped for backward compatibility.
+`completion:usage`, `completion:error`, and `completion:last_attempt` handlers receive retry metadata as keyword arguments. Old-style error handlers that only accept `error` continue to work because the metadata is silently dropped for backward compatibility.
+
+## Cumulative Usage
+
+`completion:usage` runs after each response that includes compatible usage
+metadata. Each event receives a separate cumulative snapshot, so retaining or
+changing one snapshot does not affect later events or Instructor's accounting.
+
+```python
+import instructor
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+
+def record_usage(usage, *, attempt_number: int):
+    print(f"Attempt {attempt_number}: {usage.total_tokens} total tokens")
+
+
+client.on("completion:usage", record_usage)
+```
+
+For a successful Pydantic model or list response, Instructor also attaches the
+final cumulative snapshot as `_total_usage`. Primitive response models should
+use the hook because they cannot carry response metadata.
 
 ## Registering and Removing Hooks
 
