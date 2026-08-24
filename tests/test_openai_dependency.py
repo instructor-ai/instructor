@@ -1,5 +1,11 @@
 from pathlib import Path
-import tomllib
+import importlib
+from typing import Any
+
+try:
+    tomllib: Any = importlib.import_module("tomllib")
+except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.9/3.10
+    tomllib = importlib.import_module("tomli")
 
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version

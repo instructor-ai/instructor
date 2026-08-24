@@ -1851,6 +1851,7 @@ dev = [
     { name = "pytest-examples" },
     { name = "pytest-xdist" },
     { name = "python-dotenv" },
+    { name = "tomli" },
     { name = "ty" },
     { name = "xmltodict" },
 ]
@@ -1989,6 +1990,7 @@ requires-dist = [
     { name = "sqlmodel", marker = "extra == 'sqlmodel'", specifier = ">=0.0.22,<1.0.0" },
     { name = "tabulate", marker = "extra == 'test-docs'", specifier = ">=0.9.0,<1.0.0" },
     { name = "tenacity", specifier = ">=8.2.3,<10.0.0" },
+    { name = "tomli", marker = "extra == 'dev'", specifier = ">=2.0.1" },
     { name = "trafilatura", marker = "extra == 'trafilatura'", specifier = ">=1.12.2,<3.0.0" },
     { name = "ty", marker = "extra == 'dev'", specifier = "==0.0.44" },
     { name = "typer", specifier = ">=0.9.0,<1.0.0" },

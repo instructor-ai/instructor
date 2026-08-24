@@ -30,7 +30,7 @@ description = "structured outputs for llm"
 readme = "README.md"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling<1.32"]
 build-backend = "hatchling.build"
 
 [tool.uv]
@@ -57,6 +57,7 @@ dev = [
     "pytest-xdist>=3.8.0",
     "pre-commit>=4.2.0",
     "ty==0.0.44",
+    "tomli>=2.0.1",
     "anthropic==0.93.0",
     "xmltodict>=0.13,<1.1",
 ]
