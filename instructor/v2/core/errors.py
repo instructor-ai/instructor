@@ -472,8 +472,12 @@ class AsyncValidationError(ValueError, InstructorError):
 
     errors: list[ValueError]
 
-    def __init__(self, errors: list[ValueError] | ValueError):
-        self.errors = errors if isinstance(errors, list) else [errors]
+    def __init__(self, errors: list[ValueError] | ValueError | str):
+        self.errors = (
+            errors
+            if isinstance(errors, list)
+            else [ValueError(errors) if isinstance(errors, str) else errors]
+        )
         super().__init__(str(self.errors[0]))
 
 

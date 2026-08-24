@@ -83,4 +83,5 @@ async def test_async_retry_path_runs_validators(
             strict=True,
         )
 
+    assert exc_info.value.failed_attempts is not None
     assert isinstance(exc_info.value.failed_attempts[0].exception, AsyncValidationError)
