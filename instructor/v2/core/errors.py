@@ -472,6 +472,10 @@ class AsyncValidationError(ValueError, InstructorError):
 
     errors: list[ValueError]
 
+    def __init__(self, errors: list[ValueError] | ValueError):
+        self.errors = errors if isinstance(errors, list) else [errors]
+        super().__init__(str(self.errors[0]))
+
 
 class ResponseParsingError(ValueError, InstructorError):
     """Exception raised when unable to parse the LLM response.
