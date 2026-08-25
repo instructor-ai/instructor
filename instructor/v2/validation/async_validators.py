@@ -2,7 +2,7 @@
 
 from inspect import signature
 from types import SimpleNamespace
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from pydantic import ValidationInfo
 
@@ -21,7 +21,7 @@ class AsyncValidationContext:
 
 
 async def run_async_validators(
-    value: Any, context: dict[str, Any] | None = None
+    value: Any, context: Optional[dict[str, Any]] = None
 ) -> Any:
     """Run declared async validators on a parsed model and its nested models."""
     if isinstance(value, list):
