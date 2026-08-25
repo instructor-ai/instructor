@@ -135,7 +135,7 @@ def test_cache_key_accounts_for_hoisted_system_prompt():
         )
 
     raw_client = anthropic.Anthropic(api_key="sk-not-used")
-    raw_client.messages.create = fake_create
+    raw_client.messages.create = fake_create  # ty: ignore[invalid-assignment]
     client = instructor.from_anthropic(raw_client, mode=instructor.Mode.JSON)
 
     cache = AutoCache(maxsize=10)
