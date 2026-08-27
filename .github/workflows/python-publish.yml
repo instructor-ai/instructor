@@ -46,7 +46,7 @@ jobs:
           python scripts/prepare_release.py \
             --expected-version "$VERSION" \
             --output /tmp/release-notes.md
-          uvx --from twine==6.2.0 twine check dist/*
+          uvx --from twine==7.0.0 twine check dist/*
       - name: Publish exact release artifacts to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
