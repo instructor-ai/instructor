@@ -50,7 +50,7 @@ MarkdownDataFrame = Annotated[
     WithJsonSchema(
         {
             "type": "string",
-            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be separate",
         }
     ),
 ]
@@ -93,7 +93,7 @@ MarkdownDataFrame = Annotated[
     WithJsonSchema(
         {
             "type": "string",
-            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be separate",
         }
     ),
 ]
