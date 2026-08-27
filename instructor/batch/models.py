@@ -268,7 +268,9 @@ class BatchJobInfo(BaseModel):
             expired=request_counts_data.get("expired"),
             total=request_counts_data.get("processing", 0)
             + request_counts_data.get("succeeded", 0)
-            + request_counts_data.get("errored", 0),
+            + request_counts_data.get("errored", 0)
+            + request_counts_data.get("canceled", 0)
+            + request_counts_data.get("expired", 0),
         )
 
         # Parse files

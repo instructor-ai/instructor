@@ -59,3 +59,29 @@ def test_cache_key_changes_on_docstring_change():
     k1 = make_cache_key(messages=messages, model=model_name, response_model=UserDoc1)
     k2 = make_cache_key(messages=messages, model=model_name, response_model=UserDoc2)
     assert k1 != k2, "Changing class docstring should bust the cache key"
+
+
+def test_cache_key_changes_on_system_prompt_change():
+    k1 = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        system="Always answer in French.",
+    )
+    k2 = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        system="Always answer in German.",
+    )
+    assert k1 != k2, "Changing the hoisted system prompt should bust the cache key"
+
+
+def test_cache_key_unchanged_when_no_system_prompt():
+    without = make_cache_key(messages=messages, model=model_name, response_model=UserV1)
+    explicit_none = make_cache_key(
+        messages=messages, model=model_name, response_model=UserV1, system=None
+    )
+    assert without == explicit_none, (
+        "Keys must stay stable for providers without a hoisted system prompt"
+    )
