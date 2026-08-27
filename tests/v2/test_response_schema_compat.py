@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
+
+from typing_extensions import NotRequired, TypedDict
 
 import pytest
 
 from instructor import Mode, Provider
 from instructor.v2.core.function_calls import ResponseSchema
+from instructor.v2.core.response_model import prepare_response_model
 
 
 class Answer(ResponseSchema):
@@ -129,3 +132,25 @@ def test_provider_parse_helpers_delegate_to_registry(
         }
     ]
     assert calls[0]["warning"] is not None
+
+
+class OptionalUser(TypedDict):
+    name: str
+    age: NotRequired[int]
+
+
+class PartialUser(TypedDict, total=False):
+    nickname: str
+
+
+def test_prepare_response_model_preserves_typed_dict_optional_keys() -> None:
+    model = prepare_response_model(OptionalUser)
+
+    assert model is not None
+    model = cast(Any, model)
+    assert model.model_fields["name"].is_required()
+    assert not model.model_fields["age"].is_required()
+    assert model(name="Ada").model_dump() == {"name": "Ada", "age": None}
+
+    partial_model = cast(Any, prepare_response_model(PartialUser))
+    assert not partial_model.model_fields["nickname"].is_required()

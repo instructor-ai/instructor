@@ -5,7 +5,16 @@ from __future__ import annotations
 import inspect
 import sys
 from collections.abc import Iterable
-from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
+from typing import (
+    Any,
+    Callable,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from pydantic import BaseModel, create_model
 
@@ -64,10 +73,35 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
 
     if is_typed_dict(working_model):
         model_name = getattr(working_model, "__name__", "TypedDictModel")
-        annotations = getattr(working_model, "__annotations__", {})
+        annotations = get_type_hints(working_model, include_extras=True)
+        optional_keys = set(getattr(working_model, "__optional_keys__", set()))
+        if not getattr(working_model, "__total__", True):
+            optional_keys = set(annotations)
+        optional_keys.update(
+            name
+            for name, annotation in annotations.items()
+            if get_origin(annotation) is not None
+            and get_origin(annotation).__name__ == "NotRequired"
+        )
+
+        def _field_annotation(annotation: Any) -> Any:
+            annotation_origin = get_origin(annotation)
+            if annotation_origin is not None and annotation_origin.__name__ in {
+                "NotRequired",
+                "Required",
+            }:
+                return get_args(annotation)[0]
+            return annotation
+
         working_model = _create_dynamic_model(
             model_name,
-            **{name: (annotation, ...) for name, annotation in annotations.items()},
+            **{
+                name: (
+                    _field_annotation(annotation),
+                    None if name in optional_keys else ...,
+                )
+                for name, annotation in annotations.items()
+            },
         )
 
     origin = get_origin(working_model)
@@ -86,9 +120,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
                 **{
                     name: (annotation, ...)
                     for name, annotation in getattr(
-                        iterable_element_class,
-                        "__annotations__",
-                        {},
+                        iterable_element_class, "__annotations__", {}
                     ).items()
                 },
             )
