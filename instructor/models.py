@@ -159,5 +159,8 @@ KnownModelName = TypeAliasType(
         # DeepSeek Models
         "deepseek/deepseek-chat",
         "deepseek/deepseek-reasoner",
+        # Sarvam Models - https://docs.sarvam.ai/api-reference-docs/getting-started/models
+        "sarvam/sarvam-30b",
+        "sarvam/sarvam-105b",
     ],
 )

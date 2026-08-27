@@ -527,3 +527,100 @@ def from_deepseek(
         model=model,
         **kwargs,
     )
+
+
+@overload
+def from_sarvam(
+    model_or_client: str,
+    mode: Mode = Mode.MD_JSON,
+    model: None = None,
+    async_client: Literal[False] = False,
+    **kwargs: Any,
+) -> Instructor: ...
+
+
+@overload
+def from_sarvam(
+    model_or_client: str,
+    mode: Mode = Mode.MD_JSON,
+    model: None = None,
+    async_client: Literal[True] = True,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_sarvam(
+    model_or_client: openai.OpenAI,
+    mode: Mode = Mode.MD_JSON,
+    model: str | None = None,
+    **kwargs: Any,
+) -> Instructor: ...
+
+
+@overload
+def from_sarvam(
+    model_or_client: openai.AsyncOpenAI,
+    mode: Mode = Mode.MD_JSON,
+    model: str | None = None,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+def from_sarvam(
+    model_or_client: str | openai.OpenAI | openai.AsyncOpenAI,
+    mode: Mode = Mode.MD_JSON,
+    model: str | None = None,
+    async_client: bool = False,
+    **kwargs: Any,
+) -> Instructor | AsyncInstructor:
+    """Create an Instructor instance for Sarvam AI.
+
+    Sarvam exposes an OpenAI-compatible chat completions API for Indic LLMs
+    such as ``sarvam-30b`` and ``sarvam-105b``.
+
+    Supports two usage patterns:
+
+    1. String-based (recommended): Pass a model name string
+       >>> from instructor.v2 import from_sarvam
+       >>> client = from_sarvam("sarvam-30b", mode=Mode.MD_JSON)
+
+    2. Client-based: Pass an OpenAI client pointed at Sarvam
+       >>> from openai import OpenAI
+       >>> client = OpenAI(
+       ...     base_url="https://api.sarvam.ai/v1",
+       ...     api_key="...",
+       ... )
+       >>> instructor_client = from_sarvam(client, mode=Mode.MD_JSON)
+
+    Args:
+        model_or_client: Model name string or OpenAI-compatible client instance
+        mode: The mode to use (defaults to Mode.MD_JSON)
+        model: Optional model name (only used with client-based usage)
+        async_client: Whether to return async client (string-based usage only)
+        **kwargs: Additional keyword arguments passed to from_provider or Instructor
+
+    Returns:
+        An Instructor instance (sync or async depending on usage pattern)
+
+    Raises:
+        ModeError: If mode is not registered for Sarvam
+        ClientError: If client is not a valid OpenAI client instance
+    """
+    if isinstance(model_or_client, str):
+        from instructor import from_provider
+
+        return from_provider(
+            f"sarvam/{model_or_client}",
+            mode=mode,
+            async_client=async_client,
+            **kwargs,
+        )
+
+    return _from_openai_compat(
+        model_or_client,
+        provider=Provider.SARVAM,
+        mode=mode,
+        model=model,
+        **kwargs,
+    )

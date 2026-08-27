@@ -36,6 +36,7 @@ class Provider(Enum):
     BEDROCK = "bedrock"
     PERPLEXITY = "perplexity"
     OPENROUTER = "openrouter"
+    SARVAM = "sarvam"
 
 
 def provider_from_mode(mode: Mode, default: Provider = Provider.OPENAI) -> Provider:
@@ -69,6 +70,8 @@ def provider_from_mode(mode: Mode, default: Provider = Provider.OPENAI) -> Provi
         Mode.BEDROCK_JSON: Provider.BEDROCK,
         Mode.PERPLEXITY_JSON: Provider.PERPLEXITY,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: Provider.OPENROUTER,
+        Mode.SARVAM_TOOLS: Provider.SARVAM,
+        Mode.SARVAM_JSON: Provider.SARVAM,
     }
     return mapping.get(mode, default)
 
@@ -119,6 +122,7 @@ def get_provider(base_url: str) -> Provider:
         ("openrouter", Provider.OPENROUTER),
         ("x.ai", Provider.XAI),
         ("xai", Provider.XAI),
+        ("sarvam", Provider.SARVAM),
     )
     for token, provider in providers:
         if token in normalized:

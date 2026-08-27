@@ -73,6 +73,7 @@ user = client.create(
 - Cohere: `"cohere/command-r-plus"`
 - Perplexity: `"perplexity/llama-3.1-sonar"`
 - DeepSeek: `"deepseek/deepseek-chat"`
+- Sarvam: `"sarvam/sarvam-30b"` (Indic languages — Hindi, Tamil, Bengali, and more)
 - xAI: `"xai/grok-beta"`
 - OpenRouter: `"openrouter/meta-llama/llama-3.1-70b"`
 - Ollama: `"ollama/llama3.2"` (local models)

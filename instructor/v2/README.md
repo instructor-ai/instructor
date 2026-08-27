@@ -1141,7 +1141,7 @@ This checklist tracks which providers have been migrated to v2:
   - Tests: `tests/v2/test_provider_modes.py`, `tests/v2/test_handlers_parametrized.py`
   - Status: ✅ Complete
 
-- [x] **OpenAI-Compatible** (`Provider.ANYSCALE`, `Provider.TOGETHER`, `Provider.DATABRICKS`, `Provider.DEEPSEEK`)
+- [x] **OpenAI-Compatible** (`Provider.ANYSCALE`, `Provider.TOGETHER`, `Provider.DATABRICKS`, `Provider.DEEPSEEK`, `Provider.SARVAM`)
   - Location: `instructor/v2/providers/openai/`
   - Modes: `TOOLS`, `JSON`, `JSON_SCHEMA`, `MD_JSON`, `PARALLEL_TOOLS`
   - Tests: `tests/v2/test_handlers_parametrized.py`, `tests/v2/test_client_unified.py`

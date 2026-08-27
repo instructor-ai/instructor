@@ -30,6 +30,7 @@ Learn how to integrate Instructor with various AI model providers. These compreh
     [:octicons-arrow-right-16: Cohere](./cohere.md)          ·
     [:octicons-arrow-right-16: Mistral](./mistral.md)        ·
     [:octicons-arrow-right-16: DeepSeek](./deepseek.md)      ·
+    [:octicons-arrow-right-16: Sarvam](./sarvam.md)        ·
     [:octicons-arrow-right-16: Together AI](./together.md)    ·
     [:octicons-arrow-right-16: Groq](./groq.md)              ·
     [:octicons-arrow-right-16: Fireworks](./fireworks.md)    ·

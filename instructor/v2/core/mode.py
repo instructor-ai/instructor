@@ -75,6 +75,10 @@ class Mode(enum.Enum):
     PERPLEXITY_JSON = "perplexity_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
+    # Sarvam modes
+    SARVAM_TOOLS = "sarvam_tools"
+    SARVAM_JSON = "sarvam_json"
+
     # Classification helpers
     @classmethod
     def tool_modes(cls) -> set["Mode"]:
@@ -102,6 +106,7 @@ class Mode(enum.Enum):
             cls.GENAI_TOOLS,
             cls.RESPONSES_TOOLS,
             cls.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+            cls.SARVAM_TOOLS,
         }
 
     @classmethod
@@ -124,6 +129,7 @@ class Mode(enum.Enum):
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_JSON,
+            cls.SARVAM_JSON,
         }
 
     @classmethod
@@ -247,6 +253,9 @@ DEPRECATED_TO_CORE: dict[Mode, Mode] = {
     Mode.GEMINI_JSON: Mode.MD_JSON,
     # OpenRouter legacy modes
     Mode.OPENROUTER_STRUCTURED_OUTPUTS: Mode.JSON_SCHEMA,
+    # Sarvam legacy modes
+    Mode.SARVAM_TOOLS: Mode.TOOLS,
+    Mode.SARVAM_JSON: Mode.MD_JSON,
 }
 
 

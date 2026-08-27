@@ -145,6 +145,23 @@ PROVIDER_SPECS: Mapping[Provider, ProviderSpec] = MappingProxyType(
             alias="deepseek",
             from_function="from_deepseek",
         ),
+        Provider.SARVAM: _spec(
+            Provider.SARVAM,
+            aliases=("sarvam",),
+            handler_module="instructor.v2.providers.openai.handlers",
+            supported_modes=(Mode.TOOLS, Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON),
+            unsupported_modes=(Mode.PARALLEL_TOOLS, Mode.RESPONSES_TOOLS),
+            legacy_modes={
+                Mode.SARVAM_TOOLS: Mode.TOOLS,
+                Mode.SARVAM_JSON: Mode.MD_JSON,
+            },
+            from_function="from_sarvam",
+            client_module="instructor.v2.providers.openai.client",
+            sdk_module="openai",
+            provider_string="sarvam/sarvam-30b",
+            basic_modes=(Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
+            async_modes=(Mode.TOOLS, Mode.JSON_SCHEMA, Mode.MD_JSON),
+        ),
         Provider.OPENROUTER: _spec(
             Provider.OPENROUTER,
             aliases=("openrouter",),

@@ -168,6 +168,7 @@ nav:
     - OpenAI: 'integrations/openai.md'
     - OpenAI Responses: 'integrations/openai-responses.md'
     - DeepSeek: 'integrations/deepseek.md'
+    - Sarvam: 'integrations/sarvam.md'
     - llama-cpp-python: 'integrations/llama-cpp-python.md'
     - Gemini: 'integrations/google.md'
     - Anthropic: 'integrations/anthropic.md'
