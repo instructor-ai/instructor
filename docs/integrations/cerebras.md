@@ -22,6 +22,17 @@ the Cerebras SDK. This lets you use Cerebras request parameters without falling
 back to a generic OpenAI client. For example:
 
 ```python
+import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_provider("cerebras/gpt-oss-120b")
+
 resp = client.create(
     messages=[{"role": "user", "content": "Return a short user record."}],
     response_model=User,
