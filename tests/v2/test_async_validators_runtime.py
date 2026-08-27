@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
+import instructor.v2.validation as validation
 from instructor.v2.core.errors import AsyncValidationError, InstructorRetryException
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
@@ -31,6 +32,23 @@ class Response(BaseModel):
         return model.model_copy(update={"value": model.value.upper()})
 
 
+class Container(BaseModel):
+    nested: list[Nested]
+
+
+class NoopModel(BaseModel):
+    @async_model_validator()
+    async def keep(model: "NoopModel") -> None:
+        return None
+
+
+class Classless:
+    def __getattribute__(self, name: str) -> Any:
+        if name == "__class__":
+            raise AttributeError(name)
+        return object.__getattribute__(self, name)
+
+
 @pytest.mark.asyncio
 async def test_run_async_validators_runs_model_validators_and_nested_models() -> None:
     result = await run_async_validators(
@@ -46,6 +64,32 @@ async def test_run_async_validators_propagates_field_validation_failure() -> Non
         await run_async_validators(
             Response(value="invalid", nested=Nested(value="child"))
         )
+
+
+@pytest.mark.asyncio
+async def test_run_async_validators_handles_lists_and_nested_collections() -> None:
+    result = await run_async_validators([Container(nested=[Nested(value="child")])])
+
+    assert result[0].nested[0].value == "child"
+
+
+@pytest.mark.asyncio
+async def test_run_async_validators_returns_values_without_a_class() -> None:
+    value = Classless()
+
+    assert await run_async_validators(value) is value
+
+
+@pytest.mark.asyncio
+async def test_run_async_validators_keeps_models_when_validator_returns_none() -> None:
+    value = NoopModel()
+
+    assert await run_async_validators(value) is value
+
+
+def test_validation_module_rejects_unknown_exports() -> None:
+    with pytest.raises(AttributeError, match="has no attribute"):
+        getattr(validation, "not_an_export")
 
 
 @pytest.mark.asyncio
