@@ -330,7 +330,7 @@ def test_anthropic_batch_job_info_accepts_timestamp_variants_and_counts() -> Non
         2025, 1, 2, 12, 0, tzinfo=timezone.utc
     )
     assert result.request_counts.model_dump() == {
-        "total": 10,
+        "total": 17,
         "completed": None,
         "failed": None,
         "processing": 1,

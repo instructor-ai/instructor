@@ -10,6 +10,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **Anthropic batch accounting**: Include canceled and expired requests in reported batch totals. ([#2529](https://github.com/567-labs/instructor/pull/2529))
+- **Cache key isolation**: Include provider-hoisted system prompts in sync and async cache keys so requests with different instructions cannot share a cached response. ([#2524](https://github.com/567-labs/instructor/pull/2524))
+- **Provider initialization**: Reject provider strings with an empty provider or model component before client construction. ([#2522](https://github.com/567-labs/instructor/pull/2522))
 - **Remote multimodal media types**: Accept valid case-insensitive HTTP `Content-Type` values with optional parameters when loading images, audio, and PDFs. ([#2525](https://github.com/567-labs/instructor/pull/2525))
 - **Message history**: Preserve tool-call and other protocol fields when normalizing consecutive messages, and keep protocol messages as separate turns. ([#2527](https://github.com/567-labs/instructor/pull/2527))
 - **v2 mode registry**: Keep lazily loaded modes registered while their handlers initialize, preventing concurrent first calls from failing spuriously. ([#2536](https://github.com/567-labs/instructor/pull/2536), [#2535](https://github.com/567-labs/instructor/issues/2535))

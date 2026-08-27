@@ -19,9 +19,10 @@ def test_from_provider_requires_provider_prefix() -> None:
         auto_client.from_provider("gpt-5")
 
 
-def test_from_provider_rejects_empty_model_name() -> None:
+@pytest.mark.parametrize("model", ["openai/", "/gpt-4"])
+def test_from_provider_rejects_empty_model_parts(model: str) -> None:
     with pytest.raises(ConfigurationError, match="Model string must be in format"):
-        auto_client.from_provider("openai/")
+        auto_client.from_provider(model)
 
 
 def test_from_provider_rejects_unknown_provider() -> None:

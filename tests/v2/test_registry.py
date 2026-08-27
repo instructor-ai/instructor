@@ -215,7 +215,36 @@ def test_registry_stays_registered_while_lazy_loader_runs():
     assert load_started.wait(timeout=5)
     try:
         assert registry.is_registered(Provider.DEEPSEEK, Mode.TOOLS)
+        assert (Provider.DEEPSEEK, Mode.TOOLS) in registry.list_modes()
     finally:
         finish_load.set()
         thread.join(timeout=5)
     assert not thread.is_alive()
+
+
+def test_failed_lazy_loader_remains_retryable():
+    """A transient loader failure must not permanently unregister the mode."""
+    from instructor.v2.core.registry import ModeHandlers, ModeRegistry
+
+    registry = ModeRegistry()
+    attempts = 0
+
+    def flaky_loader() -> ModeHandlers:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise RuntimeError("transient import failure")
+        return ModeHandlers(
+            request_handler=cast(Any, lambda *_a, **_k: None),
+            reask_handler=cast(Any, lambda *_a, **_k: None),
+            response_parser=cast(Any, lambda *_a, **_k: None),
+        )
+
+    registry.register_lazy(Provider.DEEPSEEK, Mode.TOOLS, flaky_loader)
+
+    with pytest.raises(RuntimeError, match="transient import failure"):
+        registry.get_handlers(Provider.DEEPSEEK, Mode.TOOLS)
+
+    assert registry.is_registered(Provider.DEEPSEEK, Mode.TOOLS)
+    assert registry.get_handlers(Provider.DEEPSEEK, Mode.TOOLS)
+    assert attempts == 2

@@ -93,6 +93,8 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
         is_plain_message = set(message).issubset({"role", "content"})
         if new_content is None:
             new_content = ""
+        elif isinstance(new_content, list):
+            new_content = list(new_content)
         if not flat_string and isinstance(new_content, str):
             new_content = [{"type": "text", "text": new_content}]
 

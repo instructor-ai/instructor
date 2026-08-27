@@ -137,6 +137,21 @@ class TestMergeConsecutiveMessages:
         assert result[0]["tool_calls"] == messages[0]["tool_calls"]
         assert result[1]["tool_call_id"] == "call_1"
 
+    def test_merging_list_content_does_not_mutate_input(self):
+        messages = [
+            {"role": "user", "content": [{"type": "text", "text": "first"}]},
+            {"role": "user", "content": [{"type": "text", "text": "second"}]},
+        ]
+        original_content = list(messages[0]["content"])
+
+        result = merge_consecutive_messages(messages)
+
+        assert messages[0]["content"] == original_content
+        assert result[0]["content"] == [
+            {"type": "text", "text": "first"},
+            {"type": "text", "text": "second"},
+        ]
+
 
 class TestGetMessageContent:
     """Test the get_message_content function."""
