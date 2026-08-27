@@ -130,3 +130,49 @@ async def test_async_retry_path_runs_validators(
 
     assert exc_info.value.failed_attempts is not None
     assert isinstance(exc_info.value.failed_attempts[0].exception, AsyncValidationError)
+
+
+@pytest.mark.asyncio
+async def test_async_retry_path_preserves_async_validation_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_func(*_args: Any, **_kwargs: Any) -> dict[str, str]:
+        return {"value": "valid"}
+
+    def fake_parser(**_kwargs: Any) -> object:
+        return object()
+
+    async def raise_async_validation_error(*_args: Any, **_kwargs: Any) -> None:
+        raise AsyncValidationError("already wrapped")
+
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.RegistryValidationMixin.validate_mode_registration",
+        lambda *_args: None,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.mode_registry.get_handlers",
+        lambda *_args: SimpleNamespace(
+            response_parser=fake_parser,
+            reask_handler=lambda **kwargs: kwargs["kwargs"],
+        ),
+    )
+    monkeypatch.setattr(
+        "instructor.v2.core.retry.run_async_validators",
+        raise_async_validation_error,
+    )
+
+    with pytest.raises(InstructorRetryException) as exc_info:
+        await retry_async_v2(
+            func=fake_func,
+            response_model=Response,
+            provider=Provider.OPENAI,
+            mode=Mode.TOOLS,
+            context=None,
+            max_retries=0,
+            args=(),
+            kwargs={},
+            strict=True,
+        )
+
+    assert exc_info.value.failed_attempts is not None
+    assert isinstance(exc_info.value.failed_attempts[0].exception, AsyncValidationError)
