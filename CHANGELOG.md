@@ -14,6 +14,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Changed
 - **CLI cost metadata**: Add an explicit mapping annotation to the model-cost table so static analysis preserves its nested numeric value shape. ([#2521](https://github.com/567-labs/instructor/pull/2521))
 
+### Security
+- **Release workflow hardening**: Avoid persisting checkout credentials, disable dependency-cache restoration in the PyPI publishing job, and pass release metadata to shell steps through environment variables instead of direct expression interpolation.
+
 ### Fixed
 - **Anthropic batch accounting**: Include canceled and expired requests in reported batch totals. ([#2529](https://github.com/567-labs/instructor/pull/2529))
 - **Cache key isolation**: Include provider-hoisted system prompts in sync and async cache keys so requests with different instructions cannot share a cached response. ([#2524](https://github.com/567-labs/instructor/pull/2524))
