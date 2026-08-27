@@ -16,6 +16,7 @@ from instructor.v2.core.multimodal import (
     ImageWithCacheControl,
     PDF,
     PDFWithGenaiFile,
+    _normalize_media_type,
     autodetect_media,
     convert_messages,
 )
@@ -107,6 +108,8 @@ def test_image_url_errors_missing_path_and_unsupported_data_uri(
 def test_remote_media_types_ignore_http_parameters(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    assert _normalize_media_type(None) is None
+
     def head(url: str, **_kwargs: Any) -> requests.Response:
         media_type = "image/png" if "photo" in url else "application/pdf"
         return response(b"", f"{media_type}; charset=binary")
