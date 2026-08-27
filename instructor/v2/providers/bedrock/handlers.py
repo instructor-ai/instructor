@@ -47,6 +47,13 @@ def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
                 f"the `{constraint}` JSON Schema constraint at {path}."
             )
 
+        min_items = value.get("minItems")
+        if min_items not in (None, 0, 1):
+            raise ConfigurationError(
+                "Bedrock native structured outputs only support `minItems` "
+                f"values of 0 or 1 at {path}; got {min_items}."
+            )
+
         additional_properties = value.get("additionalProperties")
         if additional_properties is not None and additional_properties is not False:
             raise ConfigurationError(

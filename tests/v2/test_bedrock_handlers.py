@@ -7,7 +7,7 @@ import json
 from typing import Any, cast
 
 import pytest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import ConfigurationError
@@ -50,12 +50,6 @@ class FreeFormMetadata(BaseModel):
     """Model shape that Bedrock native structured outputs cannot represent."""
 
     metadata: dict[str, str]
-
-
-class ConstrainedScore(BaseModel):
-    """Model using a constraint unsupported by Bedrock structured outputs."""
-
-    score: int = Field(ge=0)
 
 
 def _bedrock_tool_response(
@@ -129,9 +123,23 @@ class TestBedrockToolsHandler:
         }
         original = deepcopy(kwargs)
 
-        handler.request_handler(Answer, kwargs)
+        result_model, result_kwargs = handler.request_handler(Answer, kwargs)
 
         assert kwargs == original
+        assert result_model is not None
+        assert result_kwargs["inferenceConfig"] == {
+            "maxTokens": 100,
+            "temperature": 0.2,
+        }
+        assert result_kwargs["inferenceConfig"] is not kwargs["inferenceConfig"]
+        assert result_kwargs["additionalModelRequestFields"] == {
+            "thinking": {"type": "enabled"},
+            "top_k": 10,
+        }
+        assert (
+            result_kwargs["additionalModelRequestFields"]
+            is not kwargs["additionalModelRequestFields"]
+        )
 
     def test_parse_response_from_tool_use(self, handler):
         """parse_response extracts tool input."""
@@ -307,16 +315,43 @@ class TestBedrockNativeStructuredOutputs:
             )
 
     @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    @pytest.mark.parametrize(
+        ("constraint", "field_type", "field"),
+        [
+            ("minimum", int, Field(ge=0)),
+            ("maximum", int, Field(le=10)),
+            ("multipleOf", int, Field(multiple_of=2)),
+            ("minLength", str, Field(min_length=1)),
+            ("maxLength", str, Field(max_length=10)),
+            ("minItems", list[str], Field(min_length=2)),
+        ],
+    )
     def test_native_modes_reject_unsupported_schema_constraints(
-        self, mode: Mode
+        self,
+        mode: Mode,
+        constraint: str,
+        field_type: Any,
+        field: Any,
     ) -> None:
+        constrained_model = create_model(
+            f"{constraint}Value",
+            value=(field_type, field),
+        )
+        response_model = create_model(
+            f"{constraint}Wrapper",
+            nested=(constrained_model, ...),
+        )
         handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
 
-        with pytest.raises(ConfigurationError, match="minimum"):
+        with pytest.raises(ConfigurationError) as exc_info:
             handler.request_handler(
-                ConstrainedScore,
-                {"messages": [{"role": "user", "content": "Extract score"}]},
+                response_model,
+                {"messages": [{"role": "user", "content": "Extract value"}]},
             )
+
+        message = str(exc_info.value)
+        assert f"`{constraint}`" in message
+        assert f"$.$defs.{constrained_model.__name__}.properties.value" in message
 
     def test_json_schema_response_parses_text(self) -> None:
         handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.JSON_SCHEMA)
