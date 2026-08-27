@@ -88,8 +88,9 @@ async def test_run_async_validators_keeps_models_when_validator_returns_none() -
 
 
 def test_validation_module_rejects_unknown_exports() -> None:
+    name = "not_an_export"
     with pytest.raises(AttributeError, match="has no attribute"):
-        getattr(validation, "not_an_export")
+        getattr(validation, name)
 
 
 @pytest.mark.asyncio
