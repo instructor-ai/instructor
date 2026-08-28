@@ -34,6 +34,44 @@ client = instructor.from_provider(
 )
 ```
 
+## OpenAI-compatible Chat Completions endpoints
+
+For a server that exposes an OpenAI-compatible Chat Completions API, pass the
+server's `/v1` URL through `base_url`. Choose a mode the server supports. For
+example, use `Mode.JSON` when the server supports JSON mode but not OpenAI tool
+calling:
+
+```python
+import os
+
+import instructor
+
+client = instructor.from_provider(
+    "openai/your-model-name",
+    api_key=os.environ["OPENAI_COMPATIBLE_API_KEY"],
+    base_url="https://your-server.example/v1",
+    mode=instructor.Mode.JSON,
+)
+```
+
+If you already have a configured OpenAI client, wrap it directly instead:
+
+```python
+import os
+
+import instructor
+from openai import OpenAI
+
+openai_client = OpenAI(
+    api_key=os.environ["OPENAI_COMPATIBLE_API_KEY"],
+    base_url="https://your-server.example/v1",
+)
+client = instructor.from_openai(openai_client, mode=instructor.Mode.JSON)
+```
+
+`Mode.RESPONSES_TOOLS` uses OpenAI's Responses API. Do not select it unless the
+compatible server implements that API as well as Chat Completions.
+
 ## Simple User Example (Sync)
 
 ```python
