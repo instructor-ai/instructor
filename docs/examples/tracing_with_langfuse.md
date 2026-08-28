@@ -19,8 +19,8 @@ This cookbook shows how to use Langfuse to trace and monitor model calls made wi
 
 First, let's start by installing the necessary dependencies.
 
-```python
-pip install langfuse instructor
+```shell
+pip install --upgrade langfuse openai pydantic instructor
 ```
 
 It is easy to use instructor with Langfuse. We use the [Langfuse OpenAI Integration](https://langfuse.com/docs/integrations/openai) and simply patch the client with instructor. This works with both synchronous and asynchronous clients.
@@ -28,19 +28,20 @@ It is easy to use instructor with Langfuse. We use the [Langfuse OpenAI Integrat
 ### Langfuse-Instructor integration with synchronous OpenAI client
 
 ```python
-import instructor
-from langfuse.openai import openai
-from pydantic import BaseModel
 import os
+
+import instructor
+from langfuse.openai import OpenAI
+from pydantic import BaseModel
 
 # Set your API keys Here
 os.environ["LANGFUSE_PUBLIC_KEY"] = "pk-..."
 os.environ["LANGFUSE_SECRET_KEY"] = "sk-..."
-os.environ["LANGFUSE_HOST"] = "https://us.cloud.langfuse.com"
-os.environ["OPENAI_API_KEY] = "sk-..."
+os.environ["LANGFUSE_BASE_URL"] = "https://us.cloud.langfuse.com"
+os.environ["OPENAI_API_KEY"] = "sk-..."
 
 # Patch Langfuse wrapper of synchronous OpenAI client with instructor
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.patch(OpenAI())
 
 
 class WeatherDetail(BaseModel):
@@ -49,7 +50,7 @@ class WeatherDetail(BaseModel):
 
 
 # Run synchronous OpenAI client
-weather_info = client.create(
+weather_info = client.chat.completions.create(
     model="gpt-4o",
     response_model=WeatherDetail,
     messages=[
@@ -71,21 +72,22 @@ Once we've run this request successfully, we'll see that we have a trace availab
 ### Langfuse-Instructor integration with asynchronous OpenAI client
 
 ```python
-import instructor
-from langfuse.openai import openai
-from pydantic import BaseModel
-import os
 import asyncio
+import os
+
+import instructor
+from langfuse.openai import AsyncOpenAI
+from pydantic import BaseModel
 
 # Set your API keys Here
 os.environ["LANGFUSE_PUBLIC_KEY"] = "pk-"
 os.environ["LANGFUSE_SECRET_KEY"] = "sk-"
-os.environ["LANGFUSE_HOST"] = "https://us.cloud.langfuse.com"
-os.environ["OPENAI_API_KEY] = "sk-..."
+os.environ["LANGFUSE_BASE_URL"] = "https://us.cloud.langfuse.com"
+os.environ["OPENAI_API_KEY"] = "sk-..."
 
 
-# Patch Langfuse wrapper of synchronous OpenAI client with instructor
-client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+# Patch Langfuse wrapper of asynchronous OpenAI client with instructor
+client = instructor.patch(AsyncOpenAI())
 
 
 class WeatherDetail(BaseModel):
@@ -94,8 +96,8 @@ class WeatherDetail(BaseModel):
 
 
 async def main():
-    # Run synchronous OpenAI client
-    weather_info = await client.create(
+    # Run asynchronous OpenAI client
+    weather_info = await client.chat.completions.create(
         model="gpt-4o",
         response_model=WeatherDetail,
         messages=[
@@ -123,30 +125,27 @@ Here's a [public link](https://cloud.langfuse.com/project/cloramnkj0002jz088vzn1
 In this example, we first classify customer feedback into categories like `PRAISE`, `SUGGESTION`, `BUG` and `QUESTION`, and further scores the relevance of each feedback to the business on a scale of 0.0 to 1.0. In this case, we use the asynchronous OpenAI client `AsyncOpenAI` to classify and evaluate the feedback.
 
 ```python
-from enum import Enum
-
 import asyncio
-import instructor
-
-from langfuse import Langfuse
-from langfuse.openai import AsyncOpenAI
-from langfuse.decorators import langfuse_context, observe
-
-from pydantic import BaseModel, Field, field_validator
+from enum import Enum
 import os
+
+import instructor
+from langfuse import get_client, observe
+from langfuse.openai import AsyncOpenAI
+from pydantic import BaseModel, Field, field_validator
 
 # Set your API keys Here
 os.environ["LANGFUSE_PUBLIC_KEY"] = "pk-..."
 os.environ["LANGFUSE_SECRET_KEY"] = "sk-..."
-os.environ["LANGFUSE_HOST"] = "https://us.cloud.langfuse.com"
-os.environ["OPENAI_API_KEY] = "sk-..."
+os.environ["LANGFUSE_BASE_URL"] = "https://us.cloud.langfuse.com"
+os.environ["OPENAI_API_KEY"] = "sk-..."
 
 
-
-client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+# Patch the Langfuse wrapper with Instructor.
+client = instructor.patch(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 
 # Initialize Langfuse (needed for scoring)
-langfuse = Langfuse()
+langfuse = get_client()
 
 # Rate limit the number of requests
 sem = asyncio.Semaphore(5)
@@ -185,7 +184,7 @@ async def classify_feedback(feedback: str):
     Classify customer feedback into categories and evaluate relevance.
     """
     async with sem:  # simple rate limiting
-        response = await client.create(
+        response = await client.chat.completions.create(
             model="gpt-4o",
             response_model=FeedbackClassification,
             max_retries=2,
@@ -198,7 +197,7 @@ async def classify_feedback(feedback: str):
         )
 
         # Retrieve observation_id of current span
-        observation_id = langfuse_context.get_current_observation_id()
+        observation_id = langfuse.get_current_observation_id()
 
         return feedback, response, observation_id
 
@@ -207,7 +206,7 @@ def score_relevance(trace_id: str, observation_id: str, relevance_score: float):
     """
     Score the relevance of a feedback query in Langfuse given the observation_id.
     """
-    langfuse.score(
+    langfuse.create_score(
         trace_id=trace_id,
         observation_id=observation_id,
         name="feedback-relevance",
@@ -230,13 +229,13 @@ async def main(feedbacks: list[str]):
         results.append(result)
 
         # Retrieve trace_id of current trace
-        trace_id = langfuse_context.get_current_trace_id()
+        trace_id = langfuse.get_current_trace_id()
 
         # Score the relevance of the feedback in Langfuse
         score_relevance(trace_id, observation_id, classification.relevance_score)
 
     # Flush observations to Langfuse
-    langfuse_context.flush()
+    langfuse.flush()
     return results
 
 
