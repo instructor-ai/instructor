@@ -255,6 +255,7 @@ def _create_sync_wrapper(
                     model=new_kwargs.get("model"),
                     response_model=response_model,
                     mode=str(mode.value),
+                    system=new_kwargs.get("system"),
                 )
                 cached = load_cached_response(cache, key, response_model)
                 if cached is not None:
@@ -295,6 +296,7 @@ def _create_sync_wrapper(
                         model=new_kwargs.get("model"),
                         response_model=response_model,
                         mode=str(mode.value),
+                        system=new_kwargs.get("system"),
                     )
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
@@ -378,6 +380,7 @@ def _create_async_wrapper(
                     model=new_kwargs.get("model"),
                     response_model=response_model,
                     mode=str(mode.value),
+                    system=new_kwargs.get("system"),
                 )
                 cached = load_cached_response(cache, key, response_model)
                 if cached is not None:
@@ -418,6 +421,7 @@ def _create_async_wrapper(
                         model=new_kwargs.get("model"),
                         response_model=response_model,
                         mode=str(mode.value),
+                        system=new_kwargs.get("system"),
                     )
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:

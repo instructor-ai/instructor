@@ -9,8 +9,28 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+- **Remote multimodal fetching**: Block non-public and credential-bearing media URLs, revalidate redirects and connected peers, disable ambient proxy credentials, cap image, audio, and PDF downloads, and avoid caching decoded media payloads in process memory.
+- **Supply-chain hardening**: Require a patched `urllib3` release and pin GitHub Actions to reviewed commit SHAs, including secret-bearing scheduled workflows.
+
 ### Fixed
 - **v2 gemini**: Preserve tool-call history in the Gemini prompt conversion — assistant `tool_calls` become `functionCall` parts and `tool` messages become `functionResponse` parts instead of being silently dropped.
+
+## [1.16.1] - 2026-08-27
+
+### Changed
+- **CLI cost metadata**: Add an explicit mapping annotation to the model-cost table so static analysis preserves its nested numeric value shape. ([#2521](https://github.com/567-labs/instructor/pull/2521))
+
+### Security
+- **Release workflow hardening**: Avoid persisting checkout credentials, disable dependency-cache restoration in the PyPI publishing job, and pass release metadata to shell steps through environment variables instead of direct expression interpolation.
+
+### Fixed
+- **Anthropic batch accounting**: Include canceled and expired requests in reported batch totals. ([#2529](https://github.com/567-labs/instructor/pull/2529))
+- **Cache key isolation**: Include provider-hoisted system prompts in sync and async cache keys so requests with different instructions cannot share a cached response. ([#2524](https://github.com/567-labs/instructor/pull/2524))
+- **Provider initialization**: Reject provider strings with an empty provider or model component before client construction. ([#2522](https://github.com/567-labs/instructor/pull/2522))
+- **Remote multimodal media types**: Accept valid case-insensitive HTTP `Content-Type` values with optional parameters when loading images, audio, and PDFs. ([#2525](https://github.com/567-labs/instructor/pull/2525))
+- **Message history**: Preserve tool-call and other protocol fields when normalizing consecutive messages, and keep protocol messages as separate turns. ([#2527](https://github.com/567-labs/instructor/pull/2527))
+- **v2 mode registry**: Keep lazily loaded modes registered while their handlers initialize, preventing concurrent first calls from failing spuriously. ([#2536](https://github.com/567-labs/instructor/pull/2536), [#2535](https://github.com/567-labs/instructor/issues/2535))
 
 ## [1.16.0] - 2026-08-09
 
@@ -291,5 +311,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
 
-[Unreleased]: https://github.com/567-labs/instructor/compare/v1.16.0...HEAD
+[Unreleased]: https://github.com/567-labs/instructor/compare/v1.16.1...HEAD
+[1.16.1]: https://github.com/567-labs/instructor/compare/v1.16.0...v1.16.1
 [1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.16.0

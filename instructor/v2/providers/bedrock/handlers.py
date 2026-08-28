@@ -10,11 +10,11 @@ from textwrap import dedent
 from typing import Any, cast
 
 from pydantic import BaseModel
-import requests
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
+from instructor.v2.core.remote import MAX_IMAGE_BYTES, fetch_remote_content
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -203,11 +203,12 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
         return {"image": {"format": fmt, "source": {"bytes": base64.b64decode(b64)}}}
 
     if image_url.startswith("https://"):
-        response = requests.get(image_url, timeout=30)
-        response.raise_for_status()
-        mime = (
-            response.headers.get("Content-Type") or mimetypes.guess_type(image_url)[0]
+        response = fetch_remote_content(
+            image_url,
+            max_bytes=MAX_IMAGE_BYTES,
+            timeout=30,
         )
+        mime = response.content_type or mimetypes.guess_type(image_url)[0]
         fmt = _normalize_bedrock_image_format(mime or "")
         return {"image": {"format": fmt, "source": {"bytes": response.content}}}
 

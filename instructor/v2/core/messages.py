@@ -70,6 +70,7 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
 
 
 def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Merge adjacent plain messages without crossing protocol boundaries."""
     if not messages:
         return []
 
@@ -89,12 +90,20 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
     for message in messages:
         role = message.get("role", "user")
         new_content = message.get("content", "")
+        is_plain_message = set(message).issubset({"role", "content"})
         if new_content is None:
             new_content = ""
+        elif isinstance(new_content, list):
+            new_content = list(new_content)
         if not flat_string and isinstance(new_content, str):
             new_content = [{"type": "text", "text": new_content}]
 
-        if new_messages and role == new_messages[-1]["role"]:
+        if (
+            new_messages
+            and role == new_messages[-1]["role"]
+            and is_plain_message
+            and set(new_messages[-1]).issubset({"role", "content"})
+        ):
             if flat_string:
                 new_messages[-1]["content"] += f"\n\n{new_content}"
             elif isinstance(new_content, list):
@@ -102,7 +111,9 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
             else:
                 new_messages[-1]["content"].append(new_content)
         else:
-            new_messages.append({"role": role, "content": new_content})
+            new_message = dict(message)
+            new_message.update(role=role, content=new_content)
+            new_messages.append(new_message)
 
     return new_messages
 

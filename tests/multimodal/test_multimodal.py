@@ -1,10 +1,12 @@
 from pathlib import Path
+from collections.abc import Iterator
 from typing import Any, TypeAlias
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 import instructor
+import instructor.v2.core.multimodal as multimodal_module
 from instructor.mode import Mode
 from instructor.processing.multimodal import (
     PDF,
@@ -14,11 +16,41 @@ from instructor.processing.multimodal import (
     convert_contents,
     convert_messages,
 )
+from instructor.v2.core.remote import RemoteContent
 
 
 ContentItem: TypeAlias = str | dict[str, Any] | Image | Audio | PDF
 MessageItem: TypeAlias = ContentItem
 Message: TypeAlias = dict[str, MessageItem | list[MessageItem]]
+
+
+@pytest.fixture(autouse=True)
+def isolate_multimodal_http(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    def fetch(url: str, *, max_bytes: int, timeout: int) -> RemoteContent:  # noqa: ARG001
+        result = multimodal_module.requests.get(url, timeout=timeout)
+        result.raise_for_status()
+        return RemoteContent(
+            content=result.content,
+            content_type=multimodal_module._normalize_media_type(
+                result.headers.get("Content-Type") or result.headers.get("content-type")
+            ),
+            url=url,
+        )
+
+    def probe(url: str, *, timeout: int) -> str | None:
+        result = multimodal_module.requests.head(
+            url,
+            allow_redirects=True,
+            timeout=timeout,
+        )
+        result.raise_for_status()
+        return multimodal_module._normalize_media_type(
+            result.headers.get("Content-Type")
+        )
+
+    monkeypatch.setattr(multimodal_module, "fetch_remote_content", fetch)
+    monkeypatch.setattr(multimodal_module, "probe_remote_content_type", probe)
+    yield
 
 
 @pytest.fixture
