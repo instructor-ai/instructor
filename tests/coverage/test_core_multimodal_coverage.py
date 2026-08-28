@@ -9,6 +9,7 @@ import pytest
 import requests
 
 from instructor import Mode
+import instructor.v2.core.multimodal as multimodal_module
 from instructor.v2.core.errors import MultimodalError
 from instructor.v2.core.multimodal import (
     Audio,
@@ -20,17 +21,28 @@ from instructor.v2.core.multimodal import (
     autodetect_media,
     convert_messages,
 )
+from instructor.v2.core.remote import RemoteContent
 
 
 @pytest.fixture(autouse=True)
-def clear_url_caches() -> Iterator[None]:
-    Image.from_url.cache_clear()
-    Image.url_to_base64.cache_clear()
-    PDF.from_url.cache_clear()
+def isolate_multimodal_http(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    def fetch(url: str, *, max_bytes: int, timeout: int) -> RemoteContent:  # noqa: ARG001
+        result = requests.get(url, timeout=timeout)
+        result.raise_for_status()
+        return RemoteContent(
+            content=result.content,
+            content_type=_normalize_media_type(result.headers.get("Content-Type")),
+            url=url,
+        )
+
+    def probe(url: str, *, timeout: int) -> str | None:
+        result = requests.head(url, allow_redirects=True, timeout=timeout)
+        result.raise_for_status()
+        return _normalize_media_type(result.headers.get("Content-Type"))
+
+    monkeypatch.setattr(multimodal_module, "fetch_remote_content", fetch)
+    monkeypatch.setattr(multimodal_module, "probe_remote_content_type", probe)
     yield
-    Image.from_url.cache_clear()
-    Image.url_to_base64.cache_clear()
-    PDF.from_url.cache_clear()
 
 
 def response(body: bytes, media_type: str, status: int = 200) -> requests.Response:
@@ -167,7 +179,9 @@ def test_image_raw_base64_rejects_non_webp_riff_data() -> None:
         Image.from_raw_base64(encoded)
 
 
-def test_image_url_to_base64_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_image_url_to_base64_does_not_cache_payloads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     calls: list[tuple[str, int]] = []
 
     def get(url: str, *, timeout: int) -> requests.Response:
@@ -179,7 +193,10 @@ def test_image_url_to_base64_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
     second = Image.url_to_base64("https://example.test/photo.png")
 
     assert first == second == base64.b64encode(b"image-bytes").decode()
-    assert calls == [("https://example.test/photo.png", 30)]
+    assert calls == [
+        ("https://example.test/photo.png", 30),
+        ("https://example.test/photo.png", 30),
+    ]
 
 
 def test_audio_autodetects_url_gcs_string_path_and_path(

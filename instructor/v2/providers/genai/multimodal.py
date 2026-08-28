@@ -5,9 +5,12 @@ from __future__ import annotations
 import base64
 from typing import Any
 
-import requests
-
 from instructor.v2.core.multimodal import Audio, Image, PDF, autodetect_media
+from instructor.v2.core.remote import (
+    MAX_IMAGE_BYTES,
+    MAX_PDF_BYTES,
+    fetch_remote_content,
+)
 
 
 def _types() -> Any:
@@ -27,10 +30,12 @@ def image_to_genai(image: Any) -> Any:
     if isinstance(image.source, str) and image.source.startswith(
         ("http://", "https://")
     ):
-        return types.Part.from_bytes(
-            data=requests.get(image.source, timeout=30).content,
-            mime_type=image.media_type,
+        response = fetch_remote_content(
+            image.source,
+            max_bytes=MAX_IMAGE_BYTES,
+            timeout=30,
         )
+        return types.Part.from_bytes(data=response.content, mime_type=image.media_type)
     if image.data or image.is_base64(str(image.source)):
         data = image.data or str(image.source).split(",", 1)[1]
         return types.Part.from_bytes(
@@ -55,7 +60,11 @@ def pdf_to_genai(pdf: Any) -> Any:
         and pdf.source.startswith(("http://", "https://"))
         and not pdf.data
     ):
-        data = requests.get(pdf.source, timeout=30).content
+        data = fetch_remote_content(
+            pdf.source,
+            max_bytes=MAX_PDF_BYTES,
+            timeout=30,
+        ).content
         encoded = base64.b64encode(data).decode("utf-8")
         return types.Part.from_bytes(
             data=base64.b64decode(encoded),
