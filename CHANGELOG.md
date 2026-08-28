@@ -9,6 +9,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+- **Remote multimodal fetching**: Block non-public and credential-bearing media URLs, revalidate redirects and connected peers, disable ambient proxy credentials, cap image, audio, and PDF downloads, and avoid caching decoded media payloads in process memory.
+- **Supply-chain hardening**: Require a patched `urllib3` release and pin GitHub Actions to reviewed commit SHAs, including secret-bearing scheduled workflows.
+
 ## [1.16.1] - 2026-08-27
 
 ### Changed

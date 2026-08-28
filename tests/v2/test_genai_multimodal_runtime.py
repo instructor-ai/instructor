@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from instructor.v2.core.multimodal import Image, PDF, PDFWithGenaiFile
+from instructor.v2.core.remote import RemoteContent
 from tests.v2._fake_genai import FakeContent, install_fake_genai
 
 
@@ -31,11 +32,16 @@ def test_image_to_genai_fetches_url_bytes(monkeypatch: pytest.MonkeyPatch) -> No
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
     requests: list[tuple[str, int]] = []
 
-    def get(url: str, *, timeout: int) -> Any:
+    def fetch(url: str, *, max_bytes: int, timeout: int) -> RemoteContent:
         requests.append((url, timeout))
-        return SimpleNamespace(content=f"fetched:{url}".encode())
+        assert max_bytes > 0
+        return RemoteContent(
+            content=f"fetched:{url}".encode(),
+            content_type="image/png",
+            url=url,
+        )
 
-    monkeypatch.setattr(multimodal.requests, "get", get)
+    monkeypatch.setattr(multimodal, "fetch_remote_content", fetch)
 
     image = Image(
         source="https://example.com/image.png",
@@ -85,11 +91,16 @@ def test_pdf_to_genai_handles_remote_and_inline_data(
     multimodal = importlib.import_module("instructor.v2.providers.genai.multimodal")
     requests: list[tuple[str, int]] = []
 
-    def get(url: str, *, timeout: int) -> Any:
+    def fetch(url: str, *, max_bytes: int, timeout: int) -> RemoteContent:
         requests.append((url, timeout))
-        return SimpleNamespace(content=b"remote-pdf")
+        assert max_bytes > 0
+        return RemoteContent(
+            content=b"remote-pdf",
+            content_type="application/pdf",
+            url=url,
+        )
 
-    monkeypatch.setattr(multimodal.requests, "get", get)
+    monkeypatch.setattr(multimodal, "fetch_remote_content", fetch)
 
     remote_pdf = PDF(
         source="https://example.com/file.pdf",

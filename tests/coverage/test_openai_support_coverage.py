@@ -9,7 +9,6 @@ from typing import Any, cast
 import httpx
 import openai
 import pytest
-import requests
 from openai.types.responses import Response
 from pydantic import BaseModel, Field
 
@@ -18,6 +17,7 @@ from instructor.v2.core.errors import ClientError, ModeError
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.providers import Provider
+from instructor.v2.core.remote import RemoteContent
 from instructor.v2.providers.openai.client import (
     async_map_chat_completion_to_response,
     from_openai,
@@ -28,6 +28,7 @@ from instructor.v2.providers.openai.multimodal import (
     image_to_openai,
     pdf_to_openai,
 )
+from instructor.v2.providers.openai import multimodal as openai_multimodal
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.providers.openai.templating import process_message
 from instructor.v2.providers.openrouter.client import from_openrouter
@@ -239,14 +240,16 @@ def test_openai_multimodal_encoders_cover_response_and_error_paths(
 
     requested: list[tuple[str, int]] = []
 
-    def fetch(url: str, *, timeout: int) -> requests.Response:
+    def fetch(url: str, *, max_bytes: int, timeout: int) -> RemoteContent:
         requested.append((url, timeout))
-        response = requests.Response()
-        response.status_code = 200
-        response._content = b"%PDF-1.7\ncoverage"  # real response body, no network call
-        return response
+        assert max_bytes > 0
+        return RemoteContent(
+            content=b"%PDF-1.7\ncoverage",
+            content_type="application/pdf",
+            url=url,
+        )
 
-    monkeypatch.setattr(requests, "get", fetch)
+    monkeypatch.setattr(openai_multimodal, "fetch_remote_content", fetch)
     pdf_url = PDF(source="https://cdn.example.invalid/report.pdf")
     assert pdf_to_openai(pdf_url, Mode.RESPONSES_TOOLS) == {
         "type": "input_file",
