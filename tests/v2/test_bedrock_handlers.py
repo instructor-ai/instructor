@@ -52,6 +52,25 @@ class FreeFormMetadata(BaseModel):
     metadata: dict[str, str]
 
 
+class AnyOfConstrainedResponse(BaseModel):
+    """Schema fixture with an unsupported constraint inside an anyOf branch."""
+
+    @classmethod
+    def model_json_schema(cls, *_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "anyOf": [
+                        {"type": "integer", "minimum": 0},
+                        {"type": "string"},
+                    ]
+                }
+            },
+            "required": ["value"],
+        }
+
+
 def _bedrock_tool_response(
     args: dict[str, Any], tool_use_id: str = "tool-use-1", name: str = "Answer"
 ) -> dict[str, Any]:
@@ -352,6 +371,55 @@ class TestBedrockNativeStructuredOutputs:
         message = str(exc_info.value)
         assert f"`{constraint}`" in message
         assert f"$.$defs.{constrained_model.__name__}.properties.value" in message
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    @pytest.mark.parametrize(
+        "field_name",
+        ["minimum", "maximum", "multipleOf", "minLength", "maxLength", "minItems"],
+    )
+    def test_native_modes_allow_properties_named_like_schema_constraints(
+        self,
+        mode: Mode,
+        field_name: str,
+    ) -> None:
+        field_definitions: dict[str, Any] = {field_name: (str, ...)}
+        response_model = create_model(
+            "ConstraintNamedProperty",
+            **field_definitions,
+        )
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        _, result_kwargs = handler.request_handler(
+            response_model,
+            {"messages": [{"role": "user", "content": "Extract value"}]},
+        )
+
+        if mode is Mode.JSON_SCHEMA:
+            schema = json.loads(
+                result_kwargs["outputConfig"]["textFormat"]["structure"]["jsonSchema"][
+                    "schema"
+                ]
+            )
+        else:
+            schema = result_kwargs["toolConfig"]["tools"][0]["toolSpec"]["inputSchema"][
+                "json"
+            ]
+
+        assert field_name in schema["properties"]
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    def test_native_modes_reject_constraints_inside_any_of(self, mode: Mode) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            handler.request_handler(
+                AnyOfConstrainedResponse,
+                {"messages": [{"role": "user", "content": "Extract value"}]},
+            )
+
+        message = str(exc_info.value)
+        assert "`minimum`" in message
+        assert "$.properties.value.anyOf[0]" in message
 
     def test_json_schema_response_parses_text(self) -> None:
         handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.JSON_SCHEMA)

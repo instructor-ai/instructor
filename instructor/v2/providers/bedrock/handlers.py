@@ -31,12 +31,30 @@ def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
         "minLength",
         "maxLength",
     }
+    schema_map_keywords = {
+        "$defs",
+        "definitions",
+        "dependentSchemas",
+        "patternProperties",
+        "properties",
+    }
+    schema_keywords = {
+        "additionalItems",
+        "additionalProperties",
+        "contains",
+        "contentSchema",
+        "else",
+        "if",
+        "items",
+        "not",
+        "propertyNames",
+        "then",
+        "unevaluatedItems",
+        "unevaluatedProperties",
+    }
+    schema_list_keywords = {"allOf", "anyOf", "oneOf", "prefixItems"}
 
     def normalize(value: Any, path: str) -> None:
-        if isinstance(value, list):
-            for index, item in enumerate(value):
-                normalize(item, f"{path}[{index}]")
-            return
         if not isinstance(value, dict):
             return
 
@@ -64,7 +82,15 @@ def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
             value["additionalProperties"] = False
 
         for key, item in value.items():
-            normalize(item, f"{path}.{key}")
+            child_path = f"{path}.{key}"
+            if key in schema_map_keywords and isinstance(item, dict):
+                for name, child_schema in item.items():
+                    normalize(child_schema, f"{child_path}.{name}")
+            elif key in schema_keywords or key in schema_list_keywords:
+                child_schemas = item if isinstance(item, list) else [item]
+                for index, child_schema in enumerate(child_schemas):
+                    suffix = f"[{index}]" if isinstance(item, list) else ""
+                    normalize(child_schema, f"{child_path}{suffix}")
 
     normalize(schema, "$")
     return schema
