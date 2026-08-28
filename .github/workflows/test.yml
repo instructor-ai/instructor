@@ -303,11 +303,16 @@ jobs:
           set +e
           uv run --frozen pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
           status=$?
-          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
           fi
+          if [ $status -eq 1 ]; then
+            echo "Retrying only failed live-provider tests once."
+            uv run --frozen pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto --last-failed -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+            status=$?
+          fi
+          set -e
           exit $status
         env:
           INSTRUCTOR_ENV: CI
