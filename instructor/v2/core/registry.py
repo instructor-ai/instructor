@@ -188,11 +188,9 @@ class ModeRegistry:
         if mode_key in self._handlers:
             return self._handlers[mode_key]
 
-        # Try lazy loading. Locked because the pop -> import -> set sequence
-        # below is not atomic: without the lock, a thread that loses the race
-        # to pop self._lazy_loaders[mode_key] would find it already gone and
-        # self._handlers[mode_key] not yet set, and raise KeyError even
-        # though the mode genuinely is registered (just still resolving).
+        # Try lazy loading. Locked because resolving and publishing a loader is
+        # not atomic; without the lock, concurrent first callers could run it
+        # repeatedly.
         with self._lazy_load_lock:
             # Re-check: another thread may have finished loading this key
             # while we were waiting for the lock.
@@ -200,9 +198,10 @@ class ModeRegistry:
                 return self._handlers[mode_key]
 
             if mode_key in self._lazy_loaders:
-                loader = self._lazy_loaders.pop(mode_key)
+                loader = self._lazy_loaders[mode_key]
                 handlers = loader()
                 self._handlers[mode_key] = handlers
+                self._lazy_loaders.pop(mode_key, None)
                 return handlers
 
         raise KeyError(

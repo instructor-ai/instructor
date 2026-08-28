@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from instructor import Mode
+from instructor.v2.core import multimodal as multimodal_module
 from instructor.v2.core.multimodal import (
     Audio,
     Image,
@@ -16,6 +17,7 @@ from instructor.v2.core.multimodal import (
     convert_contents,
     convert_messages,
 )
+from instructor.v2.core.remote import RemoteContent
 
 
 def test_convert_contents_uses_responses_text_shape() -> None:
@@ -223,11 +225,15 @@ def test_audio_from_path_normalizes_windows_wav_and_aac_mime_types(
 def test_audio_from_url_raises_value_error_for_unsupported_content_type(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    class _Response:
-        headers = {"content-type": "video/mp4"}
-        content = b"\x00\x01\x02"
-
-    monkeypatch.setattr("requests.get", lambda *_args, **_kwargs: _Response())
+    monkeypatch.setattr(
+        multimodal_module,
+        "fetch_remote_content",
+        lambda url, **_kwargs: RemoteContent(
+            content=b"\x00\x01\x02",
+            content_type="video/mp4",
+            url=url,
+        ),
+    )
 
     with pytest.raises(ValueError, match="Unsupported audio format"):
         Audio.from_url("https://example.com/clip.mp4")

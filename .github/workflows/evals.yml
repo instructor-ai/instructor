@@ -9,15 +9,20 @@ on:
     paths-ignore:
       - "**" # Ignore all paths to ensure it only triggers on schedule
 
+permissions:
+  contents: read
+
 jobs:
   weekly-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
 
@@ -25,9 +30,9 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --frozen --all-extras --dev
 
       - name: Run all tests
-        run: uv run pytest tests/ --asyncio-mode=auto
+        run: uv run --frozen pytest tests/ --asyncio-mode=auto
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
