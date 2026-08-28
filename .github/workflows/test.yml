@@ -436,11 +436,16 @@ jobs:
           set +e
           uv run --frozen pytest tests/providers/test_auto_client.py --asyncio-mode=auto -n auto
           status=$?
-          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
           fi
+          if [ $status -eq 1 ]; then
+            echo "Retrying only failed live-provider tests once."
+            uv run --frozen pytest tests/providers/test_auto_client.py --asyncio-mode=auto -n auto --last-failed
+            status=$?
+          fi
+          set -e
           exit $status
         env:
           INSTRUCTOR_ENV: CI

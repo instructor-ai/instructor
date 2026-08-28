@@ -14,7 +14,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ### Changed
 - **CLI cost metadata**: Add an explicit mapping annotation to the model-cost table so static analysis preserves its nested numeric value shape. ([#2521](https://github.com/567-labs/instructor/pull/2521))
 - **Provider documentation**: Correct the Mistral installation extra and xAI Python requirement, document Cerebras request-parameter forwarding with a runnable example, and clean up tracing and extraction typos. ([#2550](https://github.com/567-labs/instructor/pull/2550), [#2554](https://github.com/567-labs/instructor/pull/2554), [#2556](https://github.com/567-labs/instructor/pull/2556), [#2561](https://github.com/567-labs/instructor/pull/2561), [#2562](https://github.com/567-labs/instructor/pull/2562))
-- **Live-provider CI signal**: Retry only failed tests once in the mixed provider lane so transient API failures do not obscure deterministic regressions, while setup, collection, repeated, and other failures remain red.
+- **Live-provider CI signal**: Retry only failed tests once in the mixed-provider and auto-client lanes so transient API failures do not obscure deterministic regressions, while setup, collection, repeated, and other failures remain red.
 
 ### Security
 - **Remote multimodal fetching**: Block non-public and credential-bearing media URLs, revalidate redirects and connected peers, disable ambient proxy credentials, cap image, audio, and PDF downloads, and avoid caching decoded media payloads in process memory.
