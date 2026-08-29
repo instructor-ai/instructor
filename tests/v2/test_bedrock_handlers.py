@@ -7,7 +7,7 @@ import json
 from typing import Any, cast
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, create_model
 
 from instructor import Mode, Provider
 from instructor.v2.core.errors import ConfigurationError
@@ -50,6 +50,25 @@ class FreeFormMetadata(BaseModel):
     """Model shape that Bedrock native structured outputs cannot represent."""
 
     metadata: dict[str, str]
+
+
+class AnyOfConstrainedResponse(BaseModel):
+    """Schema fixture with an unsupported constraint inside an anyOf branch."""
+
+    @classmethod
+    def model_json_schema(cls, *_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "anyOf": [
+                        {"type": "integer", "minimum": 0},
+                        {"type": "string"},
+                    ]
+                }
+            },
+            "required": ["value"],
+        }
 
 
 def _bedrock_tool_response(
@@ -111,6 +130,35 @@ class TestBedrockToolsHandler:
         assert "toolConfig" in result_kwargs
         assert "tools" in result_kwargs["toolConfig"]
         assert "toolChoice" in result_kwargs["toolConfig"]
+
+    def test_prepare_request_does_not_mutate_nested_config(self, handler):
+        """Preparing Bedrock kwargs treats nested caller config as read-only."""
+        kwargs = {
+            "messages": [{"role": "user", "content": "What is 2+2?"}],
+            "temperature": 0.2,
+            "top_k": 10,
+            "inferenceConfig": {"maxTokens": 100},
+            "additionalModelRequestFields": {"thinking": {"type": "enabled"}},
+        }
+        original = deepcopy(kwargs)
+
+        result_model, result_kwargs = handler.request_handler(Answer, kwargs)
+
+        assert kwargs == original
+        assert result_model is not None
+        assert result_kwargs["inferenceConfig"] == {
+            "maxTokens": 100,
+            "temperature": 0.2,
+        }
+        assert result_kwargs["inferenceConfig"] is not kwargs["inferenceConfig"]
+        assert result_kwargs["additionalModelRequestFields"] == {
+            "thinking": {"type": "enabled"},
+            "top_k": 10,
+        }
+        assert (
+            result_kwargs["additionalModelRequestFields"]
+            is not kwargs["additionalModelRequestFields"]
+        )
 
     def test_parse_response_from_tool_use(self, handler):
         """parse_response extracts tool input."""
@@ -284,6 +332,94 @@ class TestBedrockNativeStructuredOutputs:
                 FreeFormMetadata,
                 {"messages": [{"role": "user", "content": "Extract metadata"}]},
             )
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    @pytest.mark.parametrize(
+        ("constraint", "field_type", "field"),
+        [
+            ("minimum", int, Field(ge=0)),
+            ("maximum", int, Field(le=10)),
+            ("multipleOf", int, Field(multiple_of=2)),
+            ("minLength", str, Field(min_length=1)),
+            ("maxLength", str, Field(max_length=10)),
+            ("minItems", list[str], Field(min_length=2)),
+        ],
+    )
+    def test_native_modes_reject_unsupported_schema_constraints(
+        self,
+        mode: Mode,
+        constraint: str,
+        field_type: Any,
+        field: Any,
+    ) -> None:
+        constrained_model = create_model(
+            f"{constraint}Value",
+            value=(field_type, field),
+        )
+        response_model = create_model(
+            f"{constraint}Wrapper",
+            nested=(constrained_model, ...),
+        )
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            handler.request_handler(
+                response_model,
+                {"messages": [{"role": "user", "content": "Extract value"}]},
+            )
+
+        message = str(exc_info.value)
+        assert f"`{constraint}`" in message
+        assert f"$.$defs.{constrained_model.__name__}.properties.value" in message
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    @pytest.mark.parametrize(
+        "field_name",
+        ["minimum", "maximum", "multipleOf", "minLength", "maxLength", "minItems"],
+    )
+    def test_native_modes_allow_properties_named_like_schema_constraints(
+        self,
+        mode: Mode,
+        field_name: str,
+    ) -> None:
+        field_definitions: dict[str, Any] = {field_name: (str, ...)}
+        response_model = create_model(
+            "ConstraintNamedProperty",
+            **field_definitions,
+        )
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        _, result_kwargs = handler.request_handler(
+            response_model,
+            {"messages": [{"role": "user", "content": "Extract value"}]},
+        )
+
+        if mode is Mode.JSON_SCHEMA:
+            schema = json.loads(
+                result_kwargs["outputConfig"]["textFormat"]["structure"]["jsonSchema"][
+                    "schema"
+                ]
+            )
+        else:
+            schema = result_kwargs["toolConfig"]["tools"][0]["toolSpec"]["inputSchema"][
+                "json"
+            ]
+
+        assert field_name in schema["properties"]
+
+    @pytest.mark.parametrize("mode", [Mode.JSON_SCHEMA, Mode.TOOLS_STRICT])
+    def test_native_modes_reject_constraints_inside_any_of(self, mode: Mode) -> None:
+        handler = mode_registry.get_handlers(Provider.BEDROCK, mode)
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            handler.request_handler(
+                AnyOfConstrainedResponse,
+                {"messages": [{"role": "user", "content": "Extract value"}]},
+            )
+
+        message = str(exc_info.value)
+        assert "`minimum`" in message
+        assert "$.properties.value.anyOf[0]" in message
 
     def test_json_schema_response_parses_text(self) -> None:
         handler = mode_registry.get_handlers(Provider.BEDROCK, Mode.JSON_SCHEMA)

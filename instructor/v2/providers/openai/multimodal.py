@@ -5,9 +5,8 @@ from __future__ import annotations
 import base64
 from typing import Any
 
-import requests
-
 from instructor.v2.core.mode import Mode
+from instructor.v2.core.remote import MAX_PDF_BYTES, fetch_remote_content
 
 RESPONSES_MODES = {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
 
@@ -72,7 +71,11 @@ def pdf_to_openai(pdf: Any, mode: Mode) -> dict[str, Any]:
         and pdf.source.startswith(("http://", "https://"))
         and not pdf.data
     ):
-        response = requests.get(pdf.source, timeout=30)
+        response = fetch_remote_content(
+            pdf.source,
+            max_bytes=MAX_PDF_BYTES,
+            timeout=30,
+        )
         data = base64.b64encode(response.content).decode("utf-8")
         if mode in RESPONSES_MODES:
             return {

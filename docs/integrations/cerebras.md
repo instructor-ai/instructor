@@ -15,6 +15,41 @@ Install Instructor with Cerebras support:
 pip install "instructor[cerebras_cloud_sdk]"
 ```
 
+## Cerebras request parameters
+
+Instructor forwards additional keyword arguments from `client.create(...)` to
+the Cerebras SDK. This lets you use Cerebras request parameters without falling
+back to a generic OpenAI client. For example:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_provider("cerebras/gpt-oss-120b")
+
+resp = client.create(
+    messages=[{"role": "user", "content": "Return a short user record."}],
+    response_model=User,
+    max_completion_tokens=256,
+    reasoning_effort="none",
+    seed=42,
+)
+```
+
+Use `max_completion_tokens` for the canonical output limit. The compatibility
+alias `max_tokens` is forwarded separately, so do not send both fields in the
+same request. Other Cerebras parameters, including `temperature`, `top_p`,
+`stop`, `response_format`, `parallel_tool_calls`, log probabilities, and
+penalties, can be supplied in the same way when supported by the selected
+model. See the [Cerebras API reference](https://inference-docs.cerebras.ai/api-reference/chat-completions)
+for the current request schema.
+
 ## Simple User Example (Sync)
 
 ```python

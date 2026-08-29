@@ -8,6 +8,8 @@ from collections.abc import Iterable
 from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel, create_model
+from typing_extensions import NotRequired, Required
+from typing import get_type_hints
 
 T = TypeVar("T")
 
@@ -29,6 +31,34 @@ def is_typed_dict(cls: Any) -> bool:
     )
 
 
+def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
+    """Convert a TypedDict while preserving per-key requiredness."""
+    annotations = get_type_hints(typed_dict, include_extras=True)
+    required_keys = set(getattr(typed_dict, "__required_keys__", set()))
+    optional_keys = set(getattr(typed_dict, "__optional_keys__", set()))
+    total = getattr(typed_dict, "__total__", True)
+    fields: dict[str, tuple[Any, Any]] = {}
+
+    for name, annotation in annotations.items():
+        annotation_origin = get_origin(annotation)
+        if annotation_origin is Required:
+            field_annotation = get_args(annotation)[0]
+            is_required = True
+        elif annotation_origin is NotRequired:
+            field_annotation = get_args(annotation)[0]
+            is_required = False
+        else:
+            field_annotation = annotation
+            is_required = name in required_keys or (name not in optional_keys and total)
+
+        fields[name] = (field_annotation, ... if is_required else None)
+
+    return _create_dynamic_model(
+        getattr(typed_dict, "__name__", "TypedDictModel"),
+        **fields,
+    )
+
+
 def is_simple_type(typehint: type[T]) -> bool:
     from instructor.v2.dsl.simple_type import is_simple_type as _is_simple_type
 
@@ -47,6 +77,8 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         inner = args[0] if args else None
 
         def _is_model_type(candidate: Any) -> bool:
+            if is_typed_dict(candidate):
+                return True
             if inspect.isclass(candidate) and issubclass(candidate, BaseModel):
                 return True
             return get_origin(candidate) in _UNION_ORIGINS and all(
@@ -63,12 +95,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
             origin = get_origin(working_model)
 
     if is_typed_dict(working_model):
-        model_name = getattr(working_model, "__name__", "TypedDictModel")
-        annotations = getattr(working_model, "__annotations__", {})
-        working_model = _create_dynamic_model(
-            model_name,
-            **{name: (annotation, ...) for name, annotation in annotations.items()},
-        )
+        working_model = _typed_dict_to_model(working_model)
 
     origin = get_origin(working_model)
     if origin in {Iterable, list}:
@@ -81,17 +108,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
             )
         iterable_element_class = args[0]
         if is_typed_dict(iterable_element_class):
-            iterable_element_class = _create_dynamic_model(
-                getattr(iterable_element_class, "__name__", "TypedDictModel"),
-                **{
-                    name: (annotation, ...)
-                    for name, annotation in getattr(
-                        iterable_element_class,
-                        "__annotations__",
-                        {},
-                    ).items()
-                },
-            )
+            iterable_element_class = _typed_dict_to_model(iterable_element_class)
         working_model = IterableModel(cast(type[BaseModel], iterable_element_class))
 
     if is_simple_type(working_model):

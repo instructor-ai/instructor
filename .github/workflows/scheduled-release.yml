@@ -46,6 +46,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
@@ -113,14 +114,19 @@ jobs:
           retention-days: 14
 
       - name: Summarize readiness
+        env:
+          RELEASE_NEEDED: ${{ steps.metadata.outputs.release_needed }}
+          RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+          PUBLISH_REQUESTED: ${{ inputs.publish || false }}
         run: |
           {
             echo "## Release readiness"
-            echo "- Version: ${{ steps.metadata.outputs.version }}"
-            echo "- Tag: ${{ steps.metadata.outputs.tag }}"
+            echo "- Version: $RELEASE_VERSION"
+            echo "- Tag: $RELEASE_TAG"
             echo "- Commit: $GITHUB_SHA"
-            echo "- Release needed: ${{ steps.metadata.outputs.release_needed }}"
-            echo "- Publish requested: ${{ inputs.publish || false }}"
+            echo "- Release needed: $RELEASE_NEEDED"
+            echo "- Publish requested: $PUBLISH_REQUESTED"
           } >> "$GITHUB_STEP_SUMMARY"
 
   smoke:
