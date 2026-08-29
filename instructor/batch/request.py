@@ -109,6 +109,10 @@ class BatchRequest(BaseModel, Generic[T]):
 
     def to_anthropic_format(self) -> dict[str, Any]:
         """Convert to Anthropic batch format with JSON schema"""
+        from instructor.v2.providers.anthropic.handlers import (
+            combine_system_messages,
+        )
+
         schema = self.get_json_schema()
 
         # Ensure schema has proper format for Anthropic
@@ -123,11 +127,13 @@ class BatchRequest(BaseModel, Generic[T]):
 
         for message in self.messages:
             if message.get("role") == "system":
-                system_message = message.get("content", "")
+                content = message.get("content", "")
+                if content:
+                    system_message = combine_system_messages(system_message, content)
             else:
                 filtered_messages.append(message)
 
-        params = {
+        params: dict[str, Any] = {
             "model": self.model,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,

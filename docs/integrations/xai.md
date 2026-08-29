@@ -9,7 +9,9 @@ xAI provides access to Grok models through the `xai-sdk` package, enabling struc
 
 ## Quick Start
 
-Instructor is distributed without xAI dependencies by default. Install xAI support with the optional `xai` extra:
+Instructor is distributed without xAI dependencies by default. The `xai` extra
+requires Python 3.10 or later because it installs `xai-sdk`. Install xAI support
+with the optional `xai` extra:
 
 ```bash
 pip install "instructor[xai]"

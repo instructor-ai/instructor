@@ -210,5 +210,5 @@ if os.path.exists("./output.jsonl"):
 
 This will then return a list of two elements
 
-- `parsed` is a list of responses that have been succesfully parsed into the `QuestionAnswerPair` Base Model class
+- `parsed` is a list of responses that have been successfully parsed into the `QuestionAnswerPair` Base Model class
 - `unparsed` is a second list which contains responses which were not able to be parsed into the `QuestionAnswerPair` Base Model class

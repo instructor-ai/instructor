@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
+from typing_extensions import NotRequired, Required, TypedDict
 
 from instructor import Mode, Provider
 from instructor.v2.core.function_calls import ResponseSchema
+from instructor.v2.core.response_model import prepare_response_model
 
 
 class Answer(ResponseSchema):
@@ -129,3 +131,34 @@ def test_provider_parse_helpers_delegate_to_registry(
         }
     ]
     assert calls[0]["warning"] is not None
+
+
+class OptionalUser(TypedDict):
+    name: str
+    age: NotRequired[int]
+
+
+class PartialUser(TypedDict, total=False):
+    nickname: str
+    user_id: Required[int]
+
+
+def test_prepare_response_model_preserves_typed_dict_key_semantics() -> None:
+    model = cast(Any, prepare_response_model(OptionalUser))
+
+    assert model.model_fields["name"].is_required()
+    assert not model.model_fields["age"].is_required()
+    assert model(name="Ada").model_dump(exclude_unset=True) == {"name": "Ada"}
+
+    partial_model = cast(Any, prepare_response_model(PartialUser))
+    assert not partial_model.model_fields["nickname"].is_required()
+    assert partial_model.model_fields["user_id"].is_required()
+
+
+def test_prepare_response_model_preserves_iterable_typed_dict_keys() -> None:
+    iterable_model = cast(Any, prepare_response_model(list[OptionalUser]))
+    task_model = iterable_model.task_type
+
+    assert task_model.model_fields["name"].is_required()
+    assert not task_model.model_fields["age"].is_required()
+    assert task_model(name="Ada").model_dump(exclude_unset=True) == {"name": "Ada"}

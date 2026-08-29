@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -410,6 +411,60 @@ def test_anthropic_batch_request_extracts_system_message_and_completes_schema() 
         "properties": {"value": {"type": "string"}},
         "required": ["value"],
     }
+
+
+def test_anthropic_batch_request_combines_multiple_system_messages() -> None:
+    request = BatchRequest[TypelessResponse](
+        custom_id="anthropic-multiple-system-1",
+        messages=[
+            {"role": "system", "content": "Follow the extraction policy."},
+            {"role": "user", "content": "Extract the value."},
+            {"role": "system", "content": "Return exactly one value."},
+        ],
+        response_model=TypelessResponse,
+        model="claude-sonnet",
+    )
+
+    result = request.to_anthropic_format()
+
+    assert result["params"]["system"] == (
+        "Follow the extraction policy.\n\nReturn exactly one value."
+    )
+    assert result["params"]["messages"] == [
+        {"role": "user", "content": "Extract the value."}
+    ]
+
+
+def test_anthropic_batch_request_combines_string_and_block_system_messages() -> None:
+    cached_system_block = {
+        "type": "text",
+        "text": "Use the cached extraction policy.",
+        "cache_control": {"type": "ephemeral"},
+    }
+    request = BatchRequest[TypelessResponse](
+        custom_id="anthropic-system-blocks-1",
+        messages=[
+            {"role": "system", "content": "Extract conservatively."},
+            {"role": "system", "content": [cached_system_block]},
+            {"role": "user", "content": "Extract the value."},
+            {"role": "system", "content": "Return exactly one value."},
+        ],
+        response_model=TypelessResponse,
+        model="claude-sonnet",
+    )
+    original_messages = deepcopy(request.messages)
+
+    result = request.to_anthropic_format()
+
+    assert request.messages == original_messages
+    assert result["params"]["system"] == [
+        {"type": "text", "text": "Extract conservatively."},
+        cached_system_block,
+        {"type": "text", "text": "Return exactly one value."},
+    ]
+    assert result["params"]["messages"] == [
+        {"role": "user", "content": "Extract the value."}
+    ]
 
 
 def test_anthropic_batch_request_preserves_explicit_additional_properties() -> None:

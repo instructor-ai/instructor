@@ -88,7 +88,7 @@ export COHERE_API_KEY=your_cohere_key
 To use with Mistral AI's models:
 
 ```shell
-pip install "instructor[mistralai]"
+pip install "instructor[mistral]"
 ```
 
 Set up your Mistral API key:
