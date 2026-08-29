@@ -10,11 +10,11 @@ from textwrap import dedent
 from typing import Any, cast
 
 from pydantic import BaseModel
-import requests
 
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import ConfigurationError, ResponseParsingError
+from instructor.v2.core.remote import MAX_IMAGE_BYTES, fetch_remote_content
 from instructor.v2.core.response_model import prepare_response_model
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -24,14 +24,53 @@ from instructor.v2.core.json import extract_json_from_codeblock
 def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
     """Return a Bedrock-compatible schema without mutating model-owned data."""
     schema = deepcopy(response_model.model_json_schema())
+    unsupported_constraints = {
+        "minimum",
+        "maximum",
+        "multipleOf",
+        "minLength",
+        "maxLength",
+    }
+    schema_map_keywords = {
+        "$defs",
+        "definitions",
+        "dependentSchemas",
+        "patternProperties",
+        "properties",
+    }
+    schema_keywords = {
+        "additionalItems",
+        "additionalProperties",
+        "contains",
+        "contentSchema",
+        "else",
+        "if",
+        "items",
+        "not",
+        "propertyNames",
+        "then",
+        "unevaluatedItems",
+        "unevaluatedProperties",
+    }
+    schema_list_keywords = {"allOf", "anyOf", "oneOf", "prefixItems"}
 
     def normalize(value: Any, path: str) -> None:
-        if isinstance(value, list):
-            for index, item in enumerate(value):
-                normalize(item, f"{path}[{index}]")
-            return
         if not isinstance(value, dict):
             return
+
+        if unsupported := unsupported_constraints.intersection(value):
+            constraint = sorted(unsupported)[0]
+            raise ConfigurationError(
+                "Bedrock native structured outputs do not support "
+                f"the `{constraint}` JSON Schema constraint at {path}."
+            )
+
+        min_items = value.get("minItems")
+        if min_items not in (None, 0, 1):
+            raise ConfigurationError(
+                "Bedrock native structured outputs only support `minItems` "
+                f"values of 0 or 1 at {path}; got {min_items}."
+            )
 
         additional_properties = value.get("additionalProperties")
         if additional_properties is not None and additional_properties is not False:
@@ -43,7 +82,15 @@ def _prepare_bedrock_strict_schema(response_model: type[Any]) -> dict[str, Any]:
             value["additionalProperties"] = False
 
         for key, item in value.items():
-            normalize(item, f"{path}.{key}")
+            child_path = f"{path}.{key}"
+            if key in schema_map_keywords and isinstance(item, dict):
+                for name, child_schema in item.items():
+                    normalize(child_schema, f"{child_path}.{name}")
+            elif key in schema_keywords or key in schema_list_keywords:
+                child_schemas = item if isinstance(item, list) else [item]
+                for index, child_schema in enumerate(child_schemas):
+                    suffix = f"[{index}]" if isinstance(item, list) else ""
+                    normalize(child_schema, f"{child_path}{suffix}")
 
     normalize(schema, "$")
     return schema
@@ -203,11 +250,12 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
         return {"image": {"format": fmt, "source": {"bytes": base64.b64decode(b64)}}}
 
     if image_url.startswith("https://"):
-        response = requests.get(image_url, timeout=30)
-        response.raise_for_status()
-        mime = (
-            response.headers.get("Content-Type") or mimetypes.guess_type(image_url)[0]
+        response = fetch_remote_content(
+            image_url,
+            max_bytes=MAX_IMAGE_BYTES,
+            timeout=30,
         )
+        mime = response.content_type or mimetypes.guess_type(image_url)[0]
         fmt = _normalize_bedrock_image_format(mime or "")
         return {"image": {"format": fmt, "source": {"bytes": response.content}}}
 
@@ -324,10 +372,13 @@ def _prepare_bedrock_converse_kwargs_internal(
 
     if additional_model_request_fields:
         if "additionalModelRequestFields" in call_kwargs:
-            existing_additional_fields = call_kwargs["additionalModelRequestFields"]
+            existing_additional_fields = call_kwargs[
+                "additionalModelRequestFields"
+            ].copy()
             for key, value in additional_model_request_fields.items():
                 if key not in existing_additional_fields:
                     existing_additional_fields[key] = value
+            call_kwargs["additionalModelRequestFields"] = existing_additional_fields
         else:
             call_kwargs["additionalModelRequestFields"] = (
                 additional_model_request_fields
@@ -335,10 +386,11 @@ def _prepare_bedrock_converse_kwargs_internal(
 
     if inference_config_params:
         if "inferenceConfig" in call_kwargs:
-            existing_inference_config = call_kwargs["inferenceConfig"]
+            existing_inference_config = call_kwargs["inferenceConfig"].copy()
             for key, value in inference_config_params.items():
                 if key not in existing_inference_config:
                     existing_inference_config[key] = value
+            call_kwargs["inferenceConfig"] = existing_inference_config
         else:
             call_kwargs["inferenceConfig"] = inference_config_params
 

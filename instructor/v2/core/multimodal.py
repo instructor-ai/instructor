@@ -2,7 +2,6 @@ from __future__ import annotations
 import base64
 import re
 from collections.abc import Mapping, Hashable
-from functools import lru_cache
 from typing import (
     Any,
     Callable,
@@ -22,6 +21,13 @@ from pydantic import BaseModel, Field
 
 from instructor.v2.core.errors import MultimodalError
 from instructor.v2.core.mode import Mode
+from instructor.v2.core.remote import (
+    MAX_AUDIO_BYTES,
+    MAX_IMAGE_BYTES,
+    MAX_PDF_BYTES,
+    fetch_remote_content,
+    probe_remote_content_type,
+)
 
 mimetypes.add_type("image/webp", ".webp")
 
@@ -48,6 +54,13 @@ VALID_AUDIO_MIME_TYPES = [
 VALID_PDF_MIME_TYPES = ["application/pdf"]
 CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
+
+
+def _normalize_media_type(media_type: str | None) -> str | None:
+    """Return the lowercase media type without optional HTTP parameters."""
+    if media_type is None:
+        return None
+    return media_type.split(";", 1)[0].strip().lower()
 
 
 class ImageParamsBase(TypedDict):
@@ -149,9 +162,12 @@ class Image(BaseModel):
         public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
 
         try:
-            response = requests.get(public_url, timeout=timeout)
-            response.raise_for_status()
-            media_type = response.headers.get("Content-Type")
+            response = fetch_remote_content(
+                public_url,
+                max_bytes=MAX_IMAGE_BYTES,
+                timeout=timeout,
+            )
+            media_type = response.content_type
             if media_type not in VALID_MIME_TYPES:
                 raise ValueError(f"Unsupported image format: {media_type}")
 
@@ -191,7 +207,6 @@ class Image(BaseModel):
             raise ValueError(f"Invalid or unsupported base64 image data") from e
 
     @classmethod
-    @lru_cache
     def from_url(cls, url: str) -> Image:
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
@@ -203,8 +218,7 @@ class Image(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True, timeout=30)
-                media_type = response.headers.get("Content-Type")
+                media_type = probe_remote_content_type(url, timeout=30)
             except requests.RequestException as e:
                 raise ValueError(f"Failed to fetch image from URL") from e
 
@@ -213,7 +227,6 @@ class Image(BaseModel):
         return cls(source=url, media_type=media_type, data=None)
 
     @classmethod
-    @lru_cache
     def from_path(cls, path: Union[str, Path]) -> Image:  # noqa: UP007
         path = Path(path)
         if not path.is_file():
@@ -230,11 +243,9 @@ class Image(BaseModel):
         return cls(source=path, media_type=media_type, data=data)
 
     @staticmethod
-    @lru_cache
     def url_to_base64(url: str) -> str:
-        """Cachable helper method for getting image url and encoding to base64."""
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
+        """Safely fetch an image URL and return its base64 representation."""
+        response = fetch_remote_content(url, max_bytes=MAX_IMAGE_BYTES, timeout=30)
         return base64.b64encode(response.content).decode("utf-8")
 
     def to_anthropic(self) -> dict[str, Any]:
@@ -324,8 +335,8 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
-        response = requests.get(url, timeout=30)
-        content_type = response.headers.get("content-type")
+        response = fetch_remote_content(url, max_bytes=MAX_AUDIO_BYTES, timeout=30)
+        content_type = response.content_type
         if content_type not in VALID_AUDIO_MIME_TYPES:
             raise ValueError(
                 f"Unsupported audio format: {content_type}. "
@@ -379,9 +390,12 @@ class Audio(BaseModel):
         public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
 
         try:
-            response = requests.get(public_url, timeout=timeout)
-            response.raise_for_status()
-            media_type = response.headers.get("Content-Type")
+            response = fetch_remote_content(
+                public_url,
+                max_bytes=MAX_AUDIO_BYTES,
+                timeout=timeout,
+            )
+            media_type = response.content_type
             if media_type not in VALID_AUDIO_MIME_TYPES:
                 raise ValueError(f"Unsupported audio format: {media_type}")
 
@@ -521,7 +535,6 @@ class PDF(BaseModel):
         )
 
     @classmethod
-    @lru_cache
     def from_path(cls, path: str | Path) -> PDF:
         path = Path(path)
         if not path.is_file():
@@ -567,9 +580,12 @@ class PDF(BaseModel):
         public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
 
         try:
-            response = requests.get(public_url, timeout=timeout)
-            response.raise_for_status()
-            media_type = response.headers.get("Content-Type", "application/pdf")
+            response = fetch_remote_content(
+                public_url,
+                max_bytes=MAX_PDF_BYTES,
+                timeout=timeout,
+            )
+            media_type = response.content_type or "application/pdf"
             if media_type not in VALID_PDF_MIME_TYPES:
                 raise ValueError(f"Unsupported PDF format: {media_type}")
 
@@ -582,7 +598,6 @@ class PDF(BaseModel):
             ) from e
 
     @classmethod
-    @lru_cache
     def from_url(cls, url: str) -> PDF:
         if url.startswith("gs://"):
             return cls.from_gs_url(url)
@@ -591,8 +606,7 @@ class PDF(BaseModel):
 
         if not media_type:
             try:
-                response = requests.head(url, allow_redirects=True, timeout=30)
-                media_type = response.headers.get("Content-Type")
+                media_type = probe_remote_content_type(url, timeout=30)
             except requests.RequestException as e:
                 raise ValueError("Failed to fetch PDF from URL") from e
 

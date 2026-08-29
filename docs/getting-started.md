@@ -37,7 +37,7 @@ pip install "instructor[google-genai]"         # For Google/Gemini
 pip install "instructor[vertexai]"             # For Vertex AI
 pip install "instructor[cohere]"               # For Cohere
 pip install "instructor[litellm]"              # For LiteLLM (multiple providers)
-pip install "instructor[mistralai]"            # For Mistral
+pip install "instructor[mistral]"               # For Mistral
 pip install "instructor[xai]"                  # For xAI
 ```
 

@@ -359,7 +359,7 @@ def test_map_to_gemini_function_schema_raises_helpful_error_when_jsonref_missing
         utils.map_to_gemini_function_schema(Answer.model_json_schema())
 
 
-def test_update_gemini_kwargs_applies_safety_defaults(
+def test_update_gemini_kwargs_applies_safety_defaults_without_mutating_input(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     class Category:
@@ -374,14 +374,17 @@ def test_update_gemini_kwargs_applies_safety_defaults(
         lambda: {hate: 2, harassment: 1},
     )
 
+    safety_settings = {hate: 3}
     result = utils.update_gemini_kwargs(
         {
             "generation_config": {"max_tokens": 32},
             "messages": [{"role": "user", "content": "hello"}],
-            "safety_settings": {hate: 3},
+            "safety_settings": safety_settings,
         }
     )
 
+    assert safety_settings == {hate: 3}
+    assert result["safety_settings"] is not safety_settings
     assert result["generation_config"]["max_output_tokens"] == 32
     assert result["contents"][0]["parts"] == ["hello"]
     assert result["safety_settings"][hate] == 2
