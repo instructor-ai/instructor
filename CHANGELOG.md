@@ -9,17 +9,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-### Security
-- **Remote multimodal fetching**: Block non-public and credential-bearing media URLs, revalidate redirects and connected peers, disable ambient proxy credentials, cap image, audio, and PDF downloads, and avoid caching decoded media payloads in process memory.
-- **Supply-chain hardening**: Require a patched `urllib3` release and pin GitHub Actions to reviewed commit SHAs, including secret-bearing scheduled workflows.
-
-## [1.16.1] - 2026-08-27
+## [1.16.1] - 2026-08-28
 
 ### Changed
 - **CLI cost metadata**: Add an explicit mapping annotation to the model-cost table so static analysis preserves its nested numeric value shape. ([#2521](https://github.com/567-labs/instructor/pull/2521))
-- **Live-provider CI signal**: Retry only failed tests once in the mixed provider lane so transient API failures do not obscure deterministic regressions.
+- **Provider documentation**: Correct the Mistral installation extra and xAI Python requirement, document Cerebras request-parameter forwarding with a runnable example, repair the Langfuse tracing examples, and clean up extraction typos. ([#2550](https://github.com/567-labs/instructor/pull/2550), [#2554](https://github.com/567-labs/instructor/pull/2554), [#2556](https://github.com/567-labs/instructor/pull/2556), [#2561](https://github.com/567-labs/instructor/pull/2561), [#2562](https://github.com/567-labs/instructor/pull/2562))
+- **Live-provider CI signal**: Retry only failed tests once in the mixed-provider and auto-client lanes so transient API failures do not obscure deterministic regressions, while setup, collection, repeated, and other failures remain red.
 
 ### Security
+- **Remote multimodal fetching**: Block non-public and credential-bearing media URLs, revalidate redirects and connected peers, disable ambient proxy credentials, cap image, audio, and PDF downloads, and avoid caching decoded media payloads in process memory.
+- **Supply-chain hardening**: Require a patched `urllib3` release and pin GitHub Actions to reviewed commit SHAs, including secret-bearing scheduled workflows.
 - **Release workflow hardening**: Avoid persisting checkout credentials, disable dependency-cache restoration in the PyPI publishing job, and pass release metadata to shell steps through environment variables instead of direct expression interpolation.
 
 ### Fixed

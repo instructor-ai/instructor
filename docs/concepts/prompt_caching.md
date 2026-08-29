@@ -33,7 +33,7 @@ Caching is based on prefix matching, so if you're using a system prompt that con
 
 ## Prompt Caching in Anthropic
 
-Prompt Caching is now generally avaliable for Anthropic. This enables you to cache specific prompt portions, reuse cached content in subsequent calls, and reduce processed data per request.
+Prompt Caching is now generally available for Anthropic. This enables you to cache specific prompt portions, reuse cached content in subsequent calls, and reduce processed data per request.
 
 ??? note "Source Text"
 
