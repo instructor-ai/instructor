@@ -26,12 +26,21 @@ class FakeGenerateContentConfig:
         self.kwargs = kwargs
 
 
+class CachedResponse(BaseModel):
+    value: str
+
+
 def _install_fake_genai_types(monkeypatch: pytest.MonkeyPatch) -> None:
     install_fake_genai(
         monkeypatch,
         extra_types={
             "ModelContent": FakeModelContent,
             "GenerateContentConfig": FakeGenerateContentConfig,
+            "FunctionDeclaration": SimpleNamespace,
+            "Tool": SimpleNamespace,
+            "FunctionCallingConfigMode": SimpleNamespace(ANY="ANY"),
+            "FunctionCallingConfig": SimpleNamespace,
+            "ToolConfig": SimpleNamespace,
         },
     )
 
@@ -113,6 +122,89 @@ def test_tools_handler_prepare_request_without_response_model(
     ]
     assert kwargs["config"].kwargs["system_instruction"] == "system note"
     assert "temperature" not in kwargs
+
+
+@pytest.mark.parametrize(
+    ("handler", "forbidden_fields"),
+    [
+        (
+            GenAIToolsHandler(mode=Mode.TOOLS),
+            {"system_instruction", "tools", "tool_config"},
+        ),
+        (
+            GenAIStructuredOutputsHandler(mode=Mode.JSON),
+            {"system_instruction"},
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "config",
+    [
+        {"cached_content": "cachedContents/test"},
+        SimpleNamespace(cached_content="cachedContents/test"),
+    ],
+    ids=["dict-config", "object-config"],
+)
+def test_genai_handlers_omit_cached_content_request_fields(
+    monkeypatch: pytest.MonkeyPatch,
+    handler: GenAIToolsHandler | GenAIStructuredOutputsHandler,
+    forbidden_fields: set[str],
+    config: dict[str, str] | SimpleNamespace,
+) -> None:
+    _install_fake_genai_types(monkeypatch)
+
+    def merge_cached_content(
+        kwargs: dict[str, Any], base_config: dict[str, Any]
+    ) -> dict[str, Any]:
+        user_config = kwargs["config"]
+        cached_content = (
+            user_config["cached_content"]
+            if isinstance(user_config, dict)
+            else user_config.cached_content
+        )
+        return {**base_config, "cached_content": cached_content}
+
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.utils.map_to_genai_schema",
+        lambda schema: schema,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.utils.map_to_gemini_function_schema",
+        lambda schema: schema,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.utils.update_genai_kwargs",
+        merge_cached_content,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.utils.convert_to_genai_messages",
+        lambda messages: messages,
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.genai.handlers.extract_genai_multimodal_content",
+        lambda contents, _autodetect_images: contents,
+    )
+
+    prepared_model, prepared = handler.prepare_request(
+        CachedResponse,
+        {
+            "messages": [
+                {"role": "system", "content": "cached instruction"},
+                {"role": "user", "content": "hello"},
+            ],
+            "config": config,
+        },
+    )
+
+    prepared_config = prepared["config"].kwargs
+    assert prepared_config["cached_content"] == "cachedContents/test"
+    assert forbidden_fields.isdisjoint(prepared_config)
+    if handler.mode == Mode.JSON:
+        assert prepared_config["response_mime_type"] == "application/json"
+        assert prepared_config["response_schema"] is prepared_model
+    else:
+        assert "response_mime_type" not in prepared_config
+        assert "response_schema" not in prepared_config
 
 
 def test_structured_outputs_parse_response_unwraps_adapter(

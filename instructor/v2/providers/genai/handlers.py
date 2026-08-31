@@ -173,6 +173,16 @@ class GenAIHandlerBase(ModeHandler):
             )
         return None
 
+    def _get_user_config_field(
+        self,
+        kwargs: dict[str, Any],
+        field: str,
+    ) -> Any:
+        user_config = kwargs.get("config")
+        if isinstance(user_config, dict):
+            return user_config.get(field)
+        return getattr(user_config, field, None)
+
     def extract_streaming_json(self, completion: Any) -> Generator[str, None, None]:
         """Extract JSON chunks from GenAI streaming responses."""
         for chunk in completion:
@@ -385,18 +395,18 @@ class GenAIToolsHandler(GenAIHandlerBase):
             if key in new_kwargs:
                 generation_config_dict[key] = new_kwargs.pop(key)
 
-        base_config = {
-            "system_instruction": system_instruction,
-            "tools": [types.Tool(function_declarations=[function_decl])],
-            "tool_config": types.ToolConfig(
+        base_config: dict[str, Any] = {}
+        if self._get_user_config_field(new_kwargs, "cached_content") is None:
+            base_config["system_instruction"] = system_instruction
+            base_config["tools"] = [types.Tool(function_declarations=[function_decl])]
+            base_config["tool_config"] = types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
                     mode=types.FunctionCallingConfigMode.ANY,
                     allowed_function_names=[
                         gemini_utils._get_model_name(prepared_model)
                     ],
                 ),
-            ),
-        }
+            )
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
         generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)
@@ -464,10 +474,11 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
                 generation_config_dict[key] = new_kwargs.pop(key)
 
         base_config = {
-            "system_instruction": system_instruction,
             "response_mime_type": "application/json",
             "response_schema": prepared_model,
         }
+        if self._get_user_config_field(new_kwargs, "cached_content") is None:
+            base_config["system_instruction"] = system_instruction
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
         generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)

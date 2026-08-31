@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **GenAI cached content**: Omit request-level system instructions, tools, and tool configuration when v2 structured requests use cached content, avoiding Google GenAI `INVALID_ARGUMENT` responses. ([#2580](https://github.com/567-labs/instructor/issues/2580))
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed
