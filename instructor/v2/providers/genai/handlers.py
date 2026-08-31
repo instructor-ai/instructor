@@ -228,6 +228,30 @@ class GenAIHandlerBase(ModeHandler):
         kwargs.pop("messages", None)
         return kwargs
 
+    def _extract_cached_content(self, kwargs: dict[str, Any]) -> Any | None:
+        user_config = kwargs.get("config")
+        if isinstance(user_config, dict):
+            if user_config.get("cached_content") is not None:
+                return user_config.get("cached_content")
+        elif user_config is not None and hasattr(user_config, "cached_content"):
+            if user_config.cached_content is not None:
+                return user_config.cached_content
+
+        if kwargs.get("cached_content") is not None:
+            return kwargs.get("cached_content")
+
+        generation_config = kwargs.get("generation_config")
+        if isinstance(generation_config, dict):
+            if generation_config.get("cached_content") is not None:
+                return generation_config.get("cached_content")
+        elif generation_config is not None and hasattr(
+            generation_config, "cached_content"
+        ):
+            if generation_config.cached_content is not None:
+                return generation_config.cached_content
+
+        return None
+
     def _cleanup_provider_kwargs(self, kwargs: dict[str, Any]) -> dict[str, Any]:
         # Keep 'model' as it's required by GenAI API
         # Remove other OpenAI-specific params that should be in config
@@ -236,6 +260,7 @@ class GenAIHandlerBase(ModeHandler):
             "generation_config",
             "safety_settings",
             "thinking_config",
+            "cached_content",
             "max_tokens",
             "temperature",
             "top_p",
@@ -257,6 +282,10 @@ class GenAIHandlerBase(ModeHandler):
         from google.genai import types
 
         system_instruction = self._extract_system_instruction(kwargs)
+        cached_content = self._extract_cached_content(kwargs)
+        if cached_content is not None:
+            system_instruction = None
+
         kwargs = self._convert_messages_to_contents(kwargs, autodetect_images)
         if system_instruction:
             kwargs["config"] = types.GenerateContentConfig(
@@ -385,18 +414,20 @@ class GenAIToolsHandler(GenAIHandlerBase):
             if key in new_kwargs:
                 generation_config_dict[key] = new_kwargs.pop(key)
 
-        base_config = {
-            "system_instruction": system_instruction,
-            "tools": [types.Tool(function_declarations=[function_decl])],
-            "tool_config": types.ToolConfig(
+        user_cached_content = self._extract_cached_content(new_kwargs)
+
+        base_config: dict[str, Any] = {}
+        if user_cached_content is None:
+            base_config["system_instruction"] = system_instruction
+            base_config["tools"] = [types.Tool(function_declarations=[function_decl])]
+            base_config["tool_config"] = types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
                     mode=types.FunctionCallingConfigMode.ANY,
                     allowed_function_names=[
                         gemini_utils._get_model_name(prepared_model)
                     ],
                 ),
-            ),
-        }
+            )
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
         generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)
@@ -463,11 +494,14 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
             if key in new_kwargs:
                 generation_config_dict[key] = new_kwargs.pop(key)
 
-        base_config = {
-            "system_instruction": system_instruction,
+        user_cached_content = self._extract_cached_content(new_kwargs)
+
+        base_config: dict[str, Any] = {
             "response_mime_type": "application/json",
             "response_schema": prepared_model,
         }
+        if user_cached_content is None:
+            base_config["system_instruction"] = system_instruction
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
         generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)

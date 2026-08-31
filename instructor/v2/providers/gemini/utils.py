@@ -298,6 +298,10 @@ def update_genai_kwargs(
     if thinking_config is not None:
         base_config["thinking_config"] = thinking_config
 
+    cached_content = new_kwargs.pop("cached_content", None)
+    if cached_content is not None and "cached_content" not in base_config:
+        base_config["cached_content"] = cached_content
+
     if user_config is not None:
         config_fields_to_merge = [
             "automatic_function_calling",

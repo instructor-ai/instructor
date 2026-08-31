@@ -146,3 +146,39 @@ def test_structured_outputs_parse_response_unwraps_adapter(
     )
 
     assert result == "done"
+
+
+def test_tools_handler_prepare_request_without_response_model_with_cached_content(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_genai_types(monkeypatch)
+    monkeypatch.setattr(
+        "instructor.v2.providers.gemini.utils.convert_to_genai_messages",
+        lambda messages: ["converted", *messages],
+    )
+    monkeypatch.setattr(
+        "instructor.v2.providers.genai.handlers.extract_genai_multimodal_content",
+        lambda contents, autodetect_images: [*contents, autodetect_images],
+    )
+
+    handler = GenAIToolsHandler(mode=Mode.TOOLS)
+    model, kwargs = handler.prepare_request(
+        None,
+        {
+            "messages": [{"role": "user", "content": "hello"}],
+            "system": "system note",
+            "autodetect_images": True,
+            "config": {"cached_content": "caches/test123"},
+        },
+    )
+
+    assert model is None
+    assert kwargs["contents"] == [
+        "converted",
+        {"role": "user", "content": "hello"},
+        True,
+    ]
+    # system_instruction should NOT be created when cached_content is present
+    assert "config" not in kwargs or "system_instruction" not in getattr(
+        kwargs["config"], "kwargs", {}
+    )

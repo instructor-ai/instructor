@@ -518,3 +518,99 @@ def test_handle_genai_tools_skips_tools_and_system_instruction_with_cached_conte
     assert result_config.system_instruction is None
     assert result_config.tools is None
     assert result_config.tool_config is None
+
+
+def test_v2_genai_tools_handler_skips_tools_and_system_instruction_with_cached_content():
+    """Test that GenAIToolsHandler omits tools, tool_config, and system_instruction with cached_content (issue #2580)."""
+    from pydantic import BaseModel
+    from google.genai import types
+    from instructor.v2.providers.genai.handlers import GenAIToolsHandler
+    from instructor.v2.core.mode import Mode
+
+    class TestModel(BaseModel):
+        name: str
+
+    handler = GenAIToolsHandler(mode=Mode.TOOLS)
+
+    # 1. With config as types.GenerateContentConfig
+    config = types.GenerateContentConfig(cached_content="caches/test-tool-123")
+    _, result_kwargs = handler.prepare_request(
+        TestModel,
+        {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hello"},
+            ],
+            "config": config,
+        },
+    )
+    result_config = result_kwargs["config"]
+    assert result_config.cached_content == "caches/test-tool-123"
+    assert result_config.system_instruction is None
+    assert result_config.tools is None
+    assert result_config.tool_config is None
+
+    # 2. With config as dict
+    _, result_kwargs_dict = handler.prepare_request(
+        TestModel,
+        {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hello"},
+            ],
+            "config": {"cached_content": "caches/test-tool-dict"},
+        },
+    )
+    result_config_dict = result_kwargs_dict["config"]
+    assert result_config_dict.cached_content == "caches/test-tool-dict"
+    assert result_config_dict.system_instruction is None
+    assert result_config_dict.tools is None
+    assert result_config_dict.tool_config is None
+
+
+def test_v2_genai_structured_outputs_handler_skips_system_instruction_with_cached_content():
+    """Test that GenAIStructuredOutputsHandler omits system_instruction with cached_content (issue #2580)."""
+    from pydantic import BaseModel
+    from google.genai import types
+    from instructor.v2.providers.genai.handlers import GenAIStructuredOutputsHandler
+    from instructor.v2.core.mode import Mode
+
+    class TestModel(BaseModel):
+        name: str
+
+    handler = GenAIStructuredOutputsHandler(mode=Mode.JSON)
+
+    # 1. With config as types.GenerateContentConfig
+    config = types.GenerateContentConfig(cached_content="caches/test-json-123")
+    _, result_kwargs = handler.prepare_request(
+        TestModel,
+        {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hello"},
+            ],
+            "config": config,
+        },
+    )
+    result_config = result_kwargs["config"]
+    assert result_config.cached_content == "caches/test-json-123"
+    assert result_config.system_instruction is None
+    assert result_config.response_mime_type == "application/json"
+    assert result_config.response_schema is not None
+
+    # 2. With config as dict
+    _, result_kwargs_dict = handler.prepare_request(
+        TestModel,
+        {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Hello"},
+            ],
+            "config": {"cached_content": "caches/test-json-dict"},
+        },
+    )
+    result_config_dict = result_kwargs_dict["config"]
+    assert result_config_dict.cached_content == "caches/test-json-dict"
+    assert result_config_dict.system_instruction is None
+    assert result_config_dict.response_mime_type == "application/json"
+    assert result_config_dict.response_schema is not None
