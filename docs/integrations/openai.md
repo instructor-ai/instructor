@@ -479,7 +479,7 @@ Read more about how to use it [here](../examples/batch_job_oai.md)
 
 ## Best Practices
 
-1. **Model Selection** : We recommend using gpt-4o-mini for simpler use cases because it's cheap and works well with a clearly defined objective for structured outputs. When the task is more ambigious, consider upgrading to `4o` or even `O1` depending on your needs
+1. **Model Selection** : We recommend using gpt-4o-mini for simpler use cases because it's cheap and works well with a clearly defined objective for structured outputs. When the task is more ambiguous, consider upgrading to `4o` or even `O1` depending on your needs
 
 2. **Performance Optimization** : Streaming a response model is faster and should be done from the get-go. This is especially true if you're using a simple response model.
 

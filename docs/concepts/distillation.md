@@ -196,4 +196,4 @@ def fn(a: int, b: int) -> Multiply:
     return Multiply(a=a, b=b, result=resp)
 ```
 
-With this, you can swap the function implementation, making it backward compatible. You can even imagine using the different models for different tasks or validating and runnign evals by using the original function and comparing it to the distillation.
+With this, you can swap the function implementation, making it backward compatible. You can even imagine using the different models for different tasks or validating and running evals by using the original function and comparing it to the distillation.
