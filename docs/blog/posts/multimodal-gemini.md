@@ -82,7 +82,7 @@ print(resp)
 ??? note "Expand to see Raw Results"
 
     ```python
-    Recomendations(
+    Recommendations(
         chain_of_thought='The video recommends visiting Takayama city, in the Hida Region, Gifu Prefecture. The
     video suggests visiting the Miyagawa Morning Market, to try the Sarubobo good luck charms, and to enjoy the
     cookie cup espresso, made by Koma Coffee. Then, the video suggests visiting a traditional Japanese Cafe,
