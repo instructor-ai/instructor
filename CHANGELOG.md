@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **OpenAI SDK compatibility**: Support OpenAI 3.x and its HTTPX2 transport when constructing sync and async clients through `from_provider`, while retaining OpenAI 2.x support on Python 3.9. ([#2553](https://github.com/567-labs/instructor/issues/2553))
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed
