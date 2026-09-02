@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Async validators**: `@async_field_validator` and `@async_model_validator` are now actually awaited during response parsing (including on nested models) instead of being silently ignored; a sync client given a `response_model` that declares async validators now raises a clear `ConfigurationError` instead of returning an unvalidated model. ([#2528](https://github.com/567-labs/instructor/issues/2528))
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed
