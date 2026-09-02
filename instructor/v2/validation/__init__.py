@@ -8,6 +8,8 @@ from instructor.v2.validation.async_validators import (
     AsyncValidationContext,
     async_field_validator,
     async_model_validator,
+    model_declares_async_validators,
+    run_async_validators,
 )
 from instructor.v2.validation.llm_validators import llm_validator, openai_moderation
 
@@ -16,6 +18,8 @@ __all__ = [
     "AsyncValidationError",
     "async_field_validator",
     "async_model_validator",
+    "model_declares_async_validators",
+    "run_async_validators",
     "ASYNC_VALIDATOR_KEY",
     "ASYNC_MODEL_VALIDATOR_KEY",
     "Validator",
