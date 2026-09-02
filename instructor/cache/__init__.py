@@ -37,6 +37,7 @@ __all__ = [
     "AutoCache",
     "DiskCache",
     "make_cache_key",
+    "extract_generation_kwargs",
 ]
 
 
@@ -141,6 +142,36 @@ class DiskCache(BaseCache):
 # Cache-key helper
 # -------------------------------------------------------------------------
 
+# Sampling/generation parameters that affect the model's output and must
+# therefore be part of the cache key -- otherwise two calls that differ only
+# in, say, ``temperature`` collide and the second call silently returns the
+# first call's cached (and differently-sampled) response.
+_GENERATION_PARAM_KEYS: tuple[str, ...] = (
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "max_tokens",
+    "max_completion_tokens",
+    "max_output_tokens",
+    "frequency_penalty",
+    "presence_penalty",
+    "n",
+    "stop",
+    "stop_sequences",
+    "logit_bias",
+)
+
+
+def extract_generation_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Pull the sampling parameters relevant to :func:`make_cache_key` out of
+    a provider call's kwargs dict, dropping anything unset."""
+    return {
+        key: kwargs[key]
+        for key in _GENERATION_PARAM_KEYS
+        if key in kwargs and kwargs[key] is not None
+    }
+
 
 def make_cache_key(
     *,
@@ -149,6 +180,7 @@ def make_cache_key(
     response_model: type[BaseModel] | None,
     mode: str | None = None,
     system: Any = None,
+    generation_kwargs: dict[str, Any] | None = None,
 ) -> str:  # noqa: ANN401
     """Compute a *deterministic* cache key.
 
@@ -165,6 +197,10 @@ def make_cache_key(
         • *mode* (Tools, JSON, …) – helps when users change Instructor mode
         • *response_model* schema – so edits to field definitions or
           descriptions invalidate prior cache entries (critical!).
+        • *generation_kwargs* – sampling parameters such as ``temperature``,
+          ``top_p`` or ``seed``. Two calls that are otherwise identical but
+          request different sampling behavior must not collide (see
+          :func:`extract_generation_kwargs`).
     """
 
     payload: dict[str, Any] = {
@@ -177,6 +213,9 @@ def make_cache_key(
     # prompt inside ``messages`` (OpenAI & friends) stay unchanged.
     if system is not None:
         payload["system"] = system
+
+    if generation_kwargs:
+        payload["generation_kwargs"] = generation_kwargs
 
     if response_model is not None:
         # Include the entire JSON schema – guarantees busting when either

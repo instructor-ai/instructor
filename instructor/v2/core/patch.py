@@ -245,7 +245,12 @@ def _create_sync_wrapper(
 
         # Attempt cache lookup before retry layer
         if cache is not None and response_model is not None:
-            from instructor.cache import BaseCache, make_cache_key, load_cached_response
+            from instructor.cache import (
+                BaseCache,
+                make_cache_key,
+                load_cached_response,
+                extract_generation_kwargs,
+            )
 
             if isinstance(cache, BaseCache):
                 key = make_cache_key(
@@ -256,6 +261,7 @@ def _create_sync_wrapper(
                     response_model=response_model,
                     mode=str(mode.value),
                     system=new_kwargs.get("system"),
+                    generation_kwargs=extract_generation_kwargs(new_kwargs),
                 )
                 cached = load_cached_response(cache, key, response_model)
                 if cached is not None:
@@ -285,6 +291,7 @@ def _create_sync_wrapper(
                     BaseCache,
                     make_cache_key,
                     store_cached_response,
+                    extract_generation_kwargs,
                 )
                 from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
 
@@ -297,6 +304,7 @@ def _create_sync_wrapper(
                         response_model=response_model,
                         mode=str(mode.value),
                         system=new_kwargs.get("system"),
+                        generation_kwargs=extract_generation_kwargs(new_kwargs),
                     )
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
@@ -370,7 +378,12 @@ def _create_async_wrapper(
 
         # Attempt cache lookup before retry layer
         if cache is not None and response_model is not None:
-            from instructor.cache import BaseCache, make_cache_key, load_cached_response
+            from instructor.cache import (
+                BaseCache,
+                make_cache_key,
+                load_cached_response,
+                extract_generation_kwargs,
+            )
 
             if isinstance(cache, BaseCache):
                 key = make_cache_key(
@@ -381,6 +394,7 @@ def _create_async_wrapper(
                     response_model=response_model,
                     mode=str(mode.value),
                     system=new_kwargs.get("system"),
+                    generation_kwargs=extract_generation_kwargs(new_kwargs),
                 )
                 cached = load_cached_response(cache, key, response_model)
                 if cached is not None:
@@ -410,6 +424,7 @@ def _create_async_wrapper(
                     BaseCache,
                     make_cache_key,
                     store_cached_response,
+                    extract_generation_kwargs,
                 )
                 from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
 
@@ -422,6 +437,7 @@ def _create_async_wrapper(
                         response_model=response_model,
                         mode=str(mode.value),
                         system=new_kwargs.get("system"),
+                        generation_kwargs=extract_generation_kwargs(new_kwargs),
                     )
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:

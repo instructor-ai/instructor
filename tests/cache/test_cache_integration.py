@@ -166,3 +166,67 @@ def test_cache_key_accounts_for_hoisted_system_prompt():
     repeat = ask("Always answer in French.")
     assert call_counter["n"] == 2, "Identical request should still be served from cache"
     assert repeat.value == "call-1"
+
+
+def test_cache_key_accounts_for_temperature(monkeypatch):
+    """Regression test: sampling parameters must be part of the cache key.
+
+    Two otherwise-identical calls that differ only in ``temperature`` (or any
+    other sampling parameter) must not collide -- the second call has to hit
+    the provider again, not silently receive the first call's response.
+    """
+    _ = monkeypatch
+
+    class Answer(BaseModel):
+        value: str
+
+    call_counter = {"n": 0}
+
+    def fake_completion(*_args, **_kwargs):
+        call_counter["n"] += 1
+        content = Answer(value=f"call-{call_counter['n']}").model_dump_json()
+        return types.SimpleNamespace(
+            choices=[
+                types.SimpleNamespace(
+                    message=types.SimpleNamespace(content=content),
+                    finish_reason="stop",
+                )
+            ],
+            usage={},
+        )
+
+    cache = AutoCache(maxsize=10)
+    client = instructor.from_litellm(fake_completion, mode=instructor.Mode.JSON)
+    messages: list[ChatCompletionMessageParam] = [
+        {"role": "user", "content": "roll a random number"}
+    ]
+
+    first = client.create(
+        messages=list(messages),
+        response_model=Answer,
+        cache=cache,
+        temperature=0.0,
+    )
+    assert call_counter["n"] == 1
+    assert first.value == "call-1"
+
+    second = client.create(
+        messages=list(messages),
+        response_model=Answer,
+        cache=cache,
+        temperature=1.9,
+    )
+    assert call_counter["n"] == 2, (
+        "A different temperature must not reuse the cached response"
+    )
+    assert second.value == "call-2"
+
+    # Repeating the very first request (same temperature) must still hit cache.
+    repeat = client.create(
+        messages=list(messages),
+        response_model=Answer,
+        cache=cache,
+        temperature=0.0,
+    )
+    assert call_counter["n"] == 2, "Identical request should still be served from cache"
+    assert repeat.value == "call-1"

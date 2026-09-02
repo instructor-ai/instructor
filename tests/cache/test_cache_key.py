@@ -85,3 +85,63 @@ def test_cache_key_unchanged_when_no_system_prompt():
     assert without == explicit_none, (
         "Keys must stay stable for providers without a hoisted system prompt"
     )
+
+
+def test_cache_key_changes_on_temperature_change():
+    k1 = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        generation_kwargs={"temperature": 0.0},
+    )
+    k2 = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        generation_kwargs={"temperature": 1.9},
+    )
+    assert k1 != k2, (
+        "Calls that differ only in temperature must not collide in the cache"
+    )
+
+
+def test_cache_key_changes_on_seed_change():
+    k1 = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        generation_kwargs={"seed": 1},
+    )
+    k2 = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        generation_kwargs={"seed": 2},
+    )
+    assert k1 != k2, "Calls that differ only in seed must not collide in the cache"
+
+
+def test_cache_key_unchanged_when_no_generation_kwargs():
+    without = make_cache_key(messages=messages, model=model_name, response_model=UserV1)
+    explicit_empty = make_cache_key(
+        messages=messages,
+        model=model_name,
+        response_model=UserV1,
+        generation_kwargs={},
+    )
+    assert without == explicit_empty, (
+        "Keys must stay stable when no generation kwargs are supplied"
+    )
+
+
+def test_extract_generation_kwargs_drops_unset_and_irrelevant_keys():
+    from instructor.cache import extract_generation_kwargs
+
+    new_kwargs = {
+        "model": model_name,
+        "messages": messages,
+        "temperature": 0.7,
+        "seed": None,  # unset -> must be dropped
+        "tools": [{"type": "function"}],  # not a sampling param -> must be dropped
+    }
+    assert extract_generation_kwargs(new_kwargs) == {"temperature": 0.7}

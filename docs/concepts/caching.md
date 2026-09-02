@@ -85,6 +85,7 @@ Components that influence the key:
 | `messages` / `contents`     | The full chat history is hashed              |
 | `mode`                      | JSON vs. TOOLS vs. RESPONSES changes formatting |
 | `response_model` schema     | The entire `model_json_schema()` is included so **any** change in field names, types or *descriptions* busts the cache automatically |
+| sampling parameters (`temperature`, `top_p`, `seed`, `max_tokens`, …) | Calls that only differ in these must not collide — otherwise a higher-`temperature` call would silently be served a lower-`temperature` call's cached answer |
 
 The function returns a SHA-256 hex digest; its length is constant regardless
 of prompt size, so it is safe to use as a Redis key, file path, etc.
