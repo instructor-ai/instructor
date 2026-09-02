@@ -49,9 +49,7 @@ IF you know you want to pass in temperature, seed, or model, you can do so.
 import openai
 import instructor
 
-client = instructor.from_openai(
-    openai.OpenAI(), model="gpt-5.4-mini", temperature=0.2
-)
+client = instructor.from_openai(openai.OpenAI(), model="gpt-5.4-mini", temperature=0.2)
 ```
 
 Now, whenever you call `client.chat.completions.create` the `model` and `temperature` will be passed to the openai client!
@@ -120,7 +118,6 @@ This will also work correctly with asynchronous clients.
 import instructor
 from pydantic import BaseModel
 
-
 client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
@@ -151,7 +148,6 @@ You can also return the original completion object
 import instructor
 from pydantic import BaseModel
 
-
 client = instructor.from_provider("openai/gpt-5-nano")
 
 
@@ -179,7 +175,6 @@ In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but 
 ```python
 import instructor
 from pydantic import BaseModel
-
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
@@ -227,7 +222,6 @@ We get an iterable of objects when we want to extract multiple objects.
 ```python
 import instructor
 from pydantic import BaseModel
-
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
