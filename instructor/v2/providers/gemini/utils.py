@@ -315,6 +315,10 @@ def update_genai_kwargs(
             if field_value is not None and field not in base_config:
                 base_config[field] = field_value
 
+    cached_content = new_kwargs.pop("cached_content", None)
+    if cached_content is not None and "cached_content" not in base_config:
+        base_config["cached_content"] = cached_content
+
     return base_config
 
 

@@ -173,6 +173,14 @@ class GenAIHandlerBase(ModeHandler):
             )
         return None
 
+    def _extract_cached_content(self, kwargs: dict[str, Any]) -> Any | None:
+        user_config = kwargs.get("config")
+        if isinstance(user_config, dict):
+            return user_config.get("cached_content")
+        if user_config is not None and hasattr(user_config, "cached_content"):
+            return user_config.cached_content
+        return kwargs.get("cached_content")
+
     def extract_streaming_json(self, completion: Any) -> Generator[str, None, None]:
         """Extract JSON chunks from GenAI streaming responses."""
         for chunk in completion:
@@ -244,6 +252,7 @@ class GenAIHandlerBase(ModeHandler):
             "seed",
             "presence_penalty",
             "frequency_penalty",
+            "cached_content",
             "kwargs",  # Remove any nested kwargs key
         ):
             kwargs.pop(key, None)
@@ -256,9 +265,10 @@ class GenAIHandlerBase(ModeHandler):
     ) -> dict[str, Any]:
         from google.genai import types
 
+        cached_content = self._extract_cached_content(kwargs)
         system_instruction = self._extract_system_instruction(kwargs)
         kwargs = self._convert_messages_to_contents(kwargs, autodetect_images)
-        if system_instruction:
+        if system_instruction and cached_content is None:
             kwargs["config"] = types.GenerateContentConfig(
                 system_instruction=system_instruction
             )
@@ -368,6 +378,7 @@ class GenAIToolsHandler(GenAIHandlerBase):
             parameters=schema,
         )
 
+        cached_content = self._extract_cached_content(new_kwargs)
         system_instruction = self._extract_system_instruction(new_kwargs)
 
         # Move OpenAI-style params to generation_config for conversion
@@ -385,18 +396,21 @@ class GenAIToolsHandler(GenAIHandlerBase):
             if key in new_kwargs:
                 generation_config_dict[key] = new_kwargs.pop(key)
 
-        base_config = {
-            "system_instruction": system_instruction,
-            "tools": [types.Tool(function_declarations=[function_decl])],
-            "tool_config": types.ToolConfig(
+        base_config: dict[str, Any] = {}
+        # When cached_content is used, do NOT add tools, tool_config, or system_instruction.
+        # These must live in the cache. Adding them causes 400 INVALID_ARGUMENT.
+        # See: https://ai.google.dev/gemini-api/docs/caching
+        if cached_content is None:
+            base_config["system_instruction"] = system_instruction
+            base_config["tools"] = [types.Tool(function_declarations=[function_decl])]
+            base_config["tool_config"] = types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
                     mode=types.FunctionCallingConfigMode.ANY,
                     allowed_function_names=[
                         gemini_utils._get_model_name(prepared_model)
                     ],
                 ),
-            ),
-        }
+            )
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
         generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)
@@ -446,6 +460,7 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
             gemini_utils._get_model_schema(prepared_model)
         )
 
+        cached_content = self._extract_cached_content(new_kwargs)
         system_instruction = self._extract_system_instruction(new_kwargs)
 
         # Move OpenAI-style params to generation_config for conversion
@@ -463,11 +478,15 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
             if key in new_kwargs:
                 generation_config_dict[key] = new_kwargs.pop(key)
 
-        base_config = {
-            "system_instruction": system_instruction,
+        base_config: dict[str, Any] = {
             "response_mime_type": "application/json",
             "response_schema": prepared_model,
         }
+        # When cached_content is used, do NOT add system_instruction.
+        # It must live in the cache. Adding it causes 400 INVALID_ARGUMENT.
+        # See: https://ai.google.dev/gemini-api/docs/caching
+        if cached_content is None:
+            base_config["system_instruction"] = system_instruction
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
         generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)

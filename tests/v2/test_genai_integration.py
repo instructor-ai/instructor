@@ -174,3 +174,92 @@ def test_from_genai_json_legacy_mode_normalized(monkeypatch):
         response_model=None,
     )
     assert client.models.called
+
+
+def test_genai_cached_content_omits_tools_and_system_instruction():
+    from pydantic import BaseModel
+
+    class OutputModel(BaseModel):
+        val: int
+
+    tools_prepare = mode_registry.get_handler(Provider.GENAI, Mode.TOOLS)
+    _, tools_prepared = tools_prepare(
+        OutputModel,
+        {
+            "messages": [
+                {"role": "system", "content": "system instruction"},
+                {"role": "user", "content": "hello"},
+            ],
+            "config": types.GenerateContentConfig(
+                cached_content="cachedContents/session-123",
+            ),
+        },
+    )
+
+    tools_config = tools_prepared["config"]
+    assert tools_config.cached_content == "cachedContents/session-123"
+    assert tools_config.tools is None
+    assert tools_config.tool_config is None
+    assert tools_config.system_instruction is None
+
+    json_prepare = mode_registry.get_handler(Provider.GENAI, Mode.JSON)
+    _, json_prepared = json_prepare(
+        OutputModel,
+        {
+            "messages": [
+                {"role": "system", "content": "system instruction"},
+                {"role": "user", "content": "hello"},
+            ],
+            "config": {"cached_content": "cachedContents/session-123"},
+        },
+    )
+
+    json_config = json_prepared["config"]
+    assert json_config.cached_content == "cachedContents/session-123"
+    assert json_config.response_mime_type == "application/json"
+    assert json_config.response_schema is not None
+    assert json_config.system_instruction is None
+
+
+def test_genai_cached_content_top_level_kwarg():
+    from pydantic import BaseModel
+
+    class OutputModel(BaseModel):
+        val: int
+
+    tools_prepare = mode_registry.get_handler(Provider.GENAI, Mode.TOOLS)
+    _, tools_prepared = tools_prepare(
+        OutputModel,
+        {
+            "messages": [
+                {"role": "system", "content": "system instruction"},
+                {"role": "user", "content": "hello"},
+            ],
+            "cached_content": "cachedContents/top-level-xyz",
+        },
+    )
+
+    tools_config = tools_prepared["config"]
+    assert tools_config.cached_content == "cachedContents/top-level-xyz"
+    assert tools_config.tools is None
+    assert tools_config.tool_config is None
+    assert tools_config.system_instruction is None
+
+
+def test_genai_prepare_without_response_model_with_cached_content():
+    tools_prepare = mode_registry.get_handler(Provider.GENAI, Mode.TOOLS)
+    _, prepared = tools_prepare(
+        None,
+        {
+            "messages": [
+                {"role": "system", "content": "system instruction"},
+                {"role": "user", "content": "hello"},
+            ],
+            "config": {"cached_content": "cachedContents/no-model-123"},
+        },
+    )
+
+    assert (
+        "config" not in prepared
+        or getattr(prepared["config"], "system_instruction", None) is None
+    )
