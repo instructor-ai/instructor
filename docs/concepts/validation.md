@@ -212,14 +212,14 @@ Handle validation failures with appropriate error types:
 
 ```python
 import instructor
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 
 class User(BaseModel):
     name: str
     age: int
 
-    @field_validator('age')
+    @field_validator("age")
     @classmethod
     def validate_age(cls, v):
         if v < 0:

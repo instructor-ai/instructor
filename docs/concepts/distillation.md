@@ -161,7 +161,7 @@ For RAW format, the output would look like:
     "fn_repr": "def fn(a: int, b: int) -> Multiply:\n    ...",
     "args": [133],
     "kwargs": {"b": 539},
-    "response": {"a": 133, "b": 539, "result": 89509}
+    "response": {"a": 133, "b": 539, "result": 89509},
 }
 ```
 
