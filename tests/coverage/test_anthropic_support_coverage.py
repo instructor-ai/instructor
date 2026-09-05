@@ -98,6 +98,9 @@ def test_anthropic_factory_validates_mode_and_client() -> None:
 async def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from instructor.v2.core.mode import reset_deprecated_mode_warnings
+
+    reset_deprecated_mode_warnings()
     regular_sync = lambda **_kwargs: {"source": "sync"}
     beta_sync = lambda **_kwargs: {"source": "beta"}
 
