@@ -43,6 +43,7 @@ def test_sync_client_rejects_nested_async_validators_before_request() -> None:
 
 def test_validation_lazy_helpers_match_direct_exports() -> None:
     from instructor.v2 import validation
+    from instructor.v2.core.validators import Validator
     from instructor.v2.validation.llm_validators import (
         llm_validator,
         openai_moderation,
@@ -50,6 +51,7 @@ def test_validation_lazy_helpers_match_direct_exports() -> None:
 
     assert validation.llm_validator is llm_validator
     assert validation.openai_moderation is openai_moderation
+    assert validation.__getattr__("Validator") is Validator
 
 
 @pytest.mark.asyncio
