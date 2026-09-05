@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **GenAI request configuration**: Preserve caller-owned `generation_config` dictionaries when preparing tools and JSON requests, so repeated requests retain their sampling settings and token limits.
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed
