@@ -254,6 +254,9 @@ def retry_sync_v2(
         TokenBudgetExceeded: If a failed attempt exhausts the retry budget
         TokenUsageUnavailableError: If a retry budget cannot be enforced
     """
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     _validate_token_budget(
         token_budget,
         response_model=response_model,
@@ -547,6 +550,9 @@ async def retry_async_v2(
         TokenBudgetExceeded: If a failed attempt exhausts the retry budget
         TokenUsageUnavailableError: If a retry budget cannot be enforced
     """
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     _validate_token_budget(
         token_budget,
         response_model=response_model,

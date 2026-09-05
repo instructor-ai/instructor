@@ -189,6 +189,119 @@ def make_cache_key(
     return hashlib.sha256(data.encode()).hexdigest()
 
 
+def client_cache_identity(func: Any) -> dict[str, Any]:
+    """Snapshot mutable SDK endpoint and authentication settings on each call.
+
+    Provider adapters may wrap the SDK in a closure instead of passing a bound
+    method. Inspect those captured clients too. Values are only used in the
+    hashed identity, never persisted as plaintext or logged.
+    """
+    from inspect import isfunction
+
+    settings = (
+        "base_url",
+        "_base_url",
+        "api_key",
+        "_api_key",
+        "auth_token",
+        "_token",
+        "organization",
+        "project",
+        "location",
+        "vertexai",
+        "_http_options",
+        "_custom_headers",
+        "_custom_query",
+        "_headers",
+        "_auth",
+        "_azure_ad_token",
+        "_azure_ad_token_provider",
+        "_credentials",
+    )
+    children = (
+        "_client",
+        "_api_client",
+        "_client_wrapper",
+        "_raw_client",
+        "httpx_client",
+        "_httpx_client",
+        "_async_httpx_client",
+    )
+    seen: set[int] = set()
+
+    def snapshot(obj: Any) -> dict[str, Any]:
+        if obj is None or id(obj) in seen:
+            return {}
+        seen.add(id(obj))
+        result = {}
+        for name in settings:
+            if hasattr(obj, name):
+                value = getattr(obj, name)
+                if name in {"base_url", "_base_url"} and value is not None:
+                    value = str(value)
+                elif name == "_headers" and hasattr(value, "multi_items"):
+                    value = value.multi_items()
+                result[name] = value
+        for name in children:
+            child = getattr(obj, name, None)
+            if child is not None:
+                result[name] = snapshot(child)
+        return result
+
+    identity = {"bound": snapshot(getattr(func, "__self__", None))}
+    if isfunction(func) and func.__closure__:
+        identity["captured"] = {
+            str(index): snapshot(cell.cell_contents)
+            for index, cell in enumerate(func.__closure__)
+        }
+    return identity
+
+
+def make_request_cache_key(
+    *,
+    request: dict[str, Any],
+    args: tuple[Any, ...],
+    response_model: type[BaseModel],
+    provider: str,
+    mode: str,
+    namespace: str,
+    context: dict[str, Any] | None,
+    strict: bool | None,
+    client_identity: dict[str, Any] | None = None,
+) -> str | None:
+    """Hash the complete prepared request and validation policy.
+
+    Unsupported values disable caching rather than risk ambiguous string keys.
+    Namespaces default to a unique client scope; an explicit cache_namespace
+    opts into sharing between clients and must identify the endpoint and tenant.
+    """
+
+    def encode(value: Any) -> Any:
+        if isinstance(value, BaseModel):
+            return value.model_dump(mode="json")
+        if isinstance(value, type) and issubclass(value, BaseModel):
+            return value.model_json_schema()
+        raise TypeError(f"Unsupported cache identity value: {type(value).__name__}")
+
+    try:
+        payload = {
+            "version": 2,
+            "client": client_identity,
+            "request": request,
+            "args": args,
+            "schema": response_model.model_json_schema(),
+            "provider": provider,
+            "mode": mode,
+            "namespace": namespace,
+            "context": context,
+            "strict": strict,
+        }
+        data = json.dumps(payload, sort_keys=True, default=encode, allow_nan=False)
+    except (TypeError, ValueError, AttributeError, RecursionError):
+        return None
+    return hashlib.sha256(data.encode()).hexdigest()
+
+
 # -------------------------------------------------------------------------
 # Convenience helpers used by patch.py to avoid duplication
 # -------------------------------------------------------------------------
@@ -196,8 +309,18 @@ def make_cache_key(
 logger = logging.getLogger("instructor.cache")
 
 
-def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseModel]):  # noqa: ANN201
+def load_cached_response(
+    cache: BaseCache,
+    key: str,
+    response_model: type[BaseModel],
+    *,
+    context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+):  # noqa: ANN201
     """Return parsed model if *key* exists in *cache* else None."""
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     cached = cache.get(key)
     if cached is None:
         return None
@@ -211,7 +334,7 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
         model_json = cached
         raw_json = None
 
-    obj = response_model.model_validate_json(model_json)
+    obj = response_model.model_validate_json(model_json, context=context, strict=strict)
     if raw_json is not None:
         # `_raw_response` is an internal attribute used by Instructor; it may not
         # be declared on the Pydantic model type.

@@ -9,6 +9,10 @@ from typing import Any
 from urllib.parse import urljoin, urlsplit
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.connection import HTTPConnection, HTTPSConnection
+from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
+from urllib3.exceptions import NewConnectionError
 
 MAX_IMAGE_BYTES = 20 * 1024 * 1024
 MAX_AUDIO_BYTES = 25 * 1024 * 1024
@@ -117,10 +121,72 @@ def _validate_connected_peer(response: requests.Response) -> None:
     _validate_public_address(address)
 
 
+class _PublicHTTPConnection(HTTPConnection):
+    def _new_conn(self) -> socket.socket:
+        """Resolve once, check every address, then connect to an exact sockaddr.
+
+        Keep the connection's host unchanged for Host, SNI and certificate
+        verification. Every new socket (including reconnects) uses this policy.
+        """
+        try:
+            addresses = socket.getaddrinfo(
+                self.host, self.port, type=socket.SOCK_STREAM
+            )
+            if not addresses:
+                raise OSError("No addresses returned")
+            for _, _, _, _, address in addresses:
+                _validate_public_address(str(address[0]))
+
+            last_error: OSError | None = None
+            for family, socktype, proto, _, address in addresses:
+                sock = socket.socket(family, socktype, proto)
+                try:
+                    if isinstance(self.timeout, (int, float)) or self.timeout is None:
+                        sock.settimeout(self.timeout)
+                    for option in self.socket_options or []:
+                        sock.setsockopt(*option)
+                    if self.source_address:
+                        sock.bind(self.source_address)
+                    sock.connect(address)
+                    return sock
+                except OSError as exc:
+                    last_error = exc
+                    sock.close()
+            raise OSError("Unable to connect to a public media address") from last_error
+        except OSError as exc:
+            raise NewConnectionError(self, str(exc)) from exc
+
+
+class _PublicHTTPSConnection(_PublicHTTPConnection, HTTPSConnection):
+    """HTTPS keeps urllib3's TLS handling with the public-only socket factory."""
+
+
+class _PublicHTTPPool(HTTPConnectionPool):
+    ConnectionCls = _PublicHTTPConnection
+
+
+class _PublicHTTPSPool(HTTPSConnectionPool):
+    ConnectionCls = _PublicHTTPSConnection
+
+
+class _PublicHTTPAdapter(HTTPAdapter):
+    def init_poolmanager(
+        self, connections: int, maxsize: int, block: bool = False, **kwargs: Any
+    ) -> None:
+        super().init_poolmanager(connections, maxsize, block=block, **kwargs)
+        # Do not mutate urllib3's process-global pool-class map.
+        self.poolmanager.pool_classes_by_scheme = {
+            "http": _PublicHTTPPool,
+            "https": _PublicHTTPSPool,
+        }
+
+
 def _new_session() -> requests.Session:
     session = requests.Session()
     # Media URLs must not inherit user credentials or route through ambient proxies.
     session.trust_env = False
+    session.mount("http://", _PublicHTTPAdapter())
+    session.mount("https://", _PublicHTTPAdapter())
     session.headers["User-Agent"] = "instructor-remote-media/1"
     return session
 

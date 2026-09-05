@@ -6,6 +6,10 @@ import json
 from collections.abc import AsyncGenerator, Generator, Iterable
 
 
+MAX_JSON_EXTRACTION_CHARS = 1024 * 1024
+MAX_JSON_DEPTH = 128
+
+
 def extract_json_from_codeblock(content: str) -> str:
     """Extract the last JSON object- or array-like span from a text block.
 
@@ -15,62 +19,42 @@ def extract_json_from_codeblock(content: str) -> str:
     prompt and was referenced in the model's reasoning. Returning the first
     object allowed prompt-injection to hijack the parsed output.
     """
-    candidates: list[str] = []
-    search_index = 0
-    while search_index < len(content):
-        start_index = next(
-            (
-                index
-                for index in range(search_index, len(content))
-                if content[index] in "{["
-            ),
-            None,
-        )
-        if start_index is None:
-            break
-
-        start_char = content[start_index]
-
-        end_stack = ["}" if start_char == "{" else "]"]
-        in_string = False
-        escape_next = False
-
-        candidate_found = False
-        for end_index in range(start_index + 1, len(content)):
-            char = content[end_index]
-
-            if escape_next:
-                escape_next = False
-            elif char == "\\" and in_string:
-                escape_next = True
-            elif char == '"':
-                in_string = not in_string
-
-            if in_string:
-                continue
-
-            if char in "{[":
-                end_stack.append("}" if char == "{" else "]")
-                continue
-            if end_stack and char == end_stack[-1]:
-                end_stack.pop()
-                if not end_stack:
-                    candidate = content[start_index : end_index + 1]
-                    try:
-                        json.loads(candidate)
-                    except Exception:
-                        break
-                    candidates.append(candidate)
-                    search_index = end_index + 1
-                    candidate_found = True
-                    break
-
-        if not candidate_found:
-            search_index = start_index + 1
-
-    if candidates:
-        return candidates[-1]
-    return content
+    if len(content) > MAX_JSON_EXTRACTION_CHARS:
+        raise ValueError("JSON extraction input exceeds the 1 MiB character limit")
+    decoder = json.JSONDecoder()
+    last_valid: str | None = None
+    consumed = 0
+    # A failed decode may inspect the entire remaining suffix (including an
+    # unterminated string). Charge that upper bound, not the error position.
+    # Successful spans are disjoint. This bounds total decoding work linearly
+    # while retaining recovery after malformed brackets or quoted prose.
+    remaining_work = 16 * len(content)
+    for index, char in enumerate(content):
+        if index < consumed or char not in "{[":
+            continue
+        if remaining_work < len(content) - index:
+            raise ValueError("JSON extraction malformed-input work limit exceeded")
+        try:
+            value, end = decoder.raw_decode(content, index)
+        except json.JSONDecodeError:
+            remaining_work -= len(content) - index
+            continue
+        except RecursionError as exc:
+            raise ValueError("JSON extraction nesting limit exceeded") from exc
+        pending = [(value, 1)]
+        while pending:
+            node, depth = pending.pop()
+            if isinstance(node, (dict, list)):
+                if depth > MAX_JSON_DEPTH:
+                    raise ValueError(
+                        "JSON extraction nesting exceeds the 128 level limit"
+                    )
+                children = node.values() if isinstance(node, dict) else node
+                pending.extend((child, depth + 1) for child in children)
+        remaining_work -= end - index
+        last_valid = content[index:end]
+        consumed = end
+    return last_valid if last_valid is not None else content
 
 
 def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None]:

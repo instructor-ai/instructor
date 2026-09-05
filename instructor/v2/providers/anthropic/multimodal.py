@@ -5,7 +5,7 @@ from __future__ import annotations
 import base64
 from typing import Any
 
-import requests
+from instructor.v2.core.remote import MAX_PDF_BYTES, fetch_remote_content
 
 
 def image_to_anthropic(image: Any) -> dict[str, Any]:
@@ -33,8 +33,8 @@ def pdf_to_anthropic(pdf: Any) -> dict[str, Any]:
     ):
         return {"type": "document", "source": {"type": "url", "url": pdf.source}}
     if not pdf.data:
-        pdf.data = requests.get(str(pdf.source), timeout=30).content
-        pdf.data = base64.b64encode(pdf.data).decode("utf-8")
+        response = fetch_remote_content(str(pdf.source), max_bytes=MAX_PDF_BYTES)
+        pdf.data = base64.b64encode(response.content).decode("utf-8")
     return {
         "type": "document",
         "source": {

@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import logging
 import warnings
+from uuid import uuid4
+
+from instructor.v2.validation.async_validators import reject_async_validators
 from collections.abc import Awaitable
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
@@ -189,6 +192,7 @@ def _create_sync_wrapper(
     default_model: str | None = None,
 ) -> Callable[..., T_Model]:
     """Create synchronous wrapper for patched function."""
+    cache_scope = uuid4().hex
 
     @wraps(func)
     def new_create_sync(
@@ -202,6 +206,7 @@ def _create_sync_wrapper(
         **kwargs: Any,
     ) -> T_Model:
         """Patched synchronous create function."""
+        reject_async_validators(response_model)
         _validate_token_budget(
             token_budget,
             response_model=response_model,
@@ -209,6 +214,9 @@ def _create_sync_wrapper(
         )
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
+        cache_namespace = kwargs.pop("cache_namespace", cache_scope)
+        if not isinstance(cache_namespace, str):
+            raise TypeError("cache_namespace must be a string")
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
         cache_ttl = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
 
@@ -243,27 +251,37 @@ def _create_sync_wrapper(
             context=context,
         )
 
-        # Attempt cache lookup before retry layer
+        # Compute identity once, before retries can mutate the prepared request.
+        key = None
         if cache is not None and response_model is not None:
-            from instructor.cache import BaseCache, make_cache_key, load_cached_response
+            from instructor.cache import (
+                BaseCache,
+                make_request_cache_key,
+                client_cache_identity,
+                load_cached_response,
+            )
 
             if isinstance(cache, BaseCache):
-                key = make_cache_key(
-                    messages=new_kwargs.get("messages")
-                    or new_kwargs.get("contents")
-                    or new_kwargs.get("chat_history"),
-                    model=new_kwargs.get("model"),
+                key = make_request_cache_key(
+                    client_identity=client_cache_identity(func),
+                    request=new_kwargs,
+                    args=args,
                     response_model=response_model,
+                    provider=provider.value,
                     mode=str(mode.value),
-                    system=new_kwargs.get("system"),
+                    namespace=cache_namespace,
+                    context=context,
+                    strict=strict,
                 )
-                cached = load_cached_response(cache, key, response_model)
-                if cached is not None:
-                    return cached  # type: ignore[return-value]
+                if key is not None:
+                    cached = load_cached_response(
+                        cache, key, response_model, context=context, strict=strict
+                    )
+                    if cached is not None:
+                        return cached  # type: ignore[return-value]
 
         # Use v2 retry logic with registry handlers. Pass an isolated copy of the
-        # messages list so reask-handler mutations during the retry loop can't leak
-        # back into new_kwargs, which is read again below for the cache store key.
+        # messages list so reask-handler mutations cannot leak into caller state.
         response = retry_sync_v2(
             func=func,
             response_model=response_model,
@@ -278,29 +296,10 @@ def _create_sync_wrapper(
             token_budget=token_budget,
         )
 
-        # Store in cache after successful call
-        if cache is not None and response_model is not None:
-            try:
-                from instructor.cache import (
-                    BaseCache,
-                    make_cache_key,
-                    store_cached_response,
-                )
-                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
+        if key is not None and isinstance(response, BaseModel):
+            from instructor.cache import store_cached_response
 
-                if isinstance(cache, BaseCache) and isinstance(response, _BM):
-                    key = make_cache_key(
-                        messages=new_kwargs.get("messages")
-                        or new_kwargs.get("contents")
-                        or new_kwargs.get("chat_history"),
-                        model=new_kwargs.get("model"),
-                        response_model=response_model,
-                        mode=str(mode.value),
-                        system=new_kwargs.get("system"),
-                    )
-                    store_cached_response(cache, key, response, ttl=cache_ttl)
-            except ModuleNotFoundError:
-                pass
+            store_cached_response(cache, key, response, ttl=cache_ttl)
 
         return response  # type: ignore[return-value]
 
@@ -314,6 +313,7 @@ def _create_async_wrapper(
     default_model: str | None = None,
 ) -> Callable[..., Awaitable[T_Model]]:
     """Create asynchronous wrapper for patched function."""
+    cache_scope = uuid4().hex
 
     @wraps(func)
     async def new_create_async(
@@ -327,6 +327,7 @@ def _create_async_wrapper(
         **kwargs: Any,
     ) -> T_Model:
         """Patched asynchronous create function."""
+        reject_async_validators(response_model)
         _validate_token_budget(
             token_budget,
             response_model=response_model,
@@ -334,6 +335,9 @@ def _create_async_wrapper(
         )
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
+        cache_namespace = kwargs.pop("cache_namespace", cache_scope)
+        if not isinstance(cache_namespace, str):
+            raise TypeError("cache_namespace must be a string")
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
         cache_ttl = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
 
@@ -368,27 +372,37 @@ def _create_async_wrapper(
             context=context,
         )
 
-        # Attempt cache lookup before retry layer
+        # Compute identity once, before retries can mutate the prepared request.
+        key = None
         if cache is not None and response_model is not None:
-            from instructor.cache import BaseCache, make_cache_key, load_cached_response
+            from instructor.cache import (
+                BaseCache,
+                make_request_cache_key,
+                client_cache_identity,
+                load_cached_response,
+            )
 
             if isinstance(cache, BaseCache):
-                key = make_cache_key(
-                    messages=new_kwargs.get("messages")
-                    or new_kwargs.get("contents")
-                    or new_kwargs.get("chat_history"),
-                    model=new_kwargs.get("model"),
+                key = make_request_cache_key(
+                    client_identity=client_cache_identity(func),
+                    request=new_kwargs,
+                    args=args,
                     response_model=response_model,
+                    provider=provider.value,
                     mode=str(mode.value),
-                    system=new_kwargs.get("system"),
+                    namespace=cache_namespace,
+                    context=context,
+                    strict=strict,
                 )
-                cached = load_cached_response(cache, key, response_model)
-                if cached is not None:
-                    return cached  # type: ignore[return-value]
+                if key is not None:
+                    cached = load_cached_response(
+                        cache, key, response_model, context=context, strict=strict
+                    )
+                    if cached is not None:
+                        return cached  # type: ignore[return-value]
 
         # Use v2 retry logic with registry handlers. Pass an isolated copy of the
-        # messages list so reask-handler mutations during the retry loop can't leak
-        # back into new_kwargs, which is read again below for the cache store key.
+        # messages list so reask-handler mutations cannot leak into caller state.
         response = await retry_async_v2(
             func=func,
             response_model=response_model,
@@ -403,29 +417,10 @@ def _create_async_wrapper(
             token_budget=token_budget,
         )
 
-        # Store in cache after successful call
-        if cache is not None and response_model is not None:
-            try:
-                from instructor.cache import (
-                    BaseCache,
-                    make_cache_key,
-                    store_cached_response,
-                )
-                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
+        if key is not None and isinstance(response, BaseModel):
+            from instructor.cache import store_cached_response
 
-                if isinstance(cache, BaseCache) and isinstance(response, _BM):
-                    key = make_cache_key(
-                        messages=new_kwargs.get("messages")
-                        or new_kwargs.get("contents")
-                        or new_kwargs.get("chat_history"),
-                        model=new_kwargs.get("model"),
-                        response_model=response_model,
-                        mode=str(mode.value),
-                        system=new_kwargs.get("system"),
-                    )
-                    store_cached_response(cache, key, response, ttl=cache_ttl)
-            except ModuleNotFoundError:
-                pass
+            store_cached_response(cache, key, response, ttl=cache_ttl)
 
         return response  # type: ignore[return-value]
 

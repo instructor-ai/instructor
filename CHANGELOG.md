@@ -9,6 +9,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+- Route Anthropic PDF downloads through the bounded public-network fetcher and pin each media connection to a validated IP before sending HTTP.
+- Key cached responses by the complete prepared request, provider, validation context and strictness. Clients have isolated cache namespaces by default; `cache_namespace` explicitly enables sharing and must identify the endpoint and tenant. Revalidate cache hits with the current context and strictness.
+- Reject response models containing unsupported async-validator markers, including nested models, instead of silently skipping their policy checks.
+- Bound JSON extraction to 1 MiB of characters and 128 nesting levels, and avoid repeatedly scanning malformed suffixes.
+
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed

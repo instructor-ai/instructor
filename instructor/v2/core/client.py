@@ -546,6 +546,9 @@ class Instructor:
         token_budget: int | None = None,
         **kwargs: Any,
     ) -> T | Any | Awaitable[T] | Awaitable[Any]:
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
         if token_budget is not None:
             kwargs["token_budget"] = token_budget
@@ -601,6 +604,9 @@ class Instructor:
     ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
         kwargs["stream"] = True
 
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
 
         # Combine client hooks with per-call hooks
@@ -654,6 +660,9 @@ class Instructor:
         **kwargs: Any,
     ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
         kwargs["stream"] = True
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
 
         # Combine client hooks with per-call hooks
@@ -706,6 +715,9 @@ class Instructor:
         hooks: Hooks | None = None,
         **kwargs: Any,
     ) -> tuple[T, Any] | Awaitable[tuple[T, Any]]:
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
 
         # Combine client hooks with per-call hooks
@@ -789,6 +801,9 @@ class AsyncInstructor(Instructor):
         token_budget: int | None = None,
         **kwargs: Any,
     ) -> T | Any:
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
         if token_budget is not None:
             kwargs["token_budget"] = token_budget
@@ -835,6 +850,9 @@ class AsyncInstructor(Instructor):
         hooks: Hooks | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[T, None]:
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
 
@@ -864,6 +882,9 @@ class AsyncInstructor(Instructor):
         hooks: Hooks | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[T, None]:
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
 
@@ -894,6 +915,9 @@ class AsyncInstructor(Instructor):
         hooks: Hooks | None = None,
         **kwargs: Any,
     ) -> tuple[T, Any]:
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(response_model)
         kwargs = self.handle_kwargs(kwargs)
 
         # Combine client hooks with per-call hooks
