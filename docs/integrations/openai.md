@@ -5,9 +5,12 @@ description: "Learn how to use Instructor with OpenAI's models for type-safe, st
 
 # Structured outputs with OpenAI, a complete guide with instructor
 
-OpenAI is the primary integration for Instructor, offering robust support for structured outputs with GPT-3.5, GPT-4, and future models. This guide covers everything you need to know about using OpenAI with Instructor for type-safe, validated responses.
+These examples use [GPT-5.6 Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna). Chat Completions tool calls require `reasoning_effort="none"`; use the Responses API when you need reasoning with tools. For Chat Completions output limits, use `max_completion_tokens`, not `max_tokens`.
 
 ## Quick Start
+
+See [current provider model IDs](model-selection.md) for other integrations and
+the distinction between current examples and compatibility tests.
 
 Instructor comes with support for OpenAI out of the box, so you don't need to install anything extra.
 
@@ -29,7 +32,7 @@ export OPENAI_API_KEY='your-api-key-here'
 import instructor
 
 client = instructor.from_provider(
-    "openai/gpt-5-nano",
+    "openai/gpt-5.6-luna",
     api_key='your-api-key-here',
 )
 ```
@@ -79,11 +82,13 @@ import instructor
 from pydantic import BaseModel
 
 # Initialize client using provider string
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-5.6-luna")
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create structured output
 user = client.create(
@@ -91,6 +96,7 @@ user = client.create(
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
     response_model=User,
+    reasoning_effort="none",
 )
 
 print(user)
@@ -105,11 +111,13 @@ from pydantic import BaseModel
 import asyncio
 
 # Initialize async client using provider string
-client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+client = instructor.from_provider("openai/gpt-5.6-luna", async_client=True)
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 async def extract_user():
     user = await client.create(
@@ -117,8 +125,10 @@ async def extract_user():
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
         response_model=User,
+        reasoning_effort="none",
     )
     return user
+
 
 # Run async function
 user = asyncio.run(extract_user())
@@ -142,7 +152,7 @@ class SupportTicket(BaseModel):
 
 
 client = instructor.from_provider(
-    "openai/gpt-4.1-mini",
+    "openai/gpt-5.6-luna",
     mode=instructor.Mode.RESPONSES_TOOLS,
     async_client=True,
 )
@@ -172,35 +182,41 @@ See the [OpenAI Responses API guide](./openai-responses.md) for a deeper walkthr
 from pydantic import BaseModel
 from typing import List
 import os
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
+
 
 class Address(BaseModel):
     street: str
     city: str
     country: str
 
+
 class User(BaseModel):
     name: str
     age: int
     addresses: List[Address]
 
+
 # Initialize client
 client = instructor.from_provider(
-    "openai/gpt-5-nano",
+    "openai/gpt-5.6-luna",
     api_key=os.getenv('OPENAI_API_KEY'),
 )
 # Create structured output with nested objects
 user = client.create(
     messages=[
-        {"role": "user", "content": """
+        {
+            "role": "user",
+            "content": """
             Extract: Jason is 25 years old.
             He lives at 123 Main St, New York, USA
             and has a summer house at 456 Beach Rd, Miami, USA
-        """},
+        """,
+        },
     ],
     response_model=User,
+    reasoning_effort="none",
 )
 
 print(user)
@@ -250,7 +266,6 @@ Note that we support local files and base64 strings too with the `from_path` and
 from instructor.processing.multimodal import Image
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
 
 
 class ImageDescription(BaseModel):
@@ -259,11 +274,12 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-5.6-luna")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.create(
     response_model=ImageDescription,
+    reasoning_effort="none",
     messages=[
         {
             "role": "user",
@@ -301,9 +317,8 @@ Note that we support local files and base64 strings too with the `from_path` and
 
 ```python
 from instructor.processing.multimodal import PDF
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import instructor
-from openai import OpenAI
 
 
 class Receipt(BaseModel):
@@ -311,11 +326,12 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-5.6-luna")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.create(
     response_model=Receipt,
+    reasoning_effort="none",
     messages=[
         {
             "role": "user",
@@ -335,17 +351,14 @@ response = client.create(
 )
 
 print(response)
-# > Receipt(total=220, items=['English Tea', 'Tofu'])
+#> Receipt(total=220, items=['English Tea', 'Tofu'])
 ```
 
 ### Audio
 
-Instructor makes it easy to analyse and extract semantic information from Audio files using OpenAI's GPT-4o models. Let's see an example below with the sample Audio file above where we'll load it in using our `from_url` method.
-
-Note that we support local files and base64 strings too with the `from_path`
+Luna does not accept audio input. First transcribe a local recording with [GPT-4o Transcribe](https://developers.openai.com/api/docs/models/gpt-4o-transcribe), then extract structured data from its text.
 
 ```python
-from instructor.processing.multimodal import Audio
 from pydantic import BaseModel
 import instructor
 from openai import OpenAI
@@ -358,30 +371,27 @@ class AudioDescription(BaseModel):
     key_points: list[str]
 
 
-url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+sdk = OpenAI()
+with open("recording.wav", "rb") as audio_file:
+    transcription = sdk.audio.transcriptions.create(
+        model="gpt-4o-transcribe", file=audio_file
+    )
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-5.6-luna")
 
 response = client.create(
     response_model=AudioDescription,
-    modalities=["text"],
-    audio={"voice": "alloy", "format": "wav"},
+    reasoning_effort="none",
     messages=[
         {
             "role": "user",
-            "content": [
-                "Please transcribe and analyze this audio:",
-                # Multiple loading options:
-                Audio.from_url(url),
-                # Option 2: Local file
-                # Audio.from_path("path/to/local/audio.mp3")
-            ],
+            "content": transcription.text,
         },
     ],
 )
 
 print(response)
-# > transcript='Four score and seven years ago our fathers..."]
+#> transcript='Four score and seven years ago our fathers..."]
 ```
 
 ## Streaming Support
@@ -396,7 +406,7 @@ Instructor has two main ways that you can use to stream responses out
 ```python
 from pydantic import BaseModel
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-5.6-luna")
 
 
 class User(BaseModel):
@@ -410,42 +420,45 @@ user = client.create_partial(
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
     response_model=User,
+    reasoning_effort="none",
 )
 
 for user_partial in user:
     print(user_partial)
 
-# > name='Jason' age=None bio='None'
-# > name='Jason' age=25 bio='A tech'
-# > name='Jason' age=25 bio='A tech enthusiast'
-# > name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new'
-# > name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new technologies'
-
+#> name='Jason' age=None bio='None'
+#> name='Jason' age=25 bio='A tech'
+#> name='Jason' age=25 bio='A tech enthusiast'
+#> name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new'
+#> name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new technologies'
 ```
 
 ### Iterable Example
 
 ```python
-import os
-from openai import OpenAI
-import instructor
 from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 # Extract multiple users from text
 users = client.create_iterable(
     messages=[
-        {"role": "user", "content": """
+        {
+            "role": "user",
+            "content": """
             Extract users:
             1. Jason is 25 years old
             2. Sarah is 30 years old
             3. Mike is 28 years old
-        """},
+        """,
+        },
     ],
     response_model=User,
+    reasoning_effort="none",
 )
 
 for user in users:
@@ -479,7 +492,7 @@ Read more about how to use it [here](../examples/batch_job_oai.md)
 
 ## Best Practices
 
-1. **Model Selection** : We recommend using gpt-4o-mini for simpler use cases because it's cheap and works well with a clearly defined objective for structured outputs. When the task is more ambiguous, consider upgrading to `4o` or even `O1` depending on your needs
+1. **Model Selection**: These examples use `gpt-5.6-luna`. Evaluate extraction accuracy and latency on your own data before choosing a model for production.
 
 2. **Performance Optimization** : Streaming a response model is faster and should be done from the get-go. This is especially true if you're using a simple response model.
 

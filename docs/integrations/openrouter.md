@@ -20,7 +20,6 @@ Instructor works with OpenRouter through the OpenAI client, so you don't need to
 We support simple tool calling with this
 
 ```python
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
@@ -31,9 +30,9 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "openrouter/google/gemini-2.0-flash-lite-001",
+    "openrouter/google/gemini-3.8-flash",
     base_url="https://openrouter.ai/api/v1",
-    async_client=False
+    async_client=False,
 )
 
 resp = client.create(
@@ -65,7 +64,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "openrouter/google/gemini-2.0-flash-lite-001",
+    "openrouter/google/gemini-3.8-flash",
     async_client=True,
 )
 
@@ -90,7 +89,6 @@ print(user)
 
 ```python
 from pydantic import BaseModel
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
@@ -110,9 +108,9 @@ class User(BaseModel):
 # Initialize with API key
 # Initialize client with base URL
 client = instructor.from_provider(
-    "openrouter/google/gemini-2.0-flash-lite-001",
+    "openrouter/google/gemini-3.8-flash",
     base_url="https://openrouter.ai/api/v1",
-    async_client=False
+    async_client=False,
 )
 
 # Create structured output with nested objects
@@ -143,7 +141,6 @@ Instructor also supports Structured Outputs with OpenRouter as documented in the
 
 ```python
 from pydantic import BaseModel, Field
-from openai import OpenAI
 import instructor
 
 
@@ -158,9 +155,9 @@ class User(BaseModel):
 # Initialize with API key
 # Initialize client with base URL
 client = instructor.from_provider(
-    "openrouter/google/gemini-2.0-flash-lite-001",
+    "openrouter/google/gemini-3.8-flash",
     base_url="https://openrouter.ai/api/v1",
-    async_client=False
+    async_client=False,
 )
 
 # Create structured output with nested objects
@@ -178,7 +175,7 @@ user = client.create(
 )
 
 print(user)
-# > name='Jason' age=25 phone_number='+1 (212) 456-7890'
+#> name='Jason' age=25 phone_number='+1 (212) 456-7890'
 ```
 
 ## JSON Mode
@@ -191,7 +188,6 @@ In this case, we recommend using the `JSON` mode instead as seen below.
 
 ```python
 from pydantic import BaseModel, Field
-from openai import OpenAI
 import instructor
 
 
@@ -206,9 +202,9 @@ class User(BaseModel):
 # Initialize with API key
 # Initialize client with base URL
 client = instructor.from_provider(
-    "openrouter/google/gemini-2.0-flash-lite-001",
+    "openrouter/google/gemini-3.8-flash",
     base_url="https://openrouter.ai/api/v1",
-    async_client=False
+    async_client=False,
 )
 
 # Create structured output with nested objects
@@ -232,8 +228,7 @@ print(user)
 You can also use streaming with as seen below using the `create_partial` method. While we're using JSON mode here, this should work with tool calling and structured outputs too.
 
 ```python
-from pydantic import BaseModel, Field
-from openai import OpenAI
+from pydantic import BaseModel
 import instructor
 
 
@@ -245,7 +240,7 @@ class User(BaseModel):
 # Initialize with API key
 # Initialize client with base URL
 client = instructor.from_provider(
-    "openrouter/google/gemini-2.0-flash-lite-001",
+    "openrouter/google/gemini-3.8-flash",
     base_url="https://openrouter.ai/api/v1",
 )
 
@@ -264,7 +259,7 @@ user = client.create_partial(
 
 for chunk in user:
     print(chunk)
-    # > name=None age=None
-    # > name='Jason' age=None
-    # > name='Jason' age=25
+    #> name=None age=None
+    #> name='Jason' age=None
+    #> name='Jason' age=25
 ```

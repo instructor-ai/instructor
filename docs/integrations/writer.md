@@ -22,11 +22,10 @@ Writer supports structured outputs with their latest Palmyra-X-004 model that in
 
 ```python
 import instructor
-from writerai import Writer
 from pydantic import BaseModel
 
 # Initialize Writer client
-client = instructor.from_provider("writer/palmyra-x-004")
+client = instructor.from_provider("writer/palmyra-x5")
 
 
 class User(BaseModel):
@@ -52,7 +51,7 @@ from pydantic import BaseModel
 import asyncio
 
 client = instructor.from_provider(
-    "writer/palmyra-x-004",
+    "writer/palmyra-x5",
     async_client=True,
 )
 
@@ -70,7 +69,7 @@ async def extract_user():
     )
 
     print(user)
-    # > name='John' age=30
+    #> name='John' age=30
 
 
 if __name__ == "__main__":
@@ -85,11 +84,10 @@ Writer also supports nested objects, which is useful for extracting data from mo
 
 ```python
 import instructor
-from writerai import Writer
 from pydantic import BaseModel
 
 # Initialize Writer client
-client = instructor.from_provider("writer/palmyra-x-004")
+client = instructor.from_provider("writer/palmyra-x5")
 
 
 class Address(BaseModel):
@@ -150,10 +148,9 @@ We currently support streaming for Writer with native tool for both methods list
 
 ```python
 import instructor
-from writerai import Writer
 from pydantic import BaseModel
 
-client = instructor.from_provider("writer/palmyra-x-004")
+client = instructor.from_provider("writer/palmyra-x5")
 
 
 class Person(BaseModel):
@@ -173,7 +170,7 @@ resp = client.create_partial(
 
 for person in resp:
     print(person)
-    # > name=None age=None
-    # > name='Ivan' age=None
-    # > name='Ivan' age=27
+    #> name=None age=None
+    #> name='Ivan' age=None
+    #> name='Ivan' age=27
 ```

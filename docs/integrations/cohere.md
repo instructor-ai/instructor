@@ -127,11 +127,12 @@ You can also explicitly create a Cohere client and patch it with Instructor:
 ### V2 API (Recommended)
 
 ```python
-import cohere
 import instructor
 
 # Use from_provider for simplified setup
-client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "cohere/command-a-03-2025", mode=instructor.Mode.TOOLS
+)
 
 # Now use it with structured outputs
 response = client.create(
@@ -146,16 +147,17 @@ response = client.create(
 The V1 API is still supported for backward compatibility:
 
 ```python
-import cohere
 import instructor
 
 # Use from_provider for simplified setup (works with both V1 and V2)
-client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "cohere/command-a-03-2025", mode=instructor.Mode.TOOLS
+)
 
 # V1 uses different message format internally but instructor handles the conversion
 response = client.create(
     response_model=YourModel,
-    model="command-r-plus",
+    model="command-a-03-2025",
     messages=[{"role": "user", "content": "Extract..."}],
 )
 ```

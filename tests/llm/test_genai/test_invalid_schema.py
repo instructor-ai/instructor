@@ -1,4 +1,3 @@
-import os
 import pytest
 from typing import Optional, Union
 
@@ -8,7 +7,7 @@ from .util import models, modes
 from itertools import product
 from instructor.v2.providers.gemini.utils import map_to_gemini_function_schema
 
-MODEL = os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro")
+MODEL = f"google/{models[0]}"
 
 
 @pytest.mark.parametrize("mode,model", product(modes, models))

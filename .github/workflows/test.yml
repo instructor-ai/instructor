@@ -324,6 +324,18 @@ jobs:
           WRITER_API_KEY: ${{ secrets.WRITER_API_KEY }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
 
+      - name: Check current documented model IDs
+        run: uv run --frozen pytest tests/llm/test_current_doc_models.py -v -rs --asyncio-mode=auto
+        env:
+          INSTRUCTOR_ENV: CI
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+
   # Provider tests run in parallel
   provider-tests:
     name: ${{ matrix.provider.name }} Tests
