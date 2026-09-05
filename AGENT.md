@@ -19,6 +19,7 @@
 - **Factory pattern**: `from_provider()` for automatic provider detection
 - **DSL**: `dsl/` directory with Partial, Iterable, Maybe, Citation extensions
 - **Key modules**: `patch.py` (patching), `process_response.py` (parsing), `function_calls.py` (schemas)
+- **GenAI cached content**: Shared configuration assembly in `v2/providers/gemini/utils.py` must omit cache-owned `system_instruction`, `tools`, and `tool_config` when `cached_content` is set. Regression tests use actual SDK configuration objects in `tests/v2/test_genai_cached_content.py`.
 
 ## Code Style
 - **Typing**: Strict type annotations, use `BaseModel` for structured outputs

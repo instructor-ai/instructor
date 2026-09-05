@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Gemini context caching**: Omit cache-owned system instructions, tools, and tool configuration from structured requests using cached content. ([#2580](https://github.com/567-labs/instructor/issues/2580))
+
 ## [1.16.1] - 2026-08-28
 
 ### Changed

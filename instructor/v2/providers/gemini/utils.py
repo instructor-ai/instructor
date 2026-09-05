@@ -315,6 +315,11 @@ def update_genai_kwargs(
             if field_value is not None and field not in base_config:
                 base_config[field] = field_value
 
+    if base_config.get("cached_content") is not None:
+        # These fields belong to the cache; Gemini rejects them on cached requests.
+        for field in ("system_instruction", "tools", "tool_config"):
+            base_config.pop(field, None)
+
     return base_config
 
 
