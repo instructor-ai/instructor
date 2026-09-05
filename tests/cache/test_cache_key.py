@@ -1,4 +1,6 @@
 from typing import Any
+from datetime import date, datetime
+from enum import Enum
 
 from instructor.cache import make_cache_key
 import pytest
@@ -9,6 +11,24 @@ messages = [
     {"role": "user", "content": "hello"},
 ]
 model_name = "gpt-4.1-mini"
+
+
+def test_cache_normalizes_models_schemas_and_enum_values():
+    class Settings(BaseModel):
+        seed: int
+
+    class Choice(Enum):
+        FIRST = "first"
+
+    def key(value):
+        return make_cache_key(messages=value, model=model_name, response_model=None)
+
+    assert key(Settings(seed=4)) == key({"seed": 4})
+    assert key(Settings) == key(Settings.model_json_schema())
+    assert key(Choice.FIRST) == key("first")
+    assert key(date(2026, 9, 4)) != key("2026-09-04")
+    assert key(datetime(2026, 9, 4)) != key("2026-09-04T00:00:00")
+    assert key(date(2026, 9, 4)) != key(datetime(2026, 9, 4))
 
 
 @pytest.mark.parametrize("field", ["temperature", "config", "inferenceConfig"])

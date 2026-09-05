@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 
 import instructor
@@ -9,6 +9,7 @@ from instructor.core.exceptions import ConfigurationError
 
 from instructor.v2.validation.async_validators import (
     async_field_validator,
+    async_model_validator,
     run_async_validators,
     model_declares_async_validators,
 )
@@ -24,6 +25,31 @@ class Ordered(BaseModel):
     @async_field_validator("value")
     async def suffix(cls, value: str) -> str:
         return value + ":suffix"
+
+
+def test_sync_client_rejects_nested_async_validators_before_request() -> None:
+    class Parent(BaseModel):
+        child: Ordered
+
+    with OpenAI(api_key="unused", base_url="http://localhost:1") as sdk:
+        client = instructor.from_openai(sdk)
+        with pytest.raises(ConfigurationError, match="async"):
+            client.create(
+                model="unused",
+                response_model=Parent,
+                messages=[{"role": "user", "content": "unused"}],
+            )
+
+
+def test_validation_lazy_helpers_match_direct_exports() -> None:
+    from instructor.v2 import validation
+    from instructor.v2.validation.llm_validators import (
+        llm_validator,
+        openai_moderation,
+    )
+
+    assert validation.llm_validator is llm_validator
+    assert validation.openai_moderation is openai_moderation
 
 
 @pytest.mark.asyncio
@@ -56,6 +82,49 @@ def test_recursive_model_without_validators_terminates() -> None:
 
     Node.model_rebuild()
     assert not model_declares_async_validators(Node)
+
+
+@pytest.mark.asyncio
+async def test_nested_container_transformations_preserve_original() -> None:
+    class Parent(BaseModel):
+        children: dict[str, tuple[Ordered, list[Ordered]]]
+
+    original = Parent(children={"group": (Ordered(value="a"), [Ordered(value="b")])})
+    result = await run_async_validators(original, context=None)
+    assert result.children["group"][0].value == "prefix:a:suffix"
+    assert result.children["group"][1][0].value == "prefix:b:suffix"
+    assert original.children["group"][0].value == "a"
+    assert original.children["group"][1][0].value == "b"
+
+
+@pytest.mark.asyncio
+async def test_model_validator_errors_are_reported() -> None:
+    from instructor.v2.core.errors import AsyncValidationError
+
+    class Rejected(BaseModel):
+        value: str
+
+        @async_model_validator()
+        async def reject(self) -> Rejected:
+            raise ValueError(f"Rejected {self.value}")
+
+    with pytest.raises(AsyncValidationError, match="Rejected x") as error:
+        await run_async_validators(Rejected(value="x"), context=None)
+    assert len(error.value.errors) == 1
+
+
+@pytest.mark.asyncio
+async def test_inherited_validator_for_subclass_field_is_ignored_on_base() -> None:
+    class Base(BaseModel):
+        @async_field_validator("value")
+        async def normalize(cls, value: str) -> str:
+            return value.strip()
+
+    class Child(Base):
+        value: str
+
+    assert await run_async_validators(Base(), context=None) == Base()
+    assert (await run_async_validators(Child(value=" x "), context=None)).value == "x"
 
 
 @pytest.mark.asyncio

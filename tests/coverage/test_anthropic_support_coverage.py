@@ -94,6 +94,11 @@ def test_anthropic_factory_validates_mode_and_client() -> None:
     client.close()
 
 
+@pytest.mark.parametrize("source", [None, object(), "x" * 5000])
+def test_unusable_local_pdf_sources_return_none(source: Any) -> None:
+    assert multimodal._read_local_pdf(source) is None
+
+
 @pytest.mark.asyncio
 async def test_anthropic_factory_uses_beta_sync_and_regular_async_create(
     monkeypatch: pytest.MonkeyPatch,
