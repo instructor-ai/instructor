@@ -205,6 +205,15 @@ def _create_sync_wrapper(
         **kwargs: Any,
     ) -> T_Model:
         """Patched synchronous create function."""
+        from instructor.v2.validation.async_validators import (
+            model_declares_async_validators,
+        )
+        from instructor.v2.core.errors import ConfigurationError
+
+        if model_declares_async_validators(response_model):
+            raise ConfigurationError(
+                "Response model declares async validators; use an async client"
+            )
         _validate_token_budget(
             token_budget,
             response_model=response_model,
@@ -332,6 +341,29 @@ def _create_async_wrapper(
         **kwargs: Any,
     ) -> T_Model:
         """Patched asynchronous create function."""
+        from instructor.v2.validation.async_validators import (
+            run_async_validators,
+            model_declares_async_validators,
+        )
+        from instructor.v2.core.errors import ConfigurationError
+        from instructor.v2.dsl.iterable import IterableBase
+        from instructor.v2.dsl.partial import PartialBase
+        from typing import get_origin
+
+        if model_declares_async_validators(response_model) and (
+            kwargs.get("stream")
+            or get_origin(response_model) is not None
+            or mode in Mode.parallel_modes()
+            or (
+                isinstance(response_model, type)
+                and issubclass(response_model, (IterableBase, PartialBase))
+            )
+        ):
+            raise ConfigurationError(
+                "Async validators require a non-streaming single response model; "
+                "streaming, partial, iterable and parallel responses are not supported"
+            )
+
         _validate_token_budget(
             token_budget,
             response_model=response_model,
@@ -397,11 +429,9 @@ def _create_async_wrapper(
                     cache, key, response_model, context=context, strict=strict
                 )
                 if cached is not None:
-                    return cached  # type: ignore[return-value]
+                    return await run_async_validators(cached, context=context)
 
-        # Use v2 retry logic with registry handlers. Pass an isolated copy of the
-        # messages list so reask-handler mutations during the retry loop can't leak
-        # back into new_kwargs, which is read again below for the cache store key.
+        # Keep attempt mutations separate from the original request.
         response = await retry_async_v2(
             func=func,
             response_model=response_model,

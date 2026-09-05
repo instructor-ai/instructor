@@ -2,14 +2,26 @@ from typing import Any
 
 import openai
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationInfo
 
 import instructor
 from instructor.cache import AutoCache
+from instructor.v2.validation.async_validators import async_field_validator
+from instructor.v2.core.errors import AsyncValidationError
 
 
 class Answer(BaseModel):
     value: int
+
+
+class ValidatedAnswer(BaseModel):
+    value: int
+
+    @async_field_validator("value")
+    async def limit(cls, value: int, info: ValidationInfo) -> int:
+        if value > info.context["limit"]:
+            raise ValueError("current async limit exceeded")
+        return value
 
 
 class CountingCache(AutoCache):
@@ -32,6 +44,20 @@ def request(cache: CountingCache) -> dict[str, Any]:
         "cache": cache,
         "temperature": 0,
     }
+
+
+@pytest.mark.asyncio
+async def test_live_cache_hit_revalidates_async_context() -> None:
+    cache = CountingCache()
+    async with openai.AsyncOpenAI() as sdk:
+        client = instructor.from_openai(sdk)
+        kwargs = request(cache)
+        kwargs["response_model"] = ValidatedAnswer
+        assert (await client.create(**kwargs, context={"limit": 100})).value == 42
+        assert cache.misses == 1
+        with pytest.raises(AsyncValidationError, match="current async limit"):
+            await client.create(**kwargs, context={"limit": 20})
+        assert cache.misses == 1
 
 
 def test_live_sync_cache_namespaces() -> None:
