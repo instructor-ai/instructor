@@ -194,6 +194,7 @@ async def test_async_validators_recurse_into_nested_models():
             hooks=None,
         )
 
+    assert exc_info.value.failed_attempts
     error = exc_info.value.failed_attempts[-1].exception
     assert isinstance(error, AsyncValidationError)
     assert "still-invalid" in str(error)
