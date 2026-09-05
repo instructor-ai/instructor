@@ -59,13 +59,15 @@ Now, whenever you call `client.chat.completions.create` the `model` and `tempera
 When I first started working on this project, my goal was to ensure that we weren't introducing any new standards. Instead, our focus was on maintaining compatibility with existing ones. By creating our own client, we can seamlessly proxy OpenAI's `chat.completions.create` and Anthropic's `messages.create` methods. This approach allows us to provide a smooth upgrade path for your client, enabling support for all the latest models and features as they become available. Additionally, this strategy safeguards us against potential downstream changes.
 
 ```python
-import openai
-import anthropic
 import litellm
 import instructor
-from typing import TypeVar
+from pydantic import BaseModel
 
-T = TypeVar("T")
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 # These are all ways to create a client
 client = instructor.from_provider("openai/gpt-5-nano")
@@ -74,9 +76,11 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
-client.create(model="gpt-5.4-mini", response_model=type[T]) -> T
-client.create(model="gpt-5.4-mini", response_model=type[T]) -> T
-client.messages.create(model="gpt-5.4-mini", response_model=type[T]) -> T
+user: User = client.create(
+    model="gpt-5.4-mini",
+    response_model=User,
+    messages=[{"role": "user", "content": "Jason is 25 years old"}],
+)
 ```
 
 ## Type are inferred correctly
