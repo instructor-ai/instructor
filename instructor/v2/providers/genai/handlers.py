@@ -159,7 +159,11 @@ class GenAIHandlerBase(ModeHandler):
         self.mode = mode
 
     def _clone_kwargs(self, kwargs: dict[str, Any]) -> dict[str, Any]:
-        return kwargs.copy()
+        new_kwargs = kwargs.copy()
+        generation_config = new_kwargs.get("generation_config")
+        if isinstance(generation_config, dict):
+            new_kwargs["generation_config"] = generation_config.copy()
+        return new_kwargs
 
     def _pop_autodetect_images(self, kwargs: dict[str, Any]) -> bool:
         return bool(kwargs.pop("autodetect_images", False))
