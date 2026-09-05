@@ -10,6 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
+- **GenAI cached content**: Omit conflicting system instructions and tool declarations after resolving cached-content configuration, including plain responses, and preserve caller-owned configuration. Consolidates [#2581](https://github.com/567-labs/instructor/pull/2581), [#2582](https://github.com/567-labs/instructor/pull/2582), and [#2591](https://github.com/567-labs/instructor/pull/2591) for [#2580](https://github.com/567-labs/instructor/issues/2580).
 - **GenAI request configuration**: Preserve caller-owned `generation_config` dictionaries when preparing tools and JSON requests, so repeated requests retain their sampling settings and token limits. ([#2596](https://github.com/567-labs/instructor/pull/2596))
 
 ## [1.16.1] - 2026-08-28

@@ -238,6 +238,7 @@ class GenAIHandlerBase(ModeHandler):
         for key in (
             "response_model",
             "generation_config",
+            "cached_content",
             "safety_settings",
             "thinking_config",
             "max_tokens",
@@ -262,10 +263,23 @@ class GenAIHandlerBase(ModeHandler):
 
         system_instruction = self._extract_system_instruction(kwargs)
         kwargs = self._convert_messages_to_contents(kwargs, autodetect_images)
-        if system_instruction:
-            kwargs["config"] = types.GenerateContentConfig(
-                system_instruction=system_instruction
-            )
+        user_config = kwargs.get("config")
+        if isinstance(user_config, dict):
+            config = user_config.copy()
+        elif user_config is not None:
+            config = user_config.model_dump(exclude_none=True)
+        else:
+            config = {}
+        cached_content = kwargs.pop("cached_content", None)
+        if config.get("cached_content") is None and cached_content is not None:
+            config["cached_content"] = cached_content
+        if config.get("cached_content") is not None:
+            for field in ("system_instruction", "tools", "tool_config"):
+                config.pop(field, None)
+        elif system_instruction:
+            config["system_instruction"] = system_instruction
+        if config:
+            kwargs["config"] = types.GenerateContentConfig(**config)
         return self._cleanup_provider_kwargs(kwargs)
 
     def prepare_request(
