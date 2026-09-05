@@ -196,7 +196,14 @@ def make_cache_key(
 logger = logging.getLogger("instructor.cache")
 
 
-def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseModel]):  # noqa: ANN201
+def load_cached_response(
+    cache: BaseCache,
+    key: str,
+    response_model: type[BaseModel],
+    *,
+    context: dict[str, Any] | None = None,
+    strict: bool | None = None,
+):  # noqa: ANN201
     """Return parsed model if *key* exists in *cache* else None."""
     cached = cache.get(key)
     if cached is None:
@@ -211,7 +218,7 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
         model_json = cached
         raw_json = None
 
-    obj = response_model.model_validate_json(model_json)
+    obj = response_model.model_validate_json(model_json, context=context, strict=strict)
     if raw_json is not None:
         # `_raw_response` is an internal attribute used by Instructor; it may not
         # be declared on the Pydantic model type.

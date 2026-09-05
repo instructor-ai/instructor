@@ -257,7 +257,9 @@ def _create_sync_wrapper(
                     mode=str(mode.value),
                     system=new_kwargs.get("system"),
                 )
-                cached = load_cached_response(cache, key, response_model)
+                cached = load_cached_response(
+                    cache, key, response_model, context=context, strict=strict
+                )
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
@@ -382,7 +384,9 @@ def _create_async_wrapper(
                     mode=str(mode.value),
                     system=new_kwargs.get("system"),
                 )
-                cached = load_cached_response(cache, key, response_model)
+                cached = load_cached_response(
+                    cache, key, response_model, context=context, strict=strict
+                )
                 if cached is not None:
                     return cached  # type: ignore[return-value]
 
