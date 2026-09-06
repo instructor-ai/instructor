@@ -10,7 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
-- **Partial streaming**: Preserve model instances inside nullable list fields while the response is incomplete, including sync/async streams and both Optional and union annotations.
+- **Partial streaming**: Preserve model instances inside nullable list fields while the response is incomplete, including sync/async streams and both Optional and union annotations. ([#2600](https://github.com/567-labs/instructor/pull/2600))
 
 ### Security
 - Route Anthropic PDF downloads through the bounded public-network fetcher and pin each media connection to a validated IP before sending HTTP.
