@@ -5,7 +5,6 @@ from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 
 import instructor
-from instructor.core.exceptions import ConfigurationError
 
 from instructor.v2.validation.async_validators import (
     async_field_validator,
@@ -33,7 +32,7 @@ def test_sync_client_rejects_nested_async_validators_before_request() -> None:
 
     with OpenAI(api_key="unused", base_url="http://localhost:1") as sdk:
         client = instructor.from_openai(sdk)
-        with pytest.raises(ConfigurationError, match="async"):
+        with pytest.raises(ValueError, match="async validators are not supported"):
             client.create(
                 model="unused",
                 response_model=Parent,
@@ -146,7 +145,7 @@ async def test_unsupported_async_workflows_fail_before_request(workflow: str) ->
             if workflow == "partial"
             else Ordered
         )
-        with pytest.raises(ConfigurationError, match="non-streaming single response"):
+        with pytest.raises(ValueError, match="async validators are not supported"):
             await client.create(
                 model="unused",
                 response_model=response_model,

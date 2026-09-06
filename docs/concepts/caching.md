@@ -27,11 +27,11 @@ namespace that identifies the endpoint, account or tenant, and application polic
 Never use credentials as namespace values or share one namespace between tenants.
 Change the namespace when switching endpoints, accounts, or validation policy.
 
-Provider identity and prepared generation settings also contribute to cache keys.
+Provider and SDK client identity, the complete prepared request, positional
+arguments, validation context, and strictness contribute to cache keys.
 Cached models are revalidated using the current call's context and strictness.
-Opaque request objects are rejected with a `TypeError` when a cache key cannot be
-constructed. Use serializable request settings or disable caching for that call;
-arbitrary object string representations are not reliable cache identities.
+If request objects cannot be serialized reliably, the built-in cache is bypassed
+for that call instead of reusing an ambiguous key.
 
 Instructor supports caching for every client. Pass a cache adapter when you create the client. The cache parameter flows through to all provider implementations via **kwargs:
 
@@ -93,8 +93,9 @@ parameter is ignored.
 
 ### Cache-key design
 
-Under the hood Instructor generates a **deterministic** key for every
- call using `instructor.cache.make_cache_key`.
+The built-in cache uses `instructor.cache.make_request_cache_key` for the complete
+prepared request. It includes client identity, namespace, validation context and
+strictness in addition to the components below. Unsupported values bypass caching.
 
 Components that influence the key:
 
@@ -105,8 +106,9 @@ Components that influence the key:
 | `mode`                      | JSON vs. TOOLS vs. RESPONSES changes formatting |
 | `response_model` schema     | The entire `model_json_schema()` is included so **any** change in field names, types or *descriptions* busts the cache automatically |
 
-The function returns a SHA-256 hex digest; its length is constant regardless
-of prompt size, so it is safe to use as a Redis key, file path, etc.
+Keys are SHA-256 hex digests of constant length. The lower-level
+`make_cache_key` helper remains available for custom integrations, as shown below;
+callers must supply all relevant identity and policy inputs themselves.
 
 ```python
 from instructor.cache import make_cache_key

@@ -484,26 +484,9 @@ class AsyncValidationError(ValueError, InstructorError):
     Attributes:
         errors: List of ValueError instances from failed validations
 
-    Examples:
-        ```python
-        from instructor.v2.validation import async_field_validator
-
-        class Model(BaseModel):
-            urls: list[str]
-
-            @async_field_validator('urls')
-            async def validate_urls(cls, v):
-                # Async validation logic
-                ...
-
-        try:
-            response = await client.chat.completions.create(
-                response_model=Model,
-                ...
-            )
-        except AsyncValidationError as e:
-            print(f"Async validation failed: {e.errors}")
-        ```
+    The runtime does not execute the async validator decorators. Response
+    models carrying these markers are rejected before provider calls; this
+    exception remains available for manually awaited validation workflows.
     """
 
     def __init__(

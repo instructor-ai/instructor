@@ -168,6 +168,9 @@ class ResponseSchema(BaseModel):
             cls (ResponseSchema): An instance of the class
         """
 
+        from instructor.v2.validation.async_validators import reject_async_validators
+
+        reject_async_validators(cls)
         import importlib
 
         from instructor.v2.core.registry import mode_registry

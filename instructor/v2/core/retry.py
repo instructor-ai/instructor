@@ -25,7 +25,6 @@ from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.errors import (
     AsyncValidationError,
-    ConfigurationError,
     FailedAttempt,
     IncompleteOutputException,
     InstructorRetryException,
@@ -255,6 +254,9 @@ def retry_sync_v2(
         TokenBudgetExceeded: If a failed attempt exhausts the retry budget
         TokenUsageUnavailableError: If a retry budget cannot be enforced
     """
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     _validate_token_budget(
         token_budget,
         response_model=response_model,
@@ -263,21 +265,6 @@ def retry_sync_v2(
     if response_model is None:
         # No structured output, just call the API
         return func(*args, **kwargs)
-
-    # response_model declares @async_field_validator/@async_model_validator, but a
-    # sync client can never await them. Fail loudly instead of silently returning
-    # an unvalidated model (see GitHub issue #2528).
-    from instructor.v2.validation.async_validators import (
-        model_declares_async_validators,
-    )
-
-    if model_declares_async_validators(response_model):
-        raise ConfigurationError(
-            f"{response_model.__name__} declares async validators "
-            "(@async_field_validator/@async_model_validator), which require an "
-            "async client. Use an AsyncOpenAI-backed client "
-            "(`await client.chat.completions.create(...)`) instead."
-        )
 
     # Validate and get handlers from registry
     RegistryValidationMixin.validate_mode_registration(provider, mode)
@@ -563,6 +550,9 @@ async def retry_async_v2(
         TokenBudgetExceeded: If a failed attempt exhausts the retry budget
         TokenUsageUnavailableError: If a retry budget cannot be enforced
     """
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     _validate_token_budget(
         token_budget,
         response_model=response_model,
@@ -652,12 +642,6 @@ async def retry_async_v2(
                         stream=stream,
                         is_async=True,
                     )
-                    if isinstance(parsed, (BaseModel, list)) and not stream:
-                        from instructor.v2.validation.async_validators import (
-                            run_async_validators,
-                        )
-
-                        parsed = await run_async_validators(parsed, context=context)
                     logger.debug(
                         f"Successfully parsed response on attempt "
                         f"{attempt.retry_state.attempt_number}"

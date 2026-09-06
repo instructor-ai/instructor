@@ -67,6 +67,9 @@ def is_simple_type(typehint: type[T]) -> bool:
 
 def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     """Normalize user response-model inputs into runtime-ready model classes."""
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     if response_model is None:
         return None
 
@@ -127,4 +130,5 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     elif not inspect.isclass(working_model):
         working_model = openai_schema(working_model)
 
+    reject_async_validators(working_model)
     return cast(type[T], working_model)

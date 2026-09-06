@@ -169,6 +169,9 @@ async def process_response_async(
     logger.debug(
         f"Instructor Raw Response: {response}",
     )
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     if response_model is None:
         return response
 
@@ -307,6 +310,9 @@ def process_response(
         f"Instructor Raw Response: {response}",
     )
 
+    from instructor.v2.validation.async_validators import reject_async_validators
+
+    reject_async_validators(response_model)
     if response_model is None:
         logger.debug("No response model, returning response as is")
         return response

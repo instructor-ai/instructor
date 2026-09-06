@@ -89,27 +89,31 @@ class Order(BaseModel):
 
 ## Async Validators
 
-Use Instructor's async decorators with an async client when validation needs an
-awaitable operation. Pydantic's regular validators remain synchronous.
+Instructor rejects response models containing `@async_field_validator` or
+`@async_model_validator`, including nested models, before provider calls and
+cache lookups. Automatic async-validator execution is not supported.
+
+For asynchronous policy checks, use an ordinary response model and explicitly
+await your application-level check before consuming the result. These checks run
+outside Instructor's retry loop and must also run on cached results.
 
 ```python
 import asyncio
 
 from openai import AsyncOpenAI
-from pydantic import BaseModel, ValidationInfo
+from pydantic import BaseModel
 
 import instructor
-from instructor.validation import async_field_validator
 
 
 class Answer(BaseModel):
     value: int
 
-    @async_field_validator("value")
-    async def within_limit(cls, value: int, info: ValidationInfo) -> int:
-        if value > info.context["limit"]:
-            raise ValueError("Value exceeds the current limit")
-        return value
+
+async def check_policy(answer: Answer, limit: int) -> Answer:
+    if answer.value > limit:
+        raise ValueError("Value exceeds the current limit")
+    return answer
 
 
 async def main() -> None:
@@ -119,28 +123,13 @@ async def main() -> None:
             model="gpt-4.1-mini",
             response_model=Answer,
             messages=[{"role": "user", "content": "Return the number 42"}],
-            context={"limit": 100},
         )
-        print(answer.value)
+        validated = await check_policy(answer, limit=100)
+        print(validated.value)
 
 
 asyncio.run(main())
 ```
-
-Async validation runs after Pydantic parsing for a non-streaming, single response
-model. Nested models, including those inside lists, tuples, and dictionaries, are
-validated before their parent. Field validators run in declaration order and pass
-their returned value to the next validator. Model validators run afterward.
-Overriding a validator method in a subclass replaces its inherited behavior.
-
-Raise `ValueError` to reject a response and enter the normal validation retry flow.
-Cache hits also run async validators with the current request context; a rejected
-cache hit raises `AsyncValidationError` without making another provider request.
-Validators should preserve field types and be safe to run more than once.
-
-Sync clients reject models with async validators. Streaming, partial, iterable,
-and parallel responses are not supported with async validators and raise
-`ConfigurationError` before making a request.
 
 ## Pre-validation Transformation
 

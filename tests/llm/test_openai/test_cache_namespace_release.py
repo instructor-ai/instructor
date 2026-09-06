@@ -7,7 +7,6 @@ from pydantic import BaseModel, ValidationInfo
 import instructor
 from instructor.cache import AutoCache
 from instructor.v2.validation.async_validators import async_field_validator
-from instructor.v2.core.errors import AsyncValidationError
 
 
 class Answer(BaseModel):
@@ -47,17 +46,15 @@ def request(cache: CountingCache) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-async def test_live_cache_hit_revalidates_async_context() -> None:
+async def test_async_validator_model_rejected_before_cache_lookup() -> None:
     cache = CountingCache()
     async with openai.AsyncOpenAI() as sdk:
         client = instructor.from_openai(sdk)
         kwargs = request(cache)
         kwargs["response_model"] = ValidatedAnswer
-        assert (await client.create(**kwargs, context={"limit": 100})).value == 42
-        assert cache.misses == 1
-        with pytest.raises(AsyncValidationError, match="current async limit"):
+        with pytest.raises(ValueError, match="async validators are not supported"):
             await client.create(**kwargs, context={"limit": 20})
-        assert cache.misses == 1
+        assert cache.misses == 0
 
 
 def test_live_sync_cache_namespaces() -> None:

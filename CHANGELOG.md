@@ -16,17 +16,23 @@ previous published version is 1.16.0.
 
 ### Upgrade Notes
 - Cached responses use new keys and isolated per-client namespaces. Existing cache entries will miss. Set the same explicit `cache_namespace` only when clients are intended to share results; keep accounts, endpoints, and tenants isolated.
-- Async validators now run instead of being silently ignored. They must preserve field types and tolerate repeated validation, including cache hits. Models with async validators require an async, non-streaming single-model request; unsupported workflows raise `ConfigurationError` before a provider call.
+- Response models with Instructor async-validator decorators are rejected before provider calls or cache lookup, including nested models. Use Pydantic validators or explicitly await application-level validation after extraction; automatic async-validator execution is deferred.
 - Remote media URLs must resolve to public addresses and cannot contain credentials. Redirects and connected peers are checked, and downloads have size limits.
 
 ### Fixed
-- **Cache isolation**: Include provider identity and prepared generation settings, including nested GenAI and Bedrock configuration; reuse the lookup key when storing after retries. Cache hits preserve current validation context and strictness. Clients have separate namespaces by default; use an explicit `cache_namespace` for intentional reuse across instances. Opaque request values now raise a clear error instead of relying on string representations. ([#2585](https://github.com/567-labs/instructor/issues/2585), [#2586](https://github.com/567-labs/instructor/pull/2586))
+- **Cache isolation**: Include provider identity and prepared generation settings, including nested GenAI and Bedrock configuration; reuse the lookup key when storing after retries. Cache hits preserve current validation context and strictness. Clients have separate namespaces by default; use an explicit `cache_namespace` for intentional reuse across instances. Requests with unsupported opaque values bypass caching rather than using ambiguous identities. ([#2585](https://github.com/567-labs/instructor/issues/2585), [#2586](https://github.com/567-labs/instructor/pull/2586))
 - **GenAI cached content**: Omit conflicting system instructions and tool declarations after resolving cached-content configuration, including plain responses, and preserve caller-owned configuration. Consolidates [#2581](https://github.com/567-labs/instructor/pull/2581), [#2582](https://github.com/567-labs/instructor/pull/2582), and [#2591](https://github.com/567-labs/instructor/pull/2591) for [#2580](https://github.com/567-labs/instructor/issues/2580).
 - **GenAI request configuration**: Preserve caller-owned `generation_config` dictionaries when preparing tools and JSON requests, so repeated requests retain their sampling settings and token limits. ([#2596](https://github.com/567-labs/instructor/pull/2596))
 - **OpenAI SDK compatibility**: Support OpenAI 3.x and its HTTPX2 transport when constructing sync and async clients through `from_provider`, while retaining OpenAI 2.x support on Python 3.9. ([#2553](https://github.com/567-labs/instructor/issues/2553))
-- **Async validators**: Await `@async_field_validator` and `@async_model_validator` for non-streaming single-model responses, including nested models and cache hits with current context. Preserve validator chaining and subclass overrides. Sync clients and unsupported streaming, partial, iterable, or parallel workflows now raise `ConfigurationError` instead of silently skipping validation. ([#2528](https://github.com/567-labs/instructor/issues/2528), [#2588](https://github.com/567-labs/instructor/pull/2588))
+- **Async validation policy**: Fail closed for `@async_field_validator` and `@async_model_validator` response models instead of silently skipping policy checks. The proposed automatic execution in [#2588](https://github.com/567-labs/instructor/pull/2588) is deferred in favor of main's security fix for [#2528](https://github.com/567-labs/instructor/issues/2528).
 
 - **Anthropic local PDFs**: Read local PDF sources from disk instead of trying to fetch them over HTTP. ([#2577](https://github.com/567-labs/instructor/pull/2577))
+
+### Security
+- Route Anthropic PDF downloads through the bounded public-network fetcher and pin each media connection to a validated IP before sending HTTP.
+- Key cached responses by the complete prepared request, provider, validation context and strictness. Clients have isolated cache namespaces by default; `cache_namespace` explicitly enables sharing and must identify the endpoint and tenant. Revalidate cache hits with the current context and strictness.
+- Reject response models containing unsupported async-validator markers, including nested models, instead of silently skipping their policy checks.
+- Bound JSON extraction to 1 MiB of characters and 128 nesting levels, and avoid repeatedly scanning malformed suffixes.
 
 ### Changed
 - **Current model examples**: Refresh 16 provider guides, including GPT-5.6 Luna, Sonnet 5, Gemini 3.8 Flash, and current hosted model IDs. Correct Luna tool-call parameters, Sonnet adaptive thinking, and audio transcription guidance; add real model-ID smoke tests and code-block lint checks. Normalize Google test model overrides and default to Gemini 3.8 Flash.

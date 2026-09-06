@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from inspect import signature
-from typing import Any, Callable, TypeVar, get_args
+from typing import Any, Callable, TypeVar, get_args, get_origin
 
 from pydantic import BaseModel, ValidationInfo
+from typing_extensions import TypeAliasType
 
 from instructor.v2.core.errors import AsyncValidationError
 
@@ -202,3 +203,48 @@ async def _run_on_model(
         )
 
     return model
+
+
+def reject_async_validators(response_model: Any) -> None:
+    """Fail closed: the runtime does not execute marked asynchronous validators."""
+    seen: set[int] = set()
+
+    def visit(model: Any) -> None:
+        if id(model) in seen:
+            return
+        seen.add(id(model))
+        if isinstance(model, TypeAliasType):
+            visit(model.__value__)
+        origin = get_origin(model)
+        if isinstance(origin, TypeAliasType):
+            visit(origin.__value__)
+        for argument in get_args(model):
+            visit(argument)
+        if not isinstance(model, type):
+            for child in getattr(model, "models", ()):
+                visit(child)
+            return
+        if issubclass(model, BaseModel):
+            # Inspect effective attributes, including inherited descriptors.
+            members = {}
+            for base in reversed(model.__mro__):
+                members.update(vars(base))
+            for name, member in members.items():
+                if isinstance(member, (classmethod, staticmethod)):
+                    member = member.__func__
+                if (
+                    getattr(member, ASYNC_VALIDATOR_KEY, None) is not None
+                    or getattr(member, ASYNC_MODEL_VALIDATOR_KEY, None) is not None
+                ):
+                    raise ValueError(
+                        f"{model.__name__}.{name}: Instructor async validators are "
+                        "not supported by the runtime. Use Pydantic validators or "
+                        "explicitly await validation before consuming results."
+                    )
+            for field in model.model_fields.values():
+                visit(field.annotation)
+        else:
+            for annotation in getattr(model, "__annotations__", {}).values():
+                visit(annotation)
+
+    visit(response_model)

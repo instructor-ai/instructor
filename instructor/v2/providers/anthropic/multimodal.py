@@ -6,6 +6,8 @@ import base64
 from pathlib import Path
 from typing import Any
 
+from instructor.v2.core.remote import MAX_PDF_BYTES, fetch_remote_content
+
 
 def image_to_anthropic(image: Any) -> dict[str, Any]:
     if (
@@ -54,7 +56,12 @@ def pdf_to_anthropic(pdf: Any) -> dict[str, Any]:
     if not pdf.data:
         local_bytes = _read_local_pdf(pdf.source)
         if local_bytes is None:
-            raise ValueError("PDF data is missing for base64 encoding.")
+            if not isinstance(pdf.source, str) or not pdf.source.lower().startswith(
+                ("http://", "https://")
+            ):
+                raise ValueError("PDF data is missing for base64 encoding.")
+            response = fetch_remote_content(str(pdf.source), max_bytes=MAX_PDF_BYTES)
+            local_bytes = response.content
         pdf.data = base64.b64encode(local_bytes).decode("utf-8")
     return {
         "type": "document",
