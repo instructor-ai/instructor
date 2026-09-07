@@ -91,6 +91,15 @@ def _validate_model_from_json(
     strict: bool | None = None,
 ) -> Any:
     """Validate model from JSON string with appropriate error handling."""
+    import re
+    json_str = json_str.strip()
+    if not json_str:
+        raise ValueError("Empty response: Cannot parse JSON from an empty string")
+    if json_str.startswith("```"):
+        json_str = re.sub(r"^```(?:json)?\s*\n?", "", json_str)
+        json_str = re.sub(r"\n?\s*```$", "", json_str)
+        json_str = json_str.strip()
+
     try:
         if hasattr(cls, "model_validate_json"):
             if strict:
