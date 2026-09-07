@@ -184,9 +184,7 @@ def _build_openai(
     try:
         import openai
         try:
-            import httpx2 as httpx
-        except ModuleNotFoundError:
-            import httpx
+            import httpx2
         from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
         from collections.abc import Mapping
         from typing import cast
