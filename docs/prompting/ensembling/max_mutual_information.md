@@ -8,7 +8,7 @@ Max Mutual Information Method is a method of prompting that aims to find the bes
 
 ### Entropy
 
-When a language model recieves a prompt as input, it outputs a series of token probabilities sequentially until it reaches the `<EOS>` token. In the paper, they take the final probability distribution as $P(Y|X)$ where $Y$ is the final prediction of the model and $X$ the prompt.
+When a language model receives a prompt as input, it outputs a series of token probabilities sequentially until it reaches the `<EOS>` token. In the paper, they take the final probability distribution as $P(Y|X)$ where $Y$ is the final prediction of the model and $X$ the prompt.
 
 When we have a probability distribution, we can calculate a probability known as entropy. The lower this value is, the better. This is because a lower entropy value means that the model is more confident in its prediction.
 
