@@ -4,7 +4,7 @@
 
 Copy these instructions to your AI coding agent when you want to add a new LLM provider to instructor. The agent will have everything needed to implement a complete, working provider.
 
-**For human contributors:** See the quick reference template in [`instructor/providers/README.md`](instructor/providers/README.md#adding-a-new-provider)
+**For human contributors:** See the quick reference template in [`docs/integrations/`](docs/integrations/)
 
 ---
 
@@ -734,7 +734,7 @@ client = instructor.from_{provider}({provider_sdk}.{SyncClient}())
 
 ## API Reference
 
-For detailed API documentation, see the [Instructor API reference](../api/index.md).
+For detailed API documentation, see the [Instructor API reference](docs/api.md).
 ```
 
 ## Example Provider: Groq
