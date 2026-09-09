@@ -256,7 +256,6 @@ nav:
     - TypedDicts: 'concepts/typeddicts.md'
     - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
-    - Usage Accounting Audit: 'architecture/usage-accounting/README.md'
     - Missing: "concepts/maybe.md"
     - Stream Iterable: "concepts/iterable.md"
     - Stream Partial: "concepts/partial.md"

@@ -12,8 +12,7 @@ The OpenAI API Usage CLI tool provides functionalities for monitoring your OpenA
     table. It does not reconcile invoices or account for current cache, tool,
     modality, batch, or service-tier pricing. Model-prefix fallback can also
     apply the wrong rate to newer model variants. An empty result does not
-    establish zero usage. See the [usage accounting audit](../architecture/usage-accounting/README.md)
-    before using these estimates for financial reporting.
+    establish zero usage. Use provider billing records for financial reporting.
 
 ## Monitoring API Usage
 

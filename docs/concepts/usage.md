@@ -122,6 +122,3 @@ This example applies to non-streaming responses with a `usage` attribute;
 Google responses use `usage_metadata`, and native xAI follows a separate path.
 A local response-cache hit can restore historical completion usage without a
 new provider request. It is different from provider prompt caching.
-
-See the [provider/API accounting audit](../architecture/usage-accounting/README.md)
-for SDK versions, exact fields, known limitations and proposed improvements.

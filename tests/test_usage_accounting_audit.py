@@ -2,10 +2,9 @@
 
 When correcting a limitation, replace its negative assertion with a positive
 regression in test_usage_accounting_contracts.py (or the owning subsystem's
-suite), and update the audit finding. Do not preserve a bug to keep this file
+suite), and update the corresponding maintained usage documentation. Do not preserve a bug to keep this file
 green, skip a newly fixed case, or rewrite its expectation to another bug.
 
-The audit report maps each case to its finding and replacement guidance.
 No transports or mocks are used. SDK payloads remain explicit in each case.
 """
 
