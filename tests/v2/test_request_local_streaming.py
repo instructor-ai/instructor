@@ -3,10 +3,19 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 from typing import Any
 
 import pytest
-from anthropic.types import Message, RawContentBlockDeltaEvent
+from anthropic.types import (
+    Message,
+    RawContentBlockDeltaEvent,
+    TextBlock,
+    ToolUseBlock,
+    Usage,
+    TextDelta,
+    InputJSONDelta,
+)
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator
 
@@ -70,7 +79,7 @@ HANDLERS = [
 
 def payloads(handler: Any, name: str = "Ada") -> tuple[Any, Any]:
     text = Person(name=name).model_dump_json()
-    completion = dict(
+    completion: dict[str, Any] = dict(
         id="local",
         model="local",
         created=0,
@@ -83,7 +92,7 @@ def payloads(handler: Any, name: str = "Ada") -> tuple[Any, Any]:
             )
         ],
     )
-    chunk = dict(
+    chunk: dict[str, Any] = dict(
         id="local",
         model="local",
         created=0,
@@ -133,7 +142,7 @@ def payloads(handler: Any, name: str = "Ada") -> tuple[Any, Any]:
                 type="message",
                 content=(
                     [
-                        dict(
+                        ToolUseBlock(
                             type="tool_use",
                             id="call_local",
                             name="PartialPerson",
@@ -141,18 +150,18 @@ def payloads(handler: Any, name: str = "Ada") -> tuple[Any, Any]:
                         )
                     ]
                     if handler.mode == Mode.TOOLS
-                    else [dict(type="text", text=text)]
+                    else [TextBlock(type="text", text=text)]
                 ),
                 stop_reason="end_turn",
-                usage=dict(input_tokens=1, output_tokens=1),
+                usage=Usage(input_tokens=1, output_tokens=1),
             ),
             RawContentBlockDeltaEvent(
                 type="content_block_delta",
                 index=0,
                 delta=(
-                    dict(type="input_json_delta", partial_json=text)
+                    InputJSONDelta(type="input_json_delta", partial_json=text)
                     if handler.mode == Mode.TOOLS
-                    else dict(type="text_delta", text=text)
+                    else TextDelta(type="text_delta", text=text)
                 ),
             ),
         )
@@ -161,7 +170,10 @@ def payloads(handler: Any, name: str = "Ada") -> tuple[Any, Any]:
         try:
             from mistralai.client.models import ChatCompletionResponse, CompletionEvent
         except ImportError:
-            from mistralai.models import ChatCompletionResponse, CompletionEvent
+            # Mistral 1.x (Python 3.9) predates the client.models namespace.
+            models = importlib.import_module("mistralai.models")
+            ChatCompletionResponse = models.ChatCompletionResponse
+            CompletionEvent = models.CompletionEvent
 
         completion["usage"] = dict(prompt_tokens=1, completion_tokens=1, total_tokens=2)
         return ChatCompletionResponse.model_validate(
