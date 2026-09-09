@@ -10,7 +10,7 @@ This PR adds evidence, documentation, and a targeted backward-compatible fix for
 
 - **Code**: implementation at the base revision; source links below are revision-bound.
 - **SDK**: local installed model definitions, inheritance, defaults, and serialization; exact versions and 26 type inventories are in [sdk-inventory.json](sdk-inventory.json). These are examined versions, not latest-version claims. The environment includes optional SDKs; it is not a fresh lockfile install.
-- **Contract**: [offline SDK-object tests](https://github.com/567-labs/instructor/blob/codex/usage-accounting-audit/tests/test_usage_accounting_audit.py). Tests named `current` reproduce a limitation and should change with its fix; they are not a promise to retain that behavior. No mocks or transport substitutes.
+- **Contracts**: [supported behavior and fix regressions](https://github.com/567-labs/instructor/blob/codex/usage-accounting-audit/tests/test_usage_accounting_contracts.py) are separate from [known-limit characterizations](https://github.com/567-labs/instructor/blob/codex/usage-accounting-audit/tests/test_usage_accounting_audit.py). `test_known_limitation_*` documents gaps, not permanent contracts. Replace each negative assertion with positive coverage when its gap is fixed; do not skip newly fixed behavior or preserve the bug to satisfy the test. Both files use real SDK objects, with no mocks or transport substitutes.
 - **Docs**: official provider documentation, linked beside each claim. Rolling docs may describe fields newer than the examined SDK. A documented field absent from an SDK is explicitly distinguished below.
 - **Inference / unresolved**: identified explicitly. No measured server billing, cancellation, or stream-finalization evidence exists in this audit.
 
@@ -84,6 +84,15 @@ A deep copy isolates the usage hook from the accumulator and subsequent attempts
 
 Retention codes: **A** shared accumulation (with findings 1–3); **R** raw SDK response retained on normal model success but no shared aggregate; **X** native special path. All streaming accounting remains limited as above. Optional metadata survival also depends on SDK decoding; preserving an SDK object cannot recover fields that SDK discarded.
 
+This matrix describes observed **native metadata**, not an implemented common envelope. The normalized envelope proposed below is future work. Unsupported aggregation does not mean unsupported inference.
+
+| Accounting path | Current status |
+| --- | --- |
+| OpenAI Chat, stable Anthropic, compatible `CompletionUsage` | Implemented but incomplete: optional-field presence, dictionary details and lifecycle gaps remain. |
+| Responses, beta Anthropic, Google, Bedrock, Cohere, Mistral, native Groq/Cerebras/Fireworks/Writer | Shared cumulative accounting unsupported; normal successful model results can retain raw metadata. |
+| Native xAI | Separate factory; no shared retry accounting. |
+| Streams, batch and local cache | Complete cumulative accounting unavailable; extraction, per-item retention and historical cache provenance differ by path. |
+
 | Provider / actual API | Examined SDK | Raw fields and authoritative relationships | Instructor retention / validation |
 | --- | --- | --- | --- |
 | OpenAI Chat Completions | openai 2.6.0 | P/C/T; T=P+C. `prompt_tokens_details.cached_tokens` and `audio_tokens` describe prompt subsets; `completion_tokens_details.reasoning_tokens`, `audio_tokens`, `accepted_prediction_tokens`, `rejected_prediction_tokens` describe completion accounting. Rejected predictions count toward completion limits/billing despite not appearing in visible output. Do not add these detail counts to T. No universal image/video detail counter in this examined chat usage type. [API](https://platform.openai.com/docs/api-reference/chat/object), SDK `openai/types/completion_usage.py`. | **A**. Actual-object tests verify sums and detail separation, not server billing. Future fields decoded as dictionaries remain vulnerable. |
@@ -100,7 +109,7 @@ Retention codes: **A** shared accumulation (with findings 1–3); **R** raw SDK 
 | Cerebras Chat | cerebras-cloud-sdk 1.46.0 | P/C/T; cache detail is declared, current docs also show reasoning and accepted/rejected prediction details. `time_info` holds seconds and a creation timestamp. Example zero detail values are not proof all models never reason/cache. [Chat API](https://inference-docs.cerebras.ai/api-reference/chat-completions). | Native **R**, schema inspected; OpenAI SDK path **A**. No independent proof that every detail has OpenAI's billing inclusion semantics. |
 | Fireworks Chat | fireworks-ai 0.15.15 | P/C/T and documented `prompt_tokens_details.cached_tokens`; performance/speculation counters are separate metrics with their own units. [Chat API](https://docs.fireworks.ai/api-reference/post-chatcompletions). | Native **R**. Examined SDK `UsageInfo` declares only P/C/T and normally **ignores extras**, so cache detail can be lost before Instructor receives it. `FIREWORKS_API_STRICT=1` instead forbids extras. OpenAI SDK path **A** preserves more but still has accumulation caveats. |
 | Writer Chat | writer-sdk 2.3.1 | P/C/T; SDK uses singular `prompt_token_details.cached_tokens`, plus `completion_tokens_details.reasoning_tokens`. Knowledge Graph tool use is explicitly excluded from response usage. [Chat reference](https://dev.writer.com/api-reference/completion-api/chat-completion), [tokens](https://dev.writer.com/home/tokens). | **R**. SDK inspected; do not silently rename `prompt_token_details` or claim total accounts for all tool costs. |
-| xAI native Chat SDK | xai-sdk 1.1.0 | `SamplingUsage`: `prompt_tokens`, `completion_tokens`, `total_tokens`, `reasoning_tokens`, `cached_prompt_text_tokens`, `prompt_text_tokens`, `prompt_image_tokens`; current documentation also describes `server_side_tool_usage` metadata, but that property was not found in the examined 1.1.0 SDK. Reasoning excludes final visible completion in native tool-accounting docs; do not import OpenAI's C relationship. Cached text is part of prompt. Prompt image count covers visual content. [Tool accounting](https://docs.x.ai/developers/tools/tool-usage-details). | **X**. Native protobuf inventory and `process_chunk` inspected: usage snapshots replace via `CopyFrom`, not sum. Scalar protobuf no-presence fields can read zero when not separately present. Native stream adapter discards enclosing response snapshots. |
+| xAI native Chat SDK | xai-sdk 1.1.0 | `SamplingUsage`: `prompt_tokens`, `completion_tokens`, `total_tokens`, `reasoning_tokens`, `cached_prompt_text_tokens`, `prompt_text_tokens`, `prompt_image_tokens`; the inspected SDK also exposes `num_sources_used`, which is non-token metadata with billing semantics not established here. Current documentation also describes `server_side_tool_usage` metadata, but that property was not found in the examined 1.1.0 SDK. Reasoning excludes final visible completion in native tool-accounting docs; do not import OpenAI's C relationship. Cached text is part of prompt. Prompt image count covers visual content. [Tool accounting](https://docs.x.ai/developers/tools/tool-usage-details). | **X**. Native protobuf inventory and `process_chunk` inspected: usage snapshots replace via `CopyFrom`, not sum. Scalar protobuf no-presence fields can read zero when not separately present. Native stream adapter discards enclosing response snapshots. |
 | xAI through OpenAI Chat wire | openai 2.6.0 | P/C/T; nested prompt text/audio/image/cache and completion reasoning/audio/prediction detail in official wire example. [Wire usage](https://docs.x.ai/developers/advanced-api-usage/prompt-caching/usage-and-pricing). Separate endpoint contract from native SDK row. | **A** when decoded as CompletionUsage. Backend tools incur additional request charges; native counters need their own ledger. Responses-shaped usage would not enter A. |
 | Azure OpenAI | openai 2.6.0 | P/C/T and optional OpenAI-style cache/audio/reasoning/prediction details documented for Azure Chat. Feature availability varies by deployment and API version. [Azure reference](https://learn.microsoft.com/en-us/azure/foundry/openai/latest). | Canonical OpenAI handler: Chat **A**, Responses **R** when selected. No Azure deployment called. Do not extrapolate to all Foundry model APIs. |
 | DeepSeek Chat | openai 2.6.0 | P/C/T; `prompt_cache_hit_tokens` + `prompt_cache_miss_tokens` = P. Completion reasoning detail is part of its completion breakdown. Hit/miss are not two extra charges added to P. [API](https://api-docs.deepseek.com/api/create-chat-completion/). | **A** via OpenAI factory; top-level cache extras accumulate. No live inclusion validation beyond docs. |
@@ -186,9 +195,31 @@ Candidate normalized quantities and constraints:
 
 This contract should not require every provider to manufacture every category. Preserve native types for `create_with_completion`, and introduce any normalized view alongside them. Decide public names, mutability, ownership/lifetime, privacy of retained response metadata, and how primitive/parallel/stream/batch results expose the view before implementing a broad API.
 
+### Ownership and cross-provider consistency
+
+Common snapshot, total and availability semantics belong in `instructor/v2/core/usage.py`; retry orchestration stays in `retry.py`. [#2617](https://github.com/567-labs/instructor/pull/2617) moves snapshot/total helpers there and budget policy into `core/budget.py`, retaining retry compatibility aliases. Provider field relationships belong in existing provider adapters and registry: Anthropic cache categories and OpenAI output subsets must retain their different arithmetic. No generic recursive dictionary summation or second provider framework is introduced.
+
+The positive tests apply the same response-identity, SDK-type and independent-snapshot assertions to OpenAI and Anthropic. Provider fixtures keep usage inputs and expected arithmetic explicit; only repeated Anthropic message-envelope fields are shared. This establishes common supported behavior without pretending unsupported providers have the same accounting.
+
+### Updating characterization tests
+
+When a finding is fixed, replace the corresponding `test_known_limitation_*` assertion with a positive regression in the contracts file or owning feature suite, and update this report. Preserve documented public behavior through additive or opt-in changes where needed.
+
+| Characterized gap | Replacement coverage |
+| --- | --- |
+| Response mutation and absent details | Explicit attempt/cumulative ownership and absent/null/zero signals, while preserving legacy defaults until migration. |
+| Nested dictionary costs | Provider-defined amounts, units and presence; never arbitrary dictionary arithmetic. |
+| Responses, Groq and beta Anthropic rejection | Supported SDK usage types and correct multi-attempt totals. |
+| Sync/async stream usage filtering | Final usage capture plus interrupted-stream availability. |
+| Batch usage loss and cache historical usage | Per-item retention and explicit historical-versus-new-call provenance. |
+| CLI model-prefix pricing | Exact model resolution and labeled estimates. |
+| Shared hook-event mutation | Chosen handler-copy/mutability contract with independent-handler coverage. |
+
+The Anthropic thinking fix already has positive regression coverage. Only invalid extra-dictionary payload tests skip SDKs that declare a typed field; the supported thinking-counter test accepts either installed representation and does not skip a newly fixed behavior.
+
 ## Prioritized implementation plan
 
-1. **Included compact runtime fix: Anthropic thinking details on older SDKs.** Add the documented integer counter across dictionary-shaped details, preserve SDK object types and all existing cumulative totals, and leave unknown metadata/booleans/null behavior unchanged. Regression tests cover typed/dictionary shapes and zero/null/boolean cases. **First follow-up runtime PR:** add opt-in field-presence/availability metadata alongside the existing accumulators, with no changes to existing values. Test absent/null/zero and partially reported details on sync/async success and exhaustion. Removing fabricated zero defaults must be a later explicitly versioned or opt-in migration, not a silent patch.
+1. **Included compact runtime fix: Anthropic thinking details on older SDKs.** Add the documented integer counter across dictionary-shaped details, preserve SDK object types and all existing cumulative totals, and leave unknown metadata/booleans/null behavior unchanged. The regression accepts the installed SDK representation; this run exercises Anthropic 0.93.0 dictionary details, including zero/null/boolean cases. Existing tests cover nested Pydantic accumulation; no newer Anthropic SDK run is claimed. **First follow-up runtime PR:** add opt-in field-presence/availability metadata alongside the existing accumulators, with no changes to existing values. Test absent/null/zero and partially reported details on sync/async success and exhaustion. Removing fabricated zero defaults must be a later explicitly versioned or opt-in migration, not a silent patch.
 2. **Second compact PR: availability on retry exceptions.** Add an availability indicator so unsupported/all-missing usage is distinguishable from actual zero on failure. Preserve existing `total_usage` values; changing them to `None` requires an opt-in or deprecation plan. Include native Responses, beta Anthropic and transport-error cases with no paid calls.
 3. **Third endpoint PRs: OpenAI Responses, then Anthropic beta.** Use their exact SDK models; only documented fields become additive. Settle aggregate type and primitive/parallel exposure first. Keep SDK-version-bound contracts for beta iterations and newer dictionary extras. Do not imply provider billing parity from local tests.
 4. **Provider-owned adapters and stream completion protocol.** Start Google and Cohere (different semantic structures), then Bedrock/Mistral and native compatible SDKs. Add snapshots/deltas/final-event contracts before streaming accounting; represent cancellation without claiming a final bill. Integrate with the existing provider registry rather than adding a parallel registry. Coordinate with the v3/backend task.
@@ -201,6 +232,8 @@ The Anthropic thinking fix is included. A separate typed-dictionary fix for Open
 Read related issue/PR history: [#2493](https://github.com/567-labs/instructor/issues/2493) and [#2500](https://github.com/567-labs/instructor/pull/2500) motivated recursive fields; their closure does not prove dictionary/list or all-provider semantics. [#2391](https://github.com/567-labs/instructor/issues/2391), [#2474](https://github.com/567-labs/instructor/pull/2474), [#2512](https://github.com/567-labs/instructor/pull/2512) concern successful totals and budgets; [#2113](https://github.com/567-labs/instructor/issues/2113) / [#2217](https://github.com/567-labs/instructor/pull/2217) establish the importance of preserving usage subclasses. Also searched streaming/cache discussions including #2153 and #2080. Historical version assertions in issues were not substituted for inspected SDK versions.
 
 Reviewed adjacent scopes: [#2614](https://github.com/567-labs/instructor/pull/2614) owns cache identity/coverage, [#2615](https://github.com/567-labs/instructor/pull/2615) modularization, [#2616](https://github.com/567-labs/instructor/pull/2616) duplication, and [#2355](https://github.com/567-labs/instructor/pull/2355) provider architecture. The coordinating maintenance task was informed of the audit-first scope; the final runtime change is confined to the Anthropic usage adapter and does not overlap those refactors. No coverage thresholds, parser refactors, security fixes, or v3 redesigns are included.
+
+[#2617](https://github.com/567-labs/instructor/pull/2617) owns budget/helper extraction and [#2621](https://github.com/567-labs/instructor/pull/2621) owns the cache response codec extraction into `core/cache_response.py`. Their signature-preserving aliases keep these tests usable. This PR edits neither owner; its cache characterization uses the existing `instructor.cache` entry points. Source links remain pinned to the audit base rather than implying those adjacent changes are included.
 
 ## Validation and explicit gaps
 
@@ -220,8 +253,9 @@ Explicit unreviewed/unmeasured boundaries:
 
 ### Checks run for this PR
 
-- Audit SDK contracts plus existing usage/retry/budget and Anthropic suites: **97 passed** (19 audit cases and 78 existing cases).
+- Audit SDK contracts plus existing usage/retry/budget and Anthropic suites: **99 passed** (11 known-limit characterizations, 10 supported-contract cases and 78 existing cases).
 - Changed-file Ruff lint/format: passed.
-- Full `ty check --error-on-warning instructor/` with the examined environment: passed.
+- Full library and test `ty` checks with errors on warnings: passed; test checks also pass for Python 3.9 and 3.14 on all platforms. The CI-reported test typing errors were corrected.
 - Documentation build passed; existing unrelated documentation warnings remain. No warning references the new audit page after correcting its test-source link.
+- Release readiness on the previous head failed because existing tag `v1.17.0` points to another commit. The gate is unchanged; version metadata belongs to the coordinating release step.
 - No paid/live-provider tests were run. Final commit-hook outcomes are recorded in the PR description.
