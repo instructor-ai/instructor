@@ -1,0 +1,1039 @@
+{
+  "audit_base": "24752a62",
+  "access_date": "2026-09-09 UTC",
+  "versions": {
+    "openai": "2.6.0",
+    "anthropic": "0.93.0",
+    "groq": "0.26.0",
+    "google-genai": "1.31.0",
+    "google-cloud-aiplatform": "1.111.0",
+    "google-generativeai": null,
+    "cohere": "5.17.0",
+    "mistralai": "2.9.1",
+    "boto3": "1.43.67",
+    "botocore": "1.43.67",
+    "cerebras-cloud-sdk": "1.46.0",
+    "fireworks-ai": "0.15.15",
+    "writer-sdk": "2.3.1",
+    "xai-sdk": "1.1.0",
+    "litellm": "1.76.0",
+    "pydantic": "2.11.7"
+  },
+  "provider_specs": {
+    "openai": {
+      "canonical": "openai",
+      "sdk_module": "openai",
+      "modes": [
+        "TOOLS",
+        "JSON",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS",
+        "RESPONSES_TOOLS"
+      ],
+      "aliases": [
+        "openai"
+      ],
+      "factory": "from_openai"
+    },
+    "anyscale": {
+      "canonical": "anyscale",
+      "sdk_module": "openai",
+      "modes": [
+        "TOOLS",
+        "JSON",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "anyscale"
+      ],
+      "factory": "from_anyscale"
+    },
+    "together": {
+      "canonical": "together",
+      "sdk_module": "openai",
+      "modes": [
+        "TOOLS",
+        "JSON",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "together"
+      ],
+      "factory": "from_together"
+    },
+    "databricks": {
+      "canonical": "databricks",
+      "sdk_module": "openai",
+      "modes": [
+        "TOOLS",
+        "JSON",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "databricks"
+      ],
+      "factory": "from_databricks"
+    },
+    "deepseek": {
+      "canonical": "deepseek",
+      "sdk_module": "openai",
+      "modes": [
+        "TOOLS",
+        "JSON",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "deepseek"
+      ],
+      "factory": "from_deepseek"
+    },
+    "openrouter": {
+      "canonical": "openrouter",
+      "sdk_module": "openai",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "openrouter"
+      ],
+      "factory": "from_openrouter"
+    },
+    "anthropic": {
+      "canonical": "anthropic",
+      "sdk_module": "anthropic",
+      "modes": [
+        "TOOLS",
+        "JSON",
+        "JSON_SCHEMA",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "anthropic"
+      ],
+      "factory": "from_anthropic"
+    },
+    "genai": {
+      "canonical": "genai",
+      "sdk_module": "google.genai",
+      "modes": [
+        "TOOLS",
+        "JSON"
+      ],
+      "aliases": [
+        "google"
+      ],
+      "factory": "from_genai"
+    },
+    "generative-ai": {
+      "canonical": "genai",
+      "sdk_module": "google.genai",
+      "modes": [],
+      "aliases": [
+        "generative-ai"
+      ],
+      "factory": null
+    },
+    "gemini": {
+      "canonical": "gemini",
+      "sdk_module": "google.generativeai",
+      "modes": [
+        "TOOLS",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "gemini"
+      ],
+      "factory": "from_gemini"
+    },
+    "cohere": {
+      "canonical": "cohere",
+      "sdk_module": "cohere",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "cohere"
+      ],
+      "factory": "from_cohere"
+    },
+    "perplexity": {
+      "canonical": "perplexity",
+      "sdk_module": "openai",
+      "modes": [
+        "MD_JSON"
+      ],
+      "aliases": [
+        "perplexity"
+      ],
+      "factory": "from_perplexity"
+    },
+    "xai": {
+      "canonical": "xai",
+      "sdk_module": "xai_sdk",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "xai"
+      ],
+      "factory": "from_xai"
+    },
+    "groq": {
+      "canonical": "groq",
+      "sdk_module": "groq",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "groq"
+      ],
+      "factory": "from_groq"
+    },
+    "mistral": {
+      "canonical": "mistral",
+      "sdk_module": "mistralai",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "mistral"
+      ],
+      "factory": "from_mistral"
+    },
+    "fireworks": {
+      "canonical": "fireworks",
+      "sdk_module": "fireworks",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "fireworks"
+      ],
+      "factory": "from_fireworks"
+    },
+    "cerebras": {
+      "canonical": "cerebras",
+      "sdk_module": "cerebras.cloud.sdk",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "cerebras"
+      ],
+      "factory": "from_cerebras"
+    },
+    "writer": {
+      "canonical": "writer",
+      "sdk_module": "writerai",
+      "modes": [
+        "TOOLS",
+        "JSON_SCHEMA",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "writer"
+      ],
+      "factory": "from_writer"
+    },
+    "bedrock": {
+      "canonical": "bedrock",
+      "sdk_module": "botocore",
+      "modes": [
+        "TOOLS",
+        "TOOLS_STRICT",
+        "JSON_SCHEMA",
+        "MD_JSON"
+      ],
+      "aliases": [
+        "bedrock"
+      ],
+      "factory": "from_bedrock"
+    },
+    "vertexai": {
+      "canonical": "vertexai",
+      "sdk_module": "vertexai",
+      "modes": [
+        "TOOLS",
+        "MD_JSON",
+        "PARALLEL_TOOLS"
+      ],
+      "aliases": [
+        "vertexai"
+      ],
+      "factory": "from_vertexai"
+    },
+    "azure_openai": {
+      "canonical": "openai",
+      "sdk_module": "openai",
+      "modes": [],
+      "aliases": [
+        "azure_openai"
+      ],
+      "factory": null
+    },
+    "ollama": {
+      "canonical": "openai",
+      "sdk_module": "openai",
+      "modes": [],
+      "aliases": [
+        "ollama"
+      ],
+      "factory": null
+    },
+    "litellm": {
+      "canonical": "litellm",
+      "sdk_module": null,
+      "modes": [],
+      "aliases": [
+        "litellm"
+      ],
+      "factory": "from_litellm"
+    }
+  },
+  "sdk_models": {
+    "openai.types.completion_usage.CompletionUsage": {
+      "source_file": "openai/types/completion_usage.py",
+      "fields": {
+        "completion_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "prompt_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "completion_tokens_details": {
+          "type": "typing.Optional[openai.types.completion_usage.CompletionTokensDetails]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "prompt_tokens_details": {
+          "type": "typing.Optional[openai.types.completion_usage.PromptTokensDetails]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "openai.types.completion_usage.CompletionTokensDetails": {
+      "source_file": "openai/types/completion_usage.py",
+      "fields": {
+        "accepted_prediction_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "audio_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "reasoning_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "rejected_prediction_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "openai.types.completion_usage.PromptTokensDetails": {
+      "source_file": "openai/types/completion_usage.py",
+      "fields": {
+        "audio_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "cached_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "openai.types.responses.response_usage.ResponseUsage": {
+      "source_file": "openai/types/responses/response_usage.py",
+      "fields": {
+        "input_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "input_tokens_details": {
+          "type": "<class 'openai.types.responses.response_usage.InputTokensDetails'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "output_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "output_tokens_details": {
+          "type": "<class 'openai.types.responses.response_usage.OutputTokensDetails'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "openai.types.responses.response_usage.InputTokensDetails": {
+      "source_file": "openai/types/responses/response_usage.py",
+      "fields": {
+        "cached_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "openai.types.responses.response_usage.OutputTokensDetails": {
+      "source_file": "openai/types/responses/response_usage.py",
+      "fields": {
+        "reasoning_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "anthropic.types.usage.Usage": {
+      "source_file": "anthropic/types/usage.py",
+      "fields": {
+        "cache_creation": {
+          "type": "typing.Optional[anthropic.types.cache_creation.CacheCreation]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "cache_creation_input_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "cache_read_input_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "inference_geo": {
+          "type": "typing.Optional[str]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "input_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "output_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "server_tool_use": {
+          "type": "typing.Optional[anthropic.types.server_tool_usage.ServerToolUsage]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "service_tier": {
+          "type": "typing.Optional[typing.Literal['standard', 'priority', 'batch']]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "anthropic.types.cache_creation.CacheCreation": {
+      "source_file": "anthropic/types/cache_creation.py",
+      "fields": {
+        "ephemeral_1h_input_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "ephemeral_5m_input_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "anthropic.types.server_tool_usage.ServerToolUsage": {
+      "source_file": "anthropic/types/server_tool_usage.py",
+      "fields": {
+        "web_fetch_requests": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "web_search_requests": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "anthropic.types.beta.beta_usage.BetaUsage": {
+      "source_file": "anthropic/types/beta/beta_usage.py",
+      "fields": {
+        "cache_creation": {
+          "type": "typing.Optional[anthropic.types.beta.beta_cache_creation.BetaCacheCreation]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "cache_creation_input_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "cache_read_input_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "inference_geo": {
+          "type": "typing.Optional[str]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "input_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "iterations": {
+          "type": "typing.Optional[typing.List[typing.Annotated[typing.Union[anthropic.types.beta.beta_message_iteration_usage.BetaMessageIterationUsage, anthropic.types.beta.beta_compaction_iteration_usage.BetaCompactionIterationUsage, anthropic.types.beta.beta_advisor_message_iteration_usage.BetaAdvisorMessageIterationUsage], PropertyInfo(alias='None', format=None, format_template='None', discriminator='type')]]]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "output_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "server_tool_use": {
+          "type": "typing.Optional[anthropic.types.beta.beta_server_tool_usage.BetaServerToolUsage]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "service_tier": {
+          "type": "typing.Optional[typing.Literal['standard', 'priority', 'batch']]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "speed": {
+          "type": "typing.Optional[typing.Literal['standard', 'fast']]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "groq.types.completion_usage.CompletionUsage": {
+      "source_file": "groq/types/completion_usage.py",
+      "fields": {
+        "completion_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "prompt_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "completion_time": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "prompt_time": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "queue_time": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "total_time": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "google.genai.types.GenerateContentResponseUsageMetadata": {
+      "source_file": "google/genai/types.py",
+      "fields": {
+        "cache_tokens_details": {
+          "type": "typing.Optional[list[google.genai.types.ModalityTokenCount]]",
+          "required": false,
+          "default": "None",
+          "alias": "cacheTokensDetails"
+        },
+        "cached_content_token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "cachedContentTokenCount"
+        },
+        "candidates_token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "candidatesTokenCount"
+        },
+        "candidates_tokens_details": {
+          "type": "typing.Optional[list[google.genai.types.ModalityTokenCount]]",
+          "required": false,
+          "default": "None",
+          "alias": "candidatesTokensDetails"
+        },
+        "prompt_token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "promptTokenCount"
+        },
+        "prompt_tokens_details": {
+          "type": "typing.Optional[list[google.genai.types.ModalityTokenCount]]",
+          "required": false,
+          "default": "None",
+          "alias": "promptTokensDetails"
+        },
+        "thoughts_token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "thoughtsTokenCount"
+        },
+        "tool_use_prompt_token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "toolUsePromptTokenCount"
+        },
+        "tool_use_prompt_tokens_details": {
+          "type": "typing.Optional[list[google.genai.types.ModalityTokenCount]]",
+          "required": false,
+          "default": "None",
+          "alias": "toolUsePromptTokensDetails"
+        },
+        "total_token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "totalTokenCount"
+        },
+        "traffic_type": {
+          "type": "typing.Optional[google.genai.types.TrafficType]",
+          "required": false,
+          "default": "None",
+          "alias": "trafficType"
+        }
+      },
+      "extra_policy": "forbid"
+    },
+    "google.genai.types.ModalityTokenCount": {
+      "source_file": "google/genai/types.py",
+      "fields": {
+        "modality": {
+          "type": "typing.Optional[google.genai.types.MediaModality]",
+          "required": false,
+          "default": "None",
+          "alias": "modality"
+        },
+        "token_count": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": "tokenCount"
+        }
+      },
+      "extra_policy": "forbid"
+    },
+    "cohere.types.usage.Usage": {
+      "source_file": "cohere/types/usage.py",
+      "fields": {
+        "billed_units": {
+          "type": "typing.Optional[cohere.types.usage_billed_units.UsageBilledUnits]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "tokens": {
+          "type": "typing.Optional[cohere.types.usage_tokens.UsageTokens]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "cohere.types.usage_tokens.UsageTokens": {
+      "source_file": "cohere/types/usage_tokens.py",
+      "fields": {
+        "input_tokens": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "output_tokens": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "cohere.types.usage_billed_units.UsageBilledUnits": {
+      "source_file": "cohere/types/usage_billed_units.py",
+      "fields": {
+        "input_tokens": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "output_tokens": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "search_units": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "classifications": {
+          "type": "typing.Optional[float]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "mistralai.client.models.usageinfo.UsageInfo": {
+      "source_file": "mistralai/client/models/usageinfo.py",
+      "fields": {
+        "prompt_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "0",
+          "alias": null
+        },
+        "completion_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "0",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "0",
+          "alias": null
+        },
+        "prompt_audio_seconds": {
+          "type": "OptionalNullable[int]",
+          "required": false,
+          "default": "",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "cerebras.cloud.sdk.types.chat.chat_completion.ChatCompletionResponseUsage": {
+      "source_file": "cerebras/cloud/sdk/types/chat/chat_completion.py",
+      "fields": {
+        "completion_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "prompt_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "prompt_tokens_details": {
+          "type": "typing.Optional[cerebras.cloud.sdk.types.chat.chat_completion.ChatCompletionResponseUsagePromptTokensDetails]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "cerebras.cloud.sdk.types.chat.chat_completion.ChatCompletionResponseUsagePromptTokensDetails": {
+      "source_file": "cerebras/cloud/sdk/types/chat/chat_completion.py",
+      "fields": {
+        "cached_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "fireworks.client.api.UsageInfo": {
+      "source_file": "fireworks/client/api.py",
+      "fields": {
+        "prompt_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "completion_tokens": {
+          "type": "typing.Optional[int]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "ignore"
+    },
+    "writerai.types.chat_completion_usage.ChatCompletionUsage": {
+      "source_file": "writerai/types/chat_completion_usage.py",
+      "fields": {
+        "completion_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "prompt_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "total_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        },
+        "completion_tokens_details": {
+          "type": "typing.Optional[writerai.types.chat_completion_usage.CompletionTokensDetails]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        },
+        "prompt_token_details": {
+          "type": "typing.Optional[writerai.types.chat_completion_usage.PromptTokenDetails]",
+          "required": false,
+          "default": "None",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "writerai.types.chat_completion_usage.CompletionTokensDetails": {
+      "source_file": "writerai/types/chat_completion_usage.py",
+      "fields": {
+        "reasoning_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "writerai.types.chat_completion_usage.PromptTokenDetails": {
+      "source_file": "writerai/types/chat_completion_usage.py",
+      "fields": {
+        "cached_tokens": {
+          "type": "<class 'int'>",
+          "required": true,
+          "default": "PydanticUndefined",
+          "alias": null
+        }
+      },
+      "extra_policy": "allow"
+    },
+    "xai_sdk.proto.usage_pb2.SamplingUsage": {
+      "fields": {
+        "completion_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "reasoning_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "prompt_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "total_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "prompt_text_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "cached_prompt_text_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "prompt_image_tokens": {
+          "type": 5,
+          "has_presence": false
+        },
+        "num_sources_used": {
+          "type": 5,
+          "has_presence": false
+        }
+      }
+    },
+    "botocore.bedrock-runtime.TokenUsage": {
+      "fields": {
+        "inputTokens": "integer",
+        "outputTokens": "integer",
+        "totalTokens": "integer",
+        "cacheReadInputTokens": "integer",
+        "cacheWriteInputTokens": "integer",
+        "cacheDetails": "list"
+      }
+    },
+    "google.cloud.aiplatform_v1.GenerateContentResponse.UsageMetadata": {
+      "fields": [
+        "prompt_token_count",
+        "candidates_token_count",
+        "thoughts_token_count",
+        "total_token_count",
+        "cached_content_token_count",
+        "prompt_tokens_details",
+        "cache_tokens_details",
+        "candidates_tokens_details"
+      ]
+    }
+  }
+}

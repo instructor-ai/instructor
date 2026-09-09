@@ -9,6 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Anthropic retry usage**: Accumulate documented thinking-token counts when an older SDK retains `output_tokens_details` as a dictionary. Preserve existing SDK response types, cumulative totals, and unknown/null metadata behavior.
+
+### Documentation
+- Document provider-specific usage accounting, raw-response mutation, streaming/cache/batch limitations, and legacy CLI estimate limitations in a sourced audit.
+
 ## [1.17.0] - 2026-09-04
 
 Includes the fixes previously planned for 1.16.1, which was not published. The
