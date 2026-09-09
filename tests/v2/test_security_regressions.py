@@ -306,7 +306,13 @@ def test_anthropic_pdf_url_control():
 
 
 def test_json_extraction_bounds_and_recovery():
+    at_limit = "[" * 128 + "]" * 128
+    assert extract_json_from_codeblock(at_limit) == at_limit
     with pytest.raises(ValueError, match="nesting"):
+        extract_json_from_codeblock("[" * 129 + "]" * 129)
+    # Decoder recursion limits vary by Python version; malformed input must
+    # still be rejected by either the nesting or bounded-work guard.
+    with pytest.raises(ValueError, match="nesting|malformed-input work limit"):
         extract_json_from_codeblock("[" * 2000)
     with pytest.raises(ValueError, match="character limit"):
         extract_json_from_codeblock("x" * (1024 * 1024 + 1))

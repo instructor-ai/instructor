@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 from numbers import Real
-from typing import TYPE_CHECKING, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -14,6 +15,32 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("instructor")
 T_Response = TypeVar("T_Response")
+
+
+def _usage_snapshot(total_usage: Any) -> Any:
+    if isinstance(total_usage, BaseModel):
+        return total_usage.model_copy(deep=True)
+    return copy.deepcopy(total_usage)
+
+
+def _usage_total_tokens(total_usage: Any) -> int | None:
+    direct_total = getattr(total_usage, "total_tokens", None)
+    if isinstance(direct_total, Real) and not isinstance(direct_total, bool):
+        return int(direct_total)
+
+    token_fields = (
+        "input_tokens",
+        "output_tokens",
+        "cache_creation_input_tokens",
+        "cache_read_input_tokens",
+    )
+    values = [getattr(total_usage, field, None) for field in token_fields]
+    numeric_values = [
+        int(value)
+        for value in values
+        if isinstance(value, Real) and not isinstance(value, bool)
+    ]
+    return sum(numeric_values) if numeric_values else None
 
 
 def _field_names(model: BaseModel) -> set[str]:
