@@ -406,22 +406,18 @@ all-extras and provider tests supply separate evidence; declared support is unch
 
 ### GitHub release and PyPI publication are separate
 
-`scheduled-release.yml` prepares artifacts and only creates a GitHub release when
-explicitly dispatched with `publish=true`. It uses `github.token`.
-[GitHub documents that events created with GITHUB_TOKEN do not start another
-workflow](https://docs.github.com/en/actions/concepts/security/github_token), except
-for explicitly listed event types. A `release: published` event is not an exception.
-Consequently, that release creation does **not** trigger `python-publish.yml`, which
-currently listens only for published releases. A successful GitHub release job is
-not evidence of a PyPI upload; inspect both workflow runs and registry state.
+`scheduled-release.yml` creates a GitHub release only when explicitly dispatched
+with `publish=true`, using `github.token`. [GitHub suppresses downstream workflow
+runs for release events created with that token](https://docs.github.com/en/actions/concepts/security/github_token).
+Therefore it does **not** trigger `python-publish.yml`, which listens only for
+`release: published`. A successful GitHub release job is not evidence of a PyPI
+upload; check both workflow runs and registry state.
 
-Until the handoff is changed and reviewed, do not rely on the scheduled-release
-publish switch to publish to PyPI. Any approved manual release process must account
-for how the release event is authenticated and preserve the tested attached
-artifacts. Do not create test tags/releases, re-publish an existing release, add a
-personal token, or broaden workflow permissions merely to exercise this path.
-A future explicit dispatch or reusable-workflow handoff needs its own review of
-approval, artifact identity, and duplicate-publication behavior.
+The handoff needs a separately reviewed change that preserves publication approval,
+tested artifact identity, and duplicate-publication protection. Do not create test
+tags/releases or broaden permissions to exercise it. Until then, an approved manual
+release process must explicitly account for event authentication and the tested
+attached artifacts.
 
 ## Using Cursor for PR Creation
 
