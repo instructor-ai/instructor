@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
 
 from pydantic import BaseModel
 
+from instructor.v2.core.budget import _validate_token_budget
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.hooks import Hooks
@@ -25,11 +26,7 @@ from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
 from instructor.v2.core.messages import isolate_retry_kwargs
 from instructor.v2.core.response_model import prepare_response_model
-from instructor.v2.core.retry import (
-    _validate_token_budget,
-    retry_async_v2,
-    retry_sync_v2,
-)
+from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
