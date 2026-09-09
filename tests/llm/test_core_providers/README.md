@@ -1,5 +1,9 @@
 # Core Provider Tests
 
+For implemented modes, local SDK contracts, live-test evidence and known gaps, see
+the [provider evidence matrix](../../../docs/testing/provider-evidence.md). A green
+job with missing credentials or skipped tests does not establish provider compatibility.
+
 This directory contains unified tests that run across **all core providers**: OpenAI, Anthropic, Google (Gemini), Cohere, xAI, Mistral, Cerebras, Fireworks, Writer, and Perplexity.
 
 ## Philosophy
