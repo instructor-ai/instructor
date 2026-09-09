@@ -362,10 +362,18 @@ def make_request_cache_key(
 
     def encode(value: Any) -> Any:
         if isinstance(value, BaseModel):
-            return value.model_dump(mode="json")
+            return encode(value.model_dump(mode="json"))
         if isinstance(value, type) and issubclass(value, BaseModel):
-            return value.model_json_schema()
-        raise TypeError(f"Unsupported cache identity value: {type(value).__name__}")
+            return encode(value.model_json_schema())
+        if isinstance(value, dict):
+            # JSON coerces mapping keys to strings, aliasing distinct policies
+            # such as {1: "allowed"} and {"1": "allowed"} in validation context.
+            if any(not isinstance(key, str) for key in value):
+                raise TypeError("Cache identity mappings require string keys")
+            return {key: encode(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [encode(item) for item in value]
+        return value
 
     try:
         payload = {
@@ -380,7 +388,7 @@ def make_request_cache_key(
             "context": context,
             "strict": strict,
         }
-        data = json.dumps(payload, sort_keys=True, default=encode, allow_nan=False)
+        data = json.dumps(encode(payload), sort_keys=True, allow_nan=False)
     except (TypeError, ValueError, AttributeError, RecursionError):
         return None
     return hashlib.sha256(data.encode()).hexdigest()

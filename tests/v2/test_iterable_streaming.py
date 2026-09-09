@@ -123,3 +123,27 @@ def test_iterable_pep604_union_reports_unmatched_payload_as_value_error() -> Non
 
     with pytest.raises(ValueError, match="Failed to extract task type"):
         iterable_model.extract_cls_task_type('{"unrelated": true}')
+
+
+@pytest.mark.asyncio
+async def test_streaming_is_independent_of_chunk_boundaries() -> None:
+    """Exercise every split, including escapes, strings and object delimiters."""
+    import json
+
+    expected = [
+        User(name="Alice", bio='braces } {, brackets ][, quote " and slash \\'),
+        User(name="Bob", bio="雪"),
+    ]
+    payload = json.dumps({"tasks": [user.model_dump() for user in expected]})
+    model = cast(Any, IterableModel(User))
+    partitions = [[payload[:i], payload[i:]] for i in range(len(payload) + 1)]
+    partitions.append(list(payload))
+    for chunks in partitions:
+        assert list(model.tasks_from_chunks(chunks)) == expected, chunks
+
+        async def source(parts=chunks):
+            for chunk in parts:
+                yield chunk
+
+        actual = [item async for item in model.tasks_from_chunks_async(source())]
+        assert actual == expected, chunks

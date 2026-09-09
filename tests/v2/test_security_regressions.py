@@ -437,3 +437,42 @@ def test_generic_named_alias_markers_rejected():
     outer = create_model("GenericAliasedOuter", answer=(GenericAlias[int], ...))
     with pytest.raises(ValueError, match="async validators are not supported"):
         prepare_response_model(outer)
+
+
+@pytest.mark.parametrize("async_client", [False, True])
+@pytest.mark.asyncio
+async def test_cache_does_not_reuse_response_for_stringified_context_keys(
+    local_provider, async_client
+):
+    url, calls = local_provider
+    client = instructor.from_provider(
+        "openai/local",
+        base_url=url,
+        api_key="local",
+        mode=instructor.Mode.JSON,
+        async_client=async_client,
+    )
+    cache = AutoCache()
+
+    async def ask(policy):
+        response = client.create(
+            response_model=Answer,
+            cache=cache,
+            context={"policy": policy},
+            messages=[{"role": "user", "content": "answer"}],
+        )
+        return await response if async_client else response
+
+    try:
+        assert (await ask({1: "allowed"})).value == 1
+        assert (await ask({"1": "allowed"})).value == 1
+        assert len(calls) == 2
+        assert (await ask({"1": "allowed"})).value == 1
+        assert len(calls) == 2
+        assert "context" not in calls[-1]
+        assert "cache" not in calls[-1]
+    finally:
+        if async_client:
+            await client.client.close()
+        else:
+            client.client.close()
