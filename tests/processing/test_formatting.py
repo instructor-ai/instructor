@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 from jinja2.exceptions import SecurityError
 from instructor.templating import handle_templating
@@ -166,3 +168,39 @@ def test_handle_templating_with_genai_multimodal_parts():
     assert processed.parts[0].text == "Describe this image"
     assert processed.parts[1].text is None
     assert processed.parts[1].file_data.file_uri == "gs://example/cat.png"
+
+
+@pytest.mark.parametrize("thought", [True, False, None])
+@pytest.mark.parametrize("text", ["The previous response.", ""])
+def test_handle_templating_preserves_genai_text_part_metadata(
+    thought: bool | None, text: str
+) -> None:
+    from google.genai import types
+
+    history = types.Content(
+        role="model",
+        parts=[
+            types.Part(
+                text=text,
+                thought=thought,
+                thought_signature=b"previous-response-signature",
+            )
+        ],
+    )
+    user = types.Content(
+        role="user",
+        parts=[types.Part.from_text(text="Describe {{ subject }}")],
+    )
+    original_history = history.model_dump()
+    original_user = user.model_dump()
+
+    result = handle_templating(
+        {"contents": [history, user]},
+        Mode.GENAI_TOOLS,
+        {"subject": "this image"},
+    )
+
+    assert result["contents"][0].model_dump() == original_history
+    assert result["contents"][1].parts[0].text == "Describe this image"
+    assert history.model_dump() == original_history
+    assert user.model_dump() == original_user

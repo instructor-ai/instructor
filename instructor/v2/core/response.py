@@ -59,7 +59,10 @@ from instructor.v2.core.providers import (
     normalize_mode_for_provider,
     provider_from_mode,
 )
-from instructor.v2.core.response_model import prepare_response_model
+from instructor.v2.core.response_model import (
+    is_typed_dict as is_typed_dict,
+    prepare_response_model,
+)
 from instructor.v2.core.registry import mode_registry
 
 logger = logging.getLogger("instructor")
@@ -113,6 +116,31 @@ def _ensure_registry_loaded() -> None:
     except Exception:
         # Best-effort: allow downstream KeyError to surface if registry is empty.
         return
+
+
+def _finalize_response(model: Any, response_model: Any, response: Any) -> Any:
+    if isinstance(model, IterableBase):
+        logger.debug(f"Returning takes from IterableBase")
+        return ListResponse.from_list(  # type: ignore[return-value]
+            list(cast(Any, model).tasks),
+            raw_response=response,
+        )
+    if isinstance(model, list) and not isinstance(model, ListResponse):
+        logger.debug("Wrapping list response with ListResponse")
+        return ListResponse.from_list(model, raw_response=response)
+
+    if isinstance(response_model, ParallelBase):
+        logger.debug(f"Returning model from ParallelBase")
+        object.__setattr__(model, "_raw_response", response)
+        return model
+
+    if isinstance(model, AdapterBase):
+        logger.debug(f"Returning model from AdapterBase")
+        return cast(Any, model).content
+
+    if isinstance(model, BaseModel):
+        object.__setattr__(model, "_raw_response", response)
+    return model
 
 
 async def process_response_async(
@@ -221,30 +249,7 @@ async def process_response_async(
     ):
         return model
 
-    # ? This really hints at the fact that we need a better way of
-    # ? attaching usage data and the raw response to the model we return.
-    if isinstance(model, IterableBase):
-        logger.debug(f"Returning takes from IterableBase")
-        return ListResponse.from_list(  # type: ignore[return-value]
-            list(cast(Any, model).tasks),
-            raw_response=response,
-        )
-    if isinstance(model, list) and not isinstance(model, ListResponse):
-        logger.debug("Wrapping list response with ListResponse")
-        return ListResponse.from_list(model, raw_response=response)
-
-    if isinstance(response_model, ParallelBase):
-        logger.debug(f"Returning model from ParallelBase")
-        object.__setattr__(model, "_raw_response", response)
-        return model
-
-    if isinstance(model, AdapterBase):
-        logger.debug(f"Returning model from AdapterBase")
-        return cast(Any, model).content
-
-    if isinstance(model, BaseModel):
-        object.__setattr__(model, "_raw_response", response)
-    return model
+    return _finalize_response(model, response_model, response)
 
 
 def process_response(
@@ -363,38 +368,7 @@ def process_response(
     ):
         return model
 
-    # ? This really hints at the fact that we need a better way of
-    # ? attaching usage data and the raw response to the model we return.
-    if isinstance(model, IterableBase):
-        logger.debug(f"Returning takes from IterableBase")
-        return ListResponse.from_list(  # type: ignore[return-value]
-            list(cast(Any, model).tasks),
-            raw_response=response,
-        )
-    if isinstance(model, list) and not isinstance(model, ListResponse):
-        logger.debug("Wrapping list response with ListResponse")
-        return ListResponse.from_list(model, raw_response=response)
-
-    if isinstance(response_model, ParallelBase):
-        logger.debug(f"Returning model from ParallelBase")
-        object.__setattr__(model, "_raw_response", response)
-        return model
-
-    if isinstance(model, AdapterBase):
-        logger.debug(f"Returning model from AdapterBase")
-        return cast(Any, model).content
-
-    if isinstance(model, BaseModel):
-        object.__setattr__(model, "_raw_response", response)
-    return model
-
-
-def is_typed_dict(cls) -> bool:
-    return (
-        isinstance(cls, type)
-        and issubclass(cls, dict)
-        and hasattr(cls, "__annotations__")
-    )
+    return _finalize_response(model, response_model, response)
 
 
 def handle_response_model(
