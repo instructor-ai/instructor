@@ -378,7 +378,9 @@ This builds an sdist, builds its wheel, and installs the wheel in a temporary
 environment outside the checkout. It checks dependency consistency, the typing
 marker, public imports and selected legacy aliases, model/schema helpers, real
 OpenAI sync/async client construction without requests, and `instructor --help`
-with a dummy API key (the CLI currently constructs a client even for help).
+with a dummy API key. This is a constrained CLI smoke: credential-free `--help`
+still fails because CLI modules construct clients at import time, a separate
+unresolved defect.
 Temporary environments are removed on exit; resolved versions appear in the log.
 
 The package compatibility workflow has five bounded combinations:
