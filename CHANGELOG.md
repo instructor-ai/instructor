@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **CLI installation**: Declare the CLI’s `tqdm` dependency directly so `instructor --help` works in clean OpenAI 3 installations, which no longer supply it transitively.
+
 ## [1.17.0] - 2026-09-04
 
 Includes the fixes previously planned for 1.16.1, which was not published. The

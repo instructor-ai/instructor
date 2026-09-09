@@ -371,6 +371,57 @@ uv run coverage report
 - Releases are tagged with version numbers
 - We follow [Semantic Versioning](https://semver.org/)
 
+### Installed-package compatibility
+
+Run `PACKAGE_PYTHON=3.11 tests/packaging/check_package.sh` with uv installed.
+This builds an sdist, builds its wheel, and installs the wheel in a temporary
+environment outside the checkout. It checks dependency consistency, the typing
+marker, public imports and selected legacy aliases, model/schema helpers, real
+OpenAI sync/async client construction without requests, and `instructor --help`.
+Temporary environments are removed on exit; resolved versions appear in the log.
+
+The package compatibility workflow has five bounded combinations:
+
+| Python | SDK selection | Extras |
+| --- | --- | --- |
+| 3.9 | OpenAI 2.0.0 and Pydantic 2.8.0 (declared floors) | None |
+| 3.9 | Latest compatible | None |
+| 3.11 | Latest compatible | None |
+| 3.14 | Latest compatible | None |
+| 3.11 | Latest compatible | google-genai |
+
+Use `PACKAGE_SDK=minimum` for the floor check, or `PACKAGE_EXTRAS=google-genai`
+for the optional import check. Latest means a fresh resolution within the package
+requirements and the selected Python version, not the lockfile or necessarily the
+newest upstream release. The minimum row pins only OpenAI and Pydantic; their
+transitive dependencies, including the matching pydantic-core, resolve normally.
+Pydantic 2.8 predates Python 3.14, so these are deliberately not a Cartesian matrix.
+
+This is packaging evidence, not provider behavioral certification. Other optional
+extras and their minimum SDK versions, intermediate Python versions, Windows and
+Linux/macOS differences are not exhaustively covered here. CI runs on Linux;
+local runs describe their own platform. No provider requests are made. The existing
+all-extras and provider tests supply separate evidence; declared support is unchanged.
+
+### GitHub release and PyPI publication are separate
+
+`scheduled-release.yml` prepares artifacts and only creates a GitHub release when
+explicitly dispatched with `publish=true`. It uses `github.token`.
+[GitHub documents that events created with GITHUB_TOKEN do not start another
+workflow](https://docs.github.com/en/actions/concepts/security/github_token), except
+for explicitly listed event types. A `release: published` event is not an exception.
+Consequently, that release creation does **not** trigger `python-publish.yml`, which
+currently listens only for published releases. A successful GitHub release job is
+not evidence of a PyPI upload; inspect both workflow runs and registry state.
+
+Until the handoff is changed and reviewed, do not rely on the scheduled-release
+publish switch to publish to PyPI. Any approved manual release process must account
+for how the release event is authenticated and preserve the tested attached
+artifacts. Do not create test tags/releases, re-publish an existing release, add a
+personal token, or broaden workflow permissions merely to exercise this path.
+A future explicit dispatch or reusable-workflow handoff needs its own review of
+approval, artifact identity, and duplicate-publication behavior.
+
 ## Using Cursor for PR Creation
 
 Cursor (https://cursor.sh) is a code editor powered by AI that can help you create PRs efficiently. We encourage using Cursor for Instructor development:
