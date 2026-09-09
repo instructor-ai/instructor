@@ -9,6 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Partial streaming**: Preserve model instances inside nullable list fields in sync and async streams, while retaining validation context and final validation. ([#2600](https://github.com/567-labs/instructor/pull/2600))
+- **GenAI truncation**: Raise `IncompleteOutputException` for non-streaming tools and JSON responses ending with `MAX_TOKENS`, instead of accepting schema defaults for missing output. ([#2601](https://github.com/567-labs/instructor/pull/2601))
+- **GenAI templating**: Preserve text-part metadata, including thought flags and signatures, without modifying caller-owned conversation history. ([#2607](https://github.com/567-labs/instructor/issues/2607), [#2608](https://github.com/567-labs/instructor/pull/2608))
+- **Documentation links**: Repair context-validation, quick-start and example links, and use the correct relative API link in the provider documentation template. Consolidates [#2599](https://github.com/567-labs/instructor/pull/2599), [#2609](https://github.com/567-labs/instructor/pull/2609), [#2610](https://github.com/567-labs/instructor/pull/2610) and [#2611](https://github.com/567-labs/instructor/pull/2611).
+
 ## [1.17.0] - 2026-09-04
 
 Includes the fixes previously planned for 1.16.1, which was not published. The
