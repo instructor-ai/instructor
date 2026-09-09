@@ -85,7 +85,16 @@ def responses_endpoint() -> Iterator[tuple[str, list[dict[str, Any]]]]:
         thread.join()
 
 
-def assert_wire_contract(calls: list[dict[str, Any]], raw: bool) -> None:
+def assert_response_contract(
+    result: Any, calls: list[dict[str, Any]], raw: bool
+) -> None:
+    if raw:
+        assert isinstance(result, Response)
+        assert result.id == "resp_local"
+        assert isinstance(result.output[0], ResponseFunctionToolCall)
+    else:
+        assert isinstance(result, Answer)
+        assert result.value == 42
     assert len(calls) == 1
     assert calls[0]["path"] == "/v1/responses"
     body = calls[0]["body"]
@@ -120,14 +129,7 @@ def test_sync_responses_sdk_contract(responses_endpoint, raw: bool) -> None:
             max_tokens=100,
             max_retries=1,
         )
-    if raw:
-        assert isinstance(result, Response)
-        assert result.id == "resp_local"
-        assert isinstance(result.output[0], ResponseFunctionToolCall)
-    else:
-        assert isinstance(result, Answer)
-        assert result.value == 42
-    assert_wire_contract(calls, raw)
+    assert_response_contract(result, calls, raw)
 
 
 @pytest.mark.asyncio
@@ -151,14 +153,7 @@ async def test_async_responses_sdk_contract(responses_endpoint, raw: bool) -> No
         )
         assert isawaitable(pending)
         result = await pending
-    if raw:
-        assert isinstance(result, Response)
-        assert result.id == "resp_local"
-        assert isinstance(result.output[0], ResponseFunctionToolCall)
-    else:
-        assert isinstance(result, Answer)
-        assert result.value == 42
-    assert_wire_contract(calls, raw)
+    assert_response_contract(result, calls, raw)
 
 
 def assert_sdk_error(error: InstructorRetryException, calls) -> None:

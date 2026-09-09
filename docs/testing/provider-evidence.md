@@ -2,15 +2,14 @@
 
 Inventory based on `origin/main` at `6969bb68` (2026-09-09 UTC), plus the local
 Responses contracts introduced with this document. This is a test map, **not a
-provider certification**. No live provider calls were executed for this change.
-A supported mode, a collected test, a passed local SDK test, and an executed live
-test are different kinds of evidence.
+provider certification**. Local validation used no live provider calls; remote CI
+evidence must be read per run.
 
 ## Implemented mode inventory
 
 The table below transcribes [ProviderSpec](../../instructor/v2/core/provider_specs.py).
-Names are normalized `Mode` members, not a claim that every upstream model accepts
-that API feature. Legacy names map through each spec's `legacy_modes`; for example,
+Names are normalized `Mode` members. Legacy names map through each spec's
+`legacy_modes`; for example,
 `GENAI_STRUCTURED_OUTPUTS` maps to `JSON`, not `JSON_SCHEMA`. Alias rows have no
 independent mode declaration. An empty declaration must not be interpreted as
 zero supported upstream features. Modes not listed as supported remain unverified;
@@ -43,9 +42,7 @@ the explicit rejection column is not an exhaustive list of every possible mode.
 | litellm | Delegated adapter; no modes declared here | None explicitly listed |
 
 The `Provider.GOOGLE` and `UNKNOWN` enum values are not independent specs.
-[Automatic routing](../../instructor/auto_client.py) and public compatibility
-constructors are additional surfaces; this inventory does not promise that all
-constructor/API/mode combinations are interchangeable. Registry tests in
+Registry tests in
 [test_provider_specs.py](../../tests/v2/test_provider_specs.py) and
 [test_provider_modes.py](../../tests/v2/test_provider_modes.py) cover declarations,
 normalization and selected clients. They are not a live cross-product run.
@@ -126,9 +123,8 @@ uses a real SDK or that these suites were all executed for this PR:
 credential skips and are reported separately. `tests/v2/test_provider_modes.py`
 also contains optional integration paths; it is not the dedicated live-provider
 matrix selection. Statement/branch coverage from `tests/coverage` combines SDK
-objects, test doubles and substituted functions. It cannot replace the wire or
-live contract matrix above. Packaging and minimum/maximum SDK compatibility are
-owned by a separate workflow/task; no dependency range claim is added here.
+objects, test doubles and substituted functions. Packaging and SDK version
+compatibility are separate from this behavioral inventory.
 
 ## Reading CI evidence
 

@@ -12,14 +12,12 @@ import xml.etree.ElementTree as ET
 def summarize(report: Path) -> str:
     """Count recorded outcomes; absent/malformed reports are not zero tests."""
     heading = f"### {report.stem}\n\n"
-    if not report.exists():
-        return heading + "No report recorded; execution and counts are unknown.\n"
     try:
         root = ET.parse(report).getroot()
-    except (ET.ParseError, OSError):
-        return heading + "Unreadable report; execution and counts are unknown.\n"
-    if root.tag not in {"testsuites", "testsuite"}:
-        return heading + "Not a JUnit report; execution and counts are unknown.\n"
+        if root.tag not in {"testsuites", "testsuite"}:
+            raise ValueError("Not a JUnit report")
+    except (ET.ParseError, OSError, ValueError):
+        return heading + "No usable JUnit report; execution and counts are unknown.\n"
     counts: Counter[str] = Counter()
     skips: Counter[str] = Counter()
     for case in root.iter("testcase"):
@@ -72,7 +70,11 @@ def summarize(report: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reports", type=Path, required=True)
-    parser.add_argument("--requirements", nargs="*", default=[])
+    parser.add_argument(
+        "--requirements",
+        nargs="*",
+        default=os.environ.get("PROVIDER_TEST_REQUIREMENTS", "").split(),
+    )
     args = parser.parse_args()
     lines = [
         "## Provider test evidence\n",
@@ -81,14 +83,11 @@ def main() -> None:
     for key in args.requirements:
         state = "present" if os.environ.get(key) else "missing"
         lines.append(f"- `{key}`: {state}")
-    reports = sorted(args.reports.glob("provider-evidence-*.xml"))
-    initial = args.reports / "provider-evidence-initial.xml"
-    if reports and initial not in reports:
-        reports.insert(0, initial)
-    if not reports:
-        lines.append(
-            "\nNo report recorded; execution and counts are unknown. Check skipped steps, missing configuration, or setup failures.\n"
-        )
+    # Always represent the initial run, even when only a later report exists.
+    reports = sorted(
+        {args.reports / "provider-evidence-initial.xml"}
+        | set(args.reports.glob("provider-evidence-*.xml"))
+    )
     lines.extend(summarize(report) for report in reports)
     output = "\n".join(lines)
     print(output)

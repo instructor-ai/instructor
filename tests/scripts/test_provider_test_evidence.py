@@ -11,6 +11,8 @@ import pytest
 
 from scripts.provider_test_evidence import summarize
 
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts/provider_test_evidence.py"
+
 
 @pytest.mark.parametrize(
     ("source", "expected", "exit_code", "extra"),
@@ -71,7 +73,6 @@ def test_absent_and_corrupt_reports_are_unknown(tmp_path: Path):
 
 
 def test_cli_keeps_retry_evidence_and_hides_secret_values(tmp_path: Path):
-    script = Path(__file__).resolve().parents[2] / "scripts/provider_test_evidence.py"
     summary = tmp_path / "summary.md"
     (tmp_path / "provider-evidence-initial.xml").write_text(
         '<testsuites><testsuite><testcase><failure message="private payload"/></testcase></testsuite></testsuites>'
@@ -82,16 +83,15 @@ def test_cli_keeps_retry_evidence_and_hides_secret_values(tmp_path: Path):
     run = subprocess.run(
         [
             sys.executable,
-            str(script),
+            str(SCRIPT),
             "--reports",
             str(tmp_path),
-            "--requirements",
-            "CONTRACT_TEST_KEY",
         ],
         env={
             **os.environ,
             "GITHUB_STEP_SUMMARY": str(summary),
             "CONTRACT_TEST_KEY": "private-key-value",
+            "PROVIDER_TEST_REQUIREMENTS": "CONTRACT_TEST_KEY",
         },
         capture_output=True,
         text=True,
@@ -107,7 +107,6 @@ def test_cli_keeps_retry_evidence_and_hides_secret_values(tmp_path: Path):
 
 @pytest.mark.parametrize("documented_only", [False, True])
 def test_cli_missing_primary_report_is_unknown(tmp_path: Path, documented_only: bool):
-    script = Path(__file__).resolve().parents[2] / "scripts/provider_test_evidence.py"
     if documented_only:
         (tmp_path / "provider-evidence-documented-models.xml").write_text(
             "<testsuites><testsuite><testcase/></testsuite></testsuites>"
@@ -115,7 +114,7 @@ def test_cli_missing_primary_report_is_unknown(tmp_path: Path, documented_only: 
     run = subprocess.run(
         [
             sys.executable,
-            str(script),
+            str(SCRIPT),
             "--reports",
             str(tmp_path),
             "--requirements",
