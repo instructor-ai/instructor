@@ -39,7 +39,7 @@ class User(BaseModel):
 
 # Using from_provider (recommended)
 client = instructor.from_provider(
-    "vertexai/gemini-3-flash",
+    "vertexai/gemini-3.8-flash",
 )
 
 resp = client.create(
@@ -62,7 +62,6 @@ print(resp)
 import asyncio
 import instructor
 import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 from pydantic import BaseModel
 
 vertexai.init()
@@ -74,10 +73,11 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
+    "vertexai/gemini-3.8-flash",
     async_client=True,
     mode=instructor.Mode.TOOLS,
 )
+
 
 async def extract_user():
     user = await client.create(
@@ -105,19 +105,20 @@ Instructor now supports streaming capabilities with Vertex AI! You can use both 
 
 ```python
 import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 import instructor
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
 vertexai.init()
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
+    "vertexai/gemini-3.8-flash",
     mode=instructor.Mode.TOOLS,
 )
 
@@ -141,18 +142,19 @@ for partial_user in response_stream:
 
 ```python
 import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 import instructor
 from pydantic import BaseModel
 
 vertexai.init()
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
+    "vertexai/gemini-3.8-flash",
     mode=instructor.Mode.TOOLS,
 )
 
@@ -178,22 +180,24 @@ You can also use async versions of both streaming approaches:
 ```python
 import asyncio
 import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
 import instructor
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
 vertexai.init()
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_provider(
-    "vertex_ai/gemini-1.5-pro-preview-0409",
+    "vertexai/gemini-3.8-flash",
     async_client=True,
     mode=instructor.Mode.TOOLS,
 )
+
 
 async def stream_partial():
     response_stream = await client.create(
@@ -207,6 +211,7 @@ async def stream_partial():
     async for partial_user in response_stream:
         print(f"Received update: {partial_user}")
 
+
 async def stream_iterable():
     response_stream = client.create_iterable(
         response_model=UserExtract,
@@ -217,6 +222,7 @@ async def stream_iterable():
 
     async for user in response_stream:
         print(f"Generated user: {user}")
+
 
 # Run async functions
 asyncio.run(stream_partial())
@@ -238,12 +244,11 @@ The legacy `from_vertexai` method is being deprecated in favor of the unified Go
 ```python
 import instructor
 import vertexai
-from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
 
 client = instructor.from_provider(
-    "google/gemini-2.5-flash",
+    "google/gemini-3.8-flash",
     vertexai=True,
     mode=instructor.Mode.TOOLS,
 )
@@ -255,9 +260,9 @@ import instructor
 
 # Option 1: Using from_provider (simplest)
 client = instructor.from_provider(
-    "vertexai/gemini-3-flash",
+    "vertexai/gemini-3.8-flash",
     project="your-project",  # Optional if set in environment
-    location="us-central1"   # Optional, defaults to us-central1
+    location="us-central1",  # Optional, defaults to us-central1
 )
 
 # Option 2: Using from_genai with Google GenAI SDK
@@ -270,7 +275,7 @@ client = from_genai(
         project="your-project",
         location="us-central1",
     ),
-    model="gemini-3-flash",
+    model="gemini-3.8-flash",
 )
 ```
 

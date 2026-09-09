@@ -40,11 +40,13 @@ import instructor
 from pydantic import BaseModel
 
 # Auto-configure xAI client
-client = instructor.from_provider("xai/grok-3-mini")
+client = instructor.from_provider("xai/grok-4.20-reasoning")
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create structured output
 user = client.create(
@@ -66,11 +68,13 @@ from pydantic import BaseModel
 import asyncio
 
 # Auto-configure async xAI client
-client = instructor.from_provider("xai/grok-3-mini", async_client=True)
+client = instructor.from_provider("xai/grok-4.20-reasoning", async_client=True)
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 async def extract_user():
     user = await client.create(
@@ -80,6 +84,7 @@ async def extract_user():
         ],
     )
     return user
+
 
 # Run async function
 user = asyncio.run(extract_user())
@@ -94,28 +99,34 @@ from pydantic import BaseModel
 from typing import List
 import instructor
 
+
 class Address(BaseModel):
     street: str
     city: str
     country: str
+
 
 class User(BaseModel):
     name: str
     age: int
     addresses: List[Address]
 
+
 # Auto-configure xAI client
-client = instructor.from_provider("xai/grok-3-mini")
+client = instructor.from_provider("xai/grok-4.20-reasoning")
 
 # Create structured output with nested objects
 user = client.create(
     response_model=User,
     messages=[
-        {"role": "user", "content": """
+        {
+            "role": "user",
+            "content": """
             Extract: Jason is 25 years old.
             He lives at 123 Main St, New York, USA
             and has a summer house at 456 Beach Rd, Miami, USA
-        """},
+        """,
+        },
     ],
 )
 
@@ -150,18 +161,15 @@ import instructor
 from instructor import Mode
 
 # Using JSON mode (default)
-client = instructor.from_provider("xai/grok-3-mini", mode=Mode.JSON)
+client = instructor.from_provider("xai/grok-4.20-reasoning", mode=Mode.JSON)
 
 # Using TOOLS mode
-client = instructor.from_provider("xai/grok-3-mini", mode=Mode.TOOLS)
+client = instructor.from_provider("xai/grok-4.20-reasoning", mode=Mode.TOOLS)
 ```
 
 ## Available Models
 
-xAI provides access to the following models:
-
-- **grok-3** - The most capable Grok model for complex reasoning tasks
-- **grok-3-mini** - A smaller, faster version optimized for speed and cost
+These examples use `grok-4.20-reasoning`. Check the [current xAI model catalog](https://docs.x.ai/developers/models/grok-4.20-reasoning) for available aliases and capabilities.
 
 ## Limitations
 
@@ -185,15 +193,9 @@ export XAI_API_KEY="your-api-key-here"
 
 ### 2. Model Selection
 
-- Use `grok-3-mini` for:
-  - Simple extraction tasks
-  - High-volume processing
-  - Cost-sensitive applications
-
-- Use `grok-3` for:
-  - Complex reasoning tasks
-  - Multi-step analysis
-  - Higher accuracy requirements
+Evaluate extraction accuracy, latency, and cost on representative inputs before
+changing models. A model's availability does not guarantee support for every
+Instructor mode.
 
 ### 3. Error Handling
 

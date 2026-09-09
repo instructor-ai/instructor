@@ -57,7 +57,7 @@ from pydantic import BaseModel
 import instructor
 
 client = instructor.from_provider(
-    "together/Mixtral-8x7B-Instruct-v0.1",
+    "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
     api_key=os.environ["TOGETHER_API_KEY"],
     base_url="https://api.together.xyz/v1",
 )
@@ -105,21 +105,24 @@ import os
 import asyncio
 
 async_client = instructor.from_provider(
-    "together/Mixtral-8x7B-Instruct-v0.1",
+    "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
     async_client=True,
     api_key=os.environ["TOGETHER_API_KEY"],
     base_url="https://api.together.xyz/v1",
 )
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
+
 
 async def extract_user():
     return await async_client.create(
         response_model=UserExtract,
         messages=[{"role": "user", "content": "Extract jason is 25 years old"}],
     )
+
 
 print(asyncio.run(extract_user()))
 ```

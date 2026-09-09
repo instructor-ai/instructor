@@ -23,7 +23,7 @@ from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.response_model import prepare_response_model
 
 # Ensure handlers are registered (decorators auto-register on import)
-from instructor.v2.providers.xai import handlers  # noqa: F401
+from instructor.v2.providers.xai import handlers
 
 if TYPE_CHECKING:
     from xai_sdk.sync.client import Client as SyncClient
@@ -66,29 +66,7 @@ def _finalize_parsed_response(parsed: Any, raw_response: Any) -> Any:
 
 
 def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
-    """Convert OpenAI-style messages to xAI format."""
-    if xchat is None:
-        raise ImportError("xai_sdk is required for xAI provider")
-
-    converted = []
-    for m in messages:
-        role = m["role"]
-        content = m.get("content", "")
-        if isinstance(content, str):
-            c = xchat.text(content)
-        else:
-            raise ValueError("Only string content supported for xAI provider")
-        if role == "user":
-            converted.append(xchat.user(c))
-        elif role == "assistant":
-            converted.append(xchat.assistant(c))
-        elif role == "system":
-            converted.append(xchat.system(c))
-        elif role == "tool":
-            converted.append(xchat.tool_result(content))
-        else:
-            raise ValueError(f"Unsupported role: {role}")
-    return converted
+    return handlers._convert_messages_with_chat(messages, xchat)
 
 
 def _add_md_json_instructions(

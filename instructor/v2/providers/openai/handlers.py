@@ -650,6 +650,34 @@ class OpenAIHandlerBase(ModeHandler):
             )
         return choices[0].message.content or ""
 
+    def _parse_json_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool = False,
+    ) -> Any:
+        if self._should_parse_streaming(response_model, stream):
+            return self._parse_streaming_response(
+                response_model,
+                response,
+                validation_context,
+                strict,
+            )
+
+        if hasattr(response, "choices") and response.choices:
+            if response.choices[0].finish_reason == "length":
+                raise IncompleteOutputException(last_completion=response)
+
+        text = self._extract_text_content(response)
+        parsed = response_model.model_validate_json(
+            text,
+            context=validation_context,
+            strict=strict,
+        )
+        return self._finalize_parsed_result(response_model, response, parsed)
+
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.TOOLS)
 class OpenAIToolsHandler(OpenAIHandlerBase):
@@ -823,28 +851,9 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
         stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
-        """Parse JSON schema response."""
-        # Check for streaming
-        if self._should_parse_streaming(response_model, stream):
-            return self._parse_streaming_response(
-                response_model,
-                response,
-                validation_context,
-                strict,
-            )
-
-        # Check for incomplete output
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
-
-        text = self._extract_text_content(response)
-        parsed = response_model.model_validate_json(
-            text,
-            context=validation_context,
-            strict=strict,
+        return self._parse_json_response(
+            response, response_model, validation_context, strict, stream
         )
-        return self._finalize_parsed_result(response_model, response, parsed)
 
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.JSON)
@@ -911,25 +920,9 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
         stream: bool = False,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
-        if self._should_parse_streaming(response_model, stream):
-            return self._parse_streaming_response(
-                response_model,
-                response,
-                validation_context,
-                strict,
-            )
-
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
-
-        text = self._extract_text_content(response)
-        parsed = response_model.model_validate_json(
-            text,
-            context=validation_context,
-            strict=strict,
+        return self._parse_json_response(
+            response, response_model, validation_context, strict, stream
         )
-        return self._finalize_parsed_result(response_model, response, parsed)
 
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.MD_JSON)

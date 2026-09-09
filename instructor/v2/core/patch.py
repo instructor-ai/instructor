@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
 
 from pydantic import BaseModel
 
+from instructor.v2.core.budget import _validate_token_budget
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.providers import Provider
 from instructor.v2.core.hooks import Hooks
@@ -25,11 +26,7 @@ from instructor.v2.core.exceptions import RegistryValidationMixin
 from instructor.v2.core.registry import mode_registry
 from instructor.v2.core.messages import isolate_retry_kwargs
 from instructor.v2.core.response_model import prepare_response_model
-from instructor.v2.core.retry import (
-    _validate_token_budget,
-    retry_async_v2,
-    retry_sync_v2,
-)
+from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -215,8 +212,8 @@ def _create_sync_wrapper(
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
         cache_namespace = kwargs.pop("cache_namespace", cache_scope)
-        if not isinstance(cache_namespace, str):
-            raise TypeError("cache_namespace must be a string")
+        if not isinstance(cache_namespace, str) or not cache_namespace:
+            raise ValueError("cache_namespace must be a non-empty string")
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
         cache_ttl = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
 
@@ -258,8 +255,8 @@ def _create_sync_wrapper(
                 BaseCache,
                 make_request_cache_key,
                 client_cache_identity,
-                load_cached_response,
             )
+            from instructor.v2.core.cache_response import load_cached_response
 
             if isinstance(cache, BaseCache):
                 key = make_request_cache_key(
@@ -297,9 +294,12 @@ def _create_sync_wrapper(
         )
 
         if key is not None and isinstance(response, BaseModel):
-            from instructor.cache import store_cached_response
+            from instructor.v2.core.cache_response import store_cached_response
 
-            store_cached_response(cache, key, response, ttl=cache_ttl)
+            try:
+                store_cached_response(cache, key, response, ttl=cache_ttl)
+            except ModuleNotFoundError:
+                pass
 
         return response  # type: ignore[return-value]
 
@@ -336,8 +336,8 @@ def _create_async_wrapper(
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
         cache_namespace = kwargs.pop("cache_namespace", cache_scope)
-        if not isinstance(cache_namespace, str):
-            raise TypeError("cache_namespace must be a string")
+        if not isinstance(cache_namespace, str) or not cache_namespace:
+            raise ValueError("cache_namespace must be a non-empty string")
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
         cache_ttl = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
 
@@ -379,8 +379,8 @@ def _create_async_wrapper(
                 BaseCache,
                 make_request_cache_key,
                 client_cache_identity,
-                load_cached_response,
             )
+            from instructor.v2.core.cache_response import load_cached_response
 
             if isinstance(cache, BaseCache):
                 key = make_request_cache_key(
@@ -418,9 +418,12 @@ def _create_async_wrapper(
         )
 
         if key is not None and isinstance(response, BaseModel):
-            from instructor.cache import store_cached_response
+            from instructor.v2.core.cache_response import store_cached_response
 
-            store_cached_response(cache, key, response, ttl=cache_ttl)
+            try:
+                store_cached_response(cache, key, response, ttl=cache_ttl)
+            except ModuleNotFoundError:
+                pass
 
         return response  # type: ignore[return-value]
 

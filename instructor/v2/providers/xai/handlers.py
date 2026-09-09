@@ -55,9 +55,9 @@ from instructor.v2.core.handler import ModeHandler
 from instructor.v2.core.messages import copy_messages_for_mutation
 
 
-def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
+def _convert_messages_with_chat(messages: list[dict[str, Any]], chat: Any) -> list[Any]:
     """Convert OpenAI-style messages to xAI format."""
-    if xchat is None:
+    if chat is None:
         raise ImportError("xai_sdk is required for xAI provider")
 
     converted = []
@@ -65,20 +65,24 @@ def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
         role = m["role"]
         content = m.get("content", "")
         if isinstance(content, str):
-            c = xchat.text(content)
+            c = chat.text(content)
         else:
             raise ValueError("Only string content supported for xAI provider")
         if role == "user":
-            converted.append(xchat.user(c))
+            converted.append(chat.user(c))
         elif role == "assistant":
-            converted.append(xchat.assistant(c))
+            converted.append(chat.assistant(c))
         elif role == "system":
-            converted.append(xchat.system(c))
+            converted.append(chat.system(c))
         elif role == "tool":
-            converted.append(xchat.tool_result(content))
+            converted.append(chat.tool_result(content))
         else:
             raise ValueError(f"Unsupported role: {role}")
     return converted
+
+
+def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
+    return _convert_messages_with_chat(messages, xchat)
 
 
 def reask_xai_json(
@@ -428,23 +432,7 @@ class XAIToolsHandler(XAIHandlerBase):
         response: Any,
         exception: Exception,
     ) -> dict[str, Any]:
-        """Handle reask for tools mode."""
-        kwargs = kwargs.copy()
-
-        # Add assistant response to conversation history
-        assistant_msg = {
-            "role": "assistant",
-            "content": str(response),
-        }
-        kwargs["messages"].append(assistant_msg)
-
-        # Add user correction request
-        reask_msg = {
-            "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-        }
-        kwargs["messages"].append(reask_msg)
-        return kwargs
+        return reask_xai_tools(kwargs, response, exception)
 
     def parse_response(
         self,
@@ -611,14 +599,7 @@ class XAIJSONSchemaHandler(XAIHandlerBase):
         response: Any,
         exception: Exception,
     ) -> dict[str, Any]:
-        """Handle reask for JSON schema mode."""
-        kwargs = kwargs.copy()
-        reask_msg = {
-            "role": "user",
-            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response}",
-        }
-        kwargs["messages"].append(reask_msg)
-        return kwargs
+        return reask_xai_json(kwargs, response, exception)
 
     def parse_response(
         self,
@@ -744,14 +725,7 @@ class XAIMDJSONHandler(XAIHandlerBase):
         response: Any,
         exception: Exception,
     ) -> dict[str, Any]:
-        """Handle reask for MD_JSON mode."""
-        kwargs = kwargs.copy()
-        reask_msg = {
-            "role": "user",
-            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response}",
-        }
-        kwargs["messages"].append(reask_msg)
-        return kwargs
+        return reask_xai_json(kwargs, response, exception)
 
     def parse_response(
         self,

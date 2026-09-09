@@ -7,6 +7,7 @@ from typing import Any, cast
 from pydantic import BaseModel
 
 from instructor.v2.core.decorators import register_mode_handler
+from instructor.v2.core.errors import IncompleteOutputException
 from instructor.v2.core.handler import ModeHandler
 from instructor.v2.core.mode import Mode
 from instructor.v2.core.multimodal import extract_genai_multimodal_content
@@ -17,6 +18,7 @@ from instructor.v2.dsl.parallel import ParallelBase
 from instructor.v2.dsl.partial import Partial, PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.providers.gemini import utils as gemini_utils
+from instructor.v2.providers.genai.request import update_genai_kwargs
 
 
 def reask_genai_tools(
@@ -78,7 +80,7 @@ def reask_genai_tools(
     )
     kwargs["contents"].append(function_call_content)
     kwargs["contents"].append(
-        types.Content(role="tool", parts=[function_response_part])
+        types.Content(role="user", parts=[function_response_part])
     )
     return kwargs
 
@@ -159,7 +161,11 @@ class GenAIHandlerBase(ModeHandler):
         self.mode = mode
 
     def _clone_kwargs(self, kwargs: dict[str, Any]) -> dict[str, Any]:
-        return kwargs.copy()
+        new_kwargs = kwargs.copy()
+        generation_config = new_kwargs.get("generation_config")
+        if isinstance(generation_config, dict):
+            new_kwargs["generation_config"] = generation_config.copy()
+        return new_kwargs
 
     def _pop_autodetect_images(self, kwargs: dict[str, Any]) -> bool:
         return bool(kwargs.pop("autodetect_images", False))
@@ -234,6 +240,7 @@ class GenAIHandlerBase(ModeHandler):
         for key in (
             "response_model",
             "generation_config",
+            "cached_content",
             "safety_settings",
             "thinking_config",
             "max_tokens",
@@ -258,10 +265,23 @@ class GenAIHandlerBase(ModeHandler):
 
         system_instruction = self._extract_system_instruction(kwargs)
         kwargs = self._convert_messages_to_contents(kwargs, autodetect_images)
-        if system_instruction:
-            kwargs["config"] = types.GenerateContentConfig(
-                system_instruction=system_instruction
-            )
+        user_config = kwargs.get("config")
+        if isinstance(user_config, dict):
+            config = user_config.copy()
+        elif user_config is not None:
+            config = user_config.model_dump(exclude_none=True)
+        else:
+            config = {}
+        cached_content = kwargs.pop("cached_content", None)
+        if config.get("cached_content") is None and cached_content is not None:
+            config["cached_content"] = cached_content
+        if config.get("cached_content") is not None:
+            for field in ("system_instruction", "tools", "tool_config"):
+                config.pop(field, None)
+        elif system_instruction:
+            config["system_instruction"] = system_instruction
+        if config:
+            kwargs["config"] = types.GenerateContentConfig(**config)
         return self._cleanup_provider_kwargs(kwargs)
 
     def prepare_request(
@@ -300,6 +320,19 @@ class GenAIHandlerBase(ModeHandler):
             if issubclass(response_model, IterableBase):
                 return generator
             return list(generator)
+
+        # A response truncated at max_tokens is not evaluable: the model never
+        # emitted the remaining fields, so parsing it yields schema defaults that
+        # are indistinguishable from values the model actually chose.
+        # Restores the check shipped in v1.15.0 (#2232), dropped by 60cc815.
+        from google.genai import types as genai_types
+
+        candidates = getattr(response, "candidates", None)
+        if (
+            candidates
+            and candidates[0].finish_reason == genai_types.FinishReason.MAX_TOKENS
+        ):
+            raise IncompleteOutputException(last_completion=response)
 
         if self.mode == Mode.TOOLS:
             model = parse_genai_tools(
@@ -399,7 +432,7 @@ class GenAIToolsHandler(GenAIHandlerBase):
         }
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
-        generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)
+        generation_config = update_genai_kwargs(new_kwargs, base_config)
         new_kwargs.pop("generation_config", None)  # Remove it after processing
         new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
         new_kwargs = self._convert_messages_to_contents(new_kwargs, autodetect_images)
@@ -470,7 +503,7 @@ class GenAIStructuredOutputsHandler(GenAIHandlerBase):
         }
         # Temporarily put generation_config back for update_genai_kwargs to process
         new_kwargs["generation_config"] = generation_config_dict
-        generation_config = gemini_utils.update_genai_kwargs(new_kwargs, base_config)
+        generation_config = update_genai_kwargs(new_kwargs, base_config)
         new_kwargs.pop("generation_config", None)  # Remove it after processing
         new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
         new_kwargs = self._convert_messages_to_contents(new_kwargs, autodetect_images)
