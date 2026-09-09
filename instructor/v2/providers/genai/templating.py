@@ -17,7 +17,7 @@ def process_message(
         role=message.role,
         parts=[
             (
-                types.Part.from_text(text=apply_template(part.text, context))
+                part.model_copy(update={"text": apply_template(part.text, context)})
                 if isinstance(getattr(part, "text", None), str)
                 else part
             )
