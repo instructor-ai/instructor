@@ -96,7 +96,7 @@ def reask_genai_structured_outputs(
     kwargs = kwargs.copy()
     kwargs["contents"] = list(kwargs.get("contents") or [])
     candidates = getattr(response, "candidates", None)
-    if candidates and candidates[0].content is not None:
+    if candidates and candidates[0].content is not None and candidates[0].content.parts:
         kwargs["contents"].append(candidates[0].content)
     kwargs["contents"].append(
         types.Content(

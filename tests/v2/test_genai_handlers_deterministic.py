@@ -62,7 +62,10 @@ def test_reask_genai_tools_with_function_call_appends_user_response(
     assert "Validation Error found" in function_response["response"]["error"]
 
 
-@pytest.mark.parametrize("response_kind", ["content", "none", "empty", "no_content"])
+@pytest.mark.parametrize(
+    "response_kind",
+    ["content", "none", "empty", "no_content", "no_parts", "empty_parts"],
+)
 def test_reask_genai_structured_outputs_appends_user_error(
     response_kind: str,
 ) -> None:
@@ -79,6 +82,12 @@ def test_reask_genai_structured_outputs_appends_user_error(
         "none": None,
         "empty": types.GenerateContentResponse(candidates=[]),
         "no_content": types.GenerateContentResponse(candidates=[types.Candidate()]),
+        "no_parts": types.GenerateContentResponse(
+            candidates=[types.Candidate(content=types.Content(role="model"))]
+        ),
+        "empty_parts": types.GenerateContentResponse(
+            candidates=[types.Candidate(content=types.Content(role="model", parts=[]))]
+        ),
     }[response_kind]
 
     result = reask_genai_structured_outputs(kwargs, response, ValueError("bad json"))
