@@ -4,6 +4,8 @@ Tests named ``current`` characterize limitations, not a promised future API.
 They should change alongside an approved fix. No transports or mocks are used.
 """
 
+from __future__ import annotations
+
 import json
 from collections.abc import AsyncIterator
 
