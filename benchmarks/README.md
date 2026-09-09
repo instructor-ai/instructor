@@ -3,7 +3,7 @@
 Run from a checkout with Instructor's core dependencies installed:
 
 ```sh
-python scripts/benchmark_local.py --output benchmarks/local.json
+python scripts/benchmark_local.py --output /tmp/instructor-benchmark.json
 ```
 
 This uses only the standard library and existing core dependencies. No credentials,
@@ -106,16 +106,10 @@ class, unlike the initial issue reproducer.
    retainers before describing a leak. Dynamic model churn, cancellation, backpressure,
    validators, other providers/modes and real transport need additional workloads.
 
-`baseline.json` and `BASELINE.md` capture one observed run; they are evidence, not
-performance promises. There is no runtime optimization or before/after speedup in
-this harness PR. Existing `scripts/benchmark_import.py` remains useful for a broader
-lazy-import inventory. `examples/partial_streaming/benchmark.py` is a provider-backed
-example whose results include network/model latency; it is not a local baseline.
+Keep individual run reports outside the checkout, for example under `/tmp` as in
+the commands above. Include measured revisions, environment and settings when
+sharing results in a PR; do not commit generated one-run data.
 
-Related work: [issue #2603](https://github.com/567-labs/instructor/issues/2603),
-[schema-cache PR #2605](https://github.com/567-labs/instructor/pull/2605),
-[preparation-cache PR #2612](https://github.com/567-labs/instructor/pull/2612).
-The benchmark does not depend on either unmerged fix.
-The [focused allocation probe in PR #2624](https://github.com/567-labs/instructor/pull/2624)
-owns GC/cache/weak-reference diagnostics and retained-results controls, with no
-duplicate timing layer or shared benchmark framework.
+Existing `scripts/benchmark_import.py` remains useful for a broader lazy-import
+inventory. `examples/partial_streaming/benchmark.py` is a provider-backed example
+whose results include network/model latency; it is not a local baseline.
