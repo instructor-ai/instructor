@@ -23,6 +23,12 @@ cp "$repo_root/tests/packaging/contract.py" "$tmp_dir/contract.py"
 cd "$tmp_dir"
 unset PYTHONPATH
 "$tmp_dir/.venv/bin/python" -I contract.py
-# CLI modules construct a client at import time, even for help.
-# Use an explicit dummy key so neither user credentials nor CI secrets are needed.
-OPENAI_API_KEY=package-contract "$tmp_dir/.venv/bin/instructor" --help >/dev/null
+# Help must not need credentials or contact a provider.
+unset OPENAI_API_KEY OPENAI_ADMIN_KEY OPENAI_ORG_ID OPENAI_PROJECT_ID
+for command in "" files jobs; do
+    if [ -n "$command" ]; then
+        "$tmp_dir/.venv/bin/instructor" "$command" --help >/dev/null
+    else
+        "$tmp_dir/.venv/bin/instructor" --help >/dev/null
+    fi
+done

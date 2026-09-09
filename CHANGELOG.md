@@ -10,7 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
-- **CLI installation**: Declare the CLI’s `tqdm` dependency directly to fix the missing-dependency crash in OpenAI 3 installations, which no longer supply it transitively. The CLI still requires an API key even for `--help`.
+- **CLI installation**: Declare the CLI’s `tqdm` dependency directly to fix the missing-dependency crash in OpenAI 3 installations, which no longer supply it transitively. Defer file and job client construction so top-level and subcommand help work without provider credentials.
 
 ## [1.17.0] - 2026-09-04
 
