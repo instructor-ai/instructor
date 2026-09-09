@@ -132,8 +132,6 @@ class _PublicHTTPConnection(HTTPConnection):
             addresses = socket.getaddrinfo(
                 self.host, self.port, type=socket.SOCK_STREAM
             )
-            if not addresses:
-                raise OSError("No addresses returned")
             for _, _, _, _, address in addresses:
                 _validate_public_address(str(address[0]))
 

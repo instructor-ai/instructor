@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Union
 
 import pytest
+from requests.adapters import HTTPAdapter
 from pydantic import BaseModel, ValidationError, ValidationInfo, field_validator
 
 import instructor
@@ -83,7 +84,7 @@ def local_provider():
             self.end_headers()
             self.wfile.write(body)
 
-        def log_message(self, *_args):
+        def log_message(self, format: str, *args: Any) -> None:  # noqa: A002, ARG002
             pass
 
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -98,7 +99,7 @@ def local_provider():
 
 
 def request_key(request, **overrides):
-    params = dict(
+    params: dict[str, Any] = dict(
         request=request,
         args=(),
         response_model=Answer,
@@ -283,9 +284,9 @@ def test_session_mounts_public_transport():
             ("http", remote._PublicHTTPConnection),
             ("https", remote._PublicHTTPSConnection),
         ):
-            pool = session.get_adapter(
-                f"{scheme}://example.com"
-            ).poolmanager.connection_from_url(f"{scheme}://example.com")
+            adapter = session.get_adapter(f"{scheme}://example.com")
+            assert isinstance(adapter, HTTPAdapter)
+            pool = adapter.poolmanager.connection_from_url(f"{scheme}://example.com")
             assert pool.ConnectionCls is cls
         assert not session.trust_env
 
@@ -353,8 +354,8 @@ def test_named_alias_markers_rejected():
     from typing_extensions import TypeAliasType
     from pydantic import create_model
 
-    alias = TypeAliasType("Alias", Marked)
-    outer = create_model("AliasedOuter", answer=(alias, ...))
+    Alias = TypeAliasType("Alias", Marked)
+    outer = create_model("AliasedOuter", answer=(Alias, ...))
     with pytest.raises(ValueError, match="async validators are not supported"):
         prepare_response_model(outer)
 
@@ -362,7 +363,8 @@ def test_named_alias_markers_rejected():
 @pytest.mark.parametrize("async_parser", [False, True])
 @pytest.mark.asyncio
 async def test_direct_response_parser_rejects_markers(async_parser):
-    from openai.types.chat import ChatCompletion
+    from openai.types.chat import ChatCompletion, ChatCompletionMessage
+    from openai.types.chat.chat_completion import Choice
     from instructor.v2.core.response import process_response, process_response_async
 
     completion = ChatCompletion(
@@ -371,11 +373,11 @@ async def test_direct_response_parser_rejects_markers(async_parser):
         created=0,
         object="chat.completion",
         choices=[
-            {
-                "index": 0,
-                "finish_reason": "stop",
-                "message": {"role": "assistant", "content": '{"value":1}'},
-            }
+            Choice(
+                index=0,
+                finish_reason="stop",
+                message=ChatCompletionMessage(role="assistant", content='{"value":1}'),
+            )
         ],
     )
     with pytest.raises(ValueError, match="async validators are not supported"):
@@ -430,10 +432,8 @@ def test_generic_named_alias_markers_rejected():
     from typing_extensions import TypeAliasType, TypeVar
     from pydantic import create_model
 
-    variable = TypeVar("T")
-    alias = TypeAliasType(
-        "GenericAlias", tuple[Marked, variable], type_params=(variable,)
-    )
-    outer = create_model("GenericAliasedOuter", answer=(alias[int], ...))
+    T = TypeVar("T")
+    GenericAlias = TypeAliasType("GenericAlias", tuple[Marked, T], type_params=(T,))
+    outer = create_model("GenericAliasedOuter", answer=(GenericAlias[int], ...))
     with pytest.raises(ValueError, match="async validators are not supported"):
         prepare_response_model(outer)

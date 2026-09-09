@@ -215,8 +215,8 @@ def _create_sync_wrapper(
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
         cache_namespace = kwargs.pop("cache_namespace", cache_scope)
-        if not isinstance(cache_namespace, str):
-            raise TypeError("cache_namespace must be a string")
+        if not isinstance(cache_namespace, str) or not cache_namespace:
+            raise ValueError("cache_namespace must be a non-empty string")
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
         cache_ttl = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
 
@@ -299,7 +299,10 @@ def _create_sync_wrapper(
         if key is not None and isinstance(response, BaseModel):
             from instructor.cache import store_cached_response
 
-            store_cached_response(cache, key, response, ttl=cache_ttl)
+            try:
+                store_cached_response(cache, key, response, ttl=cache_ttl)
+            except ModuleNotFoundError:
+                pass
 
         return response  # type: ignore[return-value]
 
@@ -336,8 +339,8 @@ def _create_async_wrapper(
         autodetect_images = bool(kwargs.get("autodetect_images", False))
         cache = kwargs.pop("cache", None)
         cache_namespace = kwargs.pop("cache_namespace", cache_scope)
-        if not isinstance(cache_namespace, str):
-            raise TypeError("cache_namespace must be a string")
+        if not isinstance(cache_namespace, str) or not cache_namespace:
+            raise ValueError("cache_namespace must be a non-empty string")
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
         cache_ttl = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
 
@@ -420,7 +423,10 @@ def _create_async_wrapper(
         if key is not None and isinstance(response, BaseModel):
             from instructor.cache import store_cached_response
 
-            store_cached_response(cache, key, response, ttl=cache_ttl)
+            try:
+                store_cached_response(cache, key, response, ttl=cache_ttl)
+            except ModuleNotFoundError:
+                pass
 
         return response  # type: ignore[return-value]
 

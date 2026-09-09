@@ -489,7 +489,15 @@ class AsyncValidationError(ValueError, InstructorError):
     exception remains available for manually awaited validation workflows.
     """
 
-    errors: list[ValueError]
+    def __init__(
+        self,
+        message: str,
+        *args: Any,
+        errors: list[ValueError] | None = None,
+        **kwargs: Any,
+    ):
+        self.errors = errors if errors is not None else []
+        super().__init__(message, *args, **kwargs)
 
 
 class ResponseParsingError(ValueError, InstructorError):

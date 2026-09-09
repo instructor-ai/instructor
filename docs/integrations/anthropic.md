@@ -1,6 +1,6 @@
 ---
 title: "Anthropic Claude Tutorial: Structured Outputs with Instructor"
-description: "Complete guide to using Anthropic's Claude models with Instructor for structured data extraction. Learn how to use Claude Haiku for type-safe outputs in Python."
+description: "Use Claude Sonnet 5 with Instructor for structured data extraction and type-safe outputs in Python."
 ---
 
 ## See Also
@@ -12,7 +12,7 @@ description: "Complete guide to using Anthropic's Claude models with Instructor 
 
 # Anthropic Claude Tutorial: Structured Outputs with Instructor
 
-Learn how to use Anthropic's Claude Haiku models with Instructor to extract structured, validated data. This tutorial covers everything from basic setup to advanced patterns for production use.
+Use Claude Sonnet 5 with Instructor to extract structured, validated data, from basic setup through streaming and adaptive thinking.
 
 ## Quick Start: Install Instructor for Claude
 
@@ -28,33 +28,34 @@ Once we've done so, getting started is as simple as using our `from_provider` me
 
 ```python
 # Standard library imports
-import os
 from typing import List
 
 # Third-party imports
-import anthropic
 import instructor
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
 # os.environ["ANTHROPIC_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
+
 # Define your models with proper type annotations
 class Properties(BaseModel):
     """Model representing a key-value property."""
+
     name: str = Field(description="The name of the property")
     value: str = Field(description="The value of the property")
 
 
 class User(BaseModel):
     """Model representing a user with properties."""
+
     name: str = Field(description="The user's full name")
     age: int = Field(description="The user's age in years")
     properties: List[Properties] = Field(description="List of user properties")
 
+
 client = instructor.from_provider(
-    "anthropic/claude-4-5-haiku-latest",
-    mode=instructor.Mode.TOOLS
+    "anthropic/claude-sonnet-5", mode=instructor.Mode.TOOLS
 )
 
 try:
@@ -64,12 +65,12 @@ try:
         messages=[
             {
                 "role": "system",
-                "content": "Extract structured information based on the user's request."
+                "content": "Extract structured information based on the user's request.",
             },
             {
                 "role": "user",
                 "content": "Create a user for a model with a name, age, and properties.",
-            }
+            },
         ],
         response_model=User,
     )
@@ -104,16 +105,18 @@ except Exception as e:
 import asyncio
 
 async_client = instructor.from_provider(
-    "anthropic/claude-4-5-haiku-latest",
+    "anthropic/claude-sonnet-5",
     async_client=True,
     mode=instructor.Mode.TOOLS,
 )
+
 
 async def extract_user():
     return await async_client.create(
         messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
         response_model=User,
     )
+
 
 user = asyncio.run(extract_user())
 print(user)
@@ -143,7 +146,7 @@ class GoogleSearch(BaseModel):
 
 # No need to specify Mode.PARALLEL_TOOLS - it's auto-detected!
 client = instructor.from_provider(
-    "anthropic/claude-3-5-haiku-latest",
+    "anthropic/claude-sonnet-5",
     mode=instructor.Mode.TOOLS,  # or just omit and use default
 )
 
@@ -195,7 +198,6 @@ Note that we support local files and base64 strings too with the `from_path` and
 from instructor.processing.multimodal import Image
 from pydantic import BaseModel, Field
 import instructor
-from anthropic import Anthropic
 
 
 class ImageDescription(BaseModel):
@@ -204,7 +206,7 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_provider("anthropic/claude-4-5-haiku-latest")
+client = instructor.from_provider("anthropic/claude-sonnet-5")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.create(
@@ -235,7 +237,6 @@ print(response)
 #     scene='A blueberry bush with clusters of ripe blueberries and some unripe ones against a cloudy sky',
 #     colors=['green', 'blue', 'purple', 'white']
 # )
-
 ```
 
 ### PDF
@@ -248,9 +249,8 @@ Note that we support local files and base64 strings too with the `from_path` and
 
 ```python
 from instructor.processing.multimodal import PDF
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import instructor
-from anthropic import Anthropic
 
 
 class Receipt(BaseModel):
@@ -258,7 +258,7 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("anthropic/claude-4-5-haiku-latest")
+client = instructor.from_provider("anthropic/claude-sonnet-5")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.create(
@@ -283,7 +283,7 @@ response = client.create(
 )
 
 print(response)
-# > Receipt(total=220, items=['English Tea', 'Tofu'])
+#> Receipt(total=220, items=['English Tea', 'Tofu'])
 ```
 
 If you'd like to cache the PDF and use it across multiple different requests, we support that with the `PdfWithCacheControl` class which we can see below.
@@ -292,7 +292,6 @@ If you'd like to cache the PDF and use it across multiple different requests, we
 from instructor.processing.multimodal import PdfWithCacheControl
 from pydantic import BaseModel
 import instructor
-from anthropic import Anthropic
 
 
 class Receipt(BaseModel):
@@ -300,7 +299,7 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("anthropic/claude-4-5-haiku-latest")
+client = instructor.from_provider("anthropic/claude-sonnet-5")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response, completion = client.create_with_completion(
@@ -329,7 +328,7 @@ assert (
     or completion.usage.cache_read_input_tokens > 0
 )
 print(response)
-# > Receipt(total=220, items=['English Tea', 'Tofu'])
+#> Receipt(total=220, items=['English Tea', 'Tofu'])
 ```
 
 ## Streaming Support
@@ -345,10 +344,8 @@ You can use our `create_partial` method to stream a single object. Note that val
 
 ```python
 # Standard library imports
-import os
 
 # Third-party imports
-import anthropic
 import instructor
 from pydantic import BaseModel, Field
 
@@ -357,22 +354,28 @@ from pydantic import BaseModel, Field
 
 # Initialize client with explicit mode
 client = instructor.from_provider(
-    "anthropic/claude-4-5-haiku-latest",
+    "anthropic/claude-sonnet-5",
     mode=instructor.Mode.TOOLS,
 )
+
 
 # Define your model with proper annotations
 class User(BaseModel):
     """Model representing a user profile."""
+
     name: str = Field(description="The user's full name")
     age: int = Field(description="The user's age in years")
     bio: str = Field(description="A biographical description of the user")
+
 
 try:
     # Stream partial objects as they're generated
     for partial_user in client.create_partial(
         messages=[
-            {"role": "system", "content": "Create a detailed user profile based on the information provided."},
+            {
+                "role": "system",
+                "content": "Create a detailed user profile based on the information provided.",
+            },
             {"role": "user", "content": "Create a user profile for Jason, age 25"},
         ],
         response_model=User,
@@ -381,9 +384,9 @@ try:
         print(f"Current state: {partial_user}")
 
     # Expected output:
-    # > Current state: name='Jason' age=None bio=None
-    # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is'
-    # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is always on the lookout for new challenges and opportunities to grow both personally and professionally.'
+    #> Current state: name='Jason' age=None bio=None
+    #> Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is'
+    #> Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is always on the lookout for new challenges and opportunities to grow both personally and professionally.'
 except Exception as e:
     print(f"Error during streaming: {e}")
 ```
@@ -394,10 +397,8 @@ You can also use our `create_iterable` method to stream a list of objects. This 
 
 ```python
 # Standard library imports
-import os
 
 # Third-party imports
-import anthropic
 from instructor import from_provider
 from pydantic import BaseModel, Field
 
@@ -405,15 +406,16 @@ from pydantic import BaseModel, Field
 # os.environ["ANTHROPIC_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
 # Initialize client with explicit mode
-client = from_provider(
-    mode=instructor.Mode.TOOLS
-)
+client = from_provider(mode=instructor.Mode.TOOLS)
+
 
 # Define your model with proper annotations
 class User(BaseModel):
     """Model representing a basic user."""
+
     name: str = Field(description="The user's full name")
     age: int = Field(description="The user's age in years")
+
 
 try:
     # Create an iterable of user objects
@@ -421,7 +423,7 @@ try:
         messages=[
             {
                 "role": "system",
-                "content": "Extract all users from the provided text into structured format."
+                "content": "Extract all users from the provided text into structured format.",
             },
             {
                 "role": "user",
@@ -442,9 +444,9 @@ try:
         print(user)
 
     # Expected output:
-    # > name='Jason' age=25
-    # > name='Sarah' age=30
-    # > name='Mike' age=28
+    #> name='Jason' age=25
+    #> name='Sarah' age=30
+    #> name='Mike' age=28
 except Exception as e:
     print(f"Error during iteration: {e}")
 ```
@@ -482,31 +484,32 @@ We've written a comprehensive walkthrough of how to use caching to implement Ant
 
 ```python
 # Standard library imports
-import os
 
 # Third-party imports
 import instructor
-from anthropic import Anthropic
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
 # os.environ["ANTHROPIC_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
+
 # Define your Pydantic model with proper annotations
 class Character(BaseModel):
     """Model representing a character extracted from text."""
+
     name: str = Field(description="The character's full name")
     description: str = Field(description="A description of the character")
 
+
 # Initialize client with explicit mode and prompt caching
 client = instructor.from_provider(
-    "anthropic/claude-4-5-haiku-latest",
+    "anthropic/claude-sonnet-5",
     mode=instructor.Mode.TOOLS,
 )
 
 try:
     # Load your large context
-    with open("./book.txt", "r") as f:
+    with open("./book.txt") as f:
         book = f.read()
 
     # Make multiple calls using the cached context
@@ -516,7 +519,7 @@ try:
             messages=[
                 {
                     "role": "system",
-                    "content": "Extract character information from the provided text."
+                    "content": "Extract character information from the provided text.",
                 },
                 {
                     "role": "user",
@@ -556,26 +559,31 @@ We also support caching for images. This helps significantly, especially if you'
 
 ```python
 # Standard library imports
-import os
 
 # Third-party imports
 import instructor
-from anthropic import Anthropic
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
 # os.environ["ANTHROPIC_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
+
 # Define your model for image analysis
 class ImageAnalyzer(BaseModel):
     """Model for analyzing image content."""
-    content_description: str = Field(description="Description of what appears in the images")
+
+    content_description: str = Field(
+        description="Description of what appears in the images"
+    )
     objects: list[str] = Field(description="List of objects visible in the images")
-    scene_type: str = Field(description="Type of scene shown in the images (indoor, outdoor, etc.)")
+    scene_type: str = Field(
+        description="Type of scene shown in the images (indoor, outdoor, etc.)"
+    )
+
 
 # Initialize client with explicit mode and image caching enabled
 client = instructor.from_provider(
-    "anthropic/claude-4-5-haiku-latest",
+    "anthropic/claude-sonnet-5",
     mode=instructor.Mode.TOOLS,
 )
 
@@ -589,7 +597,7 @@ try:
         messages=[
             {
                 "role": "system",
-                "content": "Analyze the content of the provided images in detail."
+                "content": "Analyze the content of the provided images in detail.",
             },
             {
                 "role": "user",
@@ -599,18 +607,18 @@ try:
                     {
                         "type": "image",
                         "source": "https://example.com/image.jpg",
-                        "cache_control": cache_control
+                        "cache_control": cache_control,
                     },
                     # Local image with caching
                     {
                         "type": "image",
                         "source": "path/to/image.jpg",
-                        "cache_control": cache_control
+                        "cache_control": cache_control,
                     },
-                ]
-            }
+                ],
+            },
         ],
-        autodetect_images=True  # Automatically handle image content
+        autodetect_images=True,  # Automatically handle image content
     )
 
     # Process the results
@@ -631,7 +639,6 @@ Anthropic supports extended thinking with their Claude models, enabling the mode
 ### Using Extended Thinking with TOOLS
 
 ```python
-from anthropic import Anthropic
 import instructor
 from pydantic import BaseModel
 
@@ -640,7 +647,7 @@ class Answer(BaseModel):
     answer: float
 
 
-client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
+client = instructor.from_provider("anthropic/claude-sonnet-5")
 response = client.create(
     response_model=Answer,
     messages=[
@@ -649,9 +656,9 @@ response = client.create(
             "content": "Which is larger, 9.11 or 9.8?",
         },
     ],
-    temperature=1,
     max_tokens=2000,
-    thinking={"type": "enabled", "budget_tokens": 1024},
+    thinking={"type": "adaptive"},
+    tool_choice={"type": "auto"},
 )
 
 # Response is a validated Answer object
@@ -661,10 +668,10 @@ assert response.answer == 9.8
 
 ### How It Works
 
-When you provide the `thinking` parameter with `type: "enabled"`:
+When you provide the `thinking` parameter with `type: "adaptive"` for Sonnet 5:
 
-1. **Automatic Mode Detection**: `Mode.TOOLS` automatically detects the thinking parameter and adjusts the tool choice strategy to `auto` (required by Anthropic's API when thinking is enabled)
-2. **Model Reasoning**: Claude uses the allocated `budget_tokens` to reason about the problem
+1. **Tool Choice**: Pass `tool_choice={"type": "auto"}` explicitly when using adaptive thinking. Thinking does not support a forced tool choice.
+2. **Model Reasoning**: Claude decides how much reasoning the request needs; adaptive thinking does not use `budget_tokens`.
 3. **Structured Output**: After reasoning, the model returns a valid tool call with your response model
 4. **Validation**: The response is automatically validated against your Pydantic model
 
