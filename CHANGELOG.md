@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Streaming request isolation**: Honor explicit streaming flags across OpenAI-compatible, Anthropic, Mistral, and xAI mode handlers when requests reuse a model. Preserve sequential direct-handler inference when `stream` is omitted, and register the prepared Responses API model for that inference.
+
 ## [1.17.0] - 2026-09-04
 
 Includes the fixes previously planned for 1.16.1, which was not published. The
