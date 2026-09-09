@@ -218,6 +218,43 @@ def test_build_bedrock_chooses_default_mode_from_model_name(
     assert calls[1]["mode"] == Mode.MD_JSON
 
 
+def test_build_bedrock_lazily_delegates_to_provider_owner(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import instructor.v2.providers.bedrock.client as bedrock_client
+
+    captured: dict[str, Any] = {}
+
+    def fake_build_from_model(**kwargs: Any) -> str:
+        captured.update(kwargs)
+        return "bedrock-client"
+
+    monkeypatch.setattr(bedrock_client, "build_from_model", fake_build_from_model)
+    provider_info = {"provider": "bedrock", "operation": "initialize"}
+    options = {"region": "us-west-2"}
+
+    result = auto_client._build_bedrock(
+        provider="bedrock",
+        model_name="amazon.titan-text",
+        async_client=True,
+        mode=Mode.MD_JSON,
+        api_key=None,
+        kwargs=options,
+        provider_info=provider_info,
+    )
+
+    assert result == "bedrock-client"
+    assert captured == {
+        "provider": "bedrock",
+        "model_name": "amazon.titan-text",
+        "async_client": True,
+        "mode": Mode.MD_JSON,
+        "api_key": None,
+        "kwargs": options,
+        "provider_info": provider_info,
+    }
+
+
 def test_build_ollama_uses_tool_mode_only_for_tool_capable_models(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
