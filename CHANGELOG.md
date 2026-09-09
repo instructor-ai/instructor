@@ -9,8 +9,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+## [1.17.1] - 2026-09-09
+
+### Upgrade Notes
+- GenAI tools and JSON requests now raise `IncompleteOutputException` for non-streaming output marked `MAX_TOKENS`, even if the partial payload fits schema defaults. Increase the output-token budget or handle incomplete output explicitly.
+- Ordinary dictionaries containing non-string keys, including nested dictionaries, bypass caching. Pydantic models use their JSON-serialized representation for cache identity, which does not preserve every distinction between original Python key types.
+
 ### Fixed
 - **CLI installation**: Declare the CLI’s `tqdm` dependency directly to fix the missing-dependency crash in OpenAI 3 installations, which no longer supply it transitively. Defer file and job client construction so top-level and subcommand help work without provider credentials.
+- **Partial streaming**: Preserve model instances inside nullable list fields in sync and async streams, while retaining validation context and final validation. ([#2600](https://github.com/567-labs/instructor/pull/2600))
+- **GenAI truncation**: Raise `IncompleteOutputException` for non-streaming tools and JSON responses ending with `MAX_TOKENS`, instead of accepting schema defaults for missing output. ([#2601](https://github.com/567-labs/instructor/pull/2601))
+- **GenAI templating**: Preserve text-part metadata, including thought flags and signatures, without modifying caller-owned conversation history. ([#2607](https://github.com/567-labs/instructor/issues/2607), [#2608](https://github.com/567-labs/instructor/pull/2608))
+- **Documentation links**: Repair context-validation, quick-start and example links, and use the correct relative API link in the provider documentation template. Consolidates [#2599](https://github.com/567-labs/instructor/pull/2599), [#2609](https://github.com/567-labs/instructor/pull/2609), [#2610](https://github.com/567-labs/instructor/pull/2610) and [#2611](https://github.com/567-labs/instructor/pull/2611).
+
+### Security
+- **Cache identity**: Bypass caching for ordinary dictionaries containing non-string keys, including nested dictionaries, to prevent key collisions before serialization. ([#2614](https://github.com/567-labs/instructor/pull/2614))
+
+### Changed
+- Consolidate duplicate helpers and utility tests while preserving public compatibility, and separate token-budget policy from retry execution without changing budget arithmetic or retry behavior. ([#2616](https://github.com/567-labs/instructor/pull/2616), [#2617](https://github.com/567-labs/instructor/pull/2617))
 
 ## [1.17.0] - 2026-09-04
 
@@ -341,6 +357,7 @@ previous published version is 1.16.0.
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
 
-[Unreleased]: https://github.com/567-labs/instructor/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/567-labs/instructor/compare/v1.17.1...HEAD
+[1.17.1]: https://github.com/567-labs/instructor/compare/v1.17.0...v1.17.1
 [1.17.0]: https://github.com/567-labs/instructor/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.16.0
