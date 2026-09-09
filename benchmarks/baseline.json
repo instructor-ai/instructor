@@ -1,0 +1,1172 @@
+{
+  "format_version": 1,
+  "environment": {
+    "revision": "1d8fca7851d7a9397d0618acf9a9f684e5d5223a",
+    "started_at_utc": "2026-09-09T03:13:20.012899+00:00",
+    "harness_sha256": "6702fd0087ab1f9961209898cbf4fb01d4472f0fef494d5e70ba2da498b34b69",
+    "dirty": false,
+    "python": "3.11.11 (main, Dec  3 2024, 17:20:40) [Clang 16.0.0 (clang-1600.0.26.4)]",
+    "platform": "macOS-15.3-arm64-arm-64bit",
+    "machine": "arm64",
+    "cpu_count": 10,
+    "gc_threshold": [
+      700,
+      10,
+      10
+    ],
+    "dependencies": {
+      "instructor": "1.16.1",
+      "pydantic": "2.11.7",
+      "pydantic-core": "2.33.2",
+      "openai": "2.6.0",
+      "jiter": "0.10.0"
+    }
+  },
+  "config": {
+    "cases": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "samples": 7,
+    "iterations": 5,
+    "warmup": 3,
+    "chunk_chars": 128,
+    "memory_batches": 4,
+    "memory_iterations": 75,
+    "memory_stream_iterations": 5
+  },
+  "cold_import": {
+    "wall_ns": {
+      "samples": [
+        1835000,
+        2205292,
+        1950541,
+        1825917,
+        1859750,
+        1905958,
+        1750166
+      ],
+      "median": 1859750,
+      "min": 1750166,
+      "max": 2205292
+    },
+    "cpu_ns": {
+      "samples": [
+        1838000,
+        2155000,
+        1951000,
+        1829000,
+        1864000,
+        1876000,
+        1752000
+      ],
+      "median": 1864000,
+      "min": 1752000,
+      "max": 2155000
+    }
+  },
+  "cases": {
+    "small": {
+      "input": {
+        "payload_bytes": 39,
+        "fields_per_record": 2,
+        "records": 1,
+        "chunks": 1
+      },
+      "timing": {
+        "prepare": {
+          "wall_ns_per_op": {
+            "samples": [
+              201450.0,
+              206941.6,
+              178733.4,
+              180075.0,
+              194416.6,
+              226291.8,
+              192383.4
+            ],
+            "median": 194416.6,
+            "min": 178733.4,
+            "max": 226291.8
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              202400.0,
+              208000.0,
+              179400.0,
+              180800.0,
+              194800.0,
+              211800.0,
+              193000.0
+            ],
+            "median": 194800.0,
+            "min": 179400.0,
+            "max": 211800.0
+          }
+        },
+        "schema_pydantic": {
+          "wall_ns_per_op": {
+            "samples": [
+              160741.6,
+              149525.0,
+              142166.6,
+              152383.4,
+              150933.2,
+              148475.0,
+              136991.6
+            ],
+            "median": 149525.0,
+            "min": 136991.6,
+            "max": 160741.6
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              161400.0,
+              150000.0,
+              142600.0,
+              153000.0,
+              151600.0,
+              149000.0,
+              137400.0
+            ],
+            "median": 150000.0,
+            "min": 137400.0,
+            "max": 161400.0
+          }
+        },
+        "schema_cached": {
+          "wall_ns_per_op": {
+            "samples": [
+              900.0,
+              591.6,
+              216.6,
+              816.8,
+              250.0,
+              791.6,
+              683.4
+            ],
+            "median": 683.4,
+            "min": 216.6,
+            "max": 900.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              1400.0,
+              1200.0,
+              800.0,
+              1400.0,
+              600.0,
+              1400.0,
+              1400.0
+            ],
+            "median": 1400.0,
+            "min": 600.0,
+            "max": 1400.0
+          }
+        },
+        "prepare_schema": {
+          "wall_ns_per_op": {
+            "samples": [
+              392633.2,
+              362366.6,
+              349541.6,
+              339075.0,
+              376841.6,
+              406116.8,
+              346600.0
+            ],
+            "median": 362366.6,
+            "min": 339075.0,
+            "max": 406116.8
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              383200.0,
+              363000.0,
+              349800.0,
+              339600.0,
+              377400.0,
+              396200.0,
+              347000.0
+            ],
+            "median": 363000.0,
+            "min": 339600.0,
+            "max": 396200.0
+          }
+        },
+        "parse_pydantic": {
+          "wall_ns_per_op": {
+            "samples": [
+              4541.6,
+              5191.8,
+              2833.2,
+              4533.4,
+              3400.0,
+              2091.6,
+              4150.0
+            ],
+            "median": 4150.0,
+            "min": 2091.6,
+            "max": 5191.8
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              5200.0,
+              5800.0,
+              3400.0,
+              5200.0,
+              4200.0,
+              2400.0,
+              4600.0
+            ],
+            "median": 4600.0,
+            "min": 2400.0,
+            "max": 5800.0
+          }
+        },
+        "parse_instructor": {
+          "wall_ns_per_op": {
+            "samples": [
+              54808.4,
+              45400.0,
+              51583.4,
+              56366.6,
+              46966.6,
+              52008.2,
+              47266.6
+            ],
+            "median": 51583.4,
+            "min": 45400.0,
+            "max": 56366.6
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              55400.0,
+              45800.0,
+              52000.0,
+              56800.0,
+              47400.0,
+              53000.0,
+              47800.0
+            ],
+            "median": 52000.0,
+            "min": 45800.0,
+            "max": 56800.0
+          }
+        },
+        "stream_sync": {
+          "wall_ns_per_op": {
+            "samples": [
+              15216.6,
+              12633.4,
+              15200.0,
+              10450.0,
+              12400.0,
+              12725.0,
+              9941.6
+            ],
+            "median": 12633.4,
+            "min": 9941.6,
+            "max": 15216.6
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              15800.0,
+              13200.0,
+              16000.0,
+              10800.0,
+              13000.0,
+              13400.0,
+              10400.0
+            ],
+            "median": 13200.0,
+            "min": 10400.0,
+            "max": 16000.0
+          },
+          "first_yield_wall_ns": {
+            "samples": [
+              6833,
+              4375,
+              4125,
+              4041,
+              3875,
+              3833,
+              3750
+            ],
+            "median": 4041,
+            "min": 3750,
+            "max": 6833
+          }
+        },
+        "stream_async": {
+          "wall_ns_per_op": {
+            "samples": [
+              54383.4,
+              52875.0,
+              61041.6,
+              95341.6,
+              60733.4,
+              57391.8,
+              53258.2
+            ],
+            "median": 57391.8,
+            "min": 52875.0,
+            "max": 95341.6
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              33000.0,
+              31000.0,
+              39800.0,
+              60200.0,
+              38600.0,
+              36000.0,
+              31600.0
+            ],
+            "median": 36000.0,
+            "min": 31000.0,
+            "max": 60200.0
+          },
+          "first_yield_wall_ns": {
+            "samples": [
+              6167,
+              5708,
+              5500,
+              5292,
+              5417,
+              5375,
+              5167
+            ],
+            "median": 5417,
+            "min": 5167,
+            "max": 6167
+          }
+        }
+      },
+      "memory": {
+        "prepare_schema": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 75,
+              "pre_gc_delta_bytes": 1023550,
+              "post_gc_delta_bytes": 885791,
+              "batch_peak_delta_bytes": 1028462
+            },
+            {
+              "operations": 150,
+              "pre_gc_delta_bytes": 1853840,
+              "post_gc_delta_bytes": 1716017,
+              "batch_peak_delta_bytes": 1858752
+            },
+            {
+              "operations": 225,
+              "pre_gc_delta_bytes": 2686125,
+              "post_gc_delta_bytes": 2548302,
+              "batch_peak_delta_bytes": 2691037
+            },
+            {
+              "operations": 300,
+              "pre_gc_delta_bytes": 3430082,
+              "post_gc_delta_bytes": 2908926,
+              "batch_peak_delta_bytes": 3435568
+            }
+          ]
+        },
+        "stream_sync": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 5,
+              "pre_gc_delta_bytes": 2144,
+              "post_gc_delta_bytes": 168,
+              "batch_peak_delta_bytes": 5697
+            },
+            {
+              "operations": 10,
+              "pre_gc_delta_bytes": 2488,
+              "post_gc_delta_bytes": 448,
+              "batch_peak_delta_bytes": 5897
+            },
+            {
+              "operations": 15,
+              "pre_gc_delta_bytes": 2800,
+              "post_gc_delta_bytes": 760,
+              "batch_peak_delta_bytes": 6121
+            },
+            {
+              "operations": 20,
+              "pre_gc_delta_bytes": 3080,
+              "post_gc_delta_bytes": 1040,
+              "batch_peak_delta_bytes": 6361
+            }
+          ]
+        },
+        "stream_async": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 5,
+              "pre_gc_delta_bytes": 3000,
+              "post_gc_delta_bytes": 360,
+              "batch_peak_delta_bytes": 8400
+            },
+            {
+              "operations": 10,
+              "pre_gc_delta_bytes": 3408,
+              "post_gc_delta_bytes": 704,
+              "batch_peak_delta_bytes": 8665
+            },
+            {
+              "operations": 15,
+              "pre_gc_delta_bytes": 3688,
+              "post_gc_delta_bytes": 984,
+              "batch_peak_delta_bytes": 8857
+            },
+            {
+              "operations": 20,
+              "pre_gc_delta_bytes": 3968,
+              "post_gc_delta_bytes": 1264,
+              "batch_peak_delta_bytes": 9097
+            }
+          ]
+        }
+      }
+    },
+    "medium": {
+      "input": {
+        "payload_bytes": 1727,
+        "fields_per_record": 8,
+        "records": 16,
+        "chunks": 14
+      },
+      "timing": {
+        "prepare": {
+          "wall_ns_per_op": {
+            "samples": [
+              200175.0,
+              197883.4,
+              193716.8,
+              207575.0,
+              201066.8,
+              184491.8,
+              184716.6
+            ],
+            "median": 197883.4,
+            "min": 184491.8,
+            "max": 207575.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              200600.0,
+              198400.0,
+              194400.0,
+              208200.0,
+              201200.0,
+              185200.0,
+              185200.0
+            ],
+            "median": 198400.0,
+            "min": 185200.0,
+            "max": 208200.0
+          }
+        },
+        "schema_pydantic": {
+          "wall_ns_per_op": {
+            "samples": [
+              245525.0,
+              248008.4,
+              237791.6,
+              244650.0,
+              238041.6,
+              228016.6,
+              233066.6
+            ],
+            "median": 238041.6,
+            "min": 228016.6,
+            "max": 248008.4
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              246200.0,
+              248400.0,
+              238400.0,
+              239600.0,
+              238600.0,
+              228800.0,
+              233600.0
+            ],
+            "median": 238600.0,
+            "min": 228800.0,
+            "max": 248400.0
+          }
+        },
+        "schema_cached": {
+          "wall_ns_per_op": {
+            "samples": [
+              950.0,
+              991.6,
+              775.0,
+              925.0,
+              791.6,
+              750.0,
+              1008.4
+            ],
+            "median": 925.0,
+            "min": 750.0,
+            "max": 1008.4
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              2000.0,
+              1600.0,
+              1200.0,
+              1400.0,
+              1200.0,
+              1200.0,
+              1800.0
+            ],
+            "median": 1400.0,
+            "min": 1200.0,
+            "max": 2000.0
+          }
+        },
+        "prepare_schema": {
+          "wall_ns_per_op": {
+            "samples": [
+              477958.4,
+              450000.0,
+              470433.4,
+              439058.4,
+              474908.4,
+              439675.0,
+              434666.8
+            ],
+            "median": 450000.0,
+            "min": 434666.8,
+            "max": 477958.4
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              476000.0,
+              450600.0,
+              468400.0,
+              439600.0,
+              475000.0,
+              440200.0,
+              435200.0
+            ],
+            "median": 450600.0,
+            "min": 435200.0,
+            "max": 476000.0
+          }
+        },
+        "parse_pydantic": {
+          "wall_ns_per_op": {
+            "samples": [
+              13983.2,
+              17325.0,
+              17325.0,
+              14866.6,
+              13766.6,
+              15425.0,
+              15525.0
+            ],
+            "median": 15425.0,
+            "min": 13766.6,
+            "max": 17325.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              14600.0,
+              18200.0,
+              18200.0,
+              15200.0,
+              14200.0,
+              16000.0,
+              16200.0
+            ],
+            "median": 16000.0,
+            "min": 14200.0,
+            "max": 18200.0
+          }
+        },
+        "parse_instructor": {
+          "wall_ns_per_op": {
+            "samples": [
+              75708.4,
+              59558.4,
+              63891.8,
+              60650.0,
+              63975.0,
+              58691.8,
+              64725.0
+            ],
+            "median": 63891.8,
+            "min": 58691.8,
+            "max": 75708.4
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              76000.0,
+              60000.0,
+              64600.0,
+              61200.0,
+              64800.0,
+              59400.0,
+              65000.0
+            ],
+            "median": 64600.0,
+            "min": 59400.0,
+            "max": 76000.0
+          }
+        },
+        "stream_sync": {
+          "wall_ns_per_op": {
+            "samples": [
+              583691.8,
+              546466.6,
+              564316.6,
+              566816.6,
+              536891.6,
+              560700.0,
+              544516.6
+            ],
+            "median": 560700.0,
+            "min": 536891.6,
+            "max": 583691.8
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              574200.0,
+              546800.0,
+              556000.0,
+              560200.0,
+              537200.0,
+              556000.0,
+              544800.0
+            ],
+            "median": 556000.0,
+            "min": 537200.0,
+            "max": 574200.0
+          },
+          "first_yield_wall_ns": {
+            "samples": [
+              19500,
+              16042,
+              15000,
+              14875,
+              14791,
+              14958,
+              14625
+            ],
+            "median": 14958,
+            "min": 14625,
+            "max": 19500
+          }
+        },
+        "stream_async": {
+          "wall_ns_per_op": {
+            "samples": [
+              604750.0,
+              591108.2,
+              588350.0,
+              598116.6,
+              589675.0,
+              594183.2,
+              580991.6
+            ],
+            "median": 591108.2,
+            "min": 580991.6,
+            "max": 604750.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              582600.0,
+              568600.0,
+              567000.0,
+              576000.0,
+              567800.0,
+              572800.0,
+              559600.0
+            ],
+            "median": 568600.0,
+            "min": 559600.0,
+            "max": 582600.0
+          },
+          "first_yield_wall_ns": {
+            "samples": [
+              20500,
+              17083,
+              17167,
+              18416,
+              18250,
+              16834,
+              17000
+            ],
+            "median": 17167,
+            "min": 16834,
+            "max": 20500
+          }
+        }
+      },
+      "memory": {
+        "prepare_schema": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 75,
+              "pre_gc_delta_bytes": 1215674,
+              "post_gc_delta_bytes": 1000849,
+              "batch_peak_delta_bytes": 1220586
+            },
+            {
+              "operations": 150,
+              "pre_gc_delta_bytes": 2166547,
+              "post_gc_delta_bytes": 1951658,
+              "batch_peak_delta_bytes": 2171459
+            },
+            {
+              "operations": 225,
+              "pre_gc_delta_bytes": 3115960,
+              "post_gc_delta_bytes": 2901071,
+              "batch_peak_delta_bytes": 3120872
+            },
+            {
+              "operations": 300,
+              "pre_gc_delta_bytes": 3856651,
+              "post_gc_delta_bytes": 3306730,
+              "batch_peak_delta_bytes": 3890053
+            }
+          ]
+        },
+        "stream_sync": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 5,
+              "pre_gc_delta_bytes": 17992,
+              "post_gc_delta_bytes": 168,
+              "batch_peak_delta_bytes": 76346
+            },
+            {
+              "operations": 10,
+              "pre_gc_delta_bytes": 18336,
+              "post_gc_delta_bytes": 448,
+              "batch_peak_delta_bytes": 76690
+            },
+            {
+              "operations": 15,
+              "pre_gc_delta_bytes": 18648,
+              "post_gc_delta_bytes": 760,
+              "batch_peak_delta_bytes": 77002
+            },
+            {
+              "operations": 20,
+              "pre_gc_delta_bytes": 18928,
+              "post_gc_delta_bytes": 1040,
+              "batch_peak_delta_bytes": 77282
+            }
+          ]
+        },
+        "stream_async": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 5,
+              "pre_gc_delta_bytes": 18776,
+              "post_gc_delta_bytes": 360,
+              "batch_peak_delta_bytes": 78977
+            },
+            {
+              "operations": 10,
+              "pre_gc_delta_bytes": 19184,
+              "post_gc_delta_bytes": 704,
+              "batch_peak_delta_bytes": 79386
+            },
+            {
+              "operations": 15,
+              "pre_gc_delta_bytes": 19464,
+              "post_gc_delta_bytes": 984,
+              "batch_peak_delta_bytes": 79666
+            },
+            {
+              "operations": 20,
+              "pre_gc_delta_bytes": 19744,
+              "post_gc_delta_bytes": 1264,
+              "batch_peak_delta_bytes": 79946
+            }
+          ]
+        }
+      }
+    },
+    "large": {
+      "input": {
+        "payload_bytes": 63415,
+        "fields_per_record": 32,
+        "records": 128,
+        "chunks": 496
+      },
+      "timing": {
+        "prepare": {
+          "wall_ns_per_op": {
+            "samples": [
+              214125.0,
+              197200.0,
+              190383.2,
+              199783.2,
+              193008.4,
+              185100.0,
+              204150.0
+            ],
+            "median": 197200.0,
+            "min": 185100.0,
+            "max": 214125.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              215200.0,
+              198000.0,
+              191000.0,
+              200400.0,
+              193600.0,
+              185600.0,
+              204600.0
+            ],
+            "median": 198000.0,
+            "min": 185600.0,
+            "max": 215200.0
+          }
+        },
+        "schema_pydantic": {
+          "wall_ns_per_op": {
+            "samples": [
+              596975.0,
+              560258.2,
+              558200.0,
+              567216.6,
+              553316.8,
+              578216.6,
+              597700.0
+            ],
+            "median": 567216.6,
+            "min": 553316.8,
+            "max": 597700.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              594800.0,
+              560800.0,
+              558800.0,
+              567600.0,
+              553600.0,
+              579000.0,
+              580800.0
+            ],
+            "median": 567600.0,
+            "min": 553600.0,
+            "max": 594800.0
+          }
+        },
+        "schema_cached": {
+          "wall_ns_per_op": {
+            "samples": [
+              483.4,
+              1108.4,
+              941.6,
+              1183.2,
+              250.0,
+              958.4,
+              1025.0
+            ],
+            "median": 958.4,
+            "min": 250.0,
+            "max": 1183.2
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              1000.0,
+              1800.0,
+              1600.0,
+              2000.0,
+              800.0,
+              1600.0,
+              1800.0
+            ],
+            "median": 1600.0,
+            "min": 800.0,
+            "max": 2000.0
+          }
+        },
+        "prepare_schema": {
+          "wall_ns_per_op": {
+            "samples": [
+              871400.0,
+              910116.6,
+              819658.4,
+              922925.0,
+              851016.6,
+              859666.6,
+              956575.0
+            ],
+            "median": 871400.0,
+            "min": 819658.4,
+            "max": 956575.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              872000.0,
+              899600.0,
+              820200.0,
+              913800.0,
+              851600.0,
+              860400.0,
+              933400.0
+            ],
+            "median": 872000.0,
+            "min": 820200.0,
+            "max": 933400.0
+          }
+        },
+        "parse_pydantic": {
+          "wall_ns_per_op": {
+            "samples": [
+              292400.0,
+              296916.8,
+              287558.4,
+              284225.0,
+              297758.4,
+              351783.4,
+              290266.8
+            ],
+            "median": 292400.0,
+            "min": 284225.0,
+            "max": 351783.4
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              293400.0,
+              297800.0,
+              288200.0,
+              284800.0,
+              298600.0,
+              348200.0,
+              290800.0
+            ],
+            "median": 293400.0,
+            "min": 284800.0,
+            "max": 348200.0
+          }
+        },
+        "parse_instructor": {
+          "wall_ns_per_op": {
+            "samples": [
+              386925.0,
+              347325.0,
+              355275.0,
+              349641.6,
+              368291.8,
+              396641.6,
+              372050.0
+            ],
+            "median": 368291.8,
+            "min": 347325.0,
+            "max": 396641.6
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              387800.0,
+              348200.0,
+              356400.0,
+              350400.0,
+              365600.0,
+              393400.0,
+              369400.0
+            ],
+            "median": 365600.0,
+            "min": 348200.0,
+            "max": 393400.0
+          }
+        },
+        "stream_sync": {
+          "wall_ns_per_op": {
+            "samples": [
+              337326600.0,
+              332444958.4,
+              335416525.0,
+              333225025.0,
+              331219966.6,
+              330227683.2,
+              329762800.0
+            ],
+            "median": 332444958.4,
+            "min": 329762800.0,
+            "max": 337326600.0
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              334340200.0,
+              329927200.0,
+              332917600.0,
+              330382800.0,
+              328991000.0,
+              328119400.0,
+              327421000.0
+            ],
+            "median": 329927200.0,
+            "min": 327421000.0,
+            "max": 334340200.0
+          },
+          "first_yield_wall_ns": {
+            "samples": [
+              45458,
+              36125,
+              37291,
+              37667,
+              36458,
+              34458,
+              42500
+            ],
+            "median": 37291,
+            "min": 34458,
+            "max": 45458
+          }
+        },
+        "stream_async": {
+          "wall_ns_per_op": {
+            "samples": [
+              331054533.4,
+              341167891.6,
+              328847791.8,
+              337286625.0,
+              341278308.4,
+              387938933.4,
+              429413608.4
+            ],
+            "median": 341167891.6,
+            "min": 328847791.8,
+            "max": 429413608.4
+          },
+          "cpu_ns_per_op": {
+            "samples": [
+              328767800.0,
+              336774400.0,
+              326647800.0,
+              334736600.0,
+              338590200.0,
+              383889400.0,
+              424703400.0
+            ],
+            "median": 336774400.0,
+            "min": 326647800.0,
+            "max": 424703400.0
+          },
+          "first_yield_wall_ns": {
+            "samples": [
+              44708,
+              38541,
+              38125,
+              36875,
+              39125,
+              43833,
+              66750
+            ],
+            "median": 39125,
+            "min": 36875,
+            "max": 66750
+          }
+        }
+      },
+      "memory": {
+        "prepare_schema": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 75,
+              "pre_gc_delta_bytes": 1651169,
+              "post_gc_delta_bytes": 1494601,
+              "batch_peak_delta_bytes": 1656081
+            },
+            {
+              "operations": 150,
+              "pre_gc_delta_bytes": 3086279,
+              "post_gc_delta_bytes": 2929647,
+              "batch_peak_delta_bytes": 3091191
+            },
+            {
+              "operations": 225,
+              "pre_gc_delta_bytes": 4530540,
+              "post_gc_delta_bytes": 4373908,
+              "batch_peak_delta_bytes": 4535452
+            },
+            {
+              "operations": 300,
+              "pre_gc_delta_bytes": 5476023,
+              "post_gc_delta_bytes": 4971773,
+              "batch_peak_delta_bytes": 5510432
+            }
+          ]
+        },
+        "stream_sync": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 5,
+              "pre_gc_delta_bytes": 20048,
+              "post_gc_delta_bytes": 168,
+              "batch_peak_delta_bytes": 1673671
+            },
+            {
+              "operations": 10,
+              "pre_gc_delta_bytes": 20392,
+              "post_gc_delta_bytes": 448,
+              "batch_peak_delta_bytes": 1674015
+            },
+            {
+              "operations": 15,
+              "pre_gc_delta_bytes": 20704,
+              "post_gc_delta_bytes": 760,
+              "batch_peak_delta_bytes": 1674327
+            },
+            {
+              "operations": 20,
+              "pre_gc_delta_bytes": 20984,
+              "post_gc_delta_bytes": 1040,
+              "batch_peak_delta_bytes": 1674607
+            }
+          ]
+        },
+        "stream_async": {
+          "baseline_traced_bytes": 0,
+          "points": [
+            {
+              "operations": 5,
+              "pre_gc_delta_bytes": 20832,
+              "post_gc_delta_bytes": 360,
+              "batch_peak_delta_bytes": 1676302
+            },
+            {
+              "operations": 10,
+              "pre_gc_delta_bytes": 21240,
+              "post_gc_delta_bytes": 704,
+              "batch_peak_delta_bytes": 1676711
+            },
+            {
+              "operations": 15,
+              "pre_gc_delta_bytes": 21520,
+              "post_gc_delta_bytes": 984,
+              "batch_peak_delta_bytes": 1676991
+            },
+            {
+              "operations": 20,
+              "pre_gc_delta_bytes": 21800,
+              "post_gc_delta_bytes": 1264,
+              "batch_peak_delta_bytes": 1677271
+            }
+          ]
+        }
+      }
+    }
+  }
+}
