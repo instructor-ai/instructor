@@ -984,22 +984,13 @@ def _build_bedrock(
     provider_info: dict[str, str],
 ) -> InstructorType:
     """Compatibility entry point for the provider-owned Bedrock builder."""
-    try:
-        from instructor.v2.providers.bedrock.client import build_from_model
-    except ImportError:
-        from instructor.v2.core.errors import ConfigurationError
+    from instructor.v2.providers.bedrock.client import _build_from_model
 
-        raise ConfigurationError(
-            "The boto3 package is required to use the AWS Bedrock provider. "
-            "Install it with `pip install boto3`."
-        ) from None
-
-    return build_from_model(
+    return _build_from_model(
         provider=provider,
         model_name=model_name,
         async_client=async_client,
         mode=mode,
-        api_key=api_key,
         kwargs=kwargs,
         provider_info=provider_info,
     )

@@ -7,14 +7,13 @@ import pytest
 from instructor import Mode
 
 
-def test_build_from_model_constructs_real_sdk_client_without_network(
+def test_from_provider_constructs_real_bedrock_sdk_client_without_network(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pytest.importorskip("boto3")
     from botocore.client import BaseClient
 
-    from instructor import AsyncInstructor
-    from instructor.v2.providers.bedrock.client import build_from_model
+    from instructor import AsyncInstructor, from_provider
 
     monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", "environment-access")
@@ -22,18 +21,12 @@ def test_build_from_model_constructs_real_sdk_client_without_network(
     monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-2")
     monkeypatch.delenv("AWS_SESSION_TOKEN", raising=False)
 
-    wrapped = build_from_model(
-        provider="bedrock",
-        model_name="anthropic.claude-test",
+    wrapped = from_provider(
+        "bedrock/anthropic.claude-test",
         async_client=True,
-        mode=None,
-        api_key=None,
-        kwargs={
-            "region": "us-west-2",
-            "aws_access_key_id": "explicit-access",
-            "aws_secret_access_key": "explicit-secret",
-        },
-        provider_info={"provider": "bedrock", "operation": "initialize"},
+        region="us-west-2",
+        aws_access_key_id="explicit-access",
+        aws_secret_access_key="explicit-secret",
     )
 
     assert isinstance(wrapped, AsyncInstructor)

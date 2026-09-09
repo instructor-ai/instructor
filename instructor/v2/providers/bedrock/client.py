@@ -139,13 +139,12 @@ def from_bedrock(
     )
 
 
-def build_from_model(
+def _build_from_model(
     *,
     provider: str,
     model_name: str,
     async_client: bool,
     mode: Mode | None,
-    api_key: str | None,  # noqa: ARG001
     kwargs: dict[str, Any],
     provider_info: dict[str, str],
 ) -> Instructor | AsyncInstructor:
@@ -216,4 +215,4 @@ def build_from_model(
         raise
 
 
-__all__ = ["build_from_model", "from_bedrock"]
+__all__ = ["from_bedrock"]
