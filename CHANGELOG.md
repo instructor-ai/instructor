@@ -16,6 +16,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Ordinary dictionaries containing non-string keys, including nested dictionaries, bypass caching. Pydantic models use their JSON-serialized representation for cache identity, which does not preserve every distinction between original Python key types.
 
 ### Fixed
+- **CLI installation**: Declare the CLI’s `tqdm` dependency directly to fix the missing-dependency crash in OpenAI 3 installations, which no longer supply it transitively. Defer file and job client construction so top-level and subcommand help work without provider credentials.
 - **Partial streaming**: Preserve model instances inside nullable list fields in sync and async streams, while retaining validation context and final validation. ([#2600](https://github.com/567-labs/instructor/pull/2600))
 - **GenAI truncation**: Raise `IncompleteOutputException` for non-streaming tools and JSON responses ending with `MAX_TOKENS`, instead of accepting schema defaults for missing output. ([#2601](https://github.com/567-labs/instructor/pull/2601))
 - **GenAI templating**: Preserve text-part metadata, including thought flags and signatures, without modifying caller-owned conversation history. ([#2607](https://github.com/567-labs/instructor/issues/2607), [#2608](https://github.com/567-labs/instructor/pull/2608))
