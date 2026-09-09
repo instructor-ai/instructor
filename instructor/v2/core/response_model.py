@@ -5,6 +5,7 @@ from __future__ import annotations
 import inspect
 import sys
 from collections.abc import Iterable
+from functools import lru_cache
 from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel, create_model
@@ -65,7 +66,7 @@ def is_simple_type(typehint: type[T]) -> bool:
     return _is_simple_type(typehint)
 
 
-def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
+def _prepare_response_model_inner(response_model: type[T] | None) -> type[T] | None:
     """Normalize user response-model inputs into runtime-ready model classes."""
     from instructor.v2.validation.async_validators import reject_async_validators
 
@@ -132,3 +133,13 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
 
     reject_async_validators(working_model)
     return cast(type[T], working_model)
+
+_cached_prepare_response_model = lru_cache(maxsize=1024)(_prepare_response_model_inner)
+
+def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
+    """Normalize user response-model inputs into runtime-ready model classes."""
+    try:
+        return _cached_prepare_response_model(response_model)
+    except TypeError:
+        # Fall back to un-memoized execution if the input is unhashable
+        return _prepare_response_model_inner(response_model)
