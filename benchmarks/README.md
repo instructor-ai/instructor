@@ -16,12 +16,12 @@ For a quick correctness smoke run:
 
 ```sh
 python scripts/benchmark_local.py --cases small --samples 2 --iterations 1 \
-  --memory-batches 2 --memory-iterations 2 --output /tmp/benchmark-smoke.json
+  --memory-batches 2 --memory-iterations 2 --memory-stream-iterations 2 --output /tmp/benchmark-smoke.json
 ```
 
 The defaults take several minutes, especially with allocation tracing on the large
 stream. Change `--cases`, `--samples`, `--iterations`, `--warmup`, `--chunk-chars`,
-`--memory-batches`, and `--memory-iterations` explicitly when comparing runs. The
+`--memory-batches`, `--memory-iterations`, and `--memory-stream-iterations` explicitly when comparing runs. The
 JSON records all settings. Run each revision sequentially on the same idle machine
 and interpreter; preserve dependency versions and settings. Do not compare results
 collected concurrently with other benchmarks.
@@ -68,7 +68,10 @@ be attributed solely to payload length.
   streaming, async streaming), with warmup then traced allocation snapshots after
   each batch. Return values are discarded. Each point records current allocation
   deltas before and after full GC and the batch's peak relative to the initial
-  baseline. The default 600 calls exceed the schema cache's current 256-entry bound.
+  baseline. The default 600 preparation/schema calls exceed the schema cache's
+  current 256-entry bound. Streaming defaults to 30 complete streams (six batches
+  of five): tracing every partial model is much more expensive than schema lookup.
+  Increase `--memory-stream-iterations` for longer streaming retention series.
 
 Timing workers warm each operation and report all per-sample values plus median,
 minimum, and maximum, in nanoseconds per operation. GC stays enabled; full collection

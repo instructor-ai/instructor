@@ -224,7 +224,9 @@ def worker(args: argparse.Namespace) -> dict[str, Any]:
             return retained(
                 operations[args.operation],
                 args.memory_batches,
-                args.memory_iterations,
+                args.memory_iterations
+                if args.operation == "prepare_schema"
+                else args.memory_stream_iterations,
                 args.warmup,
             )
         results = {
@@ -301,6 +303,7 @@ def main() -> None:
     parser.add_argument("--chunk-chars", type=positive, default=128)
     parser.add_argument("--memory-batches", type=positive, default=6)
     parser.add_argument("--memory-iterations", type=positive, default=100)
+    parser.add_argument("--memory-stream-iterations", type=positive, default=5)
     parser.add_argument("--output", type=Path)
     parser.add_argument(
         "--worker", choices=("timing", "memory"), help=argparse.SUPPRESS
@@ -366,6 +369,7 @@ def main() -> None:
                 "chunk_chars",
                 "memory_batches",
                 "memory_iterations",
+                "memory_stream_iterations",
             )
             for arg in ("--" + key.replace("_", "-"), str(getattr(args, key)))
         ]
