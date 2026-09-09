@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import errno
 import socket
 from typing import Any
 
@@ -52,20 +53,25 @@ def test_json_depth_limit_rejects_parseable_nested_containers() -> None:
         extract_json_from_codeblock(nested)
 
 
-def test_public_connection_closes_socket_when_source_bind_fails() -> None:
-    # A numeric IPv4 destination with an IPv6 source fails before any connect.
-    connection = _PublicHTTPConnection(
-        "8.8.8.8",
-        port=443,
-        timeout=0.01,
-        source_address=("::1", 0),
-        socket_options=[],
-    )
-    with pytest.raises(NewConnectionError, match="Unable to connect") as caught:
-        connection._new_conn()
-    assert isinstance(caught.value.__cause__, OSError)
-    assert isinstance(caught.value.__cause__.__cause__, socket.gaierror)
-    assert connection.sock is None
+def test_public_connection_reports_source_bind_failure() -> None:
+    # Occupy the source port so binding fails locally on every platform.
+    # An IPv6 source on an IPv4 socket can instead reach connect() on macOS.
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupied:
+        occupied.bind(("127.0.0.1", 0))
+        connection = _PublicHTTPConnection(
+            "8.8.8.8",
+            port=443,
+            timeout=0.01,
+            source_address=occupied.getsockname(),
+            socket_options=[],
+        )
+        with pytest.raises(NewConnectionError, match="Unable to connect") as caught:
+            connection._new_conn()
+        assert isinstance(caught.value.__cause__, OSError)
+        source_error = caught.value.__cause__.__cause__
+        assert isinstance(source_error, OSError)
+        assert source_error.errno == errno.EADDRINUSE
+        assert connection.sock is None
 
 
 def test_anthropic_uppercase_url_downloads_pdf_through_public_transport() -> None:
