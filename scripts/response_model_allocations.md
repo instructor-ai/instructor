@@ -23,37 +23,32 @@ control reproduces the issue's `held.append(prepared)` behavior. Dynamic inputs
 have distinct class names and cycle through one to eight integer fields; their
 construction cost is included. Nested input contains a list of two-field models.
 
-JSON records elapsed batch time, traced bytes before/after GC, peak traced bytes,
+JSON records traced bytes before/after GC, peak traced bytes,
 live generated classes, cache hits/misses/capacity, and retention after releasing
-held results and clearing the cache. Times include tracing and are diagnostic,
-not an uninstrumented performance comparison. No provider requests are made.
+held results and clearing the cache. This probe does not measure timing; the
+separate generic benchmark owns timing and performance comparisons. This probe's
+JSON output and Python/Pydantic labels remain standalone because its cache-clear,
+weak-reference, and retained-results controls are specific to this investigation.
+No provider requests are made.
 
 ## Observations
 
-Both tested environments showed these live generated-class counts:
-
-| Scenario | After 300 / 600 / 900 calls, prepare only | With schema generation | After cache clear |
-| --- | --- | --- | --- |
-| Stable two-field model | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| Stable eight-field model | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| Nested model | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| list[Model] | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| Iterable[Model] | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| TypedDict | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| list[TypedDict] | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| int | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
-| Many dynamic models | 0 / 0 / 0 | 256 / 256 / 256 | 0 |
+The byte measurements below were recorded with probe revision `e89c45a7` before
+removing its unused elapsed-time field. Across all nine scenarios listed below,
+both environments retained 0 / 0 / 0 generated classes after GC at 300 / 600 / 900
+preparation calls, or 256 / 256 / 256 with schema generation. Clearing the schema
+cache released all generated classes in every scenario.
 
 Post-GC Python allocations remain nonzero even when classes are collectible.
 For preparation plus schema generation, rounded KiB above the warmed baseline:
 
 | Scenario | Python 3.11.11, Pydantic 2.11.7: 300 / 600 / 900 | Python 3.13.11, Pydantic 2.12.5: 300 / 600 / 900 |
 | --- | --- | --- |
-| Stable | 2646 / 2698 / 2751 | 2668 / 2696 / 2732 |
-| Wide | 4162 / 4252 / 4322 | 4894 / 4921 / 4958 |
+| Stable (2 fields) | 2646 / 2698 / 2751 | 2668 / 2696 / 2732 |
+| Wide (8 fields) | 4162 / 4252 / 4322 | 4894 / 4921 / 4958 |
 | Nested | 3231 / 3259 / 3296 | 3267 / 3295 / 3332 |
-| list | 3461 / 3512 / 3580 | 3168 / 3197 / 3235 |
-| Iterable | 3467 / 3527 / 3580 | 3168 / 3196 / 3234 |
+| list[Model] | 3461 / 3512 / 3580 | 3168 / 3197 / 3235 |
+| Iterable[Model] | 3467 / 3527 / 3580 | 3168 / 3196 / 3234 |
 | TypedDict | 11901 / 11948 / 11998 | 5027 / 5055 / 5091 |
 | list[TypedDict] | 6037 / 6105 / 6192 | 5478 / 5515 / 5570 |
 | int | 2545 / 2571 / 2623 | 2255 / 2283 / 2320 |
@@ -107,6 +102,13 @@ the data do not prove a flat heap or rule out other long-running memory problems
   around the entire cached call also retries errors raised inside preparation,
   not only unhashable cache keys.
   Reviewed head: `872dc70732bfb39cbce34201d73ec4f0394d57f5`.
+
+The post-PR review loaded both exact candidate modules locally alongside the
+baseline runtime (Python 3.11.11/Pydantic 2.11.7). PR #2605 kept its dynamic input
+alive after GC and released it only after dictionary clearing. PR #2612 returned
+default `1` after rebuilding the source with default `2`, accepted a newly added
+nested async validator that baseline preparation rejected, and invoked a real
+Pydantic schema hook that raises `TypeError` twice versus baseline's once.
 
 Memoization requires a separate contract for mutable model metadata, nested
 rebuilds, per-request streaming flags, and current async-validator rejection.

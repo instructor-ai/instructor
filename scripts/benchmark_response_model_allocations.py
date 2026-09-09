@@ -1,6 +1,6 @@
 """Focused, offline allocation probe for issue #2603.
 
-Run from the repository root with PYTHONPATH=. No generated class is held strongly
+Run from the repository root with PYTHONPATH=. The probe holds no results strongly
 unless --retain-results is selected to reproduce the issue's measurement artifact.
 Tracemalloc includes Python bookkeeping; these are not RSS or native heap numbers.
 """
@@ -12,7 +12,6 @@ import gc
 import itertools
 import json
 import platform
-import time
 import tracemalloc
 import weakref
 from collections.abc import Callable, Iterable
@@ -90,14 +89,12 @@ def measure(
     baseline = tracemalloc.get_traced_memory()[0]
     for batch in range(batches):
         tracemalloc.reset_peak()
-        start = time.perf_counter()
         for _ in range(batch_size):
             model = request()
             refs.append(weakref.ref(model))
             if retain_results:
                 held.append(model)
         del model
-        elapsed = time.perf_counter() - start
         before_gc, peak = tracemalloc.get_traced_memory()
         gc.collect()
         refs = [ref for ref in refs if ref() is not None]
@@ -105,7 +102,6 @@ def measure(
         rows.append(
             {
                 "calls": (batch + 1) * batch_size,
-                "seconds": elapsed,
                 "before_gc_bytes": before_gc - baseline,
                 "after_gc_bytes": after_gc - baseline,
                 "peak_bytes": peak - baseline,

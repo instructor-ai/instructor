@@ -44,9 +44,18 @@ def clear_schema_cache():
 
 
 @pytest.mark.parametrize(
-    "input_model", [User, Nested, list[User], Iterable[User], Record, list[Record], int]
+    "input_model",
+    [
+        pytest.param(User, id="model"),
+        pytest.param(Nested, id="nested"),
+        pytest.param(list[User], id="list"),
+        pytest.param(Iterable[User], id="iterable"),
+        pytest.param(Record, id="typed-dict"),
+        pytest.param(list[Record], id="list-typed-dict"),
+        pytest.param(int, id="scalar"),
+    ],
 )
-@pytest.mark.parametrize("with_schema", [False, True])
+@pytest.mark.parametrize("with_schema", [False, True], ids=["prepare", "schema"])
 def test_generated_classes_are_collectible(input_model: Any, with_schema: bool):
     capacity = generate_openai_schema.cache_info().maxsize
     assert capacity is not None
@@ -128,7 +137,9 @@ def test_explicit_schema_cache_clear_refreshes_rebuilt_prepared_model():
     )
 
 
-@pytest.mark.parametrize("container", [lambda model: model, lambda model: list[model]])
+@pytest.mark.parametrize(
+    "container", [lambda model: model, lambda model: list[model]], ids=["model", "list"]
+)
 def test_repeated_preparation_rechecks_new_nested_async_validator(container):
     child: Any = create_model("Child", value=(str, ...))
     parent = create_model("Parent", child=(child, ...))
