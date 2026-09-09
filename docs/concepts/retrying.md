@@ -99,10 +99,6 @@ a synchronous client does not cancel that client's HTTP request. For lazy
 streaming, place the stream's consumption and cleanup inside the application's
 deadline too; returning a stream does not mean extraction has completed.
 
-The [local HTTP regression report](../architecture/retry-http-semantics.md)
-records measured OpenAI and Anthropic sync/async behavior, SDK versions, and
-limitations. These are loopback measurements, not provider latency estimates.
-
 ## Limit Validation Retry Cost
 
 Use `token_budget` to stop validation retries after cumulative provider usage
