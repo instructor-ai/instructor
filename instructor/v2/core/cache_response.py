@@ -5,12 +5,14 @@ from __future__ import annotations
 import json
 import logging
 from types import SimpleNamespace
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
-from instructor.cache import BaseCache
 from instructor.v2.validation.async_validators import reject_async_validators
+
+if TYPE_CHECKING:
+    from instructor.cache import BaseCache
 
 logger = logging.getLogger("instructor.cache")
 
@@ -22,7 +24,7 @@ def load_cached_response(
     *,
     context: dict[str, Any] | None = None,
     strict: bool | None = None,
-):  # noqa: ANN201
+):
     """Return parsed model if *key* exists in *cache* else None."""
     reject_async_validators(response_model)
     cached = cache.get(key)
@@ -33,7 +35,7 @@ def load_cached_response(
         data = json.loads(cached)
         model_json = data["model"]
         raw_json = data.get("raw")
-    except Exception:  # noqa: BLE001
+    except Exception:
         model_json = cached
         raw_json = None
 
@@ -42,14 +44,13 @@ def load_cached_response(
         # `_raw_response` is an internal attribute used by Instructor; it may not
         # be declared on the Pydantic model type.
         try:
-            # Try to deserialize as JSON and reconstruct object structure
             raw_data = json.loads(raw_json)
 
-            # Check if this looks like a Pydantic-serialized object (has proper structure)
             if isinstance(raw_data, dict) and any(
                 key in raw_data for key in ["id", "object", "model", "choices"]
             ):
-                # Looks like a proper completion object - use SimpleNamespace reconstruction
+                # Completion-like mappings regain attribute access; other JSON
+                # shapes remain plain data structures.
                 object.__setattr__(
                     obj,
                     "_raw_response",
@@ -57,11 +58,10 @@ def load_cached_response(
                 )
                 logger.debug("Restored raw response as SimpleNamespace object")
             else:
-                # Plain dict/list - keep as-is
                 object.__setattr__(obj, "_raw_response", raw_data)
                 logger.debug("Restored raw response as plain data structure")
         except (json.JSONDecodeError, TypeError):
-            # Not valid JSON - probably string fallback
+            # Preserve the historical string fallback.
             object.__setattr__(obj, "_raw_response", raw_json)
             logger.debug(
                 "Restored raw response as string (original could not be fully serialized)"
@@ -72,7 +72,7 @@ def load_cached_response(
 
 def store_cached_response(
     cache: BaseCache, key: str, model: BaseModel, ttl: int | None = None
-) -> None:  # noqa: D401
+) -> None:
     """Serialize *model* and optional raw response to JSON and cache it."""
     raw_resp = getattr(model, "_raw_response", None)
     if raw_resp is not None:
@@ -102,7 +102,7 @@ def store_cached_response(
         raw_json = None
 
     payload = {
-        "model": model.model_dump_json(),  # type: ignore[attr-defined]
+        "model": model.model_dump_json(),
         "raw": raw_json,
     }
     cache.set(key, json.dumps(payload), ttl=ttl)
