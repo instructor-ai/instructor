@@ -9,7 +9,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-## [1.18.0] - 2026-09-09
+## [1.17.1] - 2026-09-09
 
 ### Upgrade Notes
 - GenAI tools and JSON requests now raise `IncompleteOutputException` for non-streaming output marked `MAX_TOKENS`, even if the partial payload fits schema defaults. Increase the output-token budget or handle incomplete output explicitly.
@@ -356,7 +356,7 @@ previous published version is 1.16.0.
 ### Fixed
 - Pydantic v2 deprecation warnings resolved by migrating from class `Config` to `ConfigDict` ([#1782](https://github.com/567-labs/instructor/pull/1782))
 
-[Unreleased]: https://github.com/567-labs/instructor/compare/v1.18.0...HEAD
-[1.18.0]: https://github.com/567-labs/instructor/compare/v1.17.0...v1.18.0
+[Unreleased]: https://github.com/567-labs/instructor/compare/v1.17.1...HEAD
+[1.17.1]: https://github.com/567-labs/instructor/compare/v1.17.0...v1.17.1
 [1.17.0]: https://github.com/567-labs/instructor/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/567-labs/instructor/compare/v1.15.4...v1.16.0
