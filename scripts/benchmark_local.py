@@ -152,6 +152,7 @@ def fixture(case: str, chunk_chars: int) -> dict[str, Any]:
             iter(chunks), handler.extract_streaming_json
         ):
             if first is None:
+                # The parser has yielded a model before this timestamp is taken.
                 first = time.perf_counter_ns() - start
             count += 1
             final = result
@@ -172,6 +173,7 @@ def fixture(case: str, chunk_chars: int) -> dict[str, Any]:
             source(), handler.extract_streaming_json_async
         ):
             if first is None:
+                # The parser has yielded a model before this timestamp is taken.
                 first = time.perf_counter_ns() - start
             count += 1
             final = result
@@ -180,39 +182,34 @@ def fixture(case: str, chunk_chars: int) -> dict[str, Any]:
         return first, count, final
 
     return {
-        "model": model,
         "expected": expected,
-        "payload_bytes": len(payload.encode()),
-        "fields_per_record": width,
-        "records": rows,
-        "chunks": len(chunks),
-        "prepare": lambda: prepare_response_model(model),
-        "schema_pydantic": model.model_json_schema,
-        "schema_cached": lambda: generate_openai_schema(prepared),
-        "prepare_schema": prepare_schema,
-        "parse_pydantic": lambda: model.model_validate_json(payload),
-        "parse_instructor": lambda: prepared.from_response(completion, mode=Mode.JSON),
-        "stream_sync": stream_sync,
-        "stream_async": stream_async,
+        "input": {
+            "payload_bytes": len(payload.encode()),
+            "fields_per_record": width,
+            "records": rows,
+            "chunks": len(chunks),
+        },
+        "operations": {
+            "prepare": lambda: prepare_response_model(model),
+            "schema_pydantic": model.model_json_schema,
+            "schema_cached": lambda: generate_openai_schema(prepared),
+            "prepare_schema": prepare_schema,
+            "parse_pydantic": lambda: model.model_validate_json(payload),
+            "parse_instructor": lambda: prepared.from_response(
+                completion, mode=Mode.JSON
+            ),
+            "stream_sync": stream_sync,
+            "stream_async": stream_async,
+        },
     }
 
 
 def worker(args: argparse.Namespace) -> dict[str, Any]:
     f = fixture(args.case, args.chunk_chars)
     loop = asyncio.new_event_loop()
-    operations = {
-        name: f[name]
-        for name in (
-            "prepare",
-            "schema_pydantic",
-            "schema_cached",
-            "prepare_schema",
-            "parse_pydantic",
-            "parse_instructor",
-            "stream_sync",
-        )
-    }
-    operations["stream_async"] = lambda: loop.run_until_complete(f["stream_async"]())
+    operations = f["operations"]
+    stream_async = operations["stream_async"]
+    operations["stream_async"] = lambda: loop.run_until_complete(stream_async())
     try:
         # Correctness is checked outside measured regions; all SDK data is built above.
         for name in ("parse_pydantic", "parse_instructor"):
@@ -239,10 +236,7 @@ def worker(args: argparse.Namespace) -> dict[str, Any]:
                 [operations[name]()[0] for _ in range(args.samples)]
             )
         return {
-            "input": {
-                key: f[key]
-                for key in ("payload_bytes", "fields_per_record", "records", "chunks")
-            },
+            "input": f["input"],
             "timing": results,
         }
     finally:
@@ -362,16 +356,9 @@ def main() -> None:
         }
         options = [
             arg
-            for key in (
-                "samples",
-                "iterations",
-                "warmup",
-                "chunk_chars",
-                "memory_batches",
-                "memory_iterations",
-                "memory_stream_iterations",
-            )
-            for arg in ("--" + key.replace("_", "-"), str(getattr(args, key)))
+            for key, value in result["config"].items()
+            if key != "cases"
+            for arg in ("--" + key.replace("_", "-"), str(value))
         ]
         for case in args.cases:
             print(f"Measuring {case}...", file=sys.stderr)

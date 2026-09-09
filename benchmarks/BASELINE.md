@@ -9,8 +9,7 @@ Installed distribution metadata: instructor 1.16.1, pydantic 2.11.7, pydantic-co
 
 Instructor itself was imported from the measured checkout, not the installed
 1.16.1 distribution. This used an existing environment, not a new locked
-installation. Other work may
-have been active on the shared host; it was not reserved for benchmarking.
+installation. Other work may have been active on the shared host; it was not reserved for benchmarking.
 Treat this as an initial descriptive baseline, not an optimization comparison.
 
 Command (run with the interpreter from that environment):
@@ -89,3 +88,26 @@ class counts, cache clearing, dynamic models and retained-result controls.
 - This covers one Python/dependency environment and synthetic JSON-mode inputs.
   It does not establish cross-version/provider performance, real transport
   latency, cancellation behavior or fairness under concurrent streams.
+
+## Post-PR simplification review
+
+The original baseline above remains tied to its recorded revision and checksum.
+The later harness simplification removes repeated operation/metadata lists and
+forwards worker flags from the recorded configuration; it does not re-label these
+measurements as a new run. Sync and async timing loops remain explicit: the first
+timestamp is captured after the parser yields a model, and the stream is drained
+through final validation.
+
+The separate streaming memory count remains at five streams per batch by default.
+Schema preparation still runs enough times to exceed the current cache bound;
+applying that repetition count to traced streaming made routine runs impractical.
+No timing gates or allocation thresholds were added. The specialized
+[GC probe in PR #2624](https://github.com/567-labs/instructor/pull/2624) retains its
+cache/weak-reference/control diagnostics without a redundant timing layer.
+
+Review validation: seven harness tests, focused Ruff lint/format and explicit-file
+ty checks passed. A short medium/large probe completed with three samples, one
+timed operation per sample, one warmup, and two memory batches of three schema
+operations or one stream. All result summaries, source checksum and independent
+memory operation counts were checked. This is a harness correctness check, not a
+new performance comparison; the original baseline data remains unchanged.

@@ -16,14 +16,15 @@ For a quick correctness smoke run:
 
 ```sh
 python scripts/benchmark_local.py --cases small --samples 2 --iterations 1 \
-  --memory-batches 2 --memory-iterations 2 --memory-stream-iterations 2 --output /tmp/benchmark-smoke.json
+  --memory-batches 2 --memory-iterations 2 --memory-stream-iterations 2 \
+  --output /tmp/benchmark-smoke.json
 ```
 
 The defaults take several minutes, especially with allocation tracing on the large
 stream. Change `--cases`, `--samples`, `--iterations`, `--warmup`, `--chunk-chars`,
-`--memory-batches`, `--memory-iterations`, and `--memory-stream-iterations` explicitly when comparing runs. The
-JSON records all settings. Run each revision sequentially on the same idle machine
-and interpreter; preserve dependency versions and settings. Do not compare results
+`--memory-batches`, `--memory-iterations`, and `--memory-stream-iterations`
+explicitly when comparing runs. The JSON records all settings. Run each revision
+sequentially on the same idle machine and interpreter; preserve dependency versions and settings. Do not compare results
 collected concurrently with other benchmarks.
 
 ## Fixed workloads and measured boundaries
@@ -60,8 +61,10 @@ be attributed solely to payload length.
   costs, without claiming subtraction isolates an exact overhead.
 - **Streaming:** synchronous and asynchronous provider JSON extraction plus Partial
   parsing. Each run drains the stream, including final validation. Total time and
-  first yielded model time are separate. The first model may be incomplete or empty;
-  this is not time to the first complete record. Async input is immediately ready,
+  first yielded model time are separate. First-yield timing ends inside the consumer
+  loop after the parser yields a model, not at generator construction. The first
+  model may be incomplete or empty; this is not time to the first complete record.
+  Async input is immediately ready,
   with no simulated network delay. A reused event loop's `run_until_complete` is
   included in total async timing, but not the internally measured first yield.
 - **Sustained memory:** fresh worker per case and operation (`prepare_schema`, sync
@@ -113,3 +116,6 @@ Related work: [issue #2603](https://github.com/567-labs/instructor/issues/2603),
 [schema-cache PR #2605](https://github.com/567-labs/instructor/pull/2605),
 [preparation-cache PR #2612](https://github.com/567-labs/instructor/pull/2612).
 The benchmark does not depend on either unmerged fix.
+The [focused allocation probe in PR #2624](https://github.com/567-labs/instructor/pull/2624)
+owns GC/cache/weak-reference diagnostics and retained-results controls, with no
+duplicate timing layer or shared benchmark framework.
