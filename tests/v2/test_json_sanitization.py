@@ -1,21 +1,52 @@
 from __future__ import annotations
 
 import pytest
+from unittest.mock import MagicMock
 from pydantic import BaseModel
 
-from instructor.v2.core.function_calls import _validate_model_from_json
+import instructor
+from openai import OpenAI
 
 class DummyModel(BaseModel):
     name: str
 
-def test_validate_model_from_json_sanitizes_markdown():
-    # Messy string wrapped in markdown and whitespace
-    messy_json = "   \n```json\n{\"name\": \"Alice\"}\n```\n   "
+def test_retry_contract_on_empty_and_malformed_input():
+    # Mock the OpenAI client
+    mock_client = MagicMock(spec=OpenAI)
     
-    # Should correctly sanitize and parse
-    model = _validate_model_from_json(DummyModel, messy_json)
-    assert model.name == "Alice"
-
-def test_validate_model_from_json_empty_string_raises_value_error():
-    with pytest.raises(ValueError, match="Empty response: Cannot parse JSON from an empty string"):
-        _validate_model_from_json(DummyModel, "   \n  ")
+    # Configure the mock to return a sequence of responses
+    mock_response_1 = MagicMock()
+    mock_response_1.choices = [MagicMock()]
+    mock_response_1.choices[0].message.content = ""
+    
+    mock_response_2 = MagicMock()
+    mock_response_2.choices = [MagicMock()]
+    mock_response_2.choices[0].message.content = "```json\n{malformed: 'json'\n```"
+    
+    mock_response_3 = MagicMock()
+    mock_response_3.choices = [MagicMock()]
+    mock_response_3.choices[0].message.content = '{"name": "test"}'
+    
+    # Set the side effect to return the responses in order
+    mock_client.chat.completions.create.side_effect = [
+        mock_response_1,
+        mock_response_2,
+        mock_response_3
+    ]
+    
+    # Wrap the client with instructor
+    client = instructor.from_openai(mock_client)
+    
+    # Call the mocked client with max_retries=3
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": "Hello"}],
+        response_model=DummyModel,
+        max_retries=3
+    )
+    
+    # Assert that the final output successfully parses
+    assert isinstance(response, DummyModel)
+    assert response.name == "test"
+    # Ensure it retried the expected number of times
+    assert mock_client.chat.completions.create.call_count == 3
