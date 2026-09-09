@@ -377,7 +377,8 @@ Run `PACKAGE_PYTHON=3.11 tests/packaging/check_package.sh` with uv installed.
 This builds an sdist, builds its wheel, and installs the wheel in a temporary
 environment outside the checkout. It checks dependency consistency, the typing
 marker, public imports and selected legacy aliases, model/schema helpers, real
-OpenAI sync/async client construction without requests, and `instructor --help`.
+OpenAI sync/async client construction without requests, and `instructor --help`
+with a dummy API key (the CLI currently constructs a client even for help).
 Temporary environments are removed on exit; resolved versions appear in the log.
 
 The package compatibility workflow has five bounded combinations:
