@@ -1,7 +1,14 @@
 """Focused, offline allocation probe for issue #2603.
 
-Run from the repository root with PYTHONPATH=. The probe holds no results strongly
-unless --retain-results is selected to reproduce the issue's measurement artifact.
+Run: PYTHONPATH=. python scripts/benchmark_response_model_allocations.py
+
+The probe holds no results strongly unless --retain-results is selected to
+reproduce the issue's measurement artifact.
+Defaults: three batches of 300 calls, after ten warmup calls and cache clearing.
+JSON includes Python/Pydantic versions, pre/post-GC and peak traced bytes, live
+generated classes, cache statistics, and retention after releasing/clearing.
+Use --scenario dynamic --batch-size 1000 for a longer dynamic-schema run, or
+--scenario stable --retain-results for the control that intentionally holds results.
 Tracemalloc includes Python bookkeeping; these are not RSS or native heap numbers.
 """
 
