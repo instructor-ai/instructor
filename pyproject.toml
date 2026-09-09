@@ -30,7 +30,7 @@ dependencies = [
     "regex>=2023.0.0,<2027.0.0",
 ]
 name = "instructor"
-version = "1.17.0"
+version = "1.17.1"
 description = "structured outputs for llm"
 readme = "README.md"
 

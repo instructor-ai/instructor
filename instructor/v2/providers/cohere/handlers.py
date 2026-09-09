@@ -168,6 +168,29 @@ class CohereHandlerBase(ModeHandler):
             if text:
                 yield text
 
+    def handle_reask(
+        self,
+        kwargs: dict[str, Any],
+        response: Any,
+        exception: Exception,
+    ) -> dict[str, Any]:
+        kwargs = kwargs.copy()
+        correction_msg = self._create_reask_message(response, exception)
+
+        if "messages" in kwargs:
+            # V2 format
+            kwargs["messages"].append({"role": "user", "content": correction_msg})
+        else:
+            # V1 format
+            message = kwargs.get("message", "")
+            if "chat_history" in kwargs:
+                kwargs["chat_history"].append({"role": "user", "message": message})
+            else:
+                kwargs["chat_history"] = [{"role": "user", "message": message}]
+            kwargs["message"] = correction_msg
+
+        return kwargs
+
 
 @register_mode_handler(Provider.COHERE, Mode.TOOLS)
 class CohereToolsHandler(CohereHandlerBase):
@@ -221,29 +244,6 @@ Respond with JSON only. Do not include code fences, markdown, or extra text.
             ] + new_kwargs.get("chat_history", [])
 
         return prepared_model, new_kwargs
-
-    def handle_reask(
-        self,
-        kwargs: dict[str, Any],
-        response: Any,
-        exception: Exception,
-    ) -> dict[str, Any]:
-        kwargs = kwargs.copy()
-        correction_msg = self._create_reask_message(response, exception)
-
-        if "messages" in kwargs:
-            # V2 format
-            kwargs["messages"].append({"role": "user", "content": correction_msg})
-        else:
-            # V1 format
-            message = kwargs.get("message", "")
-            if "chat_history" in kwargs:
-                kwargs["chat_history"].append({"role": "user", "message": message})
-            else:
-                kwargs["chat_history"] = [{"role": "user", "message": message}]
-            kwargs["message"] = correction_msg
-
-        return kwargs
 
     def parse_response(
         self,
@@ -337,29 +337,6 @@ class CohereJSONSchemaHandler(CohereHandlerBase):
 
         return prepared_model, new_kwargs
 
-    def handle_reask(
-        self,
-        kwargs: dict[str, Any],
-        response: Any,
-        exception: Exception,
-    ) -> dict[str, Any]:
-        kwargs = kwargs.copy()
-        correction_msg = self._create_reask_message(response, exception)
-
-        if "messages" in kwargs:
-            # V2 format
-            kwargs["messages"].append({"role": "user", "content": correction_msg})
-        else:
-            # V1 format
-            message = kwargs.get("message", "")
-            if "chat_history" in kwargs:
-                kwargs["chat_history"].append({"role": "user", "message": message})
-            else:
-                kwargs["chat_history"] = [{"role": "user", "message": message}]
-            kwargs["message"] = correction_msg
-
-        return kwargs
-
     def parse_response(
         self,
         response: Any,
@@ -426,29 +403,6 @@ class CohereMDJSONHandler(CohereHandlerBase):
             new_kwargs["message"] = f"{message}\n\n{instruction}"
 
         return prepared_model, new_kwargs
-
-    def handle_reask(
-        self,
-        kwargs: dict[str, Any],
-        response: Any,
-        exception: Exception,
-    ) -> dict[str, Any]:
-        kwargs = kwargs.copy()
-        correction_msg = self._create_reask_message(response, exception)
-
-        if "messages" in kwargs:
-            # V2 format
-            kwargs["messages"].append({"role": "user", "content": correction_msg})
-        else:
-            # V1 format
-            message = kwargs.get("message", "")
-            if "chat_history" in kwargs:
-                kwargs["chat_history"].append({"role": "user", "message": message})
-            else:
-                kwargs["chat_history"] = [{"role": "user", "message": message}]
-            kwargs["message"] = correction_msg
-
-        return kwargs
 
     def parse_response(
         self,

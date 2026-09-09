@@ -6,7 +6,7 @@ Language Models struggle to generalize across question types that require distin
 
 In the original paper, they utilise four different experts
 
-1. Factual Expert : This is a model that is augmented by a RAG prompting pipeline. WHen it receives a query, it retrieves the top 10 most relevant passages from Wikipedia and appends them to the prompt right before the question.
+1. Factual Expert : This is a model that is augmented by a RAG prompting pipeline. When it receives a query, it retrieves the top 10 most relevant passages from Wikipedia and appends them to the prompt right before the question.
 
 2. Multihop Expert : This is an expert that has manually written rationales after each demo to elicit multi-step reasoning processes for the questions
 
