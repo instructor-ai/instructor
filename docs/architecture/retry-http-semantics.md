@@ -37,7 +37,7 @@ receive a deterministic `Retry-After: 0.001` header; read-timeout retries retain
 the SDK's actual backoff. Response scripts are deterministic; scheduler timings
 are not. The server waits for request threads during teardown.
 
-The following single samples measure the extraction call through successful
+The following single samples, recorded at `74e14c33`, measure the extraction call through successful
 parsing. They exclude client/server construction and teardown, include any
 first-use import/setup inside the extraction, and are **not** provider latency
 benchmarks or evidence of a speedup. `[200, 200]` means malformed JSON followed
@@ -121,7 +121,7 @@ uv run --frozen ruff format --check instructor tests
 uv run --frozen ty check instructor/ tests/core/test_retry_http_semantics.py --error-on-warning
 ```
 
-Final focused run: **127 passed in 10.06 seconds**, including 64 local HTTP cases.
+Initial focused run at `74e14c33`: **127 passed in 10.06 seconds**, including 64 local HTTP cases.
 Repository-wide lint and format checks, full-package types plus the new test
 file, and whitespace checks passed in the all-extras environment. The first
 type-check attempt with only dev extras could not resolve optional SDK imports;
@@ -140,3 +140,20 @@ The user guide also fixes examples that put SDK/validation exception predicates
 outside Instructor (where exhaustion is already wrapped), and removes an
 unsupported `retry_delay` constructor argument. New examples were syntax checked;
 no documentation example was sent to a paid API.
+
+## Post-PR simplification review
+
+Reviewed the full diff at `74e14c33`. The two runtime condition changes remain
+unchanged: no retry abstraction, policy evaluation, event reordering, or payload
+shape change was introduced. In the HTTP fixture, mutually exclusive response
+branches avoid constructing an OpenAI response only to overwrite it for
+Anthropic. The matrix sets its constant two validation retries once rather than
+repeating that setting in all nine rows.
+
+All 64 HTTP cases remain. Provider-specific SDK construction and JSON envelopes,
+actual server request counts, and separate cancellation/timeout paths remain
+explicit. No generic transport or retry harness was added. The simplified setup
+still produces four failing recovery regressions on baseline `6969bb68`, and
+**127 focused tests pass in 9.54 seconds** on the corrected runtime. Full-package
+types, global lint/format, and whitespace checks pass. The timing table above
+remains the original single-sample observation; this review claims no speedup.

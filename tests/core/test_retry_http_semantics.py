@@ -55,8 +55,21 @@ def endpoint(request: pytest.FixtureRequest) -> Iterator[Endpoint]:
             endpoint.entered.set()
             reply = endpoint.replies[min(index, len(endpoint.replies) - 1)]
             time.sleep(reply.delay)
-            payload = (
-                {
+            if reply.status != 200:
+                payload = {"error": {"message": "local failure", "type": "api_error"}}
+            elif endpoint.provider == "anthropic":
+                payload = {
+                    "id": "msg-local",
+                    "type": "message",
+                    "role": "assistant",
+                    "model": "local",
+                    "content": [{"type": "text", "text": reply.content}],
+                    "stop_reason": "end_turn",
+                    "stop_sequence": None,
+                    "usage": {"input_tokens": 0, "output_tokens": 0},
+                }
+            else:
+                payload = {
                     "id": "chatcmpl-local",
                     "object": "chat.completion",
                     "created": 0,
@@ -68,20 +81,6 @@ def endpoint(request: pytest.FixtureRequest) -> Iterator[Endpoint]:
                             "finish_reason": "stop",
                         }
                     ],
-                }
-                if reply.status == 200
-                else {"error": {"message": "local failure", "type": "api_error"}}
-            )
-            if reply.status == 200 and endpoint.provider == "anthropic":
-                payload = {
-                    "id": "msg-local",
-                    "type": "message",
-                    "role": "assistant",
-                    "model": "local",
-                    "content": [{"type": "text", "text": reply.content}],
-                    "stop_reason": "end_turn",
-                    "stop_sequence": None,
-                    "usage": {"input_tokens": 0, "output_tokens": 0},
                 }
             encoded = json.dumps(payload).encode()
             try:
@@ -183,17 +182,17 @@ async def extract(
 
 @pytest.mark.parametrize("asynchronous", [False, True], ids=["sync", "async"])
 @pytest.mark.parametrize(
-    "statuses,contents,sdk_retries,retries,attempts,http_calls,error_type",
+    "statuses,contents,sdk_retries,attempts,http_calls,error_type",
     [
-        ([200], ['{"value":7}'], 2, 2, 1, 1, None),
-        ([429, 200], ["", '{"value":7}'], 2, 2, 1, 2, None),
-        ([500, 200], ["", '{"value":7}'], 2, 2, 1, 2, None),
-        ([429], [""], 2, 2, 1, 3, openai.RateLimitError),
-        ([500], [""], 0, 2, 1, 1, openai.InternalServerError),
-        ([400], [""], 2, 2, 1, 1, openai.BadRequestError),
-        ([200, 200], ["{", '{"value":7}'], 2, 2, 2, 2, None),
-        ([200], ['{"value":"bad"}'], 2, 2, 3, 3, InstructorRetryException),
-        ([429, 200, 500, 200], ["", "{", "", '{"value":7}'], 2, 2, 2, 4, None),
+        ([200], ['{"value":7}'], 2, 1, 1, None),
+        ([429, 200], ["", '{"value":7}'], 2, 1, 2, None),
+        ([500, 200], ["", '{"value":7}'], 2, 1, 2, None),
+        ([429], [""], 2, 1, 3, openai.RateLimitError),
+        ([500], [""], 0, 1, 1, openai.InternalServerError),
+        ([400], [""], 2, 1, 1, openai.BadRequestError),
+        ([200, 200], ["{", '{"value":7}'], 2, 2, 2, None),
+        ([200], ['{"value":"bad"}'], 2, 3, 3, InstructorRetryException),
+        ([429, 200, 500, 200], ["", "{", "", '{"value":7}'], 2, 2, 4, None),
     ],
     ids=[
         "success",
@@ -213,7 +212,6 @@ def test_http_attempts(
     statuses: list[int],
     contents: list[str],
     sdk_retries: int,
-    retries: int,
     attempts: int,
     http_calls: int,
     error_type: Any,
@@ -222,7 +220,7 @@ def test_http_attempts(
         Reply(status, content) for status, content in zip(statuses, contents)
     ]
     result, events, elapsed = asyncio.run(
-        extract(endpoint, asynchronous, sdk_retries, retries)
+        extract(endpoint, asynchronous, sdk_retries, retries=2)
     )
     assert len(endpoint.requests) == http_calls
     assert len(events["completion:kwargs"]) == attempts
