@@ -97,9 +97,10 @@ def download(
     help="Delete a file from OpenAI's servers",
 )
 def delete(file_id: str = typer.Argument(help="ID of the file to delete")) -> None:
+    active_client = _get_client()
     with console.status(f"[bold red]Deleting file {file_id}...", spinner="dots"):
         try:
-            _get_client().files.delete(file_id)
+            active_client.files.delete(file_id)
             console.log(f"[bold red]File {file_id} deleted successfully!")
         except Exception as e:
             console.log(f"[bold red]Error deleting file {file_id}: {e}")

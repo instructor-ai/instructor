@@ -241,9 +241,10 @@ def create_from_file(
 def cancel(
     id: str = typer.Argument(help="ID of the fine-tuning job to cancel"),
 ) -> None:
+    active_client = _get_client()
     with console.status(f"[bold red]Cancelling job {id}...", spinner="dots"):
         try:
-            _get_client().fine_tuning.jobs.cancel(id)
+            active_client.fine_tuning.jobs.cancel(id)
             console.log(f"[bold red]Job {id} cancelled successfully!")
         except Exception as e:
             console.log(f"[bold red]Error cancelling job {id}: {e}")

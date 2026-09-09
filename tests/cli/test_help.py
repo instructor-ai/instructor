@@ -7,23 +7,27 @@ import sys
 import pytest
 
 
-@pytest.mark.parametrize(
-    "arguments",
-    [[], ["files"], ["jobs"], ["files", "upload"], ["jobs", "create-from-file"]],
-)
-def test_help_without_credentials(arguments: list[str]) -> None:
+def run_without_credentials(arguments: list[str]) -> subprocess.CompletedProcess[str]:
     environment = {
         key: value
         for key, value in os.environ.items()
         if not key.startswith(("OPENAI_", "ANTHROPIC_", "AZURE_OPENAI_"))
     }
-    result = subprocess.run(
-        [sys.executable, "-m", "instructor.cli.cli", *arguments, "--help"],
+    return subprocess.run(
+        [sys.executable, "-m", "instructor.cli.cli", *arguments],
         env=environment,
         capture_output=True,
         text=True,
         timeout=20,
     )
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [[], ["files"], ["jobs"], ["files", "upload"], ["jobs", "create-from-file"]],
+)
+def test_help_without_credentials(arguments: list[str]) -> None:
+    result = run_without_credentials([*arguments, "--help"])
     assert result.returncode == 0, result.stderr
     assert "Usage:" in result.stdout
 
@@ -59,3 +63,12 @@ def test_client_creation_is_lazy_and_preserves_injection(
             created.close()
     finally:
         module.client = original
+
+
+@pytest.mark.parametrize(
+    "arguments", [["files", "delete", "file-test"], ["jobs", "cancel", "job-test"]]
+)
+def test_mutating_commands_fail_without_credentials(arguments: list[str]) -> None:
+    result = run_without_credentials(arguments)
+    assert result.returncode != 0, result.stdout
+    assert "OpenAIError" in result.stderr
