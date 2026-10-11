@@ -262,6 +262,21 @@ def test_single_all_of_ref_matches_sdk_and_preserves_wrapper_metadata() -> None:
     assert source == original
 
 
+def test_recursive_refs_with_sibling_metadata_do_not_recurse_infinitely() -> None:
+    class Node(BaseModel):
+        label: str
+        next: Node = Field(description="Next node")
+
+    Node.model_rebuild()
+    schema = schema_for(Node)
+
+    assert "$ref" not in schema
+    assert schema["properties"]["next"]["$ref"] == "#/$defs/Node"
+    assert schema["properties"]["next"]["description"] == "Next node"
+    assert schema["$defs"]["Node"]["properties"]["next"]["$ref"] == "#/$defs/Node"
+    assert schema["$defs"]["Node"]["properties"]["next"]["description"] == "Next node"
+
+
 def test_nullable_object_type_and_tuple_items_are_recursively_strict() -> None:
     nullable_object = {
         "type": ["object", "null"],
