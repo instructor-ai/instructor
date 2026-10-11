@@ -151,7 +151,11 @@ Instructor uses optional dependencies to support different LLM providers. Provid
    - The manifest supplies `PUBLIC_FACTORY_ATTRS` for `instructor/v2/__init__.py`; also update the explicit exports in `instructor/__init__.py`, keeping optional SDK imports lazy
    - Add the provider builder to `_PROVIDER_BUILDERS` in `instructor/v2/auto_client.py` for `from_provider` support. Its supported aliases come from `ALIAS_TO_PROVIDER`, but the builder mapping must be updated separately
 
-6. **Add Tests**: Create tests in `tests/llm/test_myprovider/` for supported extraction, streaming and validation/retry behavior. Use real API calls, not mocked provider responses.
+6. **Add Real-API Tests and CI Coverage**:
+   - Add the provider/model, supported mode, credential environment variable and SDK import path to `PROVIDER_CONFIGS` in `tests/llm/shared_config.py`. See `tests/llm/test_core_providers/README.md` for the shared extraction, streaming and validation/retry tests
+   - Add tests in `tests/llm/test_myprovider/` for provider-specific behavior not covered by the shared suite. Use real API calls, not mocked provider responses
+   - Update the credentialed jobs in `.github/workflows/test.yml`. For shared tests, update the appropriate job (such as `core-other`), including secret exports, `PROVIDER_TEST_REQUIREMENTS`, credential skip/run conditions and the initial/retry `pytest -k` filters
+   - For a provider-specific test directory, add a `provider-tests` matrix entry with `name`, `env_key` and `test_path`. Coordinate repository secrets with maintainers; tests skipped for missing credentials or not collected do not establish provider coverage
 
 7. **Document Installation**:
 
