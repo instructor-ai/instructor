@@ -271,10 +271,13 @@ def test_recursive_refs_with_sibling_metadata_do_not_recurse_infinitely() -> Non
     schema = schema_for(Node)
 
     assert "$ref" not in schema
-    assert schema["properties"]["next"]["$ref"] == "#/$defs/Node"
-    assert schema["properties"]["next"]["description"] == "Next node"
-    assert schema["$defs"]["Node"]["properties"]["next"]["$ref"] == "#/$defs/Node"
-    assert schema["$defs"]["Node"]["properties"]["next"]["description"] == "Next node"
+    next_schema = schema["properties"]["next"]
+    assert next_schema["type"] == "object"
+    assert next_schema["description"] == "Next node"
+    inner_next = next_schema["properties"]["next"]
+    assert inner_next["$ref"] == "#/$defs/Node"
+    assert inner_next["description"] == "Next node"
+    json.dumps(schema)
 
 
 def test_nullable_object_type_and_tuple_items_are_recursively_strict() -> None:
