@@ -63,7 +63,10 @@ class BatchRequest(BaseModel, Generic[T]):
 
         strict_schema = deepcopy(self.get_json_schema())
 
-        def make_strict_schema(schema: dict[str, Any] | bool) -> None:
+        def make_strict_schema(
+            schema: dict[str, Any] | bool,
+            active_refs: frozenset[str] = frozenset(),
+        ) -> None:
             # The SDK strict helper rejects boolean schemas, which batch callers
             # already use. Traverse schema keywords only, leaving metadata intact.
             if isinstance(schema, bool):
@@ -94,15 +97,15 @@ class BatchRequest(BaseModel, Generic[T]):
             if isinstance(properties, dict):
                 schema["required"] = list(properties)
                 for child in properties.values():
-                    make_strict_schema(child)
+                    make_strict_schema(child, active_refs)
             for keyword in ("$defs", "definitions"):
                 for child in schema.get(keyword, {}).values():
-                    make_strict_schema(child)
+                    make_strict_schema(child, active_refs)
             if "items" in schema:
-                make_strict_schema(schema["items"])
+                make_strict_schema(schema["items"], active_refs)
             for keyword in ("anyOf", "oneOf", "allOf", "prefixItems"):
                 for child in schema.get(keyword, []):
-                    make_strict_schema(child)
+                    make_strict_schema(child, active_refs)
             all_of = schema.get("allOf")
             if (
                 isinstance(all_of, list)
@@ -115,13 +118,15 @@ class BatchRequest(BaseModel, Generic[T]):
             if "default" in schema and schema["default"] is None:
                 del schema["default"]
             ref = schema.get("$ref")
-            if isinstance(ref, str) and len(schema) > 1:
+            if isinstance(ref, str) and len(schema) > 1 and ref not in active_refs:
                 resolved = cast(
                     dict[str, Any], resolve_ref(root=strict_schema, ref=ref)
                 )
-                schema.update({**resolved, **schema})
+                # Copy the referenced node, and retain recursive back-references
+                # with their metadata instead of expanding indefinitely.
+                schema.update({**deepcopy(resolved), **schema})
                 del schema["$ref"]
-                make_strict_schema(schema)
+                make_strict_schema(schema, active_refs | {ref})
 
         make_strict_schema(strict_schema)
 

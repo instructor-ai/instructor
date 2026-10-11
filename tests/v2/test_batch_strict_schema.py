@@ -5,7 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 import io
 import json
-from typing import Any, ClassVar
+from typing import Annotated, Any, ClassVar
 
 import pytest
 from openai.lib._pydantic import to_strict_json_schema
@@ -29,6 +29,28 @@ class Document(BaseModel):
     title: str = Field(default="untitled", description="Document title")
     child: Child | None = None
     entries: list[Child | Alternative] = Field(default_factory=list)
+
+
+class RecursiveNode(BaseModel):
+    name: str = "node"
+    children: list[Annotated[RecursiveNode, Field(description="Nested node")]] = Field(
+        default_factory=list
+    )
+
+
+class MutualLeft(BaseModel):
+    children: list[Annotated[MutualRight, Field(description="Right child")]] = Field(
+        default_factory=list
+    )
+
+
+class MutualRight(BaseModel):
+    children: list[Annotated[MutualLeft, Field(description="Left child")]] = Field(
+        default_factory=list
+    )
+
+
+MutualLeft.model_rebuild()
 
 
 def request_for(model: type[BaseModel]) -> BatchRequest[Any]:
@@ -58,6 +80,40 @@ def test_defaulted_and_nullable_fields_match_sdk_strict_schema() -> None:
     assert schema["properties"]["title"]["description"] == "Document title"
     assert schema["properties"]["title"]["default"] == "untitled"
     assert Document.model_json_schema() == source
+
+
+@pytest.mark.parametrize("model", [RecursiveNode, MutualLeft])
+def test_recursive_refs_with_metadata_remain_finite_and_strict(
+    model: type[BaseModel],
+) -> None:
+    source = deepcopy(model.model_json_schema())
+    schema = schema_for(model)
+    assert json.loads(json.dumps(schema)) == schema
+    assert model.model_json_schema() == source
+    assert schema_for(model) == schema
+    references: list[dict[str, Any]] = []
+
+    def check_nodes(node: Any) -> None:
+        if isinstance(node, dict):
+            if "properties" in node:
+                assert node["required"] == list(node["properties"])
+                assert node["additionalProperties"] is False
+            if "$ref" in node:
+                references.append(node)
+                assert node["$ref"].removeprefix("#/$defs/") in schema["$defs"]
+            for value in node.values():
+                check_nodes(value)
+        elif isinstance(node, list):
+            for value in node:
+                check_nodes(value)
+
+    check_nodes(schema)
+    assert references
+    descriptions = (
+        ("Nested node",) if model is RecursiveNode else ("Right child", "Left child")
+    )
+    for description in descriptions:
+        assert description in json.dumps(schema)
 
 
 class SharedSchemaModel(BaseModel):
