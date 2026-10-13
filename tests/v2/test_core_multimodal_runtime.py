@@ -313,7 +313,7 @@ def test_pdf_autodetect_round_trips_invoice_fixture() -> None:
 
 def test_convert_messages_sends_long_raw_base64_as_pdf() -> None:
     encoded = base64.b64encode(b"%PDF-1.7\n" + b" " * 1024).decode("ascii")
-    messages = [{"role": "user", "content": [encoded]}]
+    messages: list[dict[str, Any]] = [{"role": "user", "content": [encoded]}]
 
     converted = convert_messages(messages, Mode.ANTHROPIC_TOOLS, autodetect_images=True)
 
