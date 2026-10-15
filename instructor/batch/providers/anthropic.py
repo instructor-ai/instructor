@@ -134,7 +134,7 @@ class AnthropicProvider(BatchProvider):
         """Download Anthropic batch results to a file"""
         try:
             result_lines = self._iter_result_lines(batch_id)
-            with open(file_path, "w") as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 for line in result_lines:
                     f.write(line + "\n")
         except Exception as e:
