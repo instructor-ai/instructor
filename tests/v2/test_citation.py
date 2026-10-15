@@ -184,9 +184,7 @@ def test_empty_string_context_returns_empty_list() -> None:
         ("Paris", "The capital of Germany is Berlin."),
     ],
 )
-def test_short_quote_does_not_match_unrelated_text(
-    quote: str, context: str
-) -> None:
+def test_short_quote_does_not_match_unrelated_text(quote: str, context: str) -> None:
     """Short quotes (≤5 chars) must not match unrelated text via mass substitution (#2776)."""
     answer = Answer.model_validate(
         {"substring_quotes": [quote]},
