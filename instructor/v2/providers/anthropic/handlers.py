@@ -13,7 +13,6 @@ from collections.abc import (
 )
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Callable, TypedDict, cast, get_origin
-from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel, Field, TypeAdapter
 from typing import Annotated
@@ -27,12 +26,11 @@ from instructor.v2.core.errors import ConfigurationError, IncompleteOutputExcept
 from instructor.v2.dsl.iterable import IterableBase
 from instructor.v2.dsl.parallel import (
     ParallelBase,
-    get_types_array,
 )
 from instructor.v2.providers.anthropic.parallel import (
+    AnthropicParallelModel,
     handle_parallel_model as handle_anthropic_parallel_model,
 )
-from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.multimodal import Audio, Image, PDF
 from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
@@ -40,6 +38,7 @@ from instructor.v2.core.json import extract_json_from_codeblock
 from instructor.v2.providers.anthropic.schema import generate_anthropic_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.streaming import StreamingModelState
 
 
 class SystemMessage(TypedDict, total=False):
@@ -182,45 +181,10 @@ def process_messages_for_anthropic(
     return processed
 
 
-class AnthropicHandlerBase(ModeHandler):
+class AnthropicHandlerBase(StreamingModelState, ModeHandler):
     """Common utilities for Anthropic handlers."""
 
     mode: Mode
-
-    def __init__(self) -> None:
-        self._streaming_models: WeakKeyDictionary[type[Any], None] = WeakKeyDictionary()
-
-    def _register_streaming_from_kwargs(
-        self, response_model: type[BaseModel] | None, kwargs: dict[str, Any]
-    ) -> None:
-        if response_model is None:
-            return
-        if kwargs.get("stream"):
-            self.mark_streaming_model(response_model, True)
-
-    def mark_streaming_model(
-        self, response_model: type[BaseModel] | None, stream: bool
-    ) -> None:
-        """Record that the response model expects streaming output."""
-
-        if not stream or response_model is None:
-            return
-        if inspect.isclass(response_model) and issubclass(
-            response_model, (IterableBase, PartialBase)
-        ):
-            self._streaming_models[response_model] = None
-
-    def _consume_streaming_flag(
-        self, response_model: type[BaseModel] | ParallelBase | None
-    ) -> bool:
-        if response_model is None:
-            return False
-        if not inspect.isclass(response_model):
-            return False
-        if response_model in self._streaming_models:
-            del self._streaming_models[response_model]
-            return True
-        return False
 
     def extract_streaming_json(
         self, completion: TypingIterable[Any]
@@ -318,8 +282,9 @@ class AnthropicHandlerBase(ModeHandler):
             [Any, type[BaseModel], dict[str, Any] | None, bool | None],
             Any,
         ],
+        stream: bool | None = None,
     ) -> Any:
-        if self._consume_streaming_flag(response_model):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -484,7 +449,7 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         return self._parse_with_callback(
@@ -493,6 +458,7 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
             validation_context,
             strict,
             self._parse_tool_response,
+            stream,
         )
 
     def _parse_tool_response(
@@ -509,23 +475,9 @@ class AnthropicToolsHandler(AnthropicHandlerBase):
 
         origin = get_origin(response_model)
         if origin is TypingIterable:
-            the_types = get_types_array(response_model)  # type: ignore[arg-type]
-            type_registry = {t.__name__: t for t in the_types}
-
-            def parallel_generator() -> Generator[BaseModel, None, None]:
-                for content in response.content:
-                    if getattr(content, "type", None) == "tool_use":
-                        tool_name = content.name
-                        if tool_name in type_registry:
-                            model_class = type_registry[tool_name]
-                            json_str = json.dumps(content.input)
-                            yield model_class.model_validate_json(
-                                json_str,
-                                context=validation_context,
-                                strict=strict,
-                            )
-
-            return parallel_generator()
+            return AnthropicParallelModel(response_model).from_response(
+                response, self.mode, validation_context, strict
+            )
 
         tool_calls = [
             json.dumps(c.input)
@@ -593,7 +545,7 @@ class AnthropicParallelToolsHandler(AnthropicHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         return self._parse_with_callback(
@@ -602,6 +554,7 @@ class AnthropicParallelToolsHandler(AnthropicHandlerBase):
             validation_context,
             strict,
             self._parse_parallel_response,
+            stream,
         )
 
     def _parse_parallel_response(
@@ -610,31 +563,11 @@ class AnthropicParallelToolsHandler(AnthropicHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None,
         strict: bool | None,
-    ) -> Generator[BaseModel, None, None]:
-        """Parse parallel tool response directly without using AnthropicParallelBase."""
-        if not response or not hasattr(response, "content"):
-            return
-
-        # Extract model types from response_model (Iterable[Union[Model1, Model2, ...]])
-        the_types = get_types_array(response_model)  # type: ignore[arg-type]
-        type_registry = {
-            model.__name__ if hasattr(model, "__name__") else str(model): model
-            for model in the_types
-        }
-
-        # Parse tool_use blocks from response
-        for content in response.content:
-            if getattr(content, "type", None) == "tool_use":
-                name = content.name
-                arguments = content.input
-                if name in type_registry:
-                    model_class = type_registry[name]
-                    json_str = json.dumps(arguments)
-                    yield model_class.model_validate_json(
-                        json_str,
-                        context=validation_context,
-                        strict=strict,
-                    )
+    ) -> Any:
+        """Validate every parallel tool call before returning an iterator."""
+        return AnthropicParallelModel(response_model).from_response(
+            response, self.mode, validation_context, strict
+        )
 
 
 @register_mode_handler(Provider.ANTHROPIC, Mode.JSON)
@@ -707,7 +640,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         return self._parse_with_callback(
@@ -716,6 +649,7 @@ class AnthropicJSONHandler(AnthropicHandlerBase):
             validation_context,
             strict,
             self._parse_json_response,
+            stream,
         )
 
     def _parse_json_response(
@@ -879,7 +813,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         return self._parse_with_callback(
@@ -888,6 +822,7 @@ class AnthropicStructuredOutputsHandler(AnthropicHandlerBase):
             validation_context,
             strict,
             self._parse_structured_output_response,
+            stream,
         )
 
     def _parse_structured_output_response(

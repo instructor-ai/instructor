@@ -37,7 +37,7 @@ from pydantic import BaseModel
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Enable instructor patches for Groq client
-client = instructor.from_provider("groq/llama3-8b-8192")
+client = instructor.from_provider("groq/llama-3.3-70b-versatile")
 
 
 class User(BaseModel):
@@ -54,7 +54,7 @@ user = client.create(
 )
 
 print(user)
-# > User(name='Jason', age=25)
+#> User(name='Jason', age=25)
 ```
 
 ### Async Example
@@ -66,7 +66,7 @@ import asyncio
 
 # Initialize async client using provider string
 client = instructor.from_provider(
-    "groq/llama3-8b-8192",
+    "groq/llama-3.3-70b-versatile",
     async_client=True,
 )
 
@@ -89,8 +89,7 @@ async def extract_user():
 # Run async function
 user = asyncio.run(extract_user())
 print(user)
-# > User(name='Jason', age=25)
-
+#> User(name='Jason', age=25)
 ```
 
 ### Nested Object
@@ -105,7 +104,7 @@ from pydantic import BaseModel
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Enable instructor patches for Groq client
-client = instructor.from_provider("groq/llama3-8b-8192")
+client = instructor.from_provider("groq/llama-3.3-70b-versatile")
 
 
 class Address(BaseModel):

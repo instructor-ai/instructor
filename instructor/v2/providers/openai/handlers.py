@@ -17,7 +17,6 @@ from collections.abc import (
 )
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, cast, get_origin
-from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
 
@@ -32,8 +31,12 @@ from instructor.v2.core.errors import (
     ResponseParsingError,
 )
 from instructor.v2.dsl.iterable import IterableBase
-from instructor.v2.dsl.parallel import ParallelBase, ParallelModel, get_types_array
-from instructor.v2.dsl.partial import PartialBase
+from instructor.v2.dsl.parallel import (
+    ParallelBase,
+    ParallelModel,
+    get_types_array,
+    model_for_tool_name,
+)
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.multimodal import convert_messages as convert_messages_v1
 from instructor.v2.core.json import (
@@ -49,6 +52,7 @@ from instructor.v2.core.messages import (
 from instructor.v2.providers.openai.schema import generate_openai_schema
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.streaming import StreamingModelState
 
 logger = logging.getLogger("instructor")
 
@@ -373,59 +377,10 @@ def handle_openrouter_structured_outputs(
     return response_model, new_kwargs
 
 
-class OpenAIHandlerBase(ModeHandler):
+class OpenAIHandlerBase(StreamingModelState, ModeHandler):
     """Base class for OpenAI handlers with shared utilities."""
 
     mode: Mode
-
-    def __init__(self) -> None:
-        self._streaming_models: WeakKeyDictionary[type[Any], None] = WeakKeyDictionary()
-
-    def _register_streaming_from_kwargs(
-        self, response_model: type[BaseModel] | None, kwargs: dict[str, Any]
-    ) -> None:
-        """Register model for streaming if stream=True in kwargs."""
-        if response_model is None:
-            return
-        if kwargs.get("stream"):
-            self.mark_streaming_model(response_model, True)
-
-    def mark_streaming_model(
-        self, response_model: type[BaseModel] | None, stream: bool
-    ) -> None:
-        """Record that the response model expects streaming output."""
-        if not stream or response_model is None:
-            return
-        if inspect.isclass(response_model) and issubclass(
-            response_model, (IterableBase, PartialBase)
-        ):
-            self._streaming_models[response_model] = None
-
-    def _consume_streaming_flag(
-        self, response_model: type[BaseModel] | ParallelBase | None
-    ) -> bool:
-        """Check and consume streaming flag for a model."""
-        if response_model is None:
-            return False
-        if not inspect.isclass(response_model):
-            return False
-        if response_model in self._streaming_models:
-            del self._streaming_models[response_model]
-            return True
-        return False
-
-    def _should_parse_streaming(
-        self,
-        response_model: type[BaseModel] | ParallelBase | None,
-        stream: bool,
-    ) -> bool:
-        """Return whether a response needs DSL streaming parsing."""
-        registered = self._consume_streaming_flag(response_model)
-        return bool(
-            inspect.isclass(response_model)
-            and issubclass(response_model, (IterableBase, PartialBase))
-            and (stream or registered)
-        )
 
     def extract_streaming_json(
         self, completion: TypingIterable[Any]
@@ -650,6 +605,34 @@ class OpenAIHandlerBase(ModeHandler):
             )
         return choices[0].message.content or ""
 
+    def _parse_json_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+        stream: bool | None = None,
+    ) -> Any:
+        if self._should_parse_streaming(response_model, stream):
+            return self._parse_streaming_response(
+                response_model,
+                response,
+                validation_context,
+                strict,
+            )
+
+        if hasattr(response, "choices") and response.choices:
+            if response.choices[0].finish_reason == "length":
+                raise IncompleteOutputException(last_completion=response)
+
+        text = self._extract_text_content(response)
+        parsed = response_model.model_validate_json(
+            text,
+            context=validation_context,
+            strict=strict,
+        )
+        return self._finalize_parsed_result(response_model, response, parsed)
+
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.TOOLS)
 class OpenAIToolsHandler(OpenAIHandlerBase):
@@ -726,7 +709,7 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse tool call response."""
@@ -747,21 +730,9 @@ class OpenAIToolsHandler(OpenAIHandlerBase):
         # Handle parallel tools (Iterable[Union[...]])
         origin = get_origin(response_model)
         if origin is TypingIterable:
-            the_types = get_types_array(response_model)  # type: ignore[arg-type]
-            type_registry = {t.__name__: t for t in the_types}
-
-            def parallel_generator() -> Generator[BaseModel, None, None]:
-                for tool_call in response.choices[0].message.tool_calls:
-                    name = tool_call.function.name
-                    if name in type_registry:
-                        model_class = type_registry[name]
-                        yield model_class.model_validate_json(
-                            tool_call.function.arguments,
-                            context=validation_context,
-                            strict=strict,
-                        )
-
-            return parallel_generator()
+            return ParallelModel(response_model).from_response(
+                response, self.mode, validation_context, strict
+            )
 
         # Standard tool call parsing
         json_str = self._extract_tool_call_json(response)
@@ -820,31 +791,12 @@ class OpenAIJSONSchemaHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
-        """Parse JSON schema response."""
-        # Check for streaming
-        if self._should_parse_streaming(response_model, stream):
-            return self._parse_streaming_response(
-                response_model,
-                response,
-                validation_context,
-                strict,
-            )
-
-        # Check for incomplete output
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
-
-        text = self._extract_text_content(response)
-        parsed = response_model.model_validate_json(
-            text,
-            context=validation_context,
-            strict=strict,
+        return self._parse_json_response(
+            response, response_model, validation_context, strict, stream
         )
-        return self._finalize_parsed_result(response_model, response, parsed)
 
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.JSON)
@@ -908,28 +860,12 @@ class OpenAIJSONHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
-        if self._should_parse_streaming(response_model, stream):
-            return self._parse_streaming_response(
-                response_model,
-                response,
-                validation_context,
-                strict,
-            )
-
-        if hasattr(response, "choices") and response.choices:
-            if response.choices[0].finish_reason == "length":
-                raise IncompleteOutputException(last_completion=response)
-
-        text = self._extract_text_content(response)
-        parsed = response_model.model_validate_json(
-            text,
-            context=validation_context,
-            strict=strict,
+        return self._parse_json_response(
+            response, response_model, validation_context, strict, stream
         )
-        return self._finalize_parsed_result(response_model, response, parsed)
 
 
 @register_mode_handler(OPENAI_COMPAT_PROVIDERS, Mode.MD_JSON)
@@ -1006,7 +942,7 @@ class OpenAIMDJSONHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse JSON from markdown code block in response."""
@@ -1097,7 +1033,7 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
 
         # Extract model types from response_model
         the_types = get_types_array(response_model)  # type: ignore[arg-type]
-        type_registry = {t.__name__: t for t in the_types}
+        type_registry = {t.model_json_schema()["title"]: t for t in the_types}
 
         results = []
         tool_calls = choices[0].message.tool_calls
@@ -1110,13 +1046,19 @@ class OpenAIParallelToolsHandler(OpenAIHandlerBase):
         for tool_call in tool_calls:
             name = tool_call.function.name
             args = tool_call.function.arguments
-            if name in type_registry:
-                model = type_registry[name].model_validate_json(
+            model_class = model_for_tool_name(
+                type_registry,
+                name,
+                mode=self.mode,
+                raw_response=response,
+            )
+            results.append(
+                model_class.model_validate_json(
                     args,
                     context=validation_context,
                     strict=strict,
                 )
-                results.append(model)
+            )
 
         return iter(results)
 
@@ -1133,8 +1075,6 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         kwargs: dict[str, Any],
     ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
         """Prepare request for Responses API with tools."""
-        self._register_streaming_from_kwargs(response_model, kwargs)
-
         new_kwargs = kwargs.copy()
         new_kwargs["messages"] = list(kwargs.get("messages", []))
 
@@ -1149,6 +1089,7 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         from instructor.v2.core.response_model import prepare_response_model
 
         prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
+        self._register_streaming_from_kwargs(prepared_model, kwargs)
 
         from openai import pydantic_function_tool
 
@@ -1198,22 +1139,27 @@ class OpenAIResponsesToolsHandler(OpenAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse Responses API response."""
         # Check for streaming
-        if (
-            isinstance(response_model, type)
-            and (stream or self._consume_streaming_flag(response_model))
-            and issubclass(response_model, (IterableBase, PartialBase))
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
                 validation_context,
                 strict,
             )
+
+        if getattr(response, "status", None) == "incomplete":
+            reason = getattr(
+                getattr(response, "incomplete_details", None), "reason", None
+            )
+            message = "The Responses API output is incomplete."
+            if reason is not None:
+                message = f"The Responses API output is incomplete due to {reason}."
+            raise IncompleteOutputException(last_completion=response, message=message)
 
         # Handle Responses API format - output is a list of items
         if hasattr(response, "output"):

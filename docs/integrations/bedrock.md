@@ -21,7 +21,7 @@ pip install "instructor[bedrock]"
 - [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Mode Migration Guide](../concepts/mode-migration.md) - Move to core modes
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
-- [AWS Integration Guide](../examples/index.md#aws-integration) - More AWS examples
+- [Examples](../examples/index.md) - Browse extraction examples
 
 # AWS Bedrock
 
@@ -35,7 +35,7 @@ For simplified setup, you can use the auto client pattern:
 import instructor
 
 # Auto client with model specification
-client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0")
+client = instructor.from_provider("bedrock/anthropic.claude-sonnet-5")
 
 # The auto client automatically handles:
 # - AWS credential detection from environment
@@ -73,14 +73,16 @@ import instructor
 from pydantic import BaseModel
 
 bedrock_client = boto3.client('bedrock-runtime')
-client = instructor.from_provider("bedrock/claude-3-5-sonnet-20241022")
+client = instructor.from_provider("bedrock/anthropic.claude-sonnet-5")
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 user = client.create(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    modelId="anthropic.claude-sonnet-5",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -88,7 +90,7 @@ user = client.create(
 )
 
 print(user)
-# > User(name='Jason', age=25)
+#> User(name='Jason', age=25)
 ```
 
 ## Async Example
@@ -101,21 +103,25 @@ import instructor
 from pydantic import BaseModel
 import asyncio
 
-client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
+client = instructor.from_provider("bedrock/anthropic.claude-sonnet-5")
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 def get_user():
     return client.create(
-        modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+        modelId="anthropic.claude-sonnet-5",
         messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
         response_model=User,
     )
 
+
 async def get_user_async():
     return await asyncio.to_thread(get_user)
+
 
 user = asyncio.run(get_user_async())
 print(user)
@@ -189,23 +195,24 @@ This flexibility also applies to other keyword arguments, such as the model name
 **Example:**
 
 ```python
-import instructor
-
 messages = [
     {"role": "system", "content": "Extract the name and age."},  # OpenAI-style
-    {"role": "user", "content": [{"text": "Extract: Jason is 25 years old"}]},  # Bedrock-native
+    {
+        "role": "user",
+        "content": [{"text": "Extract: Jason is 25 years old"}],
+    },  # Bedrock-native
     {"role": "assistant", "content": "Sure! Jason is 25."},  # OpenAI-style
 ]
 
 # Both of these are valid:
 user = client.create(
-    model="anthropic.claude-3-sonnet-20240229-v1:0",  # OpenAI-style
+    model="anthropic.claude-sonnet-5",  # OpenAI-style
     messages=messages,
     response_model=User,
 )
 
 user = client.create(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",  # Bedrock-native
+    modelId="anthropic.claude-sonnet-5",  # Bedrock-native
     messages=messages,
     response_model=User,
 )
@@ -221,12 +228,14 @@ Instructor will convert OpenAI-style image parts into Bedrock image blocks autom
 import instructor
 from instructor.processing.multimodal import PDF
 
-client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0")
+client = instructor.from_provider("bedrock/anthropic.claude-sonnet-5")
 
-pdf = PDF.from_url("https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf")
+pdf = PDF.from_url(
+    "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+)
 
 response = client.create(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    modelId="anthropic.claude-sonnet-5",
     messages=[
         {
             "role": "user",
@@ -252,7 +261,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_provider("bedrock/claude-3-5-sonnet-20241022")
+client = instructor.from_provider("bedrock/anthropic.claude-sonnet-5")
 
 
 class Address(BaseModel):
@@ -269,7 +278,7 @@ class User(BaseModel):
 
 # Create structured output with nested objects
 user = client.create(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    modelId="anthropic.claude-sonnet-5",
     messages=[
         {
             "role": "user",
@@ -304,7 +313,7 @@ AWS Bedrock supports many modern foundation models:
 import instructor
 
 # Claude 3.5 models (latest)
-client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0")
+client = instructor.from_provider("bedrock/anthropic.claude-sonnet-5")
 # or
 client = instructor.from_provider("bedrock/anthropic.claude-3-5-haiku-20241022-v1:0")
 
@@ -329,26 +338,26 @@ bedrock_client = boto3.client(
     'bedrock-runtime',
     region_name='us-west-2',
     aws_access_key_id='your_key',
-    aws_secret_access_key='your_secret'
+    aws_secret_access_key='your_secret',
 )
 
 # Use from_provider with custom client
 client = instructor.from_provider(
-    "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "bedrock/anthropic.claude-sonnet-5",
     client=bedrock_client,
-    mode=instructor.Mode.TOOLS
+    mode=instructor.Mode.TOOLS,
 )
 
 # Advanced inference configuration
 user = client.create(
-    modelId="anthropic.claude-3-5-sonnet-20241022-v2:0",
+    modelId="anthropic.claude-sonnet-5",
     messages=[{"role": "user", "content": "Extract user info"}],
     response_model=User,
     inferenceConfig={
         "maxTokens": 2048,
         "temperature": 0.1,
         "topP": 0.9,
-        "stopSequences": ["STOP"]
-    }
+        "stopSequences": ["STOP"],
+    },
 )
 ```

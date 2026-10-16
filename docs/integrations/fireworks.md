@@ -26,7 +26,7 @@ from pydantic import BaseModel
 client = Fireworks()
 
 # Enable instructor patches
-client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
+client = instructor.from_provider("fireworks/accounts/fireworks/models/kimi-k2p5")
 
 
 class User(BaseModel):
@@ -46,8 +46,7 @@ user = client.create(
 )
 
 print(user)
-# > User(name='Jason', age=25)
-
+#> User(name='Jason', age=25)
 ```
 
 ## Simple User Example (Async)
@@ -58,7 +57,7 @@ from pydantic import BaseModel
 import asyncio
 
 client = instructor.from_provider(
-    "fireworks/llama-v3-70b-instruct",
+    "fireworks/accounts/fireworks/models/kimi-k2p5",
     async_client=True,
 )
 
@@ -84,19 +83,17 @@ async def extract_user():
 # Run async function
 user = asyncio.run(extract_user())
 print(user)  # User(name='Jason', age=25)
-
 ```
 
 ## Nested Example
 
 ```python
-from fireworks.client import Fireworks
 import instructor
 from pydantic import BaseModel
 
 
 # Enable instructor patches
-client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
+client = instructor.from_provider("fireworks/accounts/fireworks/models/kimi-k2p5")
 
 
 class Address(BaseModel):
@@ -155,13 +152,12 @@ Instructor has two main ways that you can use to stream responses out
 ### Partial Streaming Example
 
 ```python
-from fireworks.client import Fireworks
 import instructor
 from pydantic import BaseModel
 
 
 # Enable instructor patches
-client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
+client = instructor.from_provider("fireworks/accounts/fireworks/models/kimi-k2p5")
 
 
 class User(BaseModel):
@@ -186,19 +182,17 @@ for user_partial in user:
     # name='Jason' age=None bio=None
     # name='Jason' age=25 bio="When he's"
     # name='Jason' age=25 bio="When he's not working as a graphic designer, Jason can usually be found trying out new craft beers or attempting to cook something other than ramen noodles."
-
 ```
 
 ## Iterable Example
 
 ```python
-from fireworks.client import Fireworks
 import instructor
 from pydantic import BaseModel
 
 
 # Enable instructor patches
-client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
+client = instructor.from_provider("fireworks/accounts/fireworks/models/kimi-k2p5")
 
 
 class User(BaseModel):

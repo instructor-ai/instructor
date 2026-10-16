@@ -109,6 +109,7 @@ instructor_client = instructor.from_provider(
     mode=Mode.TOOLS,
 )
 
+
 async def extract_user():
     user = await instructor_client.create(
         response_model=User,
@@ -116,6 +117,7 @@ async def extract_user():
         temperature=0,
     )
     return user
+
 
 # Run async function
 user = asyncio.run(extract_user())
@@ -133,15 +135,18 @@ from typing import List
 import instructor
 from instructor import Mode
 
+
 class Address(BaseModel):
     street: str
     city: str
     country: str
 
+
 class User(BaseModel):
     name: str
     age: int
     addresses: List[Address]
+
 
 # Initialize the client
 instructor_client = instructor.from_provider(
@@ -153,11 +158,14 @@ instructor_client = instructor.from_provider(
 user = instructor_client.create(
     response_model=User,
     messages=[
-        {"role": "user", "content": """
+        {
+            "role": "user",
+            "content": """
             Extract: Jason is 25 years old.
             He lives at 123 Main St, New York, USA
             and has a summer house at 456 Beach Rd, Miami, USA
-        """}
+        """,
+        }
     ],
     temperature=0,
 )
@@ -185,12 +193,14 @@ from pydantic import BaseModel
 import instructor
 from instructor.dsl.partial import Partial
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 # Create an Instructor client for Mistral
-instructor_client = instructor.from_provider("mistral/mistral-small")
+instructor_client = instructor.from_provider("mistral/mistral-small-latest")
 
 # Stream partial responses
 model = instructor_client.create(
@@ -215,12 +225,14 @@ for partial_user in model:
 from pydantic import BaseModel
 import instructor
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 # Create an Instructor client for Mistral
-instructor_client = instructor.from_provider("mistral/mistral-small")
+instructor_client = instructor.from_provider("mistral/mistral-small-latest")
 
 # Stream iterable responses
 users = instructor_client.create_iterable(
@@ -247,14 +259,17 @@ from pydantic import BaseModel
 import instructor
 from instructor.dsl.partial import Partial
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
+
 instructor_client = instructor.from_provider(
-    "mistral/mistral-small",
+    "mistral/mistral-small-latest",
     async_client=True,
 )
+
 
 async def stream_partial():
     model = await instructor_client.create(
@@ -268,6 +283,7 @@ async def stream_partial():
     async for partial_user in model:
         print(f"Received update: {partial_user}")
 
+
 async def stream_iterable():
     users = instructor_client.create_iterable(
         response_model=UserExtract,
@@ -278,6 +294,7 @@ async def stream_iterable():
 
     async for user in users:
         print(f"Generated user: {user}")
+
 
 # Run async functions
 asyncio.run(stream_partial())
@@ -311,7 +328,7 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("mistral/mistral-small")
+client = instructor.from_provider("mistral/mistral-small-latest")
 
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 
@@ -332,5 +349,5 @@ response = client.create(
 )
 
 print(response)
-# > Receipt(total=220, items=['English Tea', 'Tofu'])
+#> Receipt(total=220, items=['English Tea', 'Tofu'])
 ```

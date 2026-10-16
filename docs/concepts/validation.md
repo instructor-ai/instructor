@@ -87,6 +87,50 @@ class Order(BaseModel):
         return v
 ```
 
+## Async Validators
+
+Instructor rejects response models containing `@async_field_validator` or
+`@async_model_validator`, including nested models, before provider calls and
+cache lookups. Automatic async-validator execution is not supported.
+
+For asynchronous policy checks, use an ordinary response model and explicitly
+await your application-level check before consuming the result. These checks run
+outside Instructor's retry loop and must also run on cached results.
+
+```python
+import asyncio
+
+from openai import AsyncOpenAI
+from pydantic import BaseModel
+
+import instructor
+
+
+class Answer(BaseModel):
+    value: int
+
+
+async def check_policy(answer: Answer, limit: int) -> Answer:
+    if answer.value > limit:
+        raise ValueError("Value exceeds the current limit")
+    return answer
+
+
+async def main() -> None:
+    async with AsyncOpenAI() as sdk:
+        client = instructor.from_openai(sdk)
+        answer = await client.create(
+            model="gpt-4.1-mini",
+            response_model=Answer,
+            messages=[{"role": "user", "content": "Return the number 42"}],
+        )
+        validated = await check_policy(answer, limit=100)
+        print(validated.value)
+
+
+asyncio.run(main())
+```
+
 ## Pre-validation Transformation
 
 Transform data before validation:
@@ -157,14 +201,14 @@ Handle validation failures with appropriate error types:
 
 ```python
 import instructor
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 
 class User(BaseModel):
     name: str
     age: int
 
-    @field_validator('age')
+    @field_validator("age")
     @classmethod
     def validate_age(cls, v):
         if v < 0:

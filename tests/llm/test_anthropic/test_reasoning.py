@@ -9,7 +9,7 @@ class Answer(BaseModel):
 
 def test_reasoning():
     client = instructor.from_provider(
-        "anthropic/claude-sonnet-4-5-20250514",
+        "anthropic/claude-sonnet-5",
         mode=instructor.Mode.ANTHROPIC_REASONING_TOOLS,
     )
     try:
@@ -21,16 +21,14 @@ def test_reasoning():
                     "content": "Which is larger, 9.11 or 9.8? Think carefully about decimal places.",
                 },
             ],
-            temperature=1,  # Required when thinking is enabled
             max_tokens=2000,
-            thinking={"type": "enabled", "budget_tokens": 1024},
+            thinking={"type": "adaptive"},
+            tool_choice={"type": "auto"},
             max_retries=3,  # Retry if the model gets it wrong
         )
     except Exception as e:
         if "404" in str(e) or "not_found_error" in str(e):
-            pytest.skip(
-                "Model claude-sonnet-4-5-20250514 not available with current API key"
-            )
+            pytest.skip("Model claude-sonnet-5 not available with current API key")
         raise
 
     # Assertions to validate the response

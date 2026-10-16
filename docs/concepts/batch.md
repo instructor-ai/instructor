@@ -54,8 +54,8 @@ print(f"Batch job submitted: {batch_id}")
 
 # Check status and retrieve results
 status = processor.get_batch_status(batch_id)
-if status['status'] in ['completed', 'ended', 'JOB_STATE_SUCCEEDED']:
-    from instructor.batch import filter_successful, extract_results
+if status["status"] in ["completed", "ended", "JOB_STATE_SUCCEEDED"]:
+    from instructor.batch import extract_results
 
     all_results = processor.retrieve_results(batch_id)
     for user in extract_results(all_results):
@@ -158,7 +158,6 @@ Results use a Maybe/Result pattern for type-safe handling:
 
 ```python
 from instructor.batch import (
-    BatchProcessor,
     filter_successful,
     filter_errors,
     extract_results,
@@ -169,8 +168,8 @@ all_results = processor.retrieve_results(batch_id)
 
 # Filter by type
 successful = filter_successful(all_results)  # List[BatchSuccess[T]]
-errors = filter_errors(all_results)           # List[BatchError]
-objects = extract_results(all_results)        # List[T]
+errors = filter_errors(all_results)  # List[BatchError]
+objects = extract_results(all_results)  # List[T]
 
 # Access by custom_id
 by_id = get_results_by_custom_id(all_results)
@@ -182,11 +181,25 @@ if "request-1" in by_id:
         print(f"Error: {result.error_message}")
 ```
 
+### Custom IDs
+
+By default, requests get the IDs `request-0`, `request-1`, and so on. Pass `custom_ids` to use your own IDs. This makes it easier to match results, including failed ones, back to your data:
+
+```python
+processor.create_batch_from_messages(
+    messages_list,
+    file_path="batch_requests.jsonl",
+    custom_ids=["user_1", "user_2", "user_3"],  # one per conversation, same order
+)
+```
+
+IDs must be unique and match the length of `messages_list`. Anthropic also requires IDs to match `^[a-zA-Z0-9_-]{1,64}$`. Invalid IDs raise a `ValueError` before any request is written.
+
 ## API Reference
 
 | Method | Description |
 |--------|-------------|
-| `create_batch_from_messages(messages_list, file_path=None, ...)` | Create batch file or buffer |
+| `create_batch_from_messages(messages_list, file_path=None, ..., custom_ids=None)` | Create batch file or buffer |
 | `submit_batch(file_path_or_buffer, metadata=None)` | Submit batch job, returns job ID |
 | `get_batch_status(batch_id)` | Get job status |
 | `retrieve_results(batch_id)` | Download and parse results |

@@ -13,7 +13,7 @@ Hooks let you intercept and handle events during the completion and parsing proc
 |-------|-------------|-------------------|
 | `completion:kwargs` | Arguments passed to completion | `def handler(*args, **kwargs)` |
 | `completion:response` | Raw API response received | `def handler(response)` |
-| `completion:usage` | Immutable snapshot of cumulative retry usage | `def handler(usage, *, attempt_number)` |
+| `completion:usage` | Copied snapshot of cumulative retry usage | `def handler(usage, *, attempt_number)` |
 | `completion:error` | Error during a retry attempt | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
 | `parse:error` | Pydantic validation failed | `def handler(error)` |
 | `completion:last_attempt` | Final retry attempt exhausted | `def handler(error, *, attempt_number, max_attempts, is_last_attempt)` |
@@ -22,9 +22,17 @@ Hooks let you intercept and handle events during the completion and parsing proc
 
 ## Cumulative Usage
 
-`completion:usage` runs after each response that includes compatible usage
-metadata. Each event receives a separate cumulative snapshot, so retaining or
+`completion:usage` runs while all responses observed in the retry loop have
+compatible usage metadata. Each event receives a separate deep copy, so
 changing one snapshot does not affect later events or Instructor's accounting.
+The copy is mutable and shared by handlers for that event; changing it can
+affect a later handler of the same event. Snapshots are cumulative: replace the
+previous value rather than summing them.
+
+Compatibility currently means OpenAI Chat Completions or stable Anthropic
+Messages usage types, including compatible subclasses. This is not a streaming
+usage hook. See [usage tracking](usage.md#retry-totals-and-provider-differences)
+for other API/SDK limitations and local response-cache behavior.
 
 ```python
 import instructor
@@ -51,7 +59,7 @@ import instructor
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
-def log_kwargs(*args, **kwargs):
+def log_kwargs(**kwargs):
     print(f"Model: {kwargs.get('model')}")
 
 
@@ -85,7 +93,7 @@ You can use enum values or strings for hook names:
 from instructor.hooks import HookName
 
 client.on(HookName.COMPLETION_KWARGS, log_kwargs)  # Using enum
-client.on("completion:kwargs", log_kwargs)          # Using string
+client.on("completion:kwargs", log_kwargs)  # Using string
 ```
 
 ## Retry Metadata
@@ -98,7 +106,13 @@ import instructor
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
-def on_error(error: Exception, *, attempt_number: int, max_attempts: int | None, is_last_attempt: bool):
+def on_error(
+    error: Exception,
+    *,
+    attempt_number: int,
+    max_attempts: int | None,
+    is_last_attempt: bool,
+):
     print(f"Attempt {attempt_number}/{max_attempts or '?'} failed: {error}")
     if is_last_attempt:
         print("No more retries.")
@@ -194,10 +208,10 @@ from instructor.core.hooks import Hooks
 
 # Create specialized hook sets
 logging_hooks = Hooks()
-logging_hooks.on("completion:kwargs", lambda **kw: print("Logging kwargs"))
+logging_hooks.on("completion:kwargs", lambda **_kw: print("Logging kwargs"))
 
 metrics_hooks = Hooks()
-metrics_hooks.on("completion:response", lambda resp: print("Recording metrics"))
+metrics_hooks.on("completion:response", lambda _resp: print("Recording metrics"))
 
 # Combine hooks
 combined = logging_hooks + metrics_hooks
@@ -225,13 +239,13 @@ class User(BaseModel):
 
 # Client with standard hooks
 client_hooks = Hooks()
-client_hooks.on("completion:kwargs", lambda **kw: print("Standard logging"))
+client_hooks.on("completion:kwargs", lambda **_kw: print("Standard logging"))
 
 client = instructor.from_provider("openai/gpt-4.1-mini", hooks=client_hooks)
 
 # Debug hooks for specific calls
 debug_hooks = Hooks()
-debug_hooks.on("parse:error", lambda err: print(f"Debug: {err}"))
+debug_hooks.on("parse:error", lambda _err: print(f"Debug: {_err}"))
 
 # Per-call hooks combine with client hooks
 user = client.create(

@@ -34,7 +34,7 @@ import instructor
 from pydantic import BaseModel
 
 client = instructor.from_provider(
-    "perplexity/sonar-small-online",
+    "perplexity/sonar",
     api_key=os.getenv("PERPLEXITY_API_KEY"),
     base_url="https://api.perplexity.ai",
 )
@@ -54,7 +54,7 @@ user = client.create(
 )
 
 print(user)
-# > User(name='Jason', age=25)
+#> User(name='Jason', age=25)
 ```
 
 ### Async Example
@@ -65,7 +65,7 @@ from pydantic import BaseModel
 import asyncio
 
 async_client = instructor.from_provider(
-    "perplexity/sonar-small-online",
+    "perplexity/sonar",
     async_client=True,
 )
 
@@ -88,20 +88,19 @@ async def extract_user():
 # Run async function
 user = asyncio.run(extract_user())
 print(user)
-# > User(name='Jason', age=25)
+#> User(name='Jason', age=25)
 ```
 
 ### Nested Objects
 
 ```python
 import os
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
 # Initialize with API key
 client = instructor.from_provider(
-    "perplexity/sonar-small-online",
+    "perplexity/sonar",
     api_key=os.getenv("PERPLEXITY_API_KEY"),
     base_url="https://api.perplexity.ai",
 )
@@ -153,14 +152,12 @@ Perplexity AI currently supports the following mode with Instructor:
 
 ```python
 import os
-from openai import OpenAI
 import instructor
-from instructor import Mode
 from pydantic import BaseModel
 
 # Initialize client with base URL
 client = instructor.from_provider(
-    "perplexity/sonar-small-online",
+    "perplexity/sonar",
     api_key=os.getenv("PERPLEXITY_API_KEY"),
     base_url="https://api.perplexity.ai",
 )
@@ -180,7 +177,7 @@ user = client.create(
 )
 
 print(user)
-# > User(name='Jason', age=25)
+#> User(name='Jason', age=25)
 ```
 
 ## Additional Resources

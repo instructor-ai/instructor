@@ -54,14 +54,15 @@ for the current request schema.
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 
 client = instructor.from_provider("cerebras/gpt-oss-120b")
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create structured output
 resp = client.create(
@@ -90,9 +91,11 @@ client = instructor.from_provider(
     async_client=True,
 )
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 async def extract_user():
     resp = await client.create(
@@ -106,6 +109,7 @@ async def extract_user():
     )
     return resp
 
+
 # Run async function
 resp = asyncio.run(extract_user())
 print(resp)
@@ -117,7 +121,6 @@ print(resp)
 ```python
 from pydantic import BaseModel
 import instructor
-from cerebras.cloud.sdk import Cerebras
 
 client = instructor.from_provider("cerebras/gpt-oss-120b")
 
@@ -179,9 +182,7 @@ We currently support partial streaming for Cerebras by parsing the raw text comp
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
-from typing import Iterable
 
 client = instructor.from_provider(
     "cerebras/gpt-oss-120b",
@@ -207,19 +208,16 @@ resp = client.create_partial(
 
 for person in resp:
     print(person)
-    # > name=None age=None
-    # > name='Ivan' age=None
-    # > name='Ivan' age=27
-
+    #> name=None age=None
+    #> name='Ivan' age=None
+    #> name='Ivan' age=27
 ```
 
 ## Iterable Example
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
-from typing import Iterable
 
 client = instructor.from_provider(
     "cerebras/gpt-oss-120b",
@@ -236,7 +234,7 @@ resp = client.create_iterable(
     messages=[
         {
             "role": "user",
-            "content": "Extract all users from this sentence : Chris is 27 and lives in San Francisco, John is 30 and lives in New York while their college roomate Jessica is 26 and lives in London",
+            "content": "Extract all users from this sentence : Chris is 27 and lives in San Francisco, John is 30 and lives in New York while their college roommate Jessica is 26 and lives in London",
         }
     ],
     response_model=Person,
@@ -245,10 +243,9 @@ resp = client.create_iterable(
 
 for person in resp:
     print(person)
-    # > Person(name='Chris', age=27)
-    # > Person(name='John', age=30)
-    # > Person(name='Jessica', age=26)
-
+    #> Person(name='Chris', age=27)
+    #> Person(name='John', age=30)
+    #> Person(name='Jessica', age=26)
 ```
 
 ## Instructor Hooks
@@ -258,18 +255,20 @@ Instructor provides several hooks to customize behavior:
 ### Validation Hook
 
 ```python
-from instructor import Instructor
+import instructor
 
-def validation_hook(value, retry_count, exception):
-    print(f"Validation failed {retry_count} times: {exception}")
-    return retry_count < 3  # Retry up to 3 times
 
-instructor.patch(client, validation_hook=validation_hook)
+def validation_hook(error: Exception) -> None:
+    print(f"Validation failed: {error}")
+
+
+client = instructor.from_provider("cerebras/gpt-oss-120b")
+client.on("parse:error", validation_hook)
 ```
 
 ## Instructor Modes
 
-We provide serveral modes to make it easy to work with the different response models that Cerebras Supports
+We provide several modes to make it easy to work with the different response models that Cerebras Supports
 
 1. `instructor.Mode.MD_JSON` : This parses the raw completions as a valid JSON object.
 2. `instructor.Mode.TOOLS` : This uses Cerebras's tool calling mode to return structured outputs to the client.

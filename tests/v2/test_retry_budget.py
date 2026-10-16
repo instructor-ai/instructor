@@ -10,6 +10,10 @@ from openai.types import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
 from instructor import Mode, Provider
+from instructor.v2.core.budget import (
+    _budget_error as budget_error,
+    _validate_token_budget as validate_token_budget,
+)
 from instructor.v2.core.client import (
     AsyncInstructor,
     AsyncResponse,
@@ -28,15 +32,27 @@ from instructor.v2.core.retry import (
     _finalize_parsed_response,
     _usage_snapshot,
     _usage_total_tokens,
+    _validate_token_budget,
     retry_async_v2,
     retry_sync_v2,
 )
-from instructor.v2.core.usage import has_compatible_usage
+from instructor.v2.core.usage import (
+    _usage_snapshot as usage_snapshot,
+    _usage_total_tokens as usage_total_tokens,
+    has_compatible_usage,
+)
 from instructor.v2.dsl.response_list import ListResponse
 
 
 class Answer(BaseModel):
     value: int
+
+
+def test_retry_helper_aliases_preserve_import_compatibility() -> None:
+    assert _budget_error is budget_error
+    assert _validate_token_budget is validate_token_budget
+    assert _usage_snapshot is usage_snapshot
+    assert _usage_total_tokens is usage_total_tokens
 
 
 def _validation_error() -> ValidationError:

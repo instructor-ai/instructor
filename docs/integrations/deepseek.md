@@ -31,19 +31,19 @@ export DEEPSEEK_API_KEY='your-api-key-here'
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'), base_url="https://api.deepseek.com")
+client = OpenAI(
+    api_key=os.getenv('DEEPSEEK_API_KEY'), base_url="https://api.deepseek.com"
+)
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-import os
-from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 
 client = instructor.from_provider(
-    "deepseek/deepseek-chat",
+    "deepseek/deepseek-v4-flash",
     base_url="https://api.deepseek.com",
 )
 
@@ -62,19 +62,18 @@ user = client.create(
 )
 
 print(user)
-# > name='Jason' age=25
+#> name='Jason' age=25
 ```
 
 ## Simple User Example (Async)
 
 ```python
-import os
 import asyncio
 from pydantic import BaseModel
 import instructor
 
 client = instructor.from_provider(
-    "deepseek/deepseek-chat",
+    "deepseek/deepseek-v4-flash",
     async_client=True,
     base_url="https://api.deepseek.com",
 )
@@ -98,16 +97,13 @@ async def extract_user():
 # Run async function
 user = asyncio.run(extract_user())
 print(user)
-# > name='Jason' age=25
-
+#> name='Jason' age=25
 ```
 
 ## Nested Example
 
 ```python
 from pydantic import BaseModel
-import os
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
@@ -126,7 +122,7 @@ class User(BaseModel):
 
 # Initialize with API key
 client = instructor.from_provider(
-    "deepseek/deepseek-chat",
+    "deepseek/deepseek-v4-flash",
     base_url="https://api.deepseek.com",
 )
 
@@ -177,15 +173,13 @@ Instructor has two main ways that you can use to stream responses out
 
 ```python
 from pydantic import BaseModel
-import os
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
 
 # Initialize with API key
 client = instructor.from_provider(
-    "deepseek/deepseek-chat",
+    "deepseek/deepseek-v4-flash",
     base_url="https://api.deepseek.com",
 )
 
@@ -210,27 +204,24 @@ for user_partial in user:
     print(user_partial)
 
 
-# > name='Jason' age=None bio='None'
-# > name='Jason' age=25 bio='A tech'
-# > name='Jason' age=25 bio='A tech enthusiast'
-# > name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new'
-# > name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new technologies'
-
+#> name='Jason' age=None bio='None'
+#> name='Jason' age=25 bio='A tech'
+#> name='Jason' age=25 bio='A tech enthusiast'
+#> name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new'
+#> name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new technologies'
 ```
 
 ### Iterable Example
 
 ```python
 from pydantic import BaseModel
-import os
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
 
 # Initialize with API key
 client = instructor.from_provider(
-    "deepseek/deepseek-chat",
+    "deepseek/deepseek-v4-flash",
     base_url="https://api.deepseek.com",
 )
 
@@ -269,14 +260,12 @@ for user in users:
 Because Instructor is built on top of the OpenAI API, we can get our reasoning traces from the `deepseek-reasoner` model. Make sure to configure the `MD_JSON` mode here to get the best experience.
 
 ```python
-import os
-from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 from rich import print
 
 client = instructor.from_provider(
-    "deepseek/deepseek-chat",
+    "deepseek/deepseek-v4-flash",
     base_url="https://api.deepseek.com",
     mode=instructor.Mode.MD_JSON,
 )
@@ -296,15 +285,15 @@ completion, raw_completion = client.create_with_completion(
 )
 
 print(completion)
-# > User(name='Jason', age=25)
+#> User(name='Jason', age=25)
 print(raw_completion.choices[0].message.reasoning_content)
-# > Okay, let's see. The user wants me to extract information from the sentence "Jason is 25 years old" and format it into a JSON object that matches the given schema. The schema requires a "name" and an "age", both of which are required.
+#> Okay, let's see. The user wants me to extract information from the sentence "Jason is 25 years old" and format it into a JSON object that matches the given schema. The schema requires a "name" and an "age", both of which are required.
 # >
-# > First, I need to identify the name. The sentence starts with "Jason", so that's the name. Then the age is given as "25 years old". The age should be an integer, so I need to convert "25" from a string to a number.
+#> First, I need to identify the name. The sentence starts with "Jason", so that's the name. Then the age is given as "25 years old". The age should be an integer, so I need to convert "25" from a string to a number.
 # >
-# > So putting that together, the JSON should have "name": "Jason" and "age": 25. Let me double-check the schema to make sure there are no other requirements. The properties are "name" (string) and "age" (integer), both required. Yep, that's all.
+#> So putting that together, the JSON should have "name": "Jason" and "age": 25. Let me double-check the schema to make sure there are no other requirements. The properties are "name" (string) and "age" (integer), both required. Yep, that's all.
 # >
-# > I need to make sure the JSON is correctly formatted, with commas and braces. Also, the user specified to return it in a json codeblock, not the schema itself. So the final answer should be a JSON object with those key-value pairs.
+#> I need to make sure the JSON is correctly formatted, with commas and braces. Also, the user specified to return it in a json codeblock, not the schema itself. So the final answer should be a JSON object with those key-value pairs.
 ```
 
 ## Instructor Modes

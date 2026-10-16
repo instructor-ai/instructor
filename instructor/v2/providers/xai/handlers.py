@@ -22,7 +22,6 @@ from collections.abc import (
     Iterable as TypingIterable,
 )
 from typing import TYPE_CHECKING, Any, cast
-from weakref import WeakKeyDictionary
 
 from pydantic import BaseModel
 
@@ -42,8 +41,8 @@ from instructor.v2.dsl.parallel import (
     ParallelModel,
     get_types_array,
     handle_parallel_model,
+    model_for_tool_name,
 )
-from instructor.v2.dsl.partial import PartialBase
 from instructor.v2.dsl.simple_type import AdapterBase
 from instructor.v2.core.json import (
     extract_json_from_codeblock,
@@ -52,12 +51,13 @@ from instructor.v2.core.json import (
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.streaming import StreamingModelState
 from instructor.v2.core.messages import copy_messages_for_mutation
 
 
-def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
+def _convert_messages_with_chat(messages: list[dict[str, Any]], chat: Any) -> list[Any]:
     """Convert OpenAI-style messages to xAI format."""
-    if xchat is None:
+    if chat is None:
         raise ImportError("xai_sdk is required for xAI provider")
 
     converted = []
@@ -65,20 +65,24 @@ def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
         role = m["role"]
         content = m.get("content", "")
         if isinstance(content, str):
-            c = xchat.text(content)
+            c = chat.text(content)
         else:
             raise ValueError("Only string content supported for xAI provider")
         if role == "user":
-            converted.append(xchat.user(c))
+            converted.append(chat.user(c))
         elif role == "assistant":
-            converted.append(xchat.assistant(c))
+            converted.append(chat.assistant(c))
         elif role == "system":
-            converted.append(xchat.system(c))
+            converted.append(chat.system(c))
         elif role == "tool":
-            converted.append(xchat.tool_result(content))
+            converted.append(chat.tool_result(content))
         else:
             raise ValueError(f"Unsupported role: {role}")
     return converted
+
+
+def _convert_messages(messages: list[dict[str, Any]]) -> list[Any]:
+    return _convert_messages_with_chat(messages, xchat)
 
 
 def reask_xai_json(
@@ -162,46 +166,10 @@ def handle_xai_tools(
     return response_model, new_kwargs
 
 
-class XAIHandlerBase(ModeHandler):
+class XAIHandlerBase(StreamingModelState, ModeHandler):
     """Base class for xAI handlers with shared utilities."""
 
     mode: Mode
-
-    def __init__(self) -> None:
-        self._streaming_models: WeakKeyDictionary[type[Any], None] = WeakKeyDictionary()
-
-    def _register_streaming_from_kwargs(
-        self, response_model: type[BaseModel] | None, kwargs: dict[str, Any]
-    ) -> None:
-        """Register model for streaming if stream=True in kwargs."""
-        if response_model is None:
-            return
-        if kwargs.get("stream"):
-            self.mark_streaming_model(response_model, True)
-
-    def mark_streaming_model(
-        self, response_model: type[BaseModel] | None, stream: bool
-    ) -> None:
-        """Record that the response model expects streaming output."""
-        if not stream or response_model is None:
-            return
-        if inspect.isclass(response_model) and issubclass(
-            response_model, (IterableBase, PartialBase)
-        ):
-            self._streaming_models[response_model] = None
-
-    def _consume_streaming_flag(
-        self, response_model: type[BaseModel] | ParallelBase | None
-    ) -> bool:
-        """Check and consume streaming flag for a model."""
-        if response_model is None:
-            return False
-        if not inspect.isclass(response_model):
-            return False
-        if response_model in self._streaming_models:
-            del self._streaming_models[response_model]
-            return True
-        return False
 
     def extract_streaming_json(
         self, completion: TypingIterable[Any]
@@ -428,23 +396,7 @@ class XAIToolsHandler(XAIHandlerBase):
         response: Any,
         exception: Exception,
     ) -> dict[str, Any]:
-        """Handle reask for tools mode."""
-        kwargs = kwargs.copy()
-
-        # Add assistant response to conversation history
-        assistant_msg = {
-            "role": "assistant",
-            "content": str(response),
-        }
-        kwargs["messages"].append(assistant_msg)
-
-        # Add user correction request
-        reask_msg = {
-            "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-        }
-        kwargs["messages"].append(reask_msg)
-        return kwargs
+        return reask_xai_tools(kwargs, response, exception)
 
     def parse_response(
         self,
@@ -452,14 +404,12 @@ class XAIToolsHandler(XAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse tool call response from xAI."""
         # Check for streaming
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -554,7 +504,9 @@ class XAIParallelToolsHandler(XAIHandlerBase):
     ) -> Any:
         """Parse parallel tool calls from xAI."""
         the_types = get_types_array(response_model)  # type: ignore[arg-type]
-        type_registry = {model.__name__: model for model in the_types}
+        type_registry = {
+            model.model_json_schema()["title"]: model for model in the_types
+        }
 
         results = []
         for tool_call in getattr(response, "tool_calls", []) or []:
@@ -562,14 +514,23 @@ class XAIParallelToolsHandler(XAIHandlerBase):
             args = tool_call.function.arguments
             if isinstance(args, dict):
                 args = json.dumps(args)
-            if name in type_registry:
-                results.append(
-                    type_registry[name].model_validate_json(
+            model_class = model_for_tool_name(
+                type_registry,
+                name,
+                mode=self.mode,
+                raw_response=response,
+            )
+            results.append(
+                self._finalize_parsed_result(
+                    model_class,
+                    response,
+                    model_class.model_validate_json(
                         args,
                         context=validation_context,
                         strict=strict,
-                    )
+                    ),
                 )
+            )
         return iter(results)
 
 
@@ -611,14 +572,7 @@ class XAIJSONSchemaHandler(XAIHandlerBase):
         response: Any,
         exception: Exception,
     ) -> dict[str, Any]:
-        """Handle reask for JSON schema mode."""
-        kwargs = kwargs.copy()
-        reask_msg = {
-            "role": "user",
-            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response}",
-        }
-        kwargs["messages"].append(reask_msg)
-        return kwargs
+        return reask_xai_json(kwargs, response, exception)
 
     def parse_response(
         self,
@@ -626,14 +580,12 @@ class XAIJSONSchemaHandler(XAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse JSON schema response from xAI."""
         # Check for streaming
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,
@@ -744,14 +696,7 @@ class XAIMDJSONHandler(XAIHandlerBase):
         response: Any,
         exception: Exception,
     ) -> dict[str, Any]:
-        """Handle reask for MD_JSON mode."""
-        kwargs = kwargs.copy()
-        reask_msg = {
-            "role": "user",
-            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response}",
-        }
-        kwargs["messages"].append(reask_msg)
-        return kwargs
+        return reask_xai_json(kwargs, response, exception)
 
     def parse_response(
         self,
@@ -759,14 +704,12 @@ class XAIMDJSONHandler(XAIHandlerBase):
         response_model: type[BaseModel],
         validation_context: dict[str, Any] | None = None,
         strict: bool | None = None,
-        stream: bool = False,  # noqa: ARG002
+        stream: bool | None = None,
         is_async: bool = False,  # noqa: ARG002
     ) -> Any:
         """Parse JSON from markdown code block in xAI response."""
         # Check for streaming
-        if isinstance(response_model, type) and self._consume_streaming_flag(
-            response_model
-        ):
+        if self._should_parse_streaming(response_model, stream):
             return self._parse_streaming_response(
                 response_model,
                 response,

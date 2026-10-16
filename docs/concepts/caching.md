@@ -14,6 +14,25 @@ For more details on caching concepts, see our [blog](../blog/posts/caching.md).
 
 ## Built-in Caching (v1.9.1 and later)
 
+### Cache isolation in 1.17
+
+Each patched client has its own cache namespace by default. Repeated calls through
+that client can reuse entries; a newly constructed client gets a separate namespace,
+even when it uses the same disk cache. This prevents accidental reuse across
+endpoints or accounts that use the same model name.
+
+For intentional reuse across client instances or process restarts, pass a stable
+`cache_namespace` string alongside `cache` when calling `client.create`. Choose a
+namespace that identifies the endpoint, account or tenant, and application policy.
+Never use credentials as namespace values or share one namespace between tenants.
+Change the namespace when switching endpoints, accounts, or validation policy.
+
+Provider and SDK client identity, the complete prepared request, positional
+arguments, validation context, and strictness contribute to cache keys.
+Cached models are revalidated using the current call's context and strictness.
+If request objects cannot be serialized reliably, the built-in cache is bypassed
+for that call instead of reusing an ambiguous key.
+
 Instructor supports caching for every client. Pass a cache adapter when you create the client. The cache parameter flows through to all provider implementations via **kwargs:
 
 ```python
@@ -74,8 +93,9 @@ parameter is ignored.
 
 ### Cache-key design
 
-Under the hood Instructor generates a **deterministic** key for every
- call using `instructor.cache.make_cache_key`.
+The built-in cache uses `instructor.cache.make_request_cache_key` for the complete
+prepared request. It includes client identity, namespace, validation context and
+strictness in addition to the components below. Unsupported values bypass caching.
 
 Components that influence the key:
 
@@ -86,8 +106,9 @@ Components that influence the key:
 | `mode`                      | JSON vs. TOOLS vs. RESPONSES changes formatting |
 | `response_model` schema     | The entire `model_json_schema()` is included so **any** change in field names, types or *descriptions* busts the cache automatically |
 
-The function returns a SHA-256 hex digest; its length is constant regardless
-of prompt size, so it is safe to use as a Redis key, file path, etc.
+Keys are SHA-256 hex digests of constant length. The lower-level
+`make_cache_key` helper remains available for custom integrations, as shown below;
+callers must supply all relevant identity and policy inputs themselves.
 
 ```python
 from instructor.cache import make_cache_key

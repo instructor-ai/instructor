@@ -534,7 +534,7 @@ def create(
 
         # Load messages from file
         messages_list = []
-        with open(messages_file) as f:
+        with open(messages_file, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     messages_list.append(json.loads(line))

@@ -42,7 +42,7 @@ class User(BaseModel):
 
 # Using from_provider (recommended)
 client = instructor.from_provider(
-    "google/gemini-3-flash",
+    "google/gemini-3.8-flash",
 )
 
 resp = client.create(
@@ -77,7 +77,7 @@ class User(BaseModel):
 
 async def extract_user():
     client = instructor.from_provider(
-        "google/gemini-3-flash",
+        "google/gemini-3.8-flash",
         async_client=True,
     )
 
@@ -122,7 +122,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "google/gemini-3-flash",
+    "google/gemini-3.8-flash",
     mode=instructor.Mode.JSON,
 )
 
@@ -167,7 +167,7 @@ class Result(BaseModel):
     summary: str
 
 
-client = instructor.from_provider("google/gemini-3-flash")
+client = instructor.from_provider("google/gemini-3.8-flash")
 
 result = client.create(
     response_model=Result,
@@ -209,7 +209,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "google/gemini-3-flash",
+    "google/gemini-3.8-flash",
 )
 
 user = client.create(
@@ -260,7 +260,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider(
-    "google/gemini-3-flash",
+    "google/gemini-3.8-flash",
 )
 
 
@@ -282,9 +282,9 @@ user = client.create_partial(
 
 for user_partial in user:
     print(user_partial)
-    # > name=None age=None bio=None
-    # > name=None age=25 bio='Jason is a great guy'
-    # > name='Jason' age=25 bio='Jason is a great guy'
+    #> name=None age=None bio=None
+    #> name=None age=25 bio='Jason is a great guy'
+    #> name='Jason' age=25 bio='Jason is a great guy'
 ```
 
 ### Iterable Example
@@ -295,7 +295,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider(
-    "google/gemini-3-flash",
+    "google/gemini-3.8-flash",
 )
 
 
@@ -362,7 +362,7 @@ Google offers several Gemini models:
 
 We've written an extensive list of guides on how to use gemini's multimodal capabilities with instructor.
 
-- [Using Geminin To Extract Travel Video Recomendations](../blog/posts/multimodal-gemini.md)
+- [Using Gemini To Extract Travel Video Recommendations](../blog/posts/multimodal-gemini.md)
 - [Parsing PDFs with Gemini](../blog/posts/chat-with-your-pdf-with-gemini.md)
 - [Generating Citations with Gemini](../blog/posts/generating-pdf-citations.md)
 
@@ -382,10 +382,9 @@ If you're currently using the legacy `google-generativeai` package with Instruct
 ### Old Way (Deprecated)
 ```python
 import instructor
-import google.generativeai as genai
 
 client = instructor.from_provider(
-    "google/gemini-2.5-flash",
+    "google/gemini-3.8-flash",
     mode=instructor.Mode.JSON,
 )
 ```
@@ -395,7 +394,7 @@ client = instructor.from_provider(
 import instructor
 
 # Option 1: Using from_provider (recommended)
-client = instructor.from_provider("google/gemini-2.5-flash")
+client = instructor.from_provider("google/gemini-3.8-flash")
 
 # Option 2: Using from_genai directly (legacy/advanced)
 from google import genai
@@ -412,11 +411,10 @@ For Vertex AI users, the migration is similar:
 ```python
 import instructor
 import vertexai
-from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
 client = instructor.from_provider(
-    "google/gemini-2.5-flash",
+    "google/gemini-3.8-flash",
     vertexai=True,
     mode=instructor.Mode.TOOLS,
 )
@@ -428,9 +426,7 @@ import instructor
 
 # Option 1: Using from_provider (recommended)
 client = instructor.from_provider(
-    "vertexai/gemini-3-flash",
-    project="your-project",
-    location="us-central1"
+    "vertexai/gemini-3.8-flash", project="your-project", location="us-central1"
 )
 
 # Option 2: Using from_genai with vertexai=True (legacy/advanced)
@@ -438,11 +434,7 @@ from google import genai
 from instructor import from_genai
 
 client = from_genai(
-    genai.Client(
-        vertexai=True,
-        project="your-project",
-        location="us-central1"
-    )
+    genai.Client(vertexai=True, project="your-project", location="us-central1")
 )
 ```
 

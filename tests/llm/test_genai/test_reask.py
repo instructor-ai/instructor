@@ -1,7 +1,7 @@
-import os
 import pytest
 from pydantic import BaseModel, field_validator
 import instructor
+from .util import models
 
 
 @pytest.mark.parametrize("mode", [instructor.Mode.GENAI_TOOLS])
@@ -9,7 +9,7 @@ def test_genai_tools_validation_retry_preserves_model_content(mode):
     """Ensure GENAI_TOOLS validation retries are wired end-to-end."""
     from instructor.core.exceptions import InstructorRetryException
 
-    model = os.getenv("GOOGLE_GENAI_MODEL", "gemini-3.5-flash")
+    model = models[0]
 
     class AlwaysInvalid(BaseModel):
         value: int
@@ -33,4 +33,5 @@ def test_genai_tools_validation_retry_preserves_model_content(mode):
             max_retries=2,
         )
 
-    assert exc_info.value.n_attempts == 2
+    # max_retries excludes the initial attempt.
+    assert exc_info.value.n_attempts == 3
