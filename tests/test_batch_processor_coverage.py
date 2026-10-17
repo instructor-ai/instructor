@@ -368,8 +368,6 @@ def test_parse_results_accepts_empty_object_for_defaulted_model(
     ]
 
 
-
-
 def test_anthropic_results_support_tool_use_and_text_fallback(
     provider: RecordingProvider,
 ) -> None:
