@@ -181,9 +181,6 @@ if "request-1" in by_id:
         print(f"Error: {result.error_message}")
 ```
 
-When parsing OpenAI error records, `BatchError` keeps the provider's error code
-(or error type), message, `custom_id` and raw record. This includes expired requests in an error file.
-
 ### Custom IDs
 
 By default, requests get the IDs `request-0`, `request-1`, and so on. Pass `custom_ids` to use your own IDs. This makes it easier to match results, including failed ones, back to your data:
@@ -230,6 +227,9 @@ instructor batch results --batch-id "batch_abc123" --output-file results.jsonl
 5. **Storage**: For Google, ensure GCS bucket is in the same region as your batch job
 
 ## Troubleshooting
+
+When parsing OpenAI error records, `BatchError` keeps the provider's error code
+(or error type), message, `custom_id` and raw record. This includes expired requests in an error file.
 
 | Issue | Solution |
 |-------|----------|
