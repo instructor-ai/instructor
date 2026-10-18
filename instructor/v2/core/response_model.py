@@ -7,7 +7,7 @@ import sys
 from collections.abc import Iterable
 from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model
 from typing_extensions import NotRequired, Required
 from typing import get_type_hints
 
@@ -32,11 +32,12 @@ def is_typed_dict(cls: Any) -> bool:
 
 
 def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
-    """Convert a TypedDict while preserving per-key requiredness."""
+    """Convert a TypedDict while preserving per-key requiredness and underscore keys."""
     annotations = get_type_hints(typed_dict, include_extras=True)
     required_keys = set(getattr(typed_dict, "__required_keys__", set()))
     optional_keys = set(getattr(typed_dict, "__optional_keys__", set()))
     total = getattr(typed_dict, "__total__", True)
+    used_field_names = set(annotations.keys())
     fields: dict[str, tuple[Any, Any]] = {}
 
     for name, annotation in annotations.items():
@@ -51,10 +52,23 @@ def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
             field_annotation = annotation
             is_required = name in required_keys or (name not in optional_keys and total)
 
-        fields[name] = (field_annotation, ... if is_required else None)
+        default_val = ... if is_required else None
+        if name.startswith("_"):
+            stripped = name.lstrip("_")
+            base_name = f"field_{stripped}" if stripped else "field_underscore"
+            safe_name = base_name
+            counter = 1
+            while safe_name in used_field_names:
+                safe_name = f"{base_name}_{counter}"
+                counter += 1
+            used_field_names.add(safe_name)
+            fields[safe_name] = (field_annotation, Field(default_val, alias=name))
+        else:
+            fields[name] = (field_annotation, default_val)
 
     return _create_dynamic_model(
         getattr(typed_dict, "__name__", "TypedDictModel"),
+        __config__=ConfigDict(populate_by_name=True),
         **fields,
     )
 
