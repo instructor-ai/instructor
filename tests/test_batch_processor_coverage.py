@@ -500,3 +500,80 @@ def test_extract_returns_none_for_missing_malformed_or_unknown_provider_response
         openai._extract_from_response({"response": {"body": {"choices": []}}}) is None
     )
     assert unknown._extract_from_response({"anything": "goes"}) is None
+
+
+@pytest.mark.parametrize(
+    ("record", "expected_type", "expected_message"),
+    [
+        (
+            {
+                "custom_id": "failed-top-level",
+                "response": None,
+                "error": {
+                    "code": "batch_expired",
+                    "message": "Completion window expired",
+                },
+            },
+            "batch_expired",
+            "Completion window expired",
+        ),
+        (
+            {
+                "custom_id": "failed-body-level",
+                "response": {
+                    "status_code": 400,
+                    "body": {
+                        "error": {
+                            "code": "context_length_exceeded",
+                            "message": "Maximum context length exceeded",
+                            "type": "invalid_request_error",
+                        }
+                    },
+                },
+                "error": None,
+            },
+            "context_length_exceeded",
+            "Maximum context length exceeded",
+        ),
+        (
+            {
+                "custom_id": "failed-type-fallback",
+                "response": {
+                    "status_code": 400,
+                    "body": {
+                        "error": {
+                            "message": "Rate limit reached",
+                            "type": "rate_limit_error",
+                        }
+                    },
+                },
+            },
+            "rate_limit_error",
+            "Rate limit reached",
+        ),
+        (
+            {
+                "custom_id": "failed-no-details",
+                "response": {"status_code": 500, "body": {}},
+            },
+            "extraction_error",
+            "Unknown error",
+        ),
+    ],
+)
+def test_openai_error_results_keep_provider_details(
+    provider: RecordingProvider,
+    record: dict[str, Any],
+    expected_type: str,
+    expected_message: str,
+) -> None:
+    del provider
+    processor = BatchProcessor("openai/gpt-4.1-mini", Person)
+
+    parsed = processor.parse_results(json.dumps(record))
+
+    assert len(parsed) == 1
+    assert isinstance(parsed[0], BatchError)
+    assert parsed[0].custom_id == record["custom_id"]
+    assert parsed[0].error_type == expected_type
+    assert parsed[0].error_message == expected_message
