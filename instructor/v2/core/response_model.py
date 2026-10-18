@@ -7,7 +7,7 @@ import sys
 from collections.abc import Iterable
 from typing import Any, Callable, TypeVar, Union, cast, get_args, get_origin
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model
 from typing_extensions import NotRequired, Required
 from typing import get_type_hints
 
@@ -21,6 +21,38 @@ if sys.version_info >= (3, 10):
     _UNION_ORIGINS: tuple[Any, ...] = (Union, UnionType)
 else:  # pragma: no cover - Python 3.9 has no runtime ``X | Y`` syntax
     _UNION_ORIGINS = (Union,)
+
+
+class TypedDictBaseModel(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    _alias_map: dict[str, str] = {}
+
+    def __getattr__(self, item: str) -> Any:
+        field_name = self._alias_map.get(item)
+        if field_name is not None:
+            return getattr(self, field_name)
+        raise AttributeError(
+            f"{self.__class__.__name__!r} object has no attribute {item!r}"
+        )
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        field_name = self._alias_map.get(name)
+        if field_name is not None:
+            super().__setattr__(field_name, value)
+            return
+        super().__setattr__(name, value)
+
+
+def _safe_field_name(name: str, existing_names: set[str]) -> str:
+    if not name.startswith("_"):
+        return name
+    candidate = f"field_{name}"
+    i = 1
+    while candidate in existing_names:
+        candidate = f"field_{i}_{name}"
+        i += 1
+    existing_names.add(candidate)
+    return candidate
 
 
 def is_typed_dict(cls: Any) -> bool:
@@ -38,6 +70,8 @@ def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
     optional_keys = set(getattr(typed_dict, "__optional_keys__", set()))
     total = getattr(typed_dict, "__total__", True)
     fields: dict[str, tuple[Any, Any]] = {}
+    existing_names: set[str] = set(annotations.keys())
+    alias_map: dict[str, str] = {}
 
     for name, annotation in annotations.items():
         annotation_origin = get_origin(annotation)
@@ -51,12 +85,25 @@ def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
             field_annotation = annotation
             is_required = name in required_keys or (name not in optional_keys and total)
 
-        fields[name] = (field_annotation, ... if is_required else None)
+        if name.startswith("_"):
+            safe_name = _safe_field_name(name, existing_names)
+            alias_map[name] = safe_name
+            fields[safe_name] = (
+                field_annotation,
+                Field(... if is_required else None, alias=name),
+            )
+        else:
+            fields[name] = (field_annotation, ... if is_required else None)
 
-    return _create_dynamic_model(
+    base = TypedDictBaseModel if alias_map else BaseModel
+    model = _create_dynamic_model(
         getattr(typed_dict, "__name__", "TypedDictModel"),
+        __base__=base,
         **fields,
     )
+    if alias_map:
+        cast(Any, model)._alias_map = alias_map
+    return model
 
 
 def is_simple_type(typehint: type[T]) -> bool:

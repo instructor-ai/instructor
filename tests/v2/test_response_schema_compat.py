@@ -162,3 +162,66 @@ def test_prepare_response_model_preserves_iterable_typed_dict_keys() -> None:
     assert task_model.model_fields["name"].is_required()
     assert not task_model.model_fields["age"].is_required()
     assert task_model(name="Ada").model_dump(exclude_unset=True) == {"name": "Ada"}
+
+
+class DocumentRecord(TypedDict):
+    _id: str
+    name: str
+    _metadata: NotRequired[str]
+
+
+class CollisionRecord(TypedDict):
+    _id: str
+    field__id: str
+
+
+@pytest.mark.parametrize(
+    "model_cls,valid_input,expected_keys,required_keys",
+    [
+        (
+            DocumentRecord,
+            {"_id": "doc-1", "name": "Report"},
+            {"_id", "name"},
+            {"_id", "name"},
+        ),
+        (
+            CollisionRecord,
+            {"_id": "id-1", "field__id": "custom-id"},
+            {"_id", "field__id"},
+            {"_id", "field__id"},
+        ),
+    ],
+)
+def test_prepare_response_model_typed_dict_with_leading_underscores(
+    model_cls: type[Any],
+    valid_input: dict[str, Any],
+    expected_keys: set[str],
+    required_keys: set[str],
+) -> None:
+    from pydantic import ValidationError
+
+    from instructor.v2.core.response import handle_response_model
+
+    model, request = handle_response_model(
+        model_cls,
+        mode=Mode.TOOLS,
+        messages=[{"role": "user", "content": "Extract document"}],
+    )
+    assert model is not None
+
+    parameters = request["tools"][0]["function"]["parameters"]
+    assert set(parameters["properties"].keys()) >= expected_keys
+    for req in required_keys:
+        assert req in parameters["required"]
+
+    # Valid input succeeds and preserves leading underscore keys in dump(by_alias=True)
+    instance = model.model_validate(valid_input)
+    dumped = instance.model_dump(by_alias=True)
+    for k, v in valid_input.items():
+        assert dumped[k] == v
+        assert getattr(instance, k) == v
+
+    # Missing required underscore key fails validation
+    missing_input = {k: v for k, v in valid_input.items() if not k.startswith("_")}
+    with pytest.raises(ValidationError):
+        model.model_validate(missing_input)
