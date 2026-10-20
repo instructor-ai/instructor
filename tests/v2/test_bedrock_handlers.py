@@ -198,6 +198,37 @@ class TestBedrockMDJSONHandler:
         assert result_model is None
         assert "messages" in result_kwargs
 
+    def test_prepare_request_with_none_model_converts_to_converse(self, handler):
+        """response_model=None still converts OpenAI-style kwargs, like TOOLS."""
+        kwargs = {"model": "m", "messages": [{"role": "user", "content": "Hello"}]}
+        _, result_kwargs = handler.request_handler(None, kwargs)
+
+        assert result_kwargs == {
+            "modelId": "m",
+            "messages": [{"role": "user", "content": [{"text": "Hello"}]}],
+        }
+
+    def test_prepare_request_with_none_model_keeps_native_converse_kwargs(
+        self, handler
+    ):
+        """Native tool history and every system block are sent unchanged."""
+        tool_use = {"toolUseId": "t1", "name": "weather", "input": {"city": "Seoul"}}
+        tool_result = {"toolUseId": "t1", "content": [{"text": "21C"}]}
+        kwargs = {
+            "modelId": "m",
+            "system": [{"text": "Be brief."}, {"text": "Use metric units."}],
+            "messages": [
+                {"role": "user", "content": [{"text": "Weather in Seoul?"}]},
+                {"role": "assistant", "content": [{"toolUse": tool_use}]},
+                {"role": "user", "content": [{"toolResult": tool_result}]},
+            ],
+        }
+        expected = deepcopy(kwargs)
+
+        _, result_kwargs = handler.request_handler(None, kwargs)
+
+        assert result_kwargs == expected
+
     def test_prepare_request_adds_system_message(self, handler):
         """prepare_request adds system instructions for JSON output."""
         kwargs = {"messages": [{"role": "user", "content": "Extract user"}]}

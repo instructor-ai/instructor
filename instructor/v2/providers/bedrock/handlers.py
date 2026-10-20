@@ -300,6 +300,9 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
                 if "document" in part and isinstance(part["document"], dict):
                     items.append(part)
                     continue
+                if "toolUse" in part or "toolResult" in part:
+                    items.append(part)
+                    continue
                 if "cachePoint" in part:
                     items.append(part)
                     continue
@@ -319,17 +322,12 @@ def _prepare_bedrock_converse_kwargs_internal(
     call_kwargs: dict[str, Any],
 ) -> dict[str, Any]:
     """Prepare kwargs for the Bedrock Converse API."""
+    bedrock_system_list: list[dict[str, Any]] = []
     if "system" in call_kwargs and isinstance(call_kwargs["system"], list):
-        system_content = call_kwargs.pop("system")
-        if (
-            system_content
-            and isinstance(system_content[0], dict)
-            and "text" in system_content[0]
-        ):
-            system_text = system_content[0]["text"]
-            messages = list(call_kwargs.get("messages", []))
-            messages.insert(0, {"role": "system", "content": system_text})
-            call_kwargs["messages"] = messages
+        # Keep every native system block (text, cachePoint, ...) in order.
+        bedrock_system_list = list(call_kwargs.pop("system"))
+        if bedrock_system_list:
+            call_kwargs.setdefault("messages", [])
 
     if "model" in call_kwargs and "modelId" not in call_kwargs:
         call_kwargs["modelId"] = call_kwargs.pop("model")
@@ -396,7 +394,6 @@ def _prepare_bedrock_converse_kwargs_internal(
 
     if "messages" in call_kwargs and isinstance(call_kwargs["messages"], list):
         original_input_messages = call_kwargs.pop("messages")
-        bedrock_system_list: list[dict[str, Any]] = []
         bedrock_user_assistant_messages_list: list[dict[str, Any]] = []
 
         for msg_dict in original_input_messages:
@@ -435,10 +432,10 @@ def _prepare_bedrock_converse_kwargs_internal(
                     )
                 bedrock_user_assistant_messages_list.append(current_message_for_api)
 
-        if bedrock_system_list:
-            call_kwargs["system"] = bedrock_system_list
-
         call_kwargs["messages"] = bedrock_user_assistant_messages_list
+
+    if bedrock_system_list:
+        call_kwargs["system"] = bedrock_system_list
     return call_kwargs
 
 
@@ -654,7 +651,7 @@ class BedrockMDJSONHandler(ModeHandler):
     ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
         new_kwargs = kwargs.copy()
         if response_model is None:
-            return None, new_kwargs
+            return None, _prepare_bedrock_converse_kwargs_internal(new_kwargs)
 
         prepared_model = cast(type[BaseModel], prepare_response_model(response_model))
         return handle_bedrock_json(prepared_model, new_kwargs)
