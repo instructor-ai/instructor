@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Batch files**: Preserve existing output and avoid partial new files when request serialization fails. ([#2821](https://github.com/567-labs/instructor/pull/2821))
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
