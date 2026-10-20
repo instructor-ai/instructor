@@ -18,6 +18,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - **Batch custom IDs**: Accept optional request IDs with count, uniqueness, and Anthropic format checks before writing a batch file or buffer. Preserve generated IDs when the option is omitted. ([#2691](https://github.com/567-labs/instructor/pull/2691))
 
 ### Fixed
+- **Validation errors**: Preserve user input and custom validation messages containing Pydantic documentation URLs while removing only generated help-link lines. ([#2772](https://github.com/567-labs/instructor/pull/2772))
+- **Empty citations**: Drop empty quotes and empty source chunks instead of emitting empty citations; nonempty fuzzy-matching behavior is unchanged. ([#2770](https://github.com/567-labs/instructor/pull/2770))
+- **Batch example**: Generate request files with the supported `BatchProcessor.create_batch_from_messages` API and include complete example imports. ([#2768](https://github.com/567-labs/instructor/pull/2768))
 - **Batch parsing**: Validate complete result payloads so Pydantic root models can wrap objects with a field named `root`, including empty objects with model defaults. ([#2743](https://github.com/567-labs/instructor/pull/2743))
 - **Batch failure details**: Reject absent Anthropic tool input instead of inventing an empty result. Preserve request IDs and original records when non-object payloads fail model validation.
 - **Batch retrieval**: Read both OpenAI success and error files, including completed batches where every request failed. Retrieve Anthropic ended batches with only errors, preserving request IDs, provider error details and raw records.

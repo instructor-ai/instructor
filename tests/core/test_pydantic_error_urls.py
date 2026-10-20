@@ -23,7 +23,7 @@ def test_error_url_filter_preserves_input_details(
         value: int
 
     with pytest.raises(ValidationError) as error:
-        Number(value=value)
+        Number.model_validate({"value": value})
 
     message = str(error.value)
     assert "Input should be a valid integer" in message

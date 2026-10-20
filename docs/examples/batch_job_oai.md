@@ -31,7 +31,10 @@ This tutorial shows how to use `instructor` to generate large quantities of synt
 Let's first see how we can generate a Question and Answer Pair using Instructor with a normal OpenAI function call.
 
 ```python
+from openai import OpenAI
 from pydantic import BaseModel, Field
+
+from instructor import from_openai
 
 client = from_openai(OpenAI())
 
@@ -81,11 +84,11 @@ As the number of chunks we'd like to generate these synthetic questions for incr
 
 Let's see how we can use the `BatchProcessor` object to create a `.jsonl` file which is compatible with the Batch API.
 
-```python hl_lines="9-18 35-39"
+```python
 from datasets import load_dataset
-from instructor.batch import BatchProcessor
 from pydantic import BaseModel, Field
-from datasets import load_dataset
+
+from instructor.batch import BatchProcessor
 
 dataset = load_dataset("ms_marco", "v1.1", split="train", streaming=True).take(200)
 
