@@ -193,9 +193,6 @@ def retry_sync_v2(
     # Setup retrying
     if isinstance(max_retries, int):
         stop_condition = stop_after_attempt(max(max_retries, 0) + 1)
-        timeout = kwargs.get("timeout")
-        if isinstance(timeout, (int, float)):
-            stop_condition = stop_condition | stop_after_delay(timeout)
         max_retries_instance = Retrying(
             stop=stop_condition,
             retry=retry_if_exception_type(_RETRYABLE_PARSE_ERRORS),
@@ -492,9 +489,6 @@ async def retry_async_v2(
     # Setup retrying
     if isinstance(max_retries, int):
         stop_condition = stop_after_attempt(max(max_retries, 0) + 1)
-        timeout = kwargs.get("timeout")
-        if isinstance(timeout, (int, float)):
-            stop_condition = stop_condition | stop_after_delay(timeout)
         max_retries_instance = AsyncRetrying(
             stop=stop_condition,
             retry=retry_if_exception_type(_RETRYABLE_PARSE_ERRORS),
