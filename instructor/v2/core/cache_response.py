@@ -16,6 +16,36 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("instructor.cache")
 
+# Keys written by store_cached_response. Older envelopes may omit "raw",
+# so recognition must accept the subset, not require both keys.
+_ENVELOPE_KEYS = frozenset({"model", "raw"})
+
+
+def _is_response_envelope(data: Any) -> bool:
+    """True when *data* looks like the envelope written by store_cached_response.
+
+    A legacy cache entry stores the response model's own JSON directly, which
+    may itself contain a business field named "model" (or even "raw"). The
+    envelope is only recognized when every key belongs to the envelope and
+    "model" holds a JSON document string, as the writer always stores the
+    serialized model as a JSON string.
+    """
+    if not isinstance(data, dict):
+        return False
+    if not set(data) <= _ENVELOPE_KEYS or "model" not in data:
+        return False
+    model_json = data["model"]
+    if not isinstance(model_json, str):
+        return False
+    raw_json = data.get("raw")
+    if raw_json is not None and not isinstance(raw_json, str):
+        return False
+    try:
+        json.loads(model_json)
+    except (json.JSONDecodeError, ValueError):
+        return False
+    return True
+
 
 def load_cached_response(
     cache: BaseCache,
@@ -31,13 +61,18 @@ def load_cached_response(
     if cached is None:
         return None
 
+    model_json = cached
+    raw_json = None
     try:
         data = json.loads(cached)
-        model_json = data["model"]
-        raw_json = data.get("raw")
     except Exception:
-        model_json = cached
-        raw_json = None
+        # Not JSON at all: the whole cached value is the model's JSON.
+        pass
+    else:
+        if _is_response_envelope(data):
+            model_json = data["model"]
+            raw_json = data.get("raw")
+        # Otherwise the cached document is the model's own JSON (legacy).
 
     obj = response_model.model_validate_json(model_json, context=context, strict=strict)
     if raw_json is not None:
