@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import re
 from collections.abc import Callable
 from typing import Any, Generic, TypeVar, cast
 
@@ -44,8 +45,9 @@ def disable_pydantic_error_url() -> None:
         return "\n".join(
             line
             for line in output.split("\n")
-            if not line.lstrip().startswith(
-                "For further information visit https://errors.pydantic.dev"
+            if not re.fullmatch(
+                r"\s*For further information visit https://errors\.pydantic\.dev/\S+",
+                line,
             )
         )
 

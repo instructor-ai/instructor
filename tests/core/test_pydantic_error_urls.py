@@ -31,19 +31,27 @@ def test_error_url_filter_preserves_input_details(
     assert "For further information visit" not in message
 
 
-def test_error_url_filter_preserves_custom_messages() -> None:
+@pytest.mark.parametrize(
+    "message",
+    [
+        "See https://errors.pydantic.dev/custom for this value",
+        "Rejected by custom policy\n"
+        "For further information visit https://errors.pydantic.dev/custom-policy",
+    ],
+)
+def test_error_url_filter_preserves_custom_messages(message: str) -> None:
     class Number(BaseModel):
         value: int
 
         @field_validator("value")
         @classmethod
         def reject_value(cls, _value: int) -> int:
-            raise ValueError("See https://errors.pydantic.dev/custom for this value")
+            raise ValueError(message)
 
     with pytest.raises(ValidationError) as error:
         Number(value=1)
 
-    message = str(error.value)
-    assert "See https://errors.pydantic.dev/custom for this value" in message
-    assert "input_value=1" in message
-    assert "For further information visit" not in message
+    rendered = str(error.value)
+    assert message in rendered
+    assert "input_value=1" in rendered
+    assert "\n    For further information visit" not in rendered
