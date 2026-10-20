@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Cache-key helper**: Include `extra_body` in the public `make_cache_key` helper so provider-specific generation settings produce distinct keys. The default runtime already hashes the complete prepared request.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
