@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Async validation**: Manually awaited validation collects errors from every list, tuple and dictionary item, including nested containers, instead of stopping at the first invalid item. ([#2738](https://github.com/567-labs/instructor/pull/2738))
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
