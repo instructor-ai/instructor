@@ -46,7 +46,8 @@ def disable_pydantic_error_url() -> None:
             line
             for line in output.split("\n")
             if not re.fullmatch(
-                r"\s*For further information visit https://errors\.pydantic\.dev/\S+",
+                r"    For further information visit "
+                r"https://errors\.pydantic\.dev/\d+\.\d+/v/\w+",
                 line,
             )
         )

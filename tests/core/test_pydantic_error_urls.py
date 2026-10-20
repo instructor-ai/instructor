@@ -37,6 +37,9 @@ def test_error_url_filter_preserves_input_details(
         "See https://errors.pydantic.dev/custom for this value",
         "Rejected by custom policy\n"
         "For further information visit https://errors.pydantic.dev/custom-policy",
+        "Rejected by custom policy\n"
+        "For further information visit https://errors.pydantic.dev/custom-policy\n"
+        "Contact support.",
     ],
 )
 def test_error_url_filter_preserves_custom_messages(message: str) -> None:
