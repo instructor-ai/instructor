@@ -33,8 +33,33 @@ def load_cached_response(
 
     try:
         data = json.loads(cached)
-        model_json = data["model"]
-        raw_json = data.get("raw")
+        # Envelope format stores {"model": <model_dump_json str>, "raw": ...}.
+        # Legacy format stores the model JSON directly. A model field named
+        # "model" must not be mistaken for the envelope key.
+        if (
+            isinstance(data, dict)
+            and isinstance(data.get("model"), str)
+            and "raw" in data
+        ):
+            # Prefer the presence of the "raw" key (always written by the current
+            # store function) to identify the envelope. Fall back to checking
+            # whether the model value is itself a JSON object.
+            model_json = data["model"]
+            raw_json = data.get("raw")
+        elif isinstance(data, dict) and isinstance(data.get("model"), str):
+            try:
+                parsed_model = json.loads(data["model"])
+                if isinstance(parsed_model, dict):
+                    model_json = data["model"]
+                    raw_json = data.get("raw")
+                else:
+                    raise ValueError("not envelope")
+            except Exception:
+                model_json = cached
+                raw_json = None
+        else:
+            model_json = cached
+            raw_json = None
     except Exception:
         model_json = cached
         raw_json = None
