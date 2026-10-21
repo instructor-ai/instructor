@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Gemini and VertexAI truncation**: Raise `IncompleteOutputException` for non-streaming tools and JSON responses ending with `MAX_TOKENS`, instead of accepting schema defaults for output the model never emitted. The GenAI handler already refused these responses; `from_gemini` and `from_vertexai` did not.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
