@@ -219,3 +219,31 @@ def test_prepare_response_model_preserves_readonly_field_metadata() -> None:
     for value in (0, 10):
         with pytest.raises(ValidationError):
             model.model_validate({"value": value})
+
+
+@pytest.mark.parametrize("required", [True, False])
+def test_readonly_underscore_fields_preserve_aliases_and_round_trip(
+    required: bool,
+) -> None:
+    record = cast(Any, TypedDict)(
+        "Record",
+        {"_id": ReadOnly[Annotated[int, Field(gt=0)]]},
+        total=required,
+    )
+    model = cast(Any, prepare_response_model(record))
+    schema = model.model_json_schema()
+    assert schema["properties"]["_id"]["exclusiveMinimum"] == 0
+    assert ("_id" in schema.get("required", [])) is required
+    response = model.model_validate({"_id": 3})
+    assert response.model_dump(by_alias=True) == {"_id": 3}
+    assert (
+        model.model_validate_json(response.model_dump_json(round_trip=True)) == response
+    )
+    with pytest.raises(ValidationError):
+        model.model_validate({"_id": 0})
+    if required:
+        with pytest.raises(ValidationError):
+            model.model_validate({})
+    else:
+        omitted = model.model_validate({})
+        assert omitted.model_dump(round_trip=True) == {}
