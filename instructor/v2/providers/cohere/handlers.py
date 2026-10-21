@@ -100,13 +100,16 @@ def _extract_text_from_response(response: Any) -> str:
     if hasattr(response, "message") and hasattr(response.message, "content"):
         content_items = response.message.content
         if content_items:
+            text_parts: list[str] = []
             for item in content_items:
                 if (
                     hasattr(item, "type")
                     and item.type == "text"
                     and hasattr(item, "text")
                 ):
-                    return item.text
+                    text_parts.append(item.text)
+            if text_parts:
+                return "".join(text_parts)
 
     raise ResponseParsingError(
         f"Could not extract text from Cohere response: {type(response)}",
