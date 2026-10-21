@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **OpenAI model defaults**: Replace the `gpt-3.5-turbo` defaults in `llm_validator` and `Instructions.distil` with `gpt-4.1-mini`, while preserving explicit caller-supplied models. ([#2836](https://github.com/567-labs/instructor/pull/2836))
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
