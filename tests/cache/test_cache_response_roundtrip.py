@@ -79,3 +79,21 @@ def test_cached_typed_dict_preserves_underscore_keys_and_omission(
 
     assert restored == original
     assert restored.model_dump(by_alias=True, exclude_unset=True) == data
+
+
+def test_legacy_cache_with_model_field_name() -> None:
+    """Legacy entries that store model JSON directly must not be misread
+    as envelopes when the model has a field named 'model'."""
+    class Device(BaseModel):
+        model: str
+        year: int
+
+    cache = AutoCache()
+    original = Device(model="ThinkPad", year=2026)
+    # Legacy format: raw model_dump_json stored directly
+    cache.set("device", original.model_dump_json())
+
+    restored = load_cached_response(cache, "device", Device)
+    assert restored == original
+    assert restored.model == "ThinkPad"
+    assert restored.year == 2026
