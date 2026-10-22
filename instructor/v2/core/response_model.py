@@ -58,11 +58,14 @@ class _TypedDictModel(BaseModel):
 
 def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
     """Convert a TypedDict while preserving per-key requiredness."""
+    from instructor.v2.core.function_calls import ResponseSchema
+
     annotations = get_type_hints(typed_dict, include_extras=True)
     required_keys = set(getattr(typed_dict, "__required_keys__", set()))
     optional_keys = set(getattr(typed_dict, "__optional_keys__", set()))
     total = getattr(typed_dict, "__total__", True)
     fields: dict[str, tuple[Any, Any]] = {}
+    reserved_names = set(dir(_TypedDictModel)) | set(dir(ResponseSchema))
 
     for name, annotation in annotations.items():
         annotation_origin = get_origin(annotation)
@@ -78,10 +81,14 @@ def _typed_dict_to_model(typed_dict: type[Any]) -> type[BaseModel]:
 
         field_name = name
         default: Any = ... if is_required else None
-        if name.startswith("_"):
-            # Pydantic treats underscore-prefixed field names as private attributes.
+        if name.startswith(("_", "model_")) or name in reserved_names:
+            # Avoid private fields, protected namespaces and inherited API members.
             field_name = f"field{name}"
-            while field_name in annotations or field_name in fields:
+            while (
+                field_name in annotations
+                or field_name in fields
+                or field_name in reserved_names
+            ):
                 field_name += "_"
             default = Field(default=default, alias=name)
         fields[field_name] = (field_annotation, default)
