@@ -750,7 +750,7 @@ class Instructor:
 
     def __getattr__(self, attr: str) -> Any:
         if attr not in {"create", "chat", "messages"}:
-            return getattr(self.client, attr)
+            return getattr(object.__getattribute__(self, "client"), attr)
 
         return getattr(self, attr)
 

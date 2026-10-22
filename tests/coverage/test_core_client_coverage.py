@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import AsyncIterable, Iterable
+from copy import copy
 from typing import Any, cast, get_args, get_origin
 
 import httpx
@@ -103,6 +104,33 @@ def test_sync_client_forwards_defaults_aliases_and_per_call_hooks(
     assert client.chat.completions.messages is client
     assert client.account == "local"
     assert Instructor.__getattr__(client, "create").__self__ is client
+
+
+@pytest.mark.parametrize("client_class", [Instructor, AsyncInstructor])
+@pytest.mark.parametrize("underlying", [None, object()])
+def test_shallow_copy_preserves_client_state(
+    client_class: type[Instructor], underlying: Any
+) -> None:
+    def create(**_kwargs: Any) -> User:
+        return User(name="Ada")
+
+    client = client_class(
+        client=underlying,
+        create=create,
+        model="default-model",
+    )
+
+    copied = copy(client)
+
+    assert copied is not client
+    assert type(copied) is client_class
+    assert copied.client is underlying
+    assert copied.create_fn is create
+    assert copied.kwargs is client.kwargs
+    assert copied.hooks is client.hooks
+    assert copied.chat.completions.messages is copied
+    with pytest.raises(AttributeError):
+        _ = copied.missing_attribute
 
 
 def test_sync_streaming_and_completion_helpers_preserve_models_and_hooks() -> None:
