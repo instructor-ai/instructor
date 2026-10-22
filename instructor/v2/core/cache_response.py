@@ -17,6 +17,27 @@ if TYPE_CHECKING:
 logger = logging.getLogger("instructor.cache")
 
 
+def _is_cache_envelope(data: Any) -> bool:
+    """Return True when *data* is a current-format cache envelope.
+
+    Current entries are ``{"model": <model_dump_json str>, "raw": ...}``.
+    Legacy entries store the Pydantic model JSON directly. A business model
+    that itself has a ``model`` field (e.g. ``{"model": "ThinkPad", "year":
+    2026}``) must not be treated as an envelope: that would take the field
+    value as the document and fail validation.
+    """
+    if not isinstance(data, dict) or "model" not in data:
+        return False
+    if set(data.keys()) - {"model", "raw"}:
+        return False
+    model_value = data["model"]
+    # store_cached_response writes model.model_dump_json() (JSON text).
+    if not isinstance(model_value, str):
+        return False
+    stripped = model_value.lstrip()
+    return stripped.startswith("{") or stripped.startswith("[")
+
+
 def load_cached_response(
     cache: BaseCache,
     key: str,
@@ -33,8 +54,12 @@ def load_cached_response(
 
     try:
         data = json.loads(cached)
-        model_json = data["model"]
-        raw_json = data.get("raw")
+        if _is_cache_envelope(data):
+            model_json = data["model"]
+            raw_json = data.get("raw")
+        else:
+            model_json = cached
+            raw_json = None
     except Exception:
         model_json = cached
         raw_json = None

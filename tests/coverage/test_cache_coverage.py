@@ -171,6 +171,34 @@ def test_load_cached_response_accepts_legacy_model_json() -> None:
     assert not hasattr(restored, "_raw_response")
 
 
+def test_load_cached_response_legacy_entry_with_model_field() -> None:
+    """Legacy dumps whose schema has a `model` field must not be read as envelopes.
+
+    Regression for https://github.com/567-labs/instructor/issues/2830
+    """
+
+    class Device(BaseModel):
+        model: str
+        year: int
+
+    cache = AutoCache()
+    original = Device(model="ThinkPad", year=2026)
+    cache.set("device", original.model_dump_json())
+
+    restored = load_cached_response(cache, "device", Device)
+
+    assert restored == original
+    assert not hasattr(restored, "_raw_response")
+
+    # Controls: current envelopes (with and without raw) still restore.
+    store_cached_response(cache, "envelope", original)
+    assert load_cached_response(cache, "envelope", Device) == original
+
+    only_name = User(name="solo")
+    cache.set("solo-legacy", only_name.model_dump_json())
+    assert load_cached_response(cache, "solo-legacy", User) == only_name
+
+
 def test_store_cached_response_without_raw_response_round_trips() -> None:
     cache = MemoryCache()
 
