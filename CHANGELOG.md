@@ -10,7 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 ## [Unreleased]
 
 ### Fixed
-- **Client copying**: Support `copy.copy` on sync and async Instructor clients by resolving the wrapped client safely during object reconstruction.
+- **Client copying**: Support `copy.copy` on sync and async Instructor clients, preserving shared client state and binding Responses helpers to the copied wrapper.
 
 ## [1.18.0] - 2026-09-26
 
