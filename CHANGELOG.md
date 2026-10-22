@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Cohere parsing**: Preserve all text blocks in V2 structured responses instead of parsing only the first block. Thinking blocks remain excluded.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
