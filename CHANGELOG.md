@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **TypedDict response models**: Preserve keys that conflict with Pydantic or Instructor model methods, including requiredness, alias-based serialization and cache round trips.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
