@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Templating**: Render `context=` templates in OpenAI Responses `input_text` content parts instead of sending the raw `{{ }}` placeholders.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
