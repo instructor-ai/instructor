@@ -79,3 +79,27 @@ def test_cached_typed_dict_preserves_underscore_keys_and_omission(
 
     assert restored == original
     assert restored.model_dump(by_alias=True, exclude_unset=True) == data
+
+
+def test_load_cached_response_legacy_entry_with_model_field():
+    """Legacy caches stored model JSON directly; a business ``model`` field must work."""
+    from pydantic import BaseModel
+
+    from instructor.cache import AutoCache, load_cached_response, store_cached_response
+
+    class Device(BaseModel):
+        model: str
+        year: int
+
+    cache = AutoCache()
+    original = Device(model="ThinkPad", year=2026)
+
+    # Legacy format: the model JSON is stored directly (no envelope).
+    cache.set("device-legacy", original.model_dump_json())
+    restored = load_cached_response(cache, "device-legacy", Device)
+    assert restored == original
+
+    # Current envelope format still round-trips, including models with a ``model`` field.
+    store_cached_response(cache, "device-envelope", original)
+    restored_envelope = load_cached_response(cache, "device-envelope", Device)
+    assert restored_envelope == original
