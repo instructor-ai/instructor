@@ -259,27 +259,29 @@ async def test_async_partial_c0_character_repair(escaped: bool) -> None:
 
 
 @pytest.mark.parametrize("character", ["\x7f", "\x85"])
-def test_partial_rejects_del_c1_outside_json_strings(character: str) -> None:
-    # DEL/C1 are data inside strings, not whitespace between JSON tokens.
+def test_partial_repairs_del_c1_outside_json_strings(character: str) -> None:
+    # Preserve the historical repair of DEL/C1 outside JSON strings.
     chunks = ["{" + character + '"text": "value", "labels": {}}']
 
-    with pytest.raises(ValueError, match="key must be a string"):
-        list(_partial_api(Partial[TextPayload]).model_from_chunks(chunks))
+    models = list(_partial_api(Partial[TextPayload]).model_from_chunks(chunks))
+    assert models[-1].model_dump() == {"text": "value", "labels": {}}
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("character", ["\x7f", "\x85"])
-async def test_async_partial_rejects_del_c1_outside_json_strings(
+async def test_async_partial_repairs_del_c1_outside_json_strings(
     character: str,
 ) -> None:
     async def async_chunks() -> AsyncGenerator[str, None]:
         yield "{" + character + '"text": "value", "labels": {}}'
 
-    with pytest.raises(ValueError, match="key must be a string"):
-        async for _ in _partial_api(Partial[TextPayload]).model_from_chunks_async(
+    models = [
+        model
+        async for model in _partial_api(Partial[TextPayload]).model_from_chunks_async(
             async_chunks()
-        ):
-            pass
+        )
+    ]
+    assert models[-1].model_dump() == {"text": "value", "labels": {}}
 
 
 @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
