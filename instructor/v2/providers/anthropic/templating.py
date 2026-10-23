@@ -15,7 +15,8 @@ def process_message(
         for part in message["content"]:
             if (
                 isinstance(part, dict)
-                and part.get("type") == "text"
+                # List content from OpenAI Responses mode uses "input_text" parts.
+                and part.get("type") in ("text", "input_text")
                 and isinstance(part.get("text"), str)
             ):
                 part["text"] = apply_template(part["text"], context)
