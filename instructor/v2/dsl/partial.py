@@ -95,8 +95,13 @@ class PartialLiteralMixin:
         )
 
 
-def remove_control_chars(s):
-    return re.sub(r"[\x00-\x1F\x7F-\x9F]", "", s)
+def remove_control_chars(s: str) -> str:
+    """Remove raw C0 characters that can make streamed JSON invalid.
+
+    DEL and C1 characters (U+007F–U+009F) are valid JSON string content and
+    must be preserved. Escaped control characters are left unchanged.
+    """
+    return re.sub(r"[\x00-\x1F]", "", s)
 
 
 def process_potential_object(potential_object, partial_mode, partial_model, **kwargs):
