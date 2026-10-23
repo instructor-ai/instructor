@@ -16,6 +16,29 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("instructor.cache")
 
+def _is_response_envelope(data: Any) -> bool:
+    """Return True when *data* is an Instructor cache envelope.
+
+    ``store_cached_response`` writes ``{"model": <model_dump_json str>, "raw": ...}``.
+    Legacy entries store the model JSON object directly. Those objects may include a
+    business field named ``model`` (e.g. ``{"model": "ThinkPad", "year": 2026}``);
+    that scalar must not be selected as the envelope payload.
+    """
+    if not isinstance(data, dict) or "model" not in data:
+        return False
+    model_field = data["model"]
+    # Envelope always stores the serialized model as a JSON text string.
+    if not isinstance(model_field, str):
+        return False
+    stripped = model_field.lstrip()
+    if not stripped.startswith(("{", "[")):
+        return False
+    # Current writer always includes a ``raw`` key (value may be null).
+    if "raw" in data:
+        return True
+    # Older envelopes may omit ``raw``; accept only when there are no other keys.
+    return set(data.keys()) == {"model"}
+
 
 def load_cached_response(
     cache: BaseCache,
@@ -33,8 +56,14 @@ def load_cached_response(
 
     try:
         data = json.loads(cached)
-        model_json = data["model"]
-        raw_json = data.get("raw")
+        if _is_response_envelope(data):
+            model_json = data["model"]
+            raw_json = data.get("raw")
+        else:
+            # Legacy caches stored the model JSON directly. A business field named
+            # ``model`` must not be treated as the envelope payload.
+            model_json = cached
+            raw_json = None
     except Exception:
         model_json = cached
         raw_json = None
