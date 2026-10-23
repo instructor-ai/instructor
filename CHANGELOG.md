@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **Partial streaming**: Preserve DEL and C1 characters in completed JSON strings and object keys in sync and async streams, instead of silently deleting them. Keep existing raw C0 character repair; DEL/C1 between JSON tokens are no longer silently removed.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
