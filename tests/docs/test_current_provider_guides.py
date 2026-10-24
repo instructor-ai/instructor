@@ -24,6 +24,7 @@ from pytest_examples import CodeExample, EvalExample, find_examples
                 "deepseek",
                 "openrouter",
                 "together",
+                "runcrate",
                 "bedrock",
                 "vertex",
             )
