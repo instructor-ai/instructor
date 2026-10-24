@@ -197,6 +197,8 @@ class BatchJobInfo(BaseModel):
         error = None
         if batch_data.get("errors"):
             error_data = batch_data["errors"]
+            if error_data.get("data"):
+                error_data = error_data["data"][0]
             error = BatchErrorInfo(
                 error_type=error_data.get("type"),
                 error_message=error_data.get("message"),

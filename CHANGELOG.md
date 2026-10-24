@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **OpenAI batch job errors**: Populate normalized error codes and messages from the first validation error in `errors.data`, retaining all original errors in `raw_data`.
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
