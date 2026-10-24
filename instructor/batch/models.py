@@ -36,7 +36,11 @@ class BatchError(BaseModel):
 
 
 class BatchStatus(str, Enum):
-    """Normalized batch status across providers"""
+    """Normalized batch status across providers.
+
+    CANCELLED includes cancellation requests still in progress. Use
+    BatchJobInfo.raw_status for the provider's exact state.
+    """
 
     PENDING = "pending"
     PROCESSING = "processing"
@@ -224,6 +228,7 @@ class BatchJobInfo(BaseModel):
         # Normalize status
         status_map = {
             "in_progress": BatchStatus.PROCESSING,
+            "canceling": BatchStatus.CANCELLED,
             "ended": BatchStatus.COMPLETED,
             "failed": BatchStatus.FAILED,
             "cancelled": BatchStatus.CANCELLED,
