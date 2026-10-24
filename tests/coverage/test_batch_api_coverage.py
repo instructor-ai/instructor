@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from openai.types import Batch
 from pydantic import BaseModel
 
 from instructor.batch import (
@@ -325,6 +326,47 @@ def test_openai_batch_job_info_normalizes_status_timestamps_counts_and_error() -
     assert minimal.status is BatchStatus.PENDING
     assert minimal.timestamps == minimal.timestamps.__class__()
     assert minimal.error is None
+
+
+@pytest.mark.parametrize(
+    ("counts", "metadata"),
+    [
+        (None, None),
+        ({"total": 2, "completed": 1, "failed": 0}, None),
+        (None, {"source": "example"}),
+        (
+            {"total": 2, "completed": 1, "failed": 0},
+            {"source": "example"},
+        ),
+    ],
+)
+def test_openai_batch_job_info_accepts_nullable_sdk_mappings(
+    counts: dict[str, int] | None, metadata: dict[str, str] | None
+) -> None:
+    batch = Batch.model_validate(
+        {
+            "id": "batch-pending",
+            "object": "batch",
+            "endpoint": "/v1/chat/completions",
+            "input_file_id": "file-input",
+            "completion_window": "24h",
+            "created_at": 1_700_000_000,
+            "status": "validating",
+            "request_counts": counts,
+            "metadata": metadata,
+        }
+    )
+    payload = batch.model_dump()
+
+    result = BatchJobInfo.from_openai(payload)
+
+    assert result.id == batch.id
+    assert result.status is BatchStatus.PENDING
+    assert result.request_counts.total == (counts or {}).get("total")
+    assert result.request_counts.completed == (counts or {}).get("completed")
+    assert result.request_counts.failed == (counts or {}).get("failed")
+    assert result.metadata == (metadata or {})
+    assert result.raw_data == payload
 
 
 def test_anthropic_batch_job_info_accepts_timestamp_variants_and_counts() -> None:

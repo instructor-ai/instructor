@@ -126,7 +126,11 @@ class BatchJobInfo(BaseModel):
 
     @classmethod
     def from_openai(cls, batch_data: dict[str, Any]) -> BatchJobInfo:
-        """Create from OpenAI batch response"""
+        """Create from an OpenAI batch response.
+
+        Missing or null request counts stay unknown; missing or null metadata
+        becomes an empty mapping.
+        """
         # Normalize status
         status_map = {
             "validating": BatchStatus.PENDING,
@@ -179,7 +183,7 @@ class BatchJobInfo(BaseModel):
         )
 
         # Parse request counts
-        request_counts_data = batch_data.get("request_counts", {})
+        request_counts_data = batch_data.get("request_counts") or {}
         request_counts = BatchRequestCounts(
             total=request_counts_data.get("total"),
             completed=request_counts_data.get("completed"),
@@ -212,7 +216,7 @@ class BatchJobInfo(BaseModel):
             request_counts=request_counts,
             files=files,
             error=error,
-            metadata=batch_data.get("metadata", {}),
+            metadata=batch_data.get("metadata") or {},
             raw_data=batch_data,
             endpoint=batch_data.get("endpoint"),
             completion_window=batch_data.get("completion_window"),
