@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from instructor.batch import BatchProcessor
+from instructor.batch import BatchProcessor, BatchStatus
 from instructor.batch.models import BatchError, BatchResult, BatchSuccess
 
 pytestmark = pytest.mark.unit
@@ -164,6 +164,47 @@ def assert_retrieve_download_parity(
         result.custom_id for result in retrieved
     ]
     return retrieved
+
+
+def test_list_openai_batches_keeps_jobs_with_nullable_optional_fields(
+    endpoint: BatchEndpoint,
+) -> None:
+    pending = {
+        "id": "batch-pending",
+        "object": "batch",
+        "endpoint": "/v1/chat/completions",
+        "input_file_id": "file-input",
+        "completion_window": "24h",
+        "created_at": 1,
+        "status": "validating",
+        "request_counts": None,
+        "metadata": None,
+    }
+    completed = openai_batch(
+        completed=1, failed=0, output_file="file-output", error_file=None
+    )
+    completed["metadata"] = {"source": "example"}
+    endpoint.json_states(
+        "/batches?limit=10",
+        {
+            "object": "list",
+            "data": [pending, completed],
+            "has_more": False,
+            "first_id": pending["id"],
+            "last_id": completed["id"],
+        },
+    )
+
+    jobs = BatchProcessor("openai/local", Person).list_batches()
+
+    assert [job.id for job in jobs] == ["batch-pending", "batch-local"]
+    assert jobs[0].status is BatchStatus.PENDING
+    assert jobs[0].request_counts.total is None
+    assert jobs[0].metadata == {}
+    assert jobs[1].status is BatchStatus.COMPLETED
+    assert jobs[1].request_counts.total == 1
+    assert jobs[1].metadata == {"source": "example"}
+    assert endpoint.requests == ["/batches?limit=10"]
 
 
 @pytest.mark.parametrize("shape", ["top-level", "body-type", "body-code"])
