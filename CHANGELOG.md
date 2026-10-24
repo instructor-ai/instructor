@@ -9,6 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+- **OpenAI Batch**: Retrieve and download available output and error records from expired batches, including when result files appear after a bounded wait. ([#2848](https://github.com/567-labs/instructor/pull/2848))
+
 ## [1.18.0] - 2026-09-26
 
 ### Added
