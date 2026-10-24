@@ -380,6 +380,51 @@ def test_anthropic_batch_job_info_accepts_timestamp_variants_and_counts() -> Non
     assert minimal.request_counts.total == 0
 
 
+@pytest.mark.parametrize(
+    ("processing_status", "expected_status"),
+    [
+        ("in_progress", BatchStatus.PROCESSING),
+        ("canceling", BatchStatus.CANCELLED),
+        ("ended", BatchStatus.COMPLETED),
+    ],
+)
+def test_anthropic_batch_job_info_normalizes_native_sdk_statuses(
+    processing_status: str, expected_status: BatchStatus
+) -> None:
+    sdk_types = pytest.importorskip("anthropic.types.messages")
+    batch = sdk_types.MessageBatch.model_validate(
+        {
+            "id": "msgbatch-local",
+            "type": "message_batch",
+            "processing_status": processing_status,
+            "created_at": "2026-10-24T00:00:00Z",
+            "expires_at": "2026-10-25T00:00:00Z",
+            "ended_at": (
+                "2026-10-24T00:00:20Z" if processing_status == "ended" else None
+            ),
+            "cancel_initiated_at": (
+                None if processing_status == "in_progress" else "2026-10-24T00:00:10Z"
+            ),
+            "results_url": None,
+            "request_counts": {
+                "processing": 0 if processing_status == "ended" else 2,
+                "succeeded": 1,
+                "errored": 0,
+                "canceled": 2 if processing_status == "ended" else 0,
+                "expired": 0,
+            },
+        }
+    )
+
+    result = BatchJobInfo.from_anthropic(batch.model_dump())
+
+    assert result.status is expected_status
+    assert result.raw_status == processing_status
+    assert result.timestamps.cancelled_at == batch.cancel_initiated_at
+    assert result.request_counts.total == 3
+    assert result.raw_data == batch.model_dump()
+
+
 def test_openai_batch_request_makes_nested_array_and_definition_schemas_strict() -> (
     None
 ):
