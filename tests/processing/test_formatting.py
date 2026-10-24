@@ -54,6 +54,29 @@ def test_handle_templating_with_anthropic_format():
     }
 
 
+def test_handle_templating_with_responses_input_text():
+    kwargs = {
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "input_text", "text": "Hello {{ name }}!"}],
+            }
+        ]
+    }
+    context = {"name": "Bob"}
+
+    result = handle_templating(kwargs, Mode.RESPONSES_TOOLS, context)
+
+    assert result == {
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"type": "input_text", "text": "Hello Bob!"}],
+            }
+        ]
+    }
+
+
 def test_handle_templating_with_mixed_content():
     kwargs = {
         "messages": [
